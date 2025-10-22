@@ -524,6 +524,7 @@
         const executeMintButton = document.getElementById('execute-mint-button'); // Added button ID
         const payoutOrderForm = document.getElementById('payout-order-form');
         const payoutTokenizedValueSpan = document.getElementById('payout-tokenized-value'); // Added span ID
+        const payoutIdInput = document.getElementById('payout-id'); // Added ID for payout input
         const cancelOrderForm = document.getElementById('cancel-order-form');
         const proposeFeeForm = document.getElementById('propose-fee-form'); // Renamed form ID
         const executeFeeButton = document.getElementById('execute-fee-button'); // Added button ID
@@ -606,11 +607,18 @@
         }
         // Format seconds into readable time (days, hours, minutes)
         function formatSeconds(seconds) {
-            const d = Math.floor(seconds / (3600*24));
-            const h = Math.floor(seconds % (3600*24) / 3600);
-            const m = Math.floor(seconds % 3600 / 60);
-            const s = Math.floor(seconds % 60);
-            return `${d}d ${h}h ${m}m ${s}s`;
+             if (seconds === null || seconds === undefined) return '...';
+             const totalSeconds = Number(seconds); // Convert BigInt to Number
+            const d = Math.floor(totalSeconds / (3600*24));
+            const h = Math.floor(totalSeconds % (3600*24) / 3600);
+            const m = Math.floor(totalSeconds % 3600 / 60);
+            const s = Math.floor(totalSeconds % 60);
+             let result = '';
+             if (d > 0) result += `${d}d `;
+             if (h > 0 || d > 0) result += `${h}h `; // Show hours if days exist
+             if (m > 0 || h > 0 || d > 0) result += `${m}m `; // Show minutes if hours exist
+             result += `${s}s`;
+            return result.trim();
         }
 
         // --- Blockchain Interaction ---
@@ -885,7 +893,7 @@
                  availableMtyldSpan.textContent = parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4);
                  redeemFeePercentSpan.textContent = feePercent.toString();
                  currentProposalDelay = delaySeconds; // Store for later use
-                 proposalDelaySpan.textContent = delaySeconds.toString(); // Display delay
+                 proposalDelaySpan.textContent = delaySeconds.toString() + ` (${formatSeconds(delaySeconds)})`; // Display formatted delay
 
                  // Update pause status UI
                  updatePauseUI(isPaused);
@@ -901,6 +909,12 @@
                  updateBuyEstimate();
                  updateRedeemEstimate();
 
+                 // Re-check proposal executability with updated block timestamp
+                 if (contractOwner && userAddress && userAddress.toLowerCase() === contractOwner.toLowerCase()){
+                     await checkPendingProposals();
+                 }
+
+
              } catch (error) {
                  console.error("Error updating protocol info:", error);
                  showStatus('Failed to fetch protocol data.', 'error');
@@ -909,642 +923,398 @@
              }
          }
 
-        // --- Buy/Redeem Logic (No changes needed, rely on whenNotPaused modifier) ---
-        async function updateBuyEstimate() { /* ... */ }
-        async function updateRedeemEstimate() { /* ... */ }
-        async function handleApproveUSDC(isAdmin = false) { /* ... */ }
-        async function handleBuyTokens(event) { /* ... check pause status before sending ... */
-             event.preventDefault();
-             if (await mtyldContract.paused()) return showStatus('Contract is paused.', 'warning');
-             // ... rest of the function ...
-        }
-        async function handleRedeemTokens(event) { /* ... check pause status before sending ... */
-             event.preventDefault();
-             if (await mtyldContract.paused()) return showStatus('Contract is paused.', 'warning');
-             // ... rest of the function ...
+        // --- Buy/Redeem Logic (Relies on whenNotPaused modifier in contract) ---
+        async function updateBuyEstimate() {
+             const usdcAmountStr = buyUsdcAmountInput.value;
+             if (!mtyldContract || !usdcAmountStr || parseFloat(usdcAmountStr) <= 0) {
+                 estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0'; return;
+             }
+             const usdcAmount = parseUnits(usdcAmountStr, Number(usdcDecimals));
+             if (usdcAmount === null) { estimatedMtyldSpan.textContent = 'Invalid'; minTokensOutInput.value = '0'; return; }
+
+             try {
+                  const estimatedTokens = await mtyldContract.getTokensForUSDC(usdcAmount);
+                  estimatedMtyldSpan.textContent = parseFloat(formatUnits(estimatedTokens, mtyldDecimals)).toFixed(4);
+                  const slippagePercent = parseFloat(buySlippageSelect.value);
+                  const slippageFactor = BigInt(Math.floor((1 - slippagePercent / 100) * 10000));
+                  const minTokens = (estimatedTokens * slippageFactor) / 10000n;
+                  minTokensOutInput.value = minTokens.toString();
+             } catch (error) {
+                  console.error("Buy estimate error:", error); estimatedMtyldSpan.textContent = 'Error'; minTokensOutInput.value = '0';
+             }
         }
 
+        async function updateRedeemEstimate() {
+             const mtyldAmountStr = redeemMtyldAmountInput.value;
+             if (!mtyldContract || !mtyldAmountStr || parseFloat(mtyldAmountStr) <= 0) {
+                 estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0'; return;
+             }
+             const mtyldAmount = parseUnits(mtyldAmountStr, mtyldDecimals);
+             if (mtyldAmount === null) { estimatedUsdcSpan.textContent = 'Invalid'; minUsdcOutInput.value = '0'; return; }
+
+             try {
+                  const [ usdcValueBeforeFee, feePercentBigInt ] = await Promise.all([
+                       mtyldContract.getRedemptionValue(mtyldAmount), mtyldContract.redemptionFeePercentage()
+                  ]);
+                  const feePercent = Number(feePercentBigInt);
+                  const fee = (usdcValueBeforeFee * BigInt(feePercent)) / 100n;
+                  const usdcToReceive = usdcValueBeforeFee >= fee ? usdcValueBeforeFee - fee : 0n; // Prevent underflow
+
+                  estimatedUsdcSpan.textContent = parseFloat(formatUnits(usdcToReceive, Number(usdcDecimals))).toFixed(2);
+                  const slippagePercent = parseFloat(redeemSlippageSelect.value);
+                  const slippageFactor = BigInt(Math.floor((1 - slippagePercent / 100) * 10000));
+                  const minUsdc = (usdcToReceive * slippageFactor) / 10000n;
+                  minUsdcOutInput.value = minUsdc.toString();
+             } catch (error) {
+                  console.error("Redeem estimate error:", error); estimatedUsdcSpan.textContent = 'Error'; minUsdcOutInput.value = '0';
+             }
+        }
+
+        async function handleApproveUSDC(isAdmin = false) {
+             const amountInput = isAdmin ? document.getElementById('payout-amount') : buyUsdcAmountInput;
+             const button = isAdmin ? adminApproveUsdcButton : approveUsdcButton;
+             const originalText = button.textContent;
+             const usdcAmountStr = amountInput.value;
+
+             if (!usdcAmountStr || parseFloat(usdcAmountStr) <= 0) return showStatus('Enter valid USDC amount.', 'error');
+             const usdcAmount = parseUnits(usdcAmountStr, Number(usdcDecimals));
+             if (usdcAmount === null) return;
+
+             setLoading(button, true, originalText); showStatus('Requesting USDC approval...');
+             try {
+                const currentAllowance = await usdcContract.allowance(userAddress, contractAddress);
+                if (currentAllowance >= usdcAmount) {
+                    showStatus('Sufficient allowance already approved.', 'info');
+                    if (!isAdmin) buyButton.disabled = false;
+                    return; // Done
+                }
+                 const tx = await usdcContract.approve(contractAddress, usdcAmount);
+                 showStatus('Approval sent. Waiting...', 'info'); await tx.wait();
+                 showStatus('USDC approved!', 'success');
+                 if(!isAdmin) buyButton.disabled = false;
+             } catch (error) {
+                 console.error("Approval failed:", error); showStatus(`Approval failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
+             } finally { setLoading(button, false, originalText); }
+         }
+
+        async function handleBuyTokens(event) {
+             event.preventDefault();
+             if (!mtyldContract || !signer) return showStatus('Connect wallet.', 'error');
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
+
+             const usdcAmountStr = buyUsdcAmountInput.value;
+             const minTokensOut = minTokensOutInput.value;
+             if (!usdcAmountStr || parseFloat(usdcAmountStr) <= 0 || !minTokensOut || minTokensOut === '0') return showStatus('Enter valid amount & estimate.', 'error');
+
+             const usdcAmount = parseUnits(usdcAmountStr, Number(usdcDecimals));
+             if (usdcAmount === null) return;
+             const minTokensBigInt = BigInt(minTokensOut);
+
+             try {
+                 const allowance = await usdcContract.allowance(userAddress, contractAddress);
+                 if (allowance < usdcAmount) { buyButton.disabled = true; return showStatus('Insufficient USDC allowance. Approve first.', 'error'); }
+                 buyButton.disabled = false;
+             } catch (error) { console.error("Allowance check:", error); return showStatus('Allowance check failed.', 'error'); }
+
+             setLoading(buyButton, true, 'Buy MTYLD'); showStatus('Sending buy transaction...');
+             try {
+                const tx = await mtyldContract.buyTokens(usdcAmount, minTokensBigInt);
+                showStatus('Buy tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Buy:", receipt);
+                showStatus('Buy successful!', 'success');
+                buyForm.reset(); estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0'; buyButton.disabled = true;
+                await updateWalletInfo(); await updateProtocolInfo();
+             } catch (error) {
+                console.error("Buy failed:", error); showStatus(`Buy failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
+             } finally { setLoading(buyButton, false, 'Buy MTYLD'); }
+        }
+
+        async function handleRedeemTokens(event) {
+             event.preventDefault();
+             if (!mtyldContract || !signer) return showStatus('Connect wallet.', 'error');
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
+
+             const mtyldAmountStr = redeemMtyldAmountInput.value;
+             const minUsdcOut = minUsdcOutInput.value;
+             if (!mtyldAmountStr || parseFloat(mtyldAmountStr) <= 0 || !minUsdcOut || minUsdcOut === '0') return showStatus('Enter valid amount & estimate.', 'error');
+
+             const mtyldAmount = parseUnits(mtyldAmountStr, mtyldDecimals);
+             if (mtyldAmount === null) return;
+             const minUsdcBigInt = BigInt(minUsdcOut);
+
+             const balance = await mtyldContract.balanceOf(userAddress);
+             if (balance < mtyldAmount) return showStatus('Insufficient MTYLD balance.', 'error');
+
+             setLoading(redeemButton, true, 'Redeem MTYLD'); showStatus('Sending redeem transaction...');
+             try {
+                const tx = await mtyldContract.redeemTokens(mtyldAmount, minUsdcBigInt);
+                showStatus('Redeem tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Redeem:", receipt);
+                showStatus('Redeem successful!', 'success');
+                redeemForm.reset(); estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0';
+                await updateWalletInfo(); await updateProtocolInfo();
+             } catch (error) {
+                console.error("Redeem failed:", error); showStatus(`Redeem failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
+             } finally { setLoading(redeemButton, false, 'Redeem MTYLD'); }
+        }
 
         // --- Work Order Display & Filtering Logic ---
         async function fetchAndStoreAllWorkOrders() {
             if (!mtyldContract) return;
-            workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Fetching all work orders...</td></tr>';
+            workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Fetching orders...</td></tr>';
             allWorkOrders = []; availableYears.clear();
-
             try {
                 const nextId = await mtyldContract.nextWorkOrderId();
-                if (nextId <= 1n) {
-                    workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">No work orders found.</td></tr>';
-                    populateYearFilter(); return;
-                }
+                if (nextId <= 1n) { workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">No orders found.</td></tr>'; populateYearFilter(); return; }
 
-                // Consider fetching in batches if many orders exist
-                const BATCH_SIZE = 100;
-                let currentEndId = nextId - 1n;
-                let fetchedOrdersBatch = [];
-
-                showStatus('Fetching work orders (this may take a moment)...', 'info');
-
+                const BATCH_SIZE = 100; let currentEndId = nextId - 1n; let fetchedOrdersBatch = [];
+                showStatus('Fetching orders...', 'info');
                 while (currentEndId >= 1n) {
                     const currentStartId = currentEndId - BigInt(BATCH_SIZE) + 1n > 0n ? currentEndId - BigInt(BATCH_SIZE) + 1n : 1n;
-                    console.log(`Fetching orders ${currentStartId} to ${currentEndId}`);
                     try {
-                        // Use getWorkOrderRange for efficiency
                         const ordersBatchRaw = await mtyldContract.getWorkOrderRange(currentStartId, currentEndId);
                          const processedBatch = ordersBatchRaw.map(order => {
                               if (order && order.id !== 0n) {
                                   const { dateStr, month, year } = formatDate(order.createdAt);
                                   if (year !== -1) availableYears.add(year);
-                                  return {
-                                       id: order.id.toString(),
-                                       description: order.description,
-                                       grossYield: order.grossYield,
-                                       tokenizedValue: order.tokenizedValue, // Added field
-                                       reserveAmount: order.reserveAmount,
-                                       tokensIssued: order.tokensIssued,
-                                       isActive: order.isActive,
-                                       isPaid: order.isPaid,
-                                       createdAt: order.createdAt,
-                                       createdDateStr: dateStr,
-                                       createdMonth: month,
-                                       createdYear: year
-                                  };
+                                  return { id: order.id.toString(), description: order.description, grossYield: order.grossYield, tokenizedValue: order.tokenizedValue, reserveAmount: order.reserveAmount, tokensIssued: order.tokensIssued, isActive: order.isActive, isPaid: order.isPaid, createdAt: order.createdAt, createdDateStr: dateStr, createdMonth: month, createdYear: year };
                               } return null;
                          }).filter(o => o !== null);
                          fetchedOrdersBatch = fetchedOrdersBatch.concat(processedBatch);
-                    } catch (batchError) {
-                         console.error(`Error fetching batch ${currentStartId}-${currentEndId}:`, batchError);
-                         showStatus(`Error fetching some orders (${currentStartId}-${currentEndId}). Data may be incomplete.`, 'warning');
-                    }
-
-                    if (currentStartId === 1n) break; // Reached the beginning
-                    currentEndId = currentStartId - 1n;
+                    } catch (batchError) { console.error(`Batch ${currentStartId}-${currentEndId} failed:`, batchError); showStatus(`Error fetching some orders.`, 'warning'); }
+                    if (currentStartId === 1n) break; currentEndId = currentStartId - 1n;
                  }
-
-
-                allWorkOrders = fetchedOrdersBatch.sort((a, b) => parseInt(b.id) - parseInt(a.id)); // Ensure final sort
-
-                populateYearFilter();
-                filterAndRenderOrders();
-                showStatus(`Loaded ${allWorkOrders.length} work orders.`, 'success');
-
-            } catch (error) {
-                console.error("Error fetching all work orders:", error);
-                workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-400">Error fetching work orders.</td></tr>';
-                populateYearFilter();
-            }
+                allWorkOrders = fetchedOrdersBatch.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+                populateYearFilter(); filterAndRenderOrders(); showStatus(`Loaded ${allWorkOrders.length} orders.`, 'success');
+            } catch (error) { console.error("Fetch orders failed:", error); workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red">Error fetching orders.</td></tr>'; populateYearFilter(); }
         }
-        function populateYearFilter() {
-            filterYearSelect.innerHTML = '<option value="all">All Years</option>';
-             const years = Array.from(availableYears).sort((a, b) => b - a);
-             years.forEach(year => {
-                  const option = document.createElement('option'); option.value = year; option.textContent = year;
-                  filterYearSelect.appendChild(option);
-             });
-        }
-        function filterAndRenderOrders() {
-            const selectedMonth = filterMonthSelect.value;
-            const selectedYear = filterYearSelect.value;
-            const filteredOrders = allWorkOrders.filter(order => {
-                const monthMatch = selectedMonth === 'all' || order.createdMonth == selectedMonth;
-                const yearMatch = selectedYear === 'all' || order.createdYear == selectedYear;
-                return monthMatch && yearMatch;
-            });
-            renderWorkOrdersTable(filteredOrders);
-        }
+        function populateYearFilter() { filterYearSelect.innerHTML = '<option value="all">All Years</option>'; Array.from(availableYears).sort((a, b) => b - a).forEach(year => { const option = document.createElement('option'); option.value = year; option.textContent = year; filterYearSelect.appendChild(option); }); }
+        function filterAndRenderOrders() { const selectedMonth = filterMonthSelect.value; const selectedYear = filterYearSelect.value; const filteredOrders = allWorkOrders.filter(order => (selectedMonth === 'all' || order.createdMonth == selectedMonth) && (selectedYear === 'all' || order.createdYear == selectedYear)); renderWorkOrdersTable(filteredOrders); }
         function renderWorkOrdersTable(ordersToRender) {
              workOrdersTableBody.innerHTML = '';
-             if (ordersToRender.length === 0) {
-                  workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">No work orders match filters.</td></tr>';
-                  return;
-             }
+             if (ordersToRender.length === 0) { workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">No orders match filters.</td></tr>'; return; }
              ordersToRender.forEach(order => {
                  const row = workOrdersTableBody.insertRow();
-                 row.innerHTML = `
-                     <td>${order.id}</td>
-                     <td class="max-w-xs truncate" title="${order.description}">${order.description}</td>
-                     <td>${parseFloat(formatUnits(order.grossYield, Number(usdcDecimals))).toFixed(2)}</td>
-                     <td>${parseFloat(formatUnits(order.tokenizedValue, Number(usdcDecimals))).toFixed(2)}</td> {/* Display Tokenized Value */}
-                     <td>${parseFloat(formatUnits(order.tokensIssued, mtyldDecimals)).toFixed(4)}</td>
-                     <td>${order.isPaid ? '<span class="text-green font-semibold">Paid</span>' : (order.isActive ? '<span class="text-yellow font-semibold">Active</span>' : '<span class="text-red font-semibold">Cancelled</span>')}</td>
-                     <td>${order.createdDateStr}</td>
-                 `;
+                 row.innerHTML = `<td>${order.id}</td><td class="max-w-xs truncate" title="${order.description}">${order.description}</td><td>${parseFloat(formatUnits(order.grossYield, Number(usdcDecimals))).toFixed(2)}</td><td>${parseFloat(formatUnits(order.tokenizedValue, Number(usdcDecimals))).toFixed(2)}</td><td>${parseFloat(formatUnits(order.tokensIssued, mtyldDecimals)).toFixed(4)}</td><td>${order.isPaid ? '<span class="text-green font-semibold">Paid</span>' : (order.isActive ? '<span class="text-yellow font-semibold">Active</span>' : '<span class="text-red font-semibold">Cancelled</span>')}</td><td>${order.createdDateStr}</td>`;
              });
          }
 
 
-        // --- Admin Actions (Updated for Timelock & Pause) ---
-
-        async function handleProposeMint(event) {
+        // --- Admin Actions ---
+        async function handleProposeMint(event) { /* ... Check pause ... */
              event.preventDefault();
-             if (await mtyldContract.paused()) return showStatus('Contract is paused.', 'warning');
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-
-             const yieldStr = document.getElementById('propose-yield').value;
-             const description = document.getElementById('propose-desc').value;
-             const button = event.target.querySelector('button[type="submit"]');
-             const originalText = 'Propose Mint';
-
-             if (!yieldStr || parseFloat(yieldStr) <= 0 || !description) return showStatus('Valid yield & description required.', 'error');
-             const grossYield = parseUnits(yieldStr, Number(usdcDecimals));
-             if (grossYield === null) return;
-
-             setLoading(button, true, originalText);
-             showStatus('Sending propose mint transaction...');
+             const yieldStr = document.getElementById('propose-yield').value; const description = document.getElementById('propose-desc').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Propose Mint';
+             if (!yieldStr || parseFloat(yieldStr) <= 0 || !description) return showStatus('Valid yield & description.', 'error');
+             const grossYield = parseUnits(yieldStr, Number(usdcDecimals)); if (grossYield === null) return;
+             setLoading(button, true, originalText); showStatus('Sending propose mint...');
              try {
-                 const tx = await mtyldContract.proposeMint(grossYield, description);
-                 showStatus('Propose mint sent. Waiting...', 'info');
-                 const receipt = await tx.wait();
-                 console.log("Propose Mint Receipt:", receipt);
-
+                 const tx = await mtyldContract.proposeMint(grossYield, description); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Propose Mint:", receipt);
                  let proposalId = 'N/A';
-                 // Find MintProposed event
                  const eventInterface = new ethers.Interface(contractABI);
-                 if(receipt && receipt.logs) {
-                      for (const log of receipt.logs) {
-                           if (log.topics && log.data && log.address.toLowerCase() === contractAddress.toLowerCase()) {
-                                try {
-                                    const parsedLog = eventInterface.parseLog({ topics: [...log.topics], data: log.data });
-                                    if (parsedLog && parsedLog.name === "MintProposed") {
-                                        proposalId = parsedLog.args.proposalId.toString();
-                                        break;
-                                    }
-                                } catch (e) { console.warn("Could not parse log for proposal ID:", log, e); }
-                           }
-                      }
-                 }
-
-                 showStatus(`Mint proposal #${proposalId} created successfully! Execution possible after delay.`, 'success');
-                 proposeMintForm.reset();
-                 await checkPendingProposals(); // Update admin UI
-             } catch (error) {
-                  console.error("Propose Mint failed:", error);
-                  showStatus(`Propose mint failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
-             } finally {
-                  setLoading(button, false, originalText);
-             }
+                 if(receipt?.logs) { for (const log of receipt.logs) { if (log.topics && log.data && log.address.toLowerCase() === contractAddress.toLowerCase()) { try { const pLog = eventInterface.parseLog({ topics: [...log.topics], data: log.data }); if (pLog?.name === "MintProposed") { proposalId = pLog.args.proposalId.toString(); break; } } catch (e) { /* ignore */ } } } }
+                 showStatus(`Mint proposal #${proposalId} created! Executable after delay.`, 'success'); proposeMintForm.reset(); await checkPendingProposals();
+             } catch (error) { console.error("Propose Mint fail:", error); showStatus(`Propose fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
+             finally { setLoading(button, false, originalText); }
          }
-
-        async function handleExecuteMint() {
-             if (await mtyldContract.paused()) return showStatus('Contract is paused.', 'warning');
+        async function handleExecuteMint() { /* ... Check pause ... */
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-
-             const proposalIdStr = executeMintIdInput.value;
-             const button = executeMintButton;
-             const originalText = 'Execute Mint (after delay)';
-
-             if (!proposalIdStr || parseInt(proposalIdStr) < 1) return showStatus('Enter valid Proposal ID.', 'error');
+             const proposalIdStr = executeMintIdInput.value; const button = executeMintButton; const originalText = 'Execute Mint (after delay)';
+             if (!proposalIdStr || parseInt(proposalIdStr) < 1) return showStatus('Valid ID.', 'error');
              const proposalId = BigInt(proposalIdStr);
-
-             // Double check executability (client-side)
+             try { // Client check
+                  const mintP = await mtyldContract.pendingMints(proposalId); if (!mintP.exists) return showStatus(`Proposal ${proposalId} not found/executed.`, 'error');
+                  const delayS = Number(currentProposalDelay || 0n); const canExec = blockTimestamp ? blockTimestamp >= mintP.proposedAt + BigInt(delayS) : false; const canExecEst = (Date.now() / 1000) >= Number(mintP.proposedAt) + delayS;
+                  if (!(canExec || canExecEst)) return showStatus(`Proposal ${proposalId} not executable yet.`, 'warning');
+             } catch (e) { return showStatus('Check proposal status failed.', 'error'); }
+             setLoading(button, true, originalText); showStatus(`Executing mint #${proposalId}...`);
              try {
-                  const mintProposal = await mtyldContract.pendingMints(proposalId);
-                  if (!mintProposal.exists) return showStatus(`Proposal ${proposalId} not found or already executed.`, 'error');
-                  const delaySeconds = Number(currentProposalDelay || 0n);
-                  const canExecute = blockTimestamp ? blockTimestamp >= mintProposal.proposedAt + BigInt(delaySeconds) : false;
-                  const canExecuteEstimate = (Date.now() / 1000) >= Number(mintProposal.proposedAt) + delaySeconds;
-
-                  if (!(canExecute || canExecuteEstimate)) {
-                       return showStatus(`Proposal ${proposalId} not yet executable. Wait for delay.`, 'warning');
-                  }
-             } catch (e) { return showStatus('Error checking proposal status.', 'error'); }
-
-
-             setLoading(button, true, originalText);
-             showStatus(`Executing mint proposal #${proposalId}...`);
-             try {
-                 const tx = await mtyldContract.executeMint(proposalId);
-                 showStatus('Execute mint sent. Waiting...', 'info');
-                 const receipt = await tx.wait();
-                 console.log("Execute Mint Receipt:", receipt);
-                 showStatus(`Mint proposal #${proposalId} executed successfully! Work order created.`, 'success');
-                 executeMintIdInput.value = ''; // Clear input
-                 await checkPendingProposals(); // Update admin UI
-                 await updateProtocolInfo();
-                 await fetchAndStoreAllWorkOrders(); // Refresh orders
-             } catch (error) {
-                  console.error("Execute Mint failed:", error);
-                  showStatus(`Execute mint failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
-             } finally {
-                  setLoading(button, false, originalText);
-                 // Re-check proposal status after execution attempt
-                 await checkPendingMintDetails();
-             }
+                 const tx = await mtyldContract.executeMint(proposalId); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Execute Mint:", receipt);
+                 showStatus(`Mint #${proposalId} executed! Order created.`, 'success'); executeMintIdInput.value = '';
+                 await checkPendingProposals(); await updateProtocolInfo(); await fetchAndStoreAllWorkOrders();
+             } catch (error) { console.error("Execute Mint fail:", error); showStatus(`Execute fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
+             finally { setLoading(button, false, originalText); await checkPendingMintDetails(); }
          }
-
-
-        // Update Payout form to show expected tokenized value
-         payoutIdInput = document.getElementById('payout-id');
-         payoutIdInput.addEventListener('input', async () => {
-             const orderIdStr = payoutIdInput.value;
-              payoutTokenizedValueSpan.textContent = '--'; // Reset
-              if (!orderIdStr || parseInt(orderIdStr) < 1 || !mtyldContract) return;
-             const orderId = BigInt(orderIdStr);
-             try {
-                  const order = await mtyldContract.workOrders(orderId);
-                  if (order.id !== 0n) {
-                       payoutTokenizedValueSpan.textContent = `${parseFloat(formatUnits(order.tokenizedValue, usdcDecimals)).toFixed(2)} USDC`;
-                       // Optionally pre-fill payout amount
-                       // document.getElementById('payout-amount').value = parseFloat(formatUnits(order.tokenizedValue, usdcDecimals)).toFixed(2);
-                  } else {
-                       payoutTokenizedValueSpan.textContent = 'Not Found';
-                  }
-             } catch {
-                  payoutTokenizedValueSpan.textContent = 'Error';
-             }
-         });
-         const payoutIdInput = document.getElementById('payout-id'); // Assign here
-
-
-        async function handlePayoutOrder(event) {
+        async function handlePayoutOrder(event) { /* ... Check pause ... */
              event.preventDefault();
-             if (await mtyldContract.paused()) return showStatus('Contract is paused.', 'warning');
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-
-             const orderIdStr = payoutIdInput.value;
-             const amountStr = document.getElementById('payout-amount').value;
-             const button = event.target.querySelector('button[type="submit"]');
-             const originalText = 'Submit Payout';
-
-              if (!orderIdStr || parseInt(orderIdStr) < 1 || !amountStr || parseFloat(amountStr) <= 0) return showStatus('Valid ID & Amount required.', 'error');
-             const orderId = BigInt(orderIdStr);
-             const payoutAmount = parseUnits(amountStr, Number(usdcDecimals));
-              if (payoutAmount === null) return;
-
-              // Client-side check against expected value (contract enforces it too)
-              try {
-                  const order = await mtyldContract.workOrders(orderId);
-                  if (order.id === 0n) return showStatus('Work order not found.', 'error');
-                  if (order.isPaid) return showStatus('Work order already paid.', 'warning');
-                  if (payoutAmount !== order.tokenizedValue) {
-                      return showStatus(`Payout Amount (${amountStr}) must exactly match Tokenized Value (${formatUnits(order.tokenizedValue, usdcDecimals)}).`, 'error');
-                  }
-                   const allowance = await usdcContract.allowance(userAddress, contractAddress);
-                   if (allowance < payoutAmount) return showStatus('Insufficient USDC allowance. Please approve.', 'error');
-              } catch (e) { return showStatus('Error checking order or allowance.', 'error'); }
-
-
-             setLoading(button, true, originalText);
-             showStatus(`Sending payout for order #${orderId}...`);
+             const orderIdStr = payoutIdInput.value; const amountStr = document.getElementById('payout-amount').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Submit Payout';
+             if (!orderIdStr || parseInt(orderIdStr) < 1 || !amountStr || parseFloat(amountStr) <= 0) return showStatus('Valid ID & Amount.', 'error');
+             const orderId = BigInt(orderIdStr); const payoutAmount = parseUnits(amountStr, Number(usdcDecimals)); if (payoutAmount === null) return;
+             try { // Client checks
+                  const order = await mtyldContract.workOrders(orderId); if (order.id === 0n) return showStatus('Order not found.', 'error'); if (order.isPaid) return showStatus('Order already paid.', 'warning');
+                  if (payoutAmount !== order.tokenizedValue) return showStatus(`Payout (${amountStr}) must match Tokenized Value (${formatUnits(order.tokenizedValue, usdcDecimals)}).`, 'error');
+                  const allowance = await usdcContract.allowance(userAddress, contractAddress); if (allowance < payoutAmount) return showStatus('Insufficient USDC allowance.', 'error');
+             } catch (e) { return showStatus('Check order/allowance failed.', 'error'); }
+             setLoading(button, true, originalText); showStatus(`Sending payout #${orderId}...`);
              try {
-                 const tx = await mtyldContract.payoutWorkOrder(orderId, payoutAmount);
-                 showStatus('Payout sent. Waiting...', 'info');
-                 const receipt = await tx.wait();
-                 console.log("Payout Receipt:", receipt);
-                 showStatus(`Work order #${orderId} paid out!`, 'success');
-                 payoutOrderForm.reset();
-                 payoutTokenizedValueSpan.textContent = '--'; // Reset helper text
-                 await updateProtocolInfo();
-                 await updateWalletInfo();
-                 await fetchAndStoreAllWorkOrders();
-             } catch (error) {
-                 console.error("Payout failed:", error);
-                 showStatus(`Payout failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
-             } finally {
-                 setLoading(button, false, originalText);
-             }
+                 const tx = await mtyldContract.payoutWorkOrder(orderId, payoutAmount); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Payout:", receipt);
+                 showStatus(`Order #${orderId} paid out!`, 'success'); payoutOrderForm.reset(); payoutTokenizedValueSpan.textContent = '--';
+                 await updateProtocolInfo(); await updateWalletInfo(); await fetchAndStoreAllWorkOrders();
+             } catch (error) { console.error("Payout fail:", error); showStatus(`Payout fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
+             finally { setLoading(button, false, originalText); }
          }
-
-
-        async function handleCancelOrder(event) {
+        async function handleCancelOrder(event) { /* ... Check pause ... */
              event.preventDefault();
-             if (await mtyldContract.paused()) return showStatus('Contract is paused.', 'warning');
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-
-              const orderIdStr = document.getElementById('cancel-id').value;
-              const button = event.target.querySelector('button[type="submit"]');
-              const originalText = 'Cancel Order';
-
-              if (!orderIdStr || parseInt(orderIdStr) < 1) return showStatus('Valid ID required.', 'error');
-              const orderId = BigInt(orderIdStr);
-
-              if (!confirm(`Cancel Work Order #${orderId}? Cannot be undone.`)) return;
-
-             setLoading(button, true, originalText);
-             showStatus(`Cancelling order #${orderId}...`);
+             const orderIdStr = document.getElementById('cancel-id').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Cancel Order';
+             if (!orderIdStr || parseInt(orderIdStr) < 1) return showStatus('Valid ID.', 'error'); const orderId = BigInt(orderIdStr);
+             if (!confirm(`Cancel Order #${orderId}?`)) return;
+             setLoading(button, true, originalText); showStatus(`Cancelling #${orderId}...`);
              try {
-                 const tx = await mtyldContract.cancelWorkOrder(orderId);
-                 showStatus('Cancel sent. Waiting...', 'info');
-                 const receipt = await tx.wait();
-                 console.log("Cancel Receipt:", receipt);
-                 showStatus(`Order #${orderId} cancelled!`, 'success');
-                 cancelOrderForm.reset();
-                 await fetchAndStoreAllWorkOrders();
-             } catch (error) {
-                 console.error("Cancel failed:", error);
-                 showStatus(`Cancel failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
-             } finally {
-                 setLoading(button, false, originalText);
-             }
+                 const tx = await mtyldContract.cancelWorkOrder(orderId); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Cancel:", receipt);
+                 showStatus(`Order #${orderId} cancelled!`, 'success'); cancelOrderForm.reset(); await fetchAndStoreAllWorkOrders();
+             } catch (error) { console.error("Cancel fail:", error); showStatus(`Cancel fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
+             finally { setLoading(button, false, originalText); }
          }
-
-
-        async function handleProposeFeeChange(event) {
+        async function handleProposeFeeChange(event) { /* ... Check pause ... */
              event.preventDefault();
-             if (await mtyldContract.paused()) return showStatus('Contract is paused.', 'warning');
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-
-             const feeStr = document.getElementById('propose-new-fee').value;
-             const button = event.target.querySelector('button[type="submit"]');
-             const originalText = 'Propose Fee Change';
-
-             const fee = parseFloat(feeStr);
-             if (isNaN(fee) || fee < 0 || fee > 20) return showStatus('Fee must be between 0 and 20.', 'error');
-             const feeBigInt = BigInt(Math.round(fee));
-
-             setLoading(button, true, originalText);
-             showStatus(`Proposing fee change to ${fee}%...`);
+             const feeStr = document.getElementById('propose-new-fee').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Propose Fee Change';
+             const fee = parseFloat(feeStr); if (isNaN(fee) || fee < 0 || fee > 20) return showStatus('Fee 0-20.', 'error'); const feeBigInt = BigInt(Math.round(fee));
+             setLoading(button, true, originalText); showStatus(`Proposing fee ${fee}%...`);
              try {
-                 const tx = await mtyldContract.proposeFeeChange(feeBigInt);
-                 showStatus('Propose fee sent. Waiting...', 'info');
-                 const receipt = await tx.wait();
-                 console.log("Propose Fee Receipt:", receipt);
-                 showStatus(`Fee change to ${fee}% proposed! Execution possible after delay.`, 'success');
-                 proposeFeeForm.reset();
-                 await checkPendingProposals();
-             } catch (error) {
-                  console.error("Propose Fee failed:", error);
-                  showStatus(`Propose fee failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
-             } finally {
-                  setLoading(button, false, originalText);
-             }
+                 const tx = await mtyldContract.proposeFeeChange(feeBigInt); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Propose Fee:", receipt);
+                 showStatus(`Fee change to ${fee}% proposed! Executable after delay.`, 'success'); proposeFeeForm.reset(); await checkPendingProposals();
+             } catch (error) { console.error("Propose Fee fail:", error); showStatus(`Propose fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
+             finally { setLoading(button, false, originalText); }
          }
-
-        async function handleExecuteFeeChange() {
-             if (await mtyldContract.paused()) return showStatus('Contract is paused.', 'warning');
+        async function handleExecuteFeeChange() { /* ... Check pause ... */
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-
-             const button = executeFeeButton;
-             const originalText = 'Execute Fee Change (after delay)';
-
-             // Client-side check
+             const button = executeFeeButton; const originalText = 'Execute Fee Change (after delay)';
+             try { // Client check
+                  const feeP = await mtyldContract.pendingFeeChange(); if (!feeP.exists) return showStatus('No pending fee proposal.', 'error');
+                  const delayS = Number(currentProposalDelay || 0n); const canExec = blockTimestamp ? blockTimestamp >= feeP.proposedAt + BigInt(delayS) : false; const canExecEst = (Date.now() / 1000) >= Number(feeP.proposedAt) + delayS;
+                  if (!(canExec || canExecEst)) return showStatus('Proposal not executable yet.', 'warning');
+             } catch (e) { return showStatus('Check fee proposal failed.', 'error'); }
+             setLoading(button, true, originalText); showStatus('Executing fee change...');
              try {
-                  const feeProposal = await mtyldContract.pendingFeeChange();
-                  if (!feeProposal.exists) return showStatus('No pending fee proposal.', 'error');
-                   const delaySeconds = Number(currentProposalDelay || 0n);
-                   const canExecute = blockTimestamp ? blockTimestamp >= feeProposal.proposedAt + BigInt(delaySeconds) : false;
-                   const canExecuteEstimate = (Date.now() / 1000) >= Number(feeProposal.proposedAt) + delaySeconds;
-
-                   if (!(canExecute || canExecuteEstimate)) {
-                        return showStatus('Proposal not yet executable. Wait for delay.', 'warning');
-                   }
-             } catch (e) { return showStatus('Error checking fee proposal status.', 'error'); }
-
-
-             setLoading(button, true, originalText);
-             showStatus('Executing fee change...');
-             try {
-                 const tx = await mtyldContract.executeFeeChange();
-                 showStatus('Execute fee sent. Waiting...', 'info');
-                 const receipt = await tx.wait();
-                 console.log("Execute Fee Receipt:", receipt);
-                 showStatus('Redemption fee updated successfully!', 'success');
-                 await checkPendingProposals();
-                 await updateAdminInfo();
-                 await updateProtocolInfo();
-             } catch (error) {
-                  console.error("Execute Fee failed:", error);
-                  showStatus(`Execute fee failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
-             } finally {
-                  setLoading(button, false, originalText);
-                  // Re-check proposal status
-                  await checkPendingProposals();
-             }
+                 const tx = await mtyldContract.executeFeeChange(); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Execute Fee:", receipt);
+                 showStatus('Fee updated!', 'success'); await checkPendingProposals(); await updateAdminInfo(); await updateProtocolInfo();
+             } catch (error) { console.error("Execute Fee fail:", error); showStatus(`Execute fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
+             finally { setLoading(button, false, originalText); await checkPendingProposals(); }
          }
-
-
-        async function handleWithdrawFees() {
-            if (await mtyldContract.paused()) return showStatus('Contract is paused.', 'warning');
+        async function handleWithdrawFees() { /* ... Check pause ... */
+            if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
             if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-            // ... (rest of function is okay)
-            const button = withdrawFeesButton;
-            const originalText = 'Withdraw All Fees';
-            const feesAvailable = await mtyldContract.collectedFees();
-            if (feesAvailable === 0n) return showStatus('No fees to withdraw.', 'info');
-
-            setLoading(button, true, originalText);
-            showStatus(`Withdrawing ${formatUnits(feesAvailable, Number(usdcDecimals))} USDC...`);
+            const button = withdrawFeesButton; const originalText = 'Withdraw All Fees';
+            const feesAvailable = await mtyldContract.collectedFees(); if (feesAvailable === 0n) return showStatus('No fees.', 'info');
+            setLoading(button, true, originalText); showStatus(`Withdrawing ${formatUnits(feesAvailable, Number(usdcDecimals))} USDC...`);
             try {
-                const tx = await mtyldContract.withdrawFees();
-                showStatus('Withdraw sent. Waiting...', 'info');
-                const receipt = await tx.wait();
-                console.log("Withdraw Fees Receipt:", receipt);
-                showStatus('Fees withdrawn!', 'success');
-                await updateAdminInfo();
-                await updateWalletInfo();
-            } catch (error) {
-                console.error("Withdraw fees failed:", error);
-                showStatus(`Withdraw failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
-            } finally {
-                setLoading(button, false, originalText);
-            }
+                const tx = await mtyldContract.withdrawFees(); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Withdraw Fees:", receipt);
+                showStatus('Fees withdrawn!', 'success'); await updateAdminInfo(); await updateWalletInfo();
+            } catch (error) { console.error("Withdraw fail:", error); showStatus(`Withdraw fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
+            finally { setLoading(button, false, originalText); }
         }
-
-        async function handleEmergencyWithdraw(event) {
+        async function handleEmergencyWithdraw(event) { /* ... Check pause ... */
             event.preventDefault();
-             if (await mtyldContract.paused()) return showStatus('Contract is paused.', 'warning'); // Check pause
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-             // ... (rest of function is okay)
-             const tokenAddress = document.getElementById('emergency-token').value;
-             const toAddress = document.getElementById('emergency-to').value;
-             const amountStr = document.getElementById('emergency-amount').value;
-             const button = event.target.querySelector('button[type="submit"]');
-             const originalText = 'Withdraw Other Token';
-
-              let amount;
-              try { amount = BigInt(amountStr); if (amount <= 0n) throw new Error(); }
-              catch { return showStatus('Valid positive amount needed.', 'error'); }
+             const tokenAddress = document.getElementById('emergency-token').value; const toAddress = document.getElementById('emergency-to').value; const amountStr = document.getElementById('emergency-amount').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Withdraw Other Token';
+             let amount; try { amount = BigInt(amountStr); if (amount <= 0n) throw new Error(); } catch { return showStatus('Valid amount needed.', 'error'); }
              if (!ethers.isAddress(tokenAddress) || !ethers.isAddress(toAddress)) return showStatus('Valid addresses needed.', 'error');
-             if (tokenAddress.toLowerCase() === usdcAddress.toLowerCase()) return showStatus('Cannot withdraw core USDC token via emergency function.', 'error'); // Double check
-
-             setLoading(button, true, originalText);
-             showStatus(`Emergency withdrawing ${shortenAddress(tokenAddress)}...`);
+             if (tokenAddress.toLowerCase() === usdcAddress.toLowerCase()) return showStatus('Cannot withdraw core USDC.', 'error');
+             setLoading(button, true, originalText); showStatus(`Emergency withdrawing ${shortenAddress(tokenAddress)}...`);
              try {
-                  const tx = await mtyldContract.emergencyWithdraw(tokenAddress, toAddress, amount);
-                  showStatus('Emergency withdraw sent. Waiting...', 'info');
-                  const receipt = await tx.wait();
-                   console.log("Emergency Withdraw Receipt:", receipt);
-                  showStatus('Emergency withdraw success!', 'success');
-                  emergencyWithdrawForm.reset();
-             } catch (error) {
-                  console.error("Emergency withdraw failed:", error);
-                  showStatus(`Emergency withdraw failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
-             } finally {
-                  setLoading(button, false, originalText);
-             }
+                  const tx = await mtyldContract.emergencyWithdraw(tokenAddress, toAddress, amount); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Emergency Withdraw:", receipt);
+                  showStatus('Emergency withdraw success!', 'success'); emergencyWithdrawForm.reset();
+             } catch (error) { console.error("Emergency Withdraw fail:", error); showStatus(`Emergency Withdraw fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
+             finally { setLoading(button, false, originalText); }
         }
-
          // --- Pause/Unpause Logic ---
-         async function handlePause() {
-             if (await mtyldContract.paused()) return showStatus('Contract is already paused.', 'warning');
+         async function handlePause() { /* ... No change ... */
+             if (await mtyldContract.paused()) return showStatus('Already paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-
-             const button = pauseButton;
-             const originalText = 'Pause Contract';
-
-             if (!confirm("Are you sure you want to PAUSE the contract? This will halt buys, redeems, mints, payouts, etc.")) return;
-
-             setLoading(button, true, originalText);
-             showStatus('Sending pause transaction...');
+             const button = pauseButton; const originalText = 'Pause Contract';
+             if (!confirm("PAUSE contract? Halts buys, redeems, mints, payouts.")) return;
+             setLoading(button, true, originalText); showStatus('Sending pause...');
              try {
-                  const tx = await mtyldContract.pause();
-                  showStatus('Pause sent. Waiting...', 'info');
-                  const receipt = await tx.wait();
-                  console.log("Pause Receipt:", receipt);
-                  showStatus('Contract paused successfully!', 'success');
-                  updatePauseUI(true);
-                  updatePauseButtons(true);
-             } catch (error) {
-                  console.error("Pause failed:", error);
-                  showStatus(`Pause failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
-             } finally {
-                  setLoading(button, false, originalText);
-                  // Refresh pause status just in case
-                   const isPaused = await mtyldContract.paused();
-                   updatePauseUI(isPaused);
-                   updatePauseButtons(isPaused);
-             }
+                  const tx = await mtyldContract.pause(); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Pause:", receipt);
+                  showStatus('Contract paused!', 'success'); updatePauseUI(true); updatePauseButtons(true);
+             } catch (error) { console.error("Pause fail:", error); showStatus(`Pause fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
+             finally { setLoading(button, false, originalText); const isPaused = await mtyldContract.paused(); updatePauseUI(isPaused); updatePauseButtons(isPaused); }
          }
-
-        async function handleUnpause() {
-             // No need to check paused() modifier here, button state handles it mostly
+        async function handleUnpause() { /* ... No change ... */
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-
-             const button = unpauseButton;
-             const originalText = 'Unpause Contract';
-
-             if (!confirm("Are you sure you want to UNPAUSE the contract?")) return;
-
-             setLoading(button, true, originalText);
-             showStatus('Sending unpause transaction...');
+             if (!(await mtyldContract.paused())) return showStatus('Already unpaused.', 'warning'); // Added check
+             const button = unpauseButton; const originalText = 'Unpause Contract';
+             if (!confirm("UNPAUSE contract?")) return;
+             setLoading(button, true, originalText); showStatus('Sending unpause...');
              try {
-                  const tx = await mtyldContract.unpause();
-                  showStatus('Unpause sent. Waiting...', 'info');
-                  const receipt = await tx.wait();
-                  console.log("Unpause Receipt:", receipt);
-                  showStatus('Contract unpaused successfully!', 'success');
-                  updatePauseUI(false);
-                  updatePauseButtons(false);
-             } catch (error) {
-                  console.error("Unpause failed:", error);
-                  showStatus(`Unpause failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
-             } finally {
-                  setLoading(button, false, originalText);
-                   const isPaused = await mtyldContract.paused();
-                   updatePauseUI(isPaused);
-                   updatePauseButtons(isPaused);
-             }
+                  const tx = await mtyldContract.unpause(); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Unpause:", receipt);
+                  showStatus('Contract unpaused!', 'success'); updatePauseUI(false); updatePauseButtons(false);
+             } catch (error) { console.error("Unpause fail:", error); showStatus(`Unpause fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
+             finally { setLoading(button, false, originalText); const isPaused = await mtyldContract.paused(); updatePauseUI(isPaused); updatePauseButtons(isPaused); }
          }
+        function updatePauseUI(isPaused) { /* ... No change ... */
+             const isActive = !isPaused;
+             pausedOverlay.classList.toggle('hidden', isActive);
+             pauseStatusIndicator.textContent = isPaused ? 'PAUSED' : 'Active';
+             pauseStatusIndicator.classList.toggle('hidden', false); // Always show indicator
+             pauseStatusIndicator.classList.toggle('bg-yellow', isPaused);
+             pauseStatusIndicator.classList.toggle('text-yellow-foreground', isPaused); // Adjust colors if needed
+             pauseStatusIndicator.classList.toggle('bg-green', isActive);
+             pauseStatusIndicator.classList.toggle('text-green-foreground', isActive); // Adjust colors
 
-        function updatePauseUI(isPaused) {
-             if (isPaused) {
-                  pausedOverlay.classList.remove('hidden');
-                  pauseStatusIndicator.textContent = 'PAUSED';
-                  pauseStatusIndicator.classList.remove('hidden', 'bg-green', 'text-green-foreground');
-                  pauseStatusIndicator.classList.add('bg-yellow', 'text-yellow-foreground'); // Adjust colors if needed
-             } else {
-                  pausedOverlay.classList.add('hidden');
-                  pauseStatusIndicator.textContent = 'Active';
-                   pauseStatusIndicator.classList.remove('hidden', 'bg-yellow', 'text-yellow-foreground');
-                   pauseStatusIndicator.classList.add('bg-green', 'text-green-foreground'); // Adjust colors
-             }
-              // Disable/enable forms based on pause state
-             buyButton.disabled = isPaused || buyButton.textContent.includes('Processing'); // Keep disabled if processing
-             redeemButton.disabled = isPaused || redeemButton.textContent.includes('Processing');
-             // Admin buttons also disabled by setLoading, but ensure they respect pause state
-             if (adminPanelDiv && !adminPanelDiv.classList.contains('hidden')) {
-                  adminPanelDiv.querySelectorAll('button[type="submit"], button[type="button"]').forEach(btn => {
-                      // Don't disable unpause button, or buttons currently loading
-                      if (btn.id !== 'unpause-button' && !btn.textContent.includes('Processing')) {
-                          btn.disabled = isPaused;
-                      }
-                  });
-                   // Special handling for pause/unpause buttons themselves
-                  updatePauseButtons(isPaused);
-             }
+             // Disable interactive elements when paused
+             const elementsToDisable = [buyButton, redeemButton, approveUsdcButton, adminApproveUsdcButton, withdrawFeesButton, pauseButton, executeMintButton, executeFeeButton]; // Add more as needed
+             elementsToDisable.forEach(el => { if(el) el.disabled = isPaused || el.textContent.includes('Processing'); });
+             // Handle forms
+             const formsToDisable = [buyForm, redeemForm, proposeMintForm, payoutOrderForm, cancelOrderForm, proposeFeeForm, emergencyWithdrawForm];
+             formsToDisable.forEach(form => {
+                 if (form) {
+                      form.querySelectorAll('input, select, textarea, button').forEach(input => {
+                           // Don't disable buttons handled above or the unpause button
+                           if (input.tagName === 'BUTTON' && (elementsToDisable.includes(input) || input.id === 'unpause-button')) return;
+                           input.disabled = isPaused;
+                      });
+                 }
+             });
+             updatePauseButtons(isPaused); // Ensure correct pause/unpause state
          }
-
-         function updatePauseButtons(isPaused) {
+         function updatePauseButtons(isPaused) { /* ... No change ... */
               if (pauseButton) pauseButton.disabled = isPaused;
               if (unpauseButton) unpauseButton.disabled = !isPaused;
          }
 
 
         // --- Event Listeners Setup ---
-         function setupEventListeners() {
+         function setupEventListeners() { /* ... No change ... */
             if (window.eventListenersAttached) return;
-
-             // Input listeners
-             buyUsdcAmountInput.addEventListener('input', updateBuyEstimate);
-             buySlippageSelect.addEventListener('change', updateBuyEstimate);
-             redeemMtyldAmountInput.addEventListener('input', updateRedeemEstimate);
-             redeemSlippageSelect.addEventListener('change', updateRedeemEstimate);
-
-             // Button listeners
+             buyUsdcAmountInput.addEventListener('input', updateBuyEstimate); buySlippageSelect.addEventListener('change', updateBuyEstimate);
+             redeemMtyldAmountInput.addEventListener('input', updateRedeemEstimate); redeemSlippageSelect.addEventListener('change', updateRedeemEstimate);
              approveUsdcButton.addEventListener('click', () => handleApproveUSDC(false));
-             buyForm.addEventListener('submit', handleBuyTokens);
-             redeemForm.addEventListener('submit', handleRedeemTokens);
-
-            // Filter listeners
-            filterMonthSelect.addEventListener('change', filterAndRenderOrders);
-            filterYearSelect.addEventListener('change', filterAndRenderOrders);
-
-             // Admin listeners
+             buyForm.addEventListener('submit', handleBuyTokens); redeemForm.addEventListener('submit', handleRedeemTokens);
+             filterMonthSelect.addEventListener('change', filterAndRenderOrders); filterYearSelect.addEventListener('change', filterAndRenderOrders);
              if (adminApproveUsdcButton) adminApproveUsdcButton.addEventListener('click', () => handleApproveUSDC(true));
              if (proposeMintForm) proposeMintForm.addEventListener('submit', handleProposeMint);
-             if (executeMintButton) executeMintButton.addEventListener('click', handleExecuteMint); // Changed to click
+             if (executeMintButton) executeMintButton.addEventListener('click', handleExecuteMint);
              if (payoutOrderForm) payoutOrderForm.addEventListener('submit', handlePayoutOrder);
              if (cancelOrderForm) cancelOrderForm.addEventListener('submit', handleCancelOrder);
              if (proposeFeeForm) proposeFeeForm.addEventListener('submit', handleProposeFeeChange);
-             if (executeFeeButton) executeFeeButton.addEventListener('click', handleExecuteFeeChange); // Changed to click
+             if (executeFeeButton) executeFeeButton.addEventListener('click', handleExecuteFeeChange);
              if (withdrawFeesButton) withdrawFeesButton.addEventListener('click', handleWithdrawFees);
              if (emergencyWithdrawForm) emergencyWithdrawForm.addEventListener('submit', handleEmergencyWithdraw);
              if (pauseButton) pauseButton.addEventListener('click', handlePause);
              if (unpauseButton) unpauseButton.addEventListener('click', handleUnpause);
-
-
              window.eventListenersAttached = true;
          }
-
-         function setupWalletListeners() {
-              if (window.ethereum && window.ethereum.on) {
-                 window.ethereum.on('accountsChanged', (accounts) => {
-                     console.log('Accounts changed:', accounts);
-                     if (accounts.length === 0) {
-                         showStatus('Wallet disconnected. Please reconnect.', 'warning');
-                         resetState();
-                     } else if (!userAddress || accounts[0].toLowerCase() !== userAddress.toLowerCase()) {
-                          showStatus('Account switched. Reconnecting...', 'info');
-                          resetState(); // Reset before reconnecting
-                          connectWallet();
-                     }
-                 });
-
-                 window.ethereum.on('chainChanged', (chainId) => {
-                     console.log('Network changed to:', chainId);
-                      if (chainId !== arbitrumChainId) {
-                           showStatus('Incorrect network. Please switch to Arbitrum One.', 'error');
-                           resetState();
-                           connectButton.textContent = 'Wrong Network';
-                           connectButton.disabled = true;
-                      } else {
-                           // Correct network detected or switched back
-                           showStatus('Arbitrum One network detected. Reconnecting or refresh page...', 'info');
-                           resetState(); // Reset state
-                           connectWallet(); // Attempt to reconnect on correct chain
-                           // Consider window.location.reload(); if reconnect logic is complex
-                      }
-                 });
-             } else {
-                  console.warn("MetaMask event listeners not available.");
-             }
+         function setupWalletListeners() { /* ... No change ... */
+              if (window.ethereum?.on) {
+                 window.ethereum.on('accountsChanged', (accounts) => { console.log('Acc change:', accounts); if (accounts.length === 0) { showStatus('Wallet disconnected.', 'warning'); resetState(); } else if (!userAddress || accounts[0].toLowerCase() !== userAddress.toLowerCase()) { showStatus('Account switched. Reconnecting...', 'info'); resetState(); connectWallet(); } });
+                 window.ethereum.on('chainChanged', (chainId) => { console.log('Chain change:', chainId); if (chainId !== arbitrumChainId) { showStatus('Wrong network. Switch to Arbitrum One.', 'error'); resetState(); connectButton.textContent = 'Wrong Network'; connectButton.disabled = true; } else { showStatus('Arbitrum One detected. Reconnect or refresh.', 'info'); resetState(); connectWallet(); } });
+             } else { console.warn("MetaMask listeners not available."); }
          }
 
 
         // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { /* ... No change ... */
              connectButton.addEventListener('click', connectWallet);
-             setupEventListeners(); // Setup form/button listeners on load
+             setupEventListeners();
              workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Connect wallet to view orders.</td></tr>';
              populateYearFilter();
         });
