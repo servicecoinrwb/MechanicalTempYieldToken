@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YieldWorks - Real-World HVAC Yield</title>
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0a; /* Very dark background */
+            --bg-secondary: #1a1a1a; /* Slightly lighter for cards/nav */
+            --text-primary: #f0f0f0; /* Main text color (light gray) */
+            --text-secondary: #a0a0a0; /* Muted text color */
+            --accent: #00b894; /* A modern teal/green accent */
+            --brand-blue: #0ea5e9; /* Sky-500 from mechanicaltemp.com */
+            --border-color: #3a3a3a; /* Added */
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 2.5rem; /* 40px */
+            line-height: 1.2;
+            font-weight: 900;
+        }
+
+        .bg-secondary { background-color: var(--bg-secondary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-accent { color: var(--accent); }
+        .border-accent { border-color: var(--accent); }
+        .border-gray-700 { border-color: var(--border-color); } /* Adjusted for theme */
+
+        /* Button Styles */
+        .btn {
+            display: inline-block;
+            font-weight: 600;
+            text-align: center;
+            border-radius: 0.5rem; /* 8px */
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            padding: 0.75rem 1.5rem; /* Default padding */
+        }
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+        }
+        .btn-primary:hover {
+            background-color: transparent;
+            color: var(--accent);
+        }
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border-color: var(--text-secondary);
+        }
+        .btn-secondary:hover {
+            background-color: var(--bg-secondary);
+            border-color: var(--text-primary);
+        }
+        /* New Brand Blue Button */
+        .btn-brand-blue {
+            background-color: var(--brand-blue);
+            color: white;
+            border-color: var(--brand-blue);
+        }
+        .btn-brand-blue:hover {
+             background-color: #0284c7; /* Darker blue */
+             border-color: #0284c7;
+        }
+
+
+        /* Footer */
+        .footer {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--bg-secondary);
+            margin-top: 4rem;
+        }
+        .footer-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer-link:hover {
+            color: var(--accent);
+        }
+
+        /* Added shadow utility */
+        .shadow-glow {
+             box-shadow: 0 0 15px rgba(0, 184, 148, 0.3); /* Accent color glow */
+        }
+        .shadow-xl { /* Ensure shadow-xl is defined if using Tailwind defaults */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+         }
+    </style>
+</head>
+<body class="min-h-screen">
+    <nav class="bg-secondary sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto max-w-7xl p-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">
+                YieldWorks
+                <span class="text-sm font-normal text-secondary hidden sm:inline-block ml-2">by Mechanical Temp</span>
+            </h1>
+            <a href="#about" class="btn btn-secondary px-4 py-2 text-sm">Why Trust Us?</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto max-w-7xl p-4 md:p-8">
+        <section class="text-center my-16 md:my-24">
+            <h2 class="text-5xl md:text-7xl font-bold leading-tight">
+                Invest in Verifiable HVAC Projects. <br/>
+                <span class="text-accent">Earn Real-World Yield.</span>
+            </h2>
+            <p class="text-secondary text-xl mt-6 max-w-3xl mx-auto">
+                YieldWorks is a decentralized protocol built by **Mechanical Temp**, a real-world HVAC service company. We tokenize our own verified projects to raise working capital.
+                <br/><br/>
+                Invest in <span class="font-bold text-primary">$MTYLD</span>, a token backed by real, completed, and paid HVAC jobs on the Arbitrum network, using USDC.
+            </p>
+            <div class="mt-10 flex justify-center items-center">
+               <!-- *** UPDATED LINK HERE *** -->
+               <a href="./app.html" class="btn btn-primary text-lg px-10 py-4 shadow-glow">Launch Dashboard</a>
+               <!-- ************************** -->
+            </div>
+        </section>
+
+        <section class="my-16 md:my-24">
+            <h2 class="text-center">How It Works</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 text-center">
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700">
+                    <h3 class="text-2xl font-bold mb-2 text-accent">1. Mint Projects</h3>
+                    <p class="text-secondary">
+                        New **Mechanical Temp** HVAC projects are verified and submitted as "Work Orders." `$MTYLD` tokens are minted against their projected future revenue.
+                    </p>
+                </div>
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700">
+                    <h3 class="text-2xl font-bold mb-2 text-accent">2. Back with Capital</h3>
+                    <p class="text-secondary">
+                        Investors buy the newly minted `$MTYLD` with **USDC**, providing the capital that funds the parts and labor for the HVAC projects.
+                    </p>
+                </div>
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700">
+                    <h3 class="text-2xl font-bold mb-2 text-accent">3. Earn Yield</h3>
+                    <p class="text-secondary">
+                        As HVAC projects are completed and paid by the customer, that revenue is paid back to the contract, increasing the **USDC** balance and the value of all `$MTYLD`.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!--
+          *** NEW SECTION: MEET THE OPERATOR ***
+          - Connects YieldWorks directly to your established business.
+          - Uses your logo and website link.
+        -->
+        <section class="my-16 md:my-24 bg-secondary p-8 md:p-12 rounded-lg shadow-xl border border-gray-700">
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <div class="md:w-1/3 text-center">
+                    <!-- Using the imgur link you provided for the logo -->
+                    <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp Logo" class="h-20 w-auto mx-auto mb-4">
+                     <a href="https://www.mechanicaltemp.com/" target="_blank" rel="noopener noreferrer" class="btn btn-brand-blue text-sm px-6 py-2">
+                        Visit MechanicalTemp.com
+                    </a>
+                </div>
+                <div class="md:w-2/3">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4 text-center md:text-left">Meet the Operator: Mechanical Temp</h2>
+                     <!-- Adapted description from your actual website -->
+                    <p class="text-secondary text-lg">
+                        YieldWorks isn't run by an anonymous team. It's the innovative financing arm of **Mechanical Temp**, your trusted local HVAC expert serving Southfield and Metro Detroit since [Insert Year Founded if known, otherwise remove]. We specialize in furnace and air conditioner repair, installation, and maintenance for both residential and commercial clients.
+                    </p>
+                    <p class="text-secondary text-lg mt-4">
+                        The projects funded through YieldWorks are real jobs completed by our certified technicians for real customers. Your investment directly supports our operations and growth, backed by our established reputation for quality service.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-16 md:my-24" id="about">
+            <h2 class="text-center">Why Trust YieldWorks?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700">
+                    <h3 class="text-2xl font-bold mb-2">A Real, Public Business</h3>
+                    <!-- Updated text to reference the section above and website -->
+                    <p class="text-secondary">
+                        As highlighted above, YieldWorks is owned and operated by **Mechanical Temp**, an established HVAC service company based in Southfield, MI. Our real-world reputation, business license (<a href="https://www.mechanicaltemp.com/" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline">verify on our website</a>), and customer relationships are the ultimate collateral. We succeed only when our projects are successfully completed.
+                    </p>
+                </div>
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700">
+                    <h3 class="text-2xl font-bold mb-2">Radical Transparency</h3>
+                    <p class="text-secondary">
+                        Don't trust, verify. Every work order minted, every dollar of capital raised via USDC, and every single repayment is a transaction you can view 24/7 on the **Arbitrum blockchain**. You can audit our entire performance history in real-time, anytime. This is a level of transparency traditional financing simply can't offer.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <!-- Updated copyright owner -->
+        <p>&copy; 2025 Mechanical Temp. All Rights Reserved.</p>
+        <p class="mt-2">
+            YieldWorks is built on
+            <a href="https://arbitrum.io/" target="_blank" rel="noopener noreferrer" class="footer-link">
+                Arbitrum
+            </a>
+        </p>
+    </footer>
+</body>
+</html>
+
