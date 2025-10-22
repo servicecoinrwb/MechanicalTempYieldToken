@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <!-- Ethers.js v6 -->
-    <script src="https://cdn.ethers.io/lib/ethers-v6.umd.min.js" type="application/javascript"></script>
+    <!-- Ethers.js v6 - Updated CDN Link -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js" type="application/javascript"></script>
 
     <style>
         :root {
@@ -448,7 +448,12 @@
          function formatUnits(amount, decimals) {
             if (amount === null || amount === undefined) return '...';
             try {
-                 return ethers.formatUnits(amount, decimals);
+                 // Use toFixed to avoid scientific notation for small numbers
+                 const formatted = ethers.formatUnits(amount, decimals);
+                 // Adjust decimals based on the value for better readability if needed
+                 // const num = parseFloat(formatted);
+                 // if (num < 0.0001 && num > 0) return num.toExponential(2);
+                 return formatted; // Keep full precision for now
             } catch (error) {
                  console.error("Error formatting units:", error, "Amount:", amount, "Decimals:", decimals);
                  return 'Error';
@@ -458,14 +463,16 @@
         // Parse user input strings to BigInt
          function parseUnits(amount, decimals) {
              try {
-                 // Handle potential floating point issues by scaling before parsing
-                 const [integerPart, fractionalPart = ''] = String(amount).split('.');
-                 const paddedFractional = fractionalPart.padEnd(decimals, '0').slice(0, decimals);
-                 const combinedString = integerPart + paddedFractional;
-                 return ethers.parseUnits(combinedString, 0); // Parse as base units
+                // Ensure amount is treated as a string to handle decimals correctly
+                const amountStr = String(amount).trim();
+                if (!amountStr) {
+                    throw new Error("Input amount is empty");
+                }
+                // Use ethers.parseUnits which handles decimal strings correctly
+                return ethers.parseUnits(amountStr, decimals);
              } catch (error) {
                  console.error("Error parsing units:", error, "Amount:", amount, "Decimals:", decimals);
-                 showStatus(`Invalid input: ${amount}. Please enter a valid number.`, 'error');
+                 showStatus(`Invalid input: '${amount}'. Please enter a valid number.`, 'error');
                  return null;
              }
          }
@@ -476,7 +483,6 @@
             try {
                 const date = new Date(Number(timestamp) * 1000);
                  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-                //return date.toLocaleString();
             } catch {
                 return 'Invalid Date';
             }
@@ -484,6 +490,7 @@
 
         // Add loading indicator to a button
         function setLoading(button, isLoading, originalText) {
+            if (!button) return; // Add null check
             if (isLoading) {
                 button.disabled = true;
                 button.innerHTML = `<span class="loading-spinner"></span> Processing...`;
@@ -507,8 +514,17 @@
                 return showStatus('MetaMask is not installed. Please install it to use this app.', 'error');
             }
 
+             const connectBtn = document.getElementById('connect-button'); // Get button reference
+             const originalConnectText = 'Connect Wallet';
+             setLoading(connectBtn, true, originalConnectText); // Show loading state
+
             try {
                 // Use ethers v6 provider
+                // Check if ethers is available
+                if (typeof ethers === 'undefined') {
+                    setLoading(connectBtn, false, originalConnectText);
+                    return showStatus('Ethers.js library not loaded. Please refresh the page.', 'error');
+                }
                 provider = new ethers.BrowserProvider(window.ethereum);
 
                 // Check network
@@ -541,22 +557,33 @@
                                      provider = new ethers.BrowserProvider(window.ethereum);
                                 } catch (addError) {
                                      console.error("Failed to add Arbitrum network:", addError);
+                                     setLoading(connectBtn, false, originalConnectText);
                                      return showStatus('Please add the Arbitrum One network to MetaMask manually.', 'error');
                                 }
                            } else {
                                 console.error("Failed to switch network:", switchError);
+                                setLoading(connectBtn, false, originalConnectText);
                                 return showStatus('Please switch to the Arbitrum One network in MetaMask.', 'error');
                            }
                      }
                 }
 
+                // Request accounts - this prompts the user connection
+                 await provider.send("eth_requestAccounts", []);
 
                 signer = await provider.getSigner();
                 userAddress = await signer.getAddress();
 
                 mtyldContract = new ethers.Contract(contractAddress, contractABI, signer);
-                const usdcMetadataAbi = ["function decimals() view returns (uint8)"];
-                usdcContract = new ethers.Contract(usdcAddress, [...contractABI, ...usdcMetadataAbi], signer); // Combine ABIs for simplicity
+                // Use a minimal ABI for USDC just to get decimals and balance/approve/transferFrom
+                 const usdcAbiMinimal = [
+                     "function decimals() view returns (uint8)",
+                     "function balanceOf(address account) view returns (uint256)",
+                     "function allowance(address owner, address spender) view returns (uint256)",
+                     "function approve(address spender, uint256 amount) returns (bool)",
+                     "function transferFrom(address sender, address recipient, uint256 amount) returns (bool)"
+                 ];
+                usdcContract = new ethers.Contract(usdcAddress, usdcAbiMinimal, signer);
                 usdcDecimals = await usdcContract.decimals(); // Confirm USDC decimals
 
                 connectButton.textContent = shortenAddress(userAddress);
@@ -577,6 +604,19 @@
             } catch (error) {
                 console.error("Connection failed:", error);
                 showStatus(`Wallet connection failed: ${error.message}`, 'error');
+                // Ensure button is reset on failure
+                 setLoading(connectBtn, false, originalConnectText);
+                 connectButton.disabled = false; // Allow retry
+            } finally {
+                 // Ensure button is reset if logic completes but didn't set final state
+                 if (connectButton.disabled && connectButton.textContent !== shortenAddress(userAddress)) {
+                      setLoading(connectBtn, false, originalConnectText);
+                      connectButton.disabled = false;
+                 } else if (!connectButton.disabled && userAddress) {
+                      // If userAddress is set but button isn't updated (edge case)
+                      connectButton.textContent = shortenAddress(userAddress);
+                      connectButton.disabled = true;
+                 }
             }
         }
 
@@ -586,7 +626,6 @@
                 if (userAddress && contractOwner && userAddress.toLowerCase() === contractOwner.toLowerCase()) {
                     adminPanelDiv.classList.remove('hidden');
                     console.log("Admin connected");
-                    // Fetch admin-specific data like collected fees
                     await updateAdminInfo();
                 } else {
                      adminPanelDiv.classList.add('hidden');
@@ -601,8 +640,8 @@
         async function updateAdminInfo() {
              try {
                   const fees = await mtyldContract.collectedFees();
-                  collectedFeesSpan.textContent = formatUnits(fees, usdcDecimals);
-                  withdrawFeesButton.disabled = fees === 0n; // Enable button if fees > 0
+                  collectedFeesSpan.textContent = parseFloat(formatUnits(fees, usdcDecimals)).toFixed(2);
+                  withdrawFeesButton.disabled = fees === 0n;
 
                   const feePercent = await mtyldContract.redemptionFeePercentage();
                   currentRedeemFeeSpan.textContent = feePercent.toString();
@@ -619,17 +658,16 @@
 
             try {
                 const network = await provider.getNetwork();
-                networkNameSpan.textContent = network.name === 'arbitrum' ? 'Arbitrum One' : network.name; // Display readable name
-                userAddressSpan.textContent = shortenAddress(userAddress);
+                networkNameSpan.textContent = network.name === 'arbitrum' ? 'Arbitrum One' : network.name;
+                userAddressSpan.textContent = userAddress; // Show full address in details
 
                 const usdcBal = await usdcContract.balanceOf(userAddress);
                 const mtyldBal = await mtyldContract.balanceOf(userAddress);
 
-                usdcBalanceSpan.textContent = `${parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2)} USDC`;
+                usdcBalanceSpan.textContent = `${parseFloat(formatUnits(usdcBal, Number(usdcDecimals))).toFixed(2)} USDC`;
                 mtyldBalanceSpan.textContent = `${parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4)} MTYLD`;
 
-                // Update balances in forms
-                buyUsdcBalanceSpan.textContent = parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2);
+                buyUsdcBalanceSpan.textContent = parseFloat(formatUnits(usdcBal, Number(usdcDecimals))).toFixed(2);
                 redeemMtyldBalanceSpan.textContent = parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4);
 
             } catch (error) {
@@ -641,54 +679,51 @@
         }
 
         async function updateProtocolInfo() {
-            if (!mtyldContract || !usdcContract) return;
+             if (!mtyldContract || !usdcContract) return; // Add usdcContract check
 
-            try {
-                const name = await mtyldContract.name();
-                const symbol = await mtyldContract.symbol();
-                const supply = await mtyldContract.totalSupply();
-                const contractUSDCBalance = await mtyldContract.contractPaymentTokenBalance(); // Uses the view function
-                const available = await mtyldContract.availableTokens();
-                const feePercent = await mtyldContract.redemptionFeePercentage();
-
-
-                tokenNameSpan.textContent = name;
-                tokenSymbolSpan.textContent = symbol;
-                totalSupplySpan.textContent = parseFloat(formatUnits(supply, mtyldDecimals)).toFixed(4);
-                contractAddressLink.textContent = shortenAddress(contractAddress);
-                contractAddressLink.href = `https://arbiscan.io/address/${contractAddress}`;
-                contractUsdcSpan.textContent = parseFloat(formatUnits(contractUSDCBalance, usdcDecimals)).toFixed(2);
-                availableMtyldSpan.textContent = parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4);
-                redeemFeePercentSpan.textContent = feePercent.toString(); // Update fee in redeem section too
+             try {
+                 const name = await mtyldContract.name();
+                 const symbol = await mtyldContract.symbol();
+                 const supply = await mtyldContract.totalSupply();
+                 const contractUSDCBalance = await mtyldContract.contractPaymentTokenBalance();
+                 const available = await mtyldContract.availableTokens();
+                 const feePercent = await mtyldContract.redemptionFeePercentage();
 
 
-                // Calculate price: Price = Contract USDC Balance / Total MTYLD Supply (adjusting for decimals)
-                let price = 0;
-                 if (supply > 0n && contractUSDCBalance >= 0n) { // Avoid division by zero
-                     // price in USDC per 1 MTYLD token
-                     // (contractUSDCBalance / 10^6) / (supply / 10^18)
-                     // = (contractUSDCBalance * 10^18) / (supply * 10^6)
-                     // = (contractUSDCBalance * 10^12) / supply
-                     const priceBigInt = (contractUSDCBalance * (10n ** 12n)) / supply; // Price with 6 decimals (like USDC)
-                     price = parseFloat(formatUnits(priceBigInt, usdcDecimals)); // Format it as USDC
+                 tokenNameSpan.textContent = name;
+                 tokenSymbolSpan.textContent = symbol;
+                 totalSupplySpan.textContent = parseFloat(formatUnits(supply, mtyldDecimals)).toFixed(4);
+                 contractAddressLink.textContent = shortenAddress(contractAddress);
+                 contractAddressLink.href = `https://arbiscan.io/address/${contractAddress}`;
+                 contractUsdcSpan.textContent = parseFloat(formatUnits(contractUSDCBalance, Number(usdcDecimals))).toFixed(2); // Use Number()
+                 availableMtyldSpan.textContent = parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4);
+                 redeemFeePercentSpan.textContent = feePercent.toString();
+
+
+                 let price = 0;
+                 if (supply > 0n && contractUSDCBalance >= 0n) {
+                      // Recalculate price: (contractUSDCBalance * 10^(18-usdcDecimals)) / supply
+                      const scaleFactor = 10n ** BigInt(18 - Number(usdcDecimals)); // 10^12
+                      const priceBigInt = (contractUSDCBalance * scaleFactor) / supply; // Price with usdcDecimals
+                      price = parseFloat(formatUnits(priceBigInt, Number(usdcDecimals))); // Format as USDC
                  }
-                mtyldPriceSpan.textContent = price.toFixed(6); // Show price with 6 decimal places
+                 mtyldPriceSpan.textContent = price > 0 ? price.toFixed(6) : '0.000000'; // Ensure 6 decimals
 
-                // Update estimated values initially
-                updateBuyEstimate();
-                updateRedeemEstimate();
+                 updateBuyEstimate();
+                 updateRedeemEstimate();
 
-            } catch (error) {
-                console.error("Error updating protocol info:", error);
-                showStatus('Failed to fetch protocol data.', 'error');
-                tokenNameSpan.textContent = 'Error';
-                // etc. for other fields
-            }
-        }
+             } catch (error) {
+                 console.error("Error updating protocol info:", error);
+                 showStatus('Failed to fetch protocol data.', 'error');
+                 tokenNameSpan.textContent = 'Error';
+                 // etc.
+             }
+         }
+
 
         // --- Buy/Redeem Logic ---
 
-         function updateBuyEstimate() {
+         async function updateBuyEstimate() { // Make async to await contract call
              const usdcAmountStr = buyUsdcAmountInput.value;
              if (!mtyldContract || !usdcAmountStr || parseFloat(usdcAmountStr) <= 0) {
                  estimatedMtyldSpan.textContent = '0.00';
@@ -696,31 +731,29 @@
                  return;
              }
 
-             const usdcAmount = parseUnits(usdcAmountStr, usdcDecimals);
+             const usdcAmount = parseUnits(usdcAmountStr, Number(usdcDecimals)); // Use Number()
              if (usdcAmount === null) {
                   estimatedMtyldSpan.textContent = 'Invalid Input';
                   minTokensOutInput.value = '0';
                   return;
              }
 
+             try {
+                  const estimatedTokens = await mtyldContract.getTokensForUSDC(usdcAmount);
+                  estimatedMtyldSpan.textContent = parseFloat(formatUnits(estimatedTokens, mtyldDecimals)).toFixed(4);
 
-             mtyldContract.getTokensForUSDC(usdcAmount)
-                 .then(estimatedTokens => {
-                     estimatedMtyldSpan.textContent = parseFloat(formatUnits(estimatedTokens, mtyldDecimals)).toFixed(4);
-                     // Calculate min tokens based on slippage
-                     const slippagePercent = parseFloat(buySlippageSelect.value);
-                     const slippageFactor = BigInt(Math.floor((1 - slippagePercent / 100) * 10000)); // e.g., 0.5% -> 9950
-                     const minTokens = (estimatedTokens * slippageFactor) / 10000n;
-                     minTokensOutInput.value = minTokens.toString();
-                 })
-                 .catch(error => {
-                     console.error("Error getting buy estimate:", error);
-                     estimatedMtyldSpan.textContent = 'Error';
-                     minTokensOutInput.value = '0';
-                 });
+                  const slippagePercent = parseFloat(buySlippageSelect.value);
+                  const slippageFactor = BigInt(Math.floor((1 - slippagePercent / 100) * 10000));
+                  const minTokens = (estimatedTokens * slippageFactor) / 10000n;
+                  minTokensOutInput.value = minTokens.toString();
+             } catch (error) {
+                  console.error("Error getting buy estimate:", error);
+                  estimatedMtyldSpan.textContent = 'Error';
+                  minTokensOutInput.value = '0';
+             }
          }
 
-        function updateRedeemEstimate() {
+        async function updateRedeemEstimate() { // Make async
             const mtyldAmountStr = redeemMtyldAmountInput.value;
              if (!mtyldContract || !mtyldAmountStr || parseFloat(mtyldAmountStr) <= 0) {
                  estimatedUsdcSpan.textContent = '0.00';
@@ -735,28 +768,27 @@
                    return;
               }
 
-             Promise.all([
-                 mtyldContract.getRedemptionValue(mtyldAmount),
-                 mtyldContract.redemptionFeePercentage()
-             ])
-             .then(([usdcValueBeforeFee, feePercentBigInt]) => {
-                 const feePercent = Number(feePercentBigInt); // Convert BigInt to number
-                 const fee = (usdcValueBeforeFee * BigInt(feePercent)) / 100n;
-                 const usdcToReceive = usdcValueBeforeFee - fee;
+             try {
+                  const [ usdcValueBeforeFee, feePercentBigInt ] = await Promise.all([
+                       mtyldContract.getRedemptionValue(mtyldAmount),
+                       mtyldContract.redemptionFeePercentage()
+                  ]);
 
-                 estimatedUsdcSpan.textContent = parseFloat(formatUnits(usdcToReceive, usdcDecimals)).toFixed(2);
+                  const feePercent = Number(feePercentBigInt);
+                  const fee = (usdcValueBeforeFee * BigInt(feePercent)) / 100n;
+                  const usdcToReceive = usdcValueBeforeFee - fee;
 
-                 // Calculate min USDC based on slippage
-                 const slippagePercent = parseFloat(redeemSlippageSelect.value);
-                 const slippageFactor = BigInt(Math.floor((1 - slippagePercent / 100) * 10000)); // e.g., 0.5% -> 9950
-                 const minUsdc = (usdcToReceive * slippageFactor) / 10000n;
-                 minUsdcOutInput.value = minUsdc.toString();
-             })
-             .catch(error => {
+                  estimatedUsdcSpan.textContent = parseFloat(formatUnits(usdcToReceive, Number(usdcDecimals))).toFixed(2); // Use Number()
+
+                  const slippagePercent = parseFloat(redeemSlippageSelect.value);
+                  const slippageFactor = BigInt(Math.floor((1 - slippagePercent / 100) * 10000));
+                  const minUsdc = (usdcToReceive * slippageFactor) / 10000n;
+                  minUsdcOutInput.value = minUsdc.toString();
+             } catch (error) {
                  console.error("Error getting redeem estimate:", error);
                  estimatedUsdcSpan.textContent = 'Error';
                  minUsdcOutInput.value = '0';
-             });
+             }
          }
 
 
@@ -770,22 +802,29 @@
                  return showStatus('Please enter a valid USDC amount to approve.', 'error');
              }
 
-             const usdcAmount = parseUnits(usdcAmountStr, usdcDecimals);
-              if (usdcAmount === null) return; // Error handled by parseUnits
+             const usdcAmount = parseUnits(usdcAmountStr, Number(usdcDecimals)); // Use Number()
+              if (usdcAmount === null) return;
 
              setLoading(button, true, originalText);
              showStatus('Requesting USDC approval from your wallet...');
 
              try {
+                // Check current allowance first
+                const currentAllowance = await usdcContract.allowance(userAddress, contractAddress);
+                if (currentAllowance >= usdcAmount) {
+                    showStatus('Sufficient allowance already approved.', 'info');
+                    if (!isAdmin) buyButton.disabled = false; // Enable buy if sufficient
+                    return; // No need to approve again
+                }
+
                  const tx = await usdcContract.approve(contractAddress, usdcAmount);
                  showStatus('Approval transaction sent. Waiting for confirmation...', 'info');
                  await tx.wait();
                  showStatus('USDC approved successfully! You can now proceed.', 'success');
-                  if(!isAdmin) buyButton.disabled = false; // Enable buy button after approval
-                  // For admin, approval is just one step before payout
+                  if(!isAdmin) buyButton.disabled = false;
              } catch (error) {
                  console.error("Approval failed:", error);
-                 showStatus(`USDC approval failed: ${error.message || error}`, 'error');
+                 showStatus(`USDC approval failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
              } finally {
                  setLoading(button, false, originalText);
              }
@@ -796,24 +835,25 @@
             if (!mtyldContract || !signer) return showStatus('Please connect wallet first.', 'error');
 
             const usdcAmountStr = buyUsdcAmountInput.value;
-            const minTokensOut = minTokensOutInput.value; // Already calculated BigInt string
+            const minTokensOut = minTokensOutInput.value;
 
             if (!usdcAmountStr || parseFloat(usdcAmountStr) <= 0 || !minTokensOut || minTokensOut === '0') {
                 return showStatus('Please enter a valid USDC amount and ensure estimate is calculated.', 'error');
             }
 
-            const usdcAmount = parseUnits(usdcAmountStr, usdcDecimals);
-             if (usdcAmount === null) return; // Error handled by parseUnits
+            const usdcAmount = parseUnits(usdcAmountStr, Number(usdcDecimals)); // Use Number()
+             if (usdcAmount === null) return;
             const minTokensBigInt = BigInt(minTokensOut);
 
-            // Check allowance first
+            // Re-Check allowance before sending transaction
             try {
                  const allowance = await usdcContract.allowance(userAddress, contractAddress);
                  if (allowance < usdcAmount) {
                       buyButton.disabled = true; // Keep buy disabled
                      return showStatus('Insufficient USDC allowance. Please approve USDC first.', 'error');
                  }
-                 buyButton.disabled = false; // Ensure enabled if allowance is sufficient
+                 // Ensure button is enabled if check passes (might have been disabled before)
+                 buyButton.disabled = false;
             } catch (error) {
                  console.error("Error checking allowance:", error);
                  return showStatus('Could not check USDC allowance.', 'error');
@@ -826,17 +866,18 @@
             try {
                 const tx = await mtyldContract.buyTokens(usdcAmount, minTokensBigInt);
                 showStatus('Buy transaction sent. Waiting for confirmation...', 'info');
-                await tx.wait();
+                const receipt = await tx.wait();
+                 console.log("Buy Receipt:", receipt);
                 showStatus('Successfully bought MTYLD!', 'success');
-                buyForm.reset(); // Reset form
+                buyForm.reset();
                 estimatedMtyldSpan.textContent = '0.00';
                 minTokensOutInput.value = '0';
-                buyButton.disabled = true; // Disable until approved again or amount changes
-                await updateWalletInfo(); // Update balances
+                buyButton.disabled = true; // Require re-approval for next buy
+                await updateWalletInfo();
                 await updateProtocolInfo();
             } catch (error) {
                 console.error("Buy failed:", error);
-                showStatus(`Buy transaction failed: ${error.data?.message || error.message || error}`, 'error');
+                 showStatus(`Buy transaction failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
             } finally {
                 setLoading(buyButton, false, 'Buy MTYLD');
             }
@@ -847,14 +888,14 @@
             if (!mtyldContract || !signer) return showStatus('Please connect wallet first.', 'error');
 
             const mtyldAmountStr = redeemMtyldAmountInput.value;
-            const minUsdcOut = minUsdcOutInput.value; // Already calculated BigInt string
+            const minUsdcOut = minUsdcOutInput.value;
 
             if (!mtyldAmountStr || parseFloat(mtyldAmountStr) <= 0 || !minUsdcOut || minUsdcOut === '0') {
                 return showStatus('Please enter a valid MTYLD amount and ensure estimate is calculated.', 'error');
             }
 
             const mtyldAmount = parseUnits(mtyldAmountStr, mtyldDecimals);
-             if (mtyldAmount === null) return; // Error handled by parseUnits
+             if (mtyldAmount === null) return;
             const minUsdcBigInt = BigInt(minUsdcOut);
 
             // Check balance
@@ -869,7 +910,8 @@
             try {
                 const tx = await mtyldContract.redeemTokens(mtyldAmount, minUsdcBigInt);
                 showStatus('Redeem transaction sent. Waiting for confirmation...', 'info');
-                await tx.wait();
+                const receipt = await tx.wait();
+                 console.log("Redeem Receipt:", receipt);
                 showStatus('Successfully redeemed MTYLD for USDC!', 'success');
                 redeemForm.reset();
                 estimatedUsdcSpan.textContent = '0.00';
@@ -878,7 +920,7 @@
                 await updateProtocolInfo();
             } catch (error) {
                 console.error("Redeem failed:", error);
-                showStatus(`Redeem transaction failed: ${error.data?.message || error.message || error}`, 'error');
+                 showStatus(`Redeem transaction failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
             } finally {
                 setLoading(redeemButton, false, 'Redeem MTYLD');
             }
@@ -892,7 +934,7 @@
 
              if (initialLoad) {
                  workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Loading work orders...</td></tr>';
-                 lastLoadedOrderId = null; // Reset for initial load
+                 lastLoadedOrderId = null;
                  loadMoreOrdersButton.classList.add('hidden');
              }
 
@@ -902,7 +944,7 @@
 
              try {
                  const nextId = await mtyldContract.nextWorkOrderId();
-                 if (nextId === 1n) { // No orders minted yet
+                 if (nextId === 1n) {
                       workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">No work orders found.</td></tr>';
                       loadMoreOrdersButton.classList.add('hidden');
                       setLoading(loadMoreOrdersButton, false, loadButtonOriginalText);
@@ -911,52 +953,57 @@
 
 
                  const endId = lastLoadedOrderId === null ? nextId - 1n : lastLoadedOrderId - 1n;
-                 const startId = endId - BigInt(ordersToLoad) + 1n > 0n ? endId - BigInt(ordersToLoad) + 1n : 1n; // Load 'ordersToLoad' count, minimum ID is 1
+                 const startId = endId - BigInt(ordersToLoad) + 1n > 0n ? endId - BigInt(ordersToLoad) + 1n : 1n;
 
 
                  if (startId > endId || endId < 1n) {
-                      if (initialLoad) workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">No more work orders found.</td></tr>';
+                      if (initialLoad && workOrdersTableBody.innerHTML.includes('Loading')) workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">No work orders found.</td></tr>'; // Handle case where loading message is still there
+                      else if (initialLoad) { /* Already has rows, do nothing */ }
+                      else { showStatus("No more work orders to load.", "info"); } // Message for "Load More"
                       loadMoreOrdersButton.classList.add('hidden');
                       setLoading(loadMoreOrdersButton, false, loadButtonOriginalText);
-                      return; // No more orders to load
+                      return;
                  }
 
                   if (initialLoad) {
-                       workOrdersTableBody.innerHTML = ''; // Clear loading message only on initial load
+                       workOrdersTableBody.innerHTML = '';
                   }
 
 
                  const orderPromises = [];
                  for (let i = endId; i >= startId; i--) {
-                     orderPromises.push(mtyldContract.workOrders(i));
+                     orderPromises.push(mtyldContract.workOrders(i).catch(e => {
+                         console.warn(`Could not fetch order ${i}:`, e); // Log warning instead of failing all
+                         return null; // Return null on error for specific order
+                     }));
                  }
 
                  const orders = await Promise.all(orderPromises);
 
                  orders.forEach(order => {
-                      if(order.id === 0n) return; // Skip if somehow an invalid order ID was queried
+                     // Check if order is null (due to fetch error) or has id 0
+                      if(!order || order.id === 0n) return;
 
-                     const row = workOrdersTableBody.insertRow(); // Appends at the end by default
+                     const row = workOrdersTableBody.insertRow();
                      row.innerHTML = `
                          <td>${order.id}</td>
                          <td class="max-w-xs truncate" title="${order.description}">${order.description}</td>
-                         <td>${parseFloat(formatUnits(order.grossYield, usdcDecimals)).toFixed(2)}</td>
-                         <td>${parseFloat(formatUnits(order.reserveAmount, usdcDecimals)).toFixed(2)}</td>
+                         <td>${parseFloat(formatUnits(order.grossYield, Number(usdcDecimals))).toFixed(2)}</td>
+                         <td>${parseFloat(formatUnits(order.reserveAmount, Number(usdcDecimals))).toFixed(2)}</td>
                          <td>${parseFloat(formatUnits(order.tokensIssued, mtyldDecimals)).toFixed(4)}</td>
                          <td>
-                              ${order.isPaid ? '<span class="text-green-400">Paid</span>' : (order.isActive ? '<span class="text-yellow-400">Active</span>' : '<span class="text-red-400">Cancelled</span>')}
+                              ${order.isPaid ? '<span class="text-green-400 font-semibold">Paid</span>' : (order.isActive ? '<span class="text-yellow-400 font-semibold">Active</span>' : '<span class="text-red-400 font-semibold">Cancelled</span>')}
                          </td>
                          <td>${formatDate(order.createdAt)}</td>
                      `;
                  });
 
-                 lastLoadedOrderId = startId; // Update the last loaded ID for the next fetch
+                 lastLoadedOrderId = startId;
 
-                 // Show 'Load More' button if there might be more orders
                  if (startId > 1n) {
                      loadMoreOrdersButton.classList.remove('hidden');
                  } else {
-                      loadMoreOrdersButton.classList.add('hidden'); // Hide if we've reached the first order
+                      loadMoreOrdersButton.classList.add('hidden');
                  }
 
              } catch (error) {
@@ -972,22 +1019,25 @@
              }
          }
 
+
         // --- Admin Actions ---
 
         async function handleMintOrder(event) {
              event.preventDefault();
-             if (!mtyldContract || !signer || !contractOwner || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
+             if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) {
+                  return showStatus("Admin action requires owner wallet connection.", "error");
+             }
 
              const yieldStr = document.getElementById('mint-yield').value;
              const description = document.getElementById('mint-desc').value;
              const button = event.target.querySelector('button[type="submit"]');
-             const originalText = button.textContent;
+             const originalText = 'Mint Order'; // Ensure original text is correct
 
              if (!yieldStr || parseFloat(yieldStr) <= 0 || !description) {
                   return showStatus('Please provide a valid gross yield and description.', 'error');
              }
 
-             const grossYield = parseUnits(yieldStr, usdcDecimals);
+             const grossYield = parseUnits(yieldStr, Number(usdcDecimals));
              if (grossYield === null) return;
 
              setLoading(button, true, originalText);
@@ -997,51 +1047,60 @@
                  const tx = await mtyldContract.mintFromWorkOrder(grossYield, description);
                   showStatus('Mint transaction sent. Waiting for confirmation...', 'info');
                  const receipt = await tx.wait();
+                 console.log("Mint Receipt:", receipt);
 
-                 // Find the WorkOrderMinted event in the logs to get the new ID
+                 // Find the WorkOrderMinted event
                  const mintEventInterface = new ethers.Interface(contractABI);
                  let newOrderId = 'N/A';
-                 for (const log of receipt.logs) {
-                     try {
-                          const parsedLog = mintEventInterface.parseLog(log);
-                          if (parsedLog && parsedLog.name === "WorkOrderMinted") {
-                               newOrderId = parsedLog.args.workOrderId.toString();
-                               break;
-                          }
-                     } catch (e) { /* ignore logs that don't match the ABI */ }
-                 }
+                  if(receipt && receipt.logs) {
+                       for (const log of receipt.logs) {
+                           // Ensure log has topics and data before parsing
+                            if (log.topics && log.data && log.address.toLowerCase() === contractAddress.toLowerCase()) {
+                                try {
+                                    const parsedLog = mintEventInterface.parseLog({ topics: [...log.topics], data: log.data }); // Use spread for topics array
+                                    if (parsedLog && parsedLog.name === "WorkOrderMinted") {
+                                        newOrderId = parsedLog.args.workOrderId.toString();
+                                        break;
+                                    }
+                                } catch (e) { console.warn("Could not parse log:", log, e); }
+                            }
+                       }
+                  }
 
 
                  showStatus(`Work order #${newOrderId} minted successfully!`, 'success');
                  mintOrderForm.reset();
-                 await updateProtocolInfo(); // Update available tokens
-                 await fetchWorkOrders(true); // Refresh work orders list
+                 await updateProtocolInfo();
+                 await fetchWorkOrders(true);
              } catch (error) {
                   console.error("Mint failed:", error);
-                  showStatus(`Mint transaction failed: ${error.data?.message || error.message || error}`, 'error');
+                  showStatus(`Mint transaction failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
              } finally {
                   setLoading(button, false, originalText);
              }
          }
 
+
         async function handlePayoutOrder(event) {
              event.preventDefault();
-             if (!mtyldContract || !signer || !contractOwner || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
+             if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) {
+                  return showStatus("Admin action requires owner wallet connection.", "error");
+             }
 
              const orderIdStr = document.getElementById('payout-id').value;
              const amountStr = document.getElementById('payout-amount').value;
              const button = event.target.querySelector('button[type="submit"]');
-             const originalText = button.textContent;
+             const originalText = 'Submit Payout'; // Ensure original text
 
               if (!orderIdStr || parseInt(orderIdStr) < 1 || !amountStr || parseFloat(amountStr) <= 0) {
                    return showStatus('Please provide a valid Work Order ID and Payout Amount.', 'error');
               }
 
              const orderId = BigInt(orderIdStr);
-             const payoutAmount = parseUnits(amountStr, usdcDecimals);
+             const payoutAmount = parseUnits(amountStr, Number(usdcDecimals));
               if (payoutAmount === null) return;
 
-              // Check allowance first
+              // Re-Check allowance before sending transaction
               try {
                    const allowance = await usdcContract.allowance(userAddress, contractAddress);
                    if (allowance < payoutAmount) {
@@ -1059,27 +1118,31 @@
              try {
                  const tx = await mtyldContract.payoutWorkOrder(orderId, payoutAmount);
                  showStatus('Payout transaction sent. Waiting for confirmation...', 'info');
-                 await tx.wait();
+                 const receipt = await tx.wait();
+                  console.log("Payout Receipt:", receipt);
                  showStatus(`Work order #${orderId} paid out successfully!`, 'success');
                  payoutOrderForm.reset();
-                 await updateProtocolInfo(); // Update contract balance and price
-                 await updateAdminInfo(); // Update collected fees? No, payout doesn't affect fees directly
-                 await fetchWorkOrders(true); // Refresh work orders list status
+                 await updateProtocolInfo();
+                 await updateWalletInfo(); // Update owner balance too
+                 await fetchWorkOrders(true);
              } catch (error) {
                  console.error("Payout failed:", error);
-                 showStatus(`Payout transaction failed: ${error.data?.message || error.message || error}`, 'error');
+                 showStatus(`Payout transaction failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
              } finally {
                  setLoading(button, false, originalText);
              }
          }
 
+
         async function handleCancelOrder(event) {
              event.preventDefault();
-              if (!mtyldContract || !signer || !contractOwner || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
+              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) {
+                  return showStatus("Admin action requires owner wallet connection.", "error");
+             }
 
               const orderIdStr = document.getElementById('cancel-id').value;
               const button = event.target.querySelector('button[type="submit"]');
-              const originalText = button.textContent;
+              const originalText = 'Cancel Order'; // Ensure original text
 
               if (!orderIdStr || parseInt(orderIdStr) < 1) {
                    return showStatus('Please provide a valid Work Order ID.', 'error');
@@ -1097,33 +1160,35 @@
              try {
                  const tx = await mtyldContract.cancelWorkOrder(orderId);
                  showStatus('Cancel transaction sent. Waiting for confirmation...', 'info');
-                 await tx.wait();
+                 const receipt = await tx.wait();
+                  console.log("Cancel Receipt:", receipt);
                  showStatus(`Work order #${orderId} cancelled successfully!`, 'success');
                  cancelOrderForm.reset();
-                 await fetchWorkOrders(true); // Refresh list
+                 await fetchWorkOrders(true);
              } catch (error) {
                  console.error("Cancel failed:", error);
-                 showStatus(`Cancel transaction failed: ${error.data?.message || error.message || error}`, 'error');
+                 showStatus(`Cancel transaction failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
              } finally {
                  setLoading(button, false, originalText);
              }
          }
 
+
         async function handleSetFee(event) {
              event.preventDefault();
-              if (!mtyldContract || !signer || !contractOwner || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
+              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) {
+                  return showStatus("Admin action requires owner wallet connection.", "error");
+             }
 
              const feeStr = document.getElementById('new-fee').value;
              const button = event.target.querySelector('button[type="submit"]');
-             const originalText = button.textContent;
+             const originalText = 'Update Fee'; // Ensure original text
 
               const fee = parseFloat(feeStr);
              if (isNaN(fee) || fee < 0 || fee > 20) {
                  return showStatus('Please enter a valid fee percentage between 0 and 20.', 'error');
              }
-             // Convert float potentially like 5.5 to integer 55 for contract (assuming contract wants percentage * 10 or similar if needed)
-             // The current contract seems to take the direct percentage (0-20)
-              const feeBigInt = BigInt(Math.round(fee)); // Assuming integer percentage 0-20
+              const feeBigInt = BigInt(Math.round(fee));
 
 
              setLoading(button, true, originalText);
@@ -1132,24 +1197,28 @@
              try {
                  const tx = await mtyldContract.setRedemptionFee(feeBigInt);
                  showStatus('Set fee transaction sent. Waiting for confirmation...', 'info');
-                 await tx.wait();
+                 const receipt = await tx.wait();
+                  console.log("Set Fee Receipt:", receipt);
                  showStatus(`Redemption fee updated to ${fee}% successfully!`, 'success');
                  setFeeForm.reset();
-                 await updateAdminInfo(); // Refresh current fee display
-                  await updateProtocolInfo(); // Refresh fee display in redeem section
+                 await updateAdminInfo();
+                 await updateProtocolInfo();
              } catch (error) {
                   console.error("Set fee failed:", error);
-                  showStatus(`Set fee transaction failed: ${error.data?.message || error.message || error}`, 'error');
+                  showStatus(`Set fee transaction failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
              } finally {
                   setLoading(button, false, originalText);
              }
          }
 
-        async function handleWithdrawFees() {
-             if (!mtyldContract || !signer || !contractOwner || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
 
-             const button = withdrawFeesButton;
-             const originalText = button.textContent;
+        async function handleWithdrawFees() {
+             if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) {
+                  return showStatus("Admin action requires owner wallet connection.", "error");
+             }
+
+             const button = withdrawFeesButton; // Already have reference
+             const originalText = 'Withdraw All Fees'; // Ensure original text
 
              const feesAvailable = await mtyldContract.collectedFees();
              if (feesAvailable === 0n) {
@@ -1157,18 +1226,19 @@
              }
 
              setLoading(button, true, originalText);
-             showStatus(`Withdrawing ${formatUnits(feesAvailable, usdcDecimals)} USDC in fees...`);
+             showStatus(`Withdrawing ${formatUnits(feesAvailable, Number(usdcDecimals))} USDC in fees...`); // Use Number()
 
              try {
                  const tx = await mtyldContract.withdrawFees();
                  showStatus('Withdraw fees transaction sent. Waiting for confirmation...', 'info');
-                 await tx.wait();
+                 const receipt = await tx.wait();
+                  console.log("Withdraw Fees Receipt:", receipt);
                  showStatus('Fees withdrawn successfully!', 'success');
-                 await updateAdminInfo(); // Refresh collected fees display
-                 await updateWalletInfo(); // Update owner's USDC balance
+                 await updateAdminInfo();
+                 await updateWalletInfo();
              } catch (error) {
                  console.error("Withdraw fees failed:", error);
-                 showStatus(`Withdraw fees transaction failed: ${error.data?.message || error.message || error}`, 'error');
+                 showStatus(`Withdraw fees transaction failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
              } finally {
                  setLoading(button, false, originalText);
              }
@@ -1176,18 +1246,28 @@
 
         async function handleEmergencyWithdraw(event) {
              event.preventDefault();
-              if (!mtyldContract || !signer || !contractOwner || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
+              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) {
+                  return showStatus("Admin action requires owner wallet connection.", "error");
+             }
 
              const tokenAddress = document.getElementById('emergency-token').value;
              const toAddress = document.getElementById('emergency-to').value;
              const amountStr = document.getElementById('emergency-amount').value;
              const button = event.target.querySelector('button[type="submit"]');
-             const originalText = button.textContent;
+             const originalText = 'Withdraw Token'; // Ensure original text
 
-             if (!ethers.isAddress(tokenAddress) || !ethers.isAddress(toAddress) || !amountStr || BigInt(amountStr) <= 0n) {
-                  return showStatus('Please provide valid token address, recipient address, and amount.', 'error');
+              let amount;
+              try {
+                   amount = BigInt(amountStr);
+                   if (amount <= 0n) throw new Error("Amount must be positive");
+              } catch {
+                   return showStatus('Please provide a valid, positive amount in raw units.', 'error');
+              }
+
+             if (!ethers.isAddress(tokenAddress) || !ethers.isAddress(toAddress)) {
+                  return showStatus('Please provide valid token and recipient addresses.', 'error');
              }
-             const amount = BigInt(amountStr);
+
 
              setLoading(button, true, originalText);
              showStatus(`Attempting emergency withdraw of token ${shortenAddress(tokenAddress)}...`);
@@ -1195,12 +1275,14 @@
              try {
                   const tx = await mtyldContract.emergencyWithdraw(tokenAddress, toAddress, amount);
                   showStatus('Emergency withdraw transaction sent. Waiting for confirmation...', 'info');
-                  await tx.wait();
+                  const receipt = await tx.wait();
+                   console.log("Emergency Withdraw Receipt:", receipt);
                   showStatus('Emergency withdraw successful!', 'success');
                   emergencyWithdrawForm.reset();
+                  // May need to update balances depending on token withdrawn
              } catch (error) {
                   console.error("Emergency withdraw failed:", error);
-                  showStatus(`Emergency withdraw failed: ${error.data?.message || error.message || error}`, 'error');
+                  showStatus(`Emergency withdraw failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
              } finally {
                   setLoading(button, false, originalText);
              }
@@ -1209,6 +1291,9 @@
 
         // --- Event Listeners Setup ---
          function setupEventListeners() {
+            // Ensure listeners are only added once
+            if (window.eventListenersAttached) return;
+
              // Input listeners for estimates
              buyUsdcAmountInput.addEventListener('input', updateBuyEstimate);
              buySlippageSelect.addEventListener('change', updateBuyEstimate);
@@ -1220,56 +1305,110 @@
              buyForm.addEventListener('submit', handleBuyTokens);
              redeemForm.addEventListener('submit', handleRedeemTokens);
 
-             // Admin listeners
-              adminApproveUsdcButton.addEventListener('click', () => handleApproveUSDC(true));
-              mintOrderForm.addEventListener('submit', handleMintOrder);
-              payoutOrderForm.addEventListener('submit', handlePayoutOrder);
-              cancelOrderForm.addEventListener('submit', handleCancelOrder);
-              setFeeForm.addEventListener('submit', handleSetFee);
-              withdrawFeesButton.addEventListener('click', handleWithdrawFees);
-              emergencyWithdrawForm.addEventListener('submit', handleEmergencyWithdraw);
+             // Admin listeners (check elements exist first)
+             if (adminApproveUsdcButton) adminApproveUsdcButton.addEventListener('click', () => handleApproveUSDC(true));
+             if (mintOrderForm) mintOrderForm.addEventListener('submit', handleMintOrder);
+             if (payoutOrderForm) payoutOrderForm.addEventListener('submit', handlePayoutOrder);
+             if (cancelOrderForm) cancelOrderForm.addEventListener('submit', handleCancelOrder);
+             if (setFeeForm) setFeeForm.addEventListener('submit', handleSetFee);
+             if (withdrawFeesButton) withdrawFeesButton.addEventListener('click', handleWithdrawFees);
+             if (emergencyWithdrawForm) emergencyWithdrawForm.addEventListener('submit', handleEmergencyWithdraw);
 
-              // Work Orders
-              loadMoreOrdersButton.addEventListener('click', () => fetchWorkOrders(false)); // Not initial load
+             // Work Orders
+             if (loadMoreOrdersButton) loadMoreOrdersButton.addEventListener('click', () => fetchWorkOrders(false));
 
 
              // Listen for account changes
-             window.ethereum.on('accountsChanged', (accounts) => {
-                 console.log('Accounts changed:', accounts);
-                 if (accounts.length === 0) {
-                     // Handle disconnection
-                     userAddress = null;
-                     signer = null;
-                     walletInfoDiv.classList.add('hidden');
-                     connectButton.textContent = 'Connect Wallet';
-                     connectButton.disabled = false;
-                     adminPanelDiv.classList.add('hidden');
-                     showStatus('Wallet disconnected.', 'info');
-                 } else {
-                     // Handle account switch
-                     connectWallet(); // Reconnect with the new account
-                 }
-             });
+             if (window.ethereum && window.ethereum.on) {
+                 window.ethereum.on('accountsChanged', (accounts) => {
+                     console.log('Accounts changed:', accounts);
+                     if (accounts.length === 0) {
+                         userAddress = null;
+                         signer = null;
+                         provider = null; // Clear provider too
+                         walletInfoDiv.classList.add('hidden');
+                         connectButton.textContent = 'Connect Wallet';
+                         connectButton.disabled = false;
+                         adminPanelDiv.classList.add('hidden');
+                         showStatus('Wallet disconnected.', 'info');
+                         // Maybe clear protocol info too
+                         document.getElementById('usdc-balance').textContent = 'Disconnected';
+                         document.getElementById('mtyld-balance').textContent = 'Disconnected';
+                         buyUsdcBalanceSpan.textContent = '--';
+                         redeemMtyldBalanceSpan.textContent = '--';
 
-             // Listen for network changes
-             window.ethereum.on('chainChanged', (chainId) => {
-                 console.log('Network changed to:', chainId);
-                 if (chainId !== arbitrumChainId) {
-                      showStatus('Network changed. Please switch back to Arbitrum One.', 'error');
-                      // Optionally disconnect or prompt user to switch back
-                 }
-                 // Reload or reconnect if needed
-                 window.location.reload(); // Simple way to handle network change
-             });
+                     } else {
+                         // Reconnect only if address actually changed
+                          if (userAddress && accounts[0].toLowerCase() !== userAddress.toLowerCase()) {
+                               connectWallet();
+                          } else if (!userAddress) {
+                               // If was disconnected, connect now
+                               connectWallet();
+                          }
+                     }
+                 });
+
+                 // Listen for network changes
+                 window.ethereum.on('chainChanged', (chainId) => {
+                     console.log('Network changed to:', chainId);
+                      if (chainId !== arbitrumChainId) {
+                           showStatus('Incorrect network detected. Please switch back to Arbitrum One in MetaMask.', 'error');
+                           // Clear state and disable interactions
+                           userAddress = null;
+                           signer = null;
+                           provider = null;
+                           walletInfoDiv.classList.add('hidden');
+                           connectButton.textContent = 'Wrong Network';
+                           connectButton.disabled = true; // Disable until network correct
+                           adminPanelDiv.classList.add('hidden');
+                           // Clear protocol info? Or just show error?
+                           tokenNameSpan.textContent = 'Wrong Network';
+                           // ... other fields ...
+                      } else {
+                           // If switching back to correct network, prompt reconnect or reload
+                           showStatus('Network changed back to Arbitrum One. Please reconnect wallet or refresh.', 'info');
+                           connectButton.textContent = 'Connect Wallet';
+                           connectButton.disabled = false;
+                           //window.location.reload(); // Force reload on correct network switch
+                      }
+                 });
+             } else {
+                  console.warn("MetaMask event listeners ('accountsChanged', 'chainChanged') not available.");
+             }
+
+             window.eventListenersAttached = true; // Flag that listeners are attached
          }
 
 
         // --- Initialization ---
-        connectButton.addEventListener('click', connectWallet);
+        document.addEventListener('DOMContentLoaded', () => {
+             // Set initial state for connect button
+             connectButton.addEventListener('click', connectWallet);
+             // Optionally try to auto-connect if already approved?
+             // checkConnection(); // Add a function to check if already connected
+        });
 
-        // Initial UI state
-        // (Handled by connectWallet success/failure)
+        // Function to check connection on load (optional)
+        /*
+        async function checkConnection() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        console.log("Already connected with account:", accounts[0]);
+                        // If connected, automatically trigger connectWallet logic
+                        connectWallet();
+                    } else {
+                        console.log("Not connected.");
+                    }
+                } catch (error) {
+                    console.error("Error checking existing connection:", error);
+                }
+            }
+        }
+        */
 
     </script>
 </body>
 </html>
+
