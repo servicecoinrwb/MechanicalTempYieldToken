@@ -381,8 +381,10 @@
                      try {
                           await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: arbitrumChainId }] });
                           console.log("Switch request sent. Re-initializing provider...");
-                          provider = new ethers.BrowserProvider(window.ethereum); // Re-init
-                          console.log("Provider re-initialized after switch attempt.");
+                          // IMPORTANT: Re-initialize provider AND signer after network change
+                          provider = new ethers.BrowserProvider(window.ethereum);
+                          signer = await provider.getSigner(); // Re-get signer on new network
+                          console.log("Provider/Signer re-initialized after switch attempt.");
                           const switchedNetwork = await provider.getNetwork();
                           if (switchedNetwork.chainId !== BigInt(arbitrumChainId)) {
                                throw new Error('Failed to switch to Arbitrum One network.');
@@ -395,8 +397,9 @@
                                try {
                                    await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: arbitrumChainId, chainName: 'Arbitrum One', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://arb1.arbitrum.io/rpc'], blockExplorerUrls: ['https://arbiscan.io'] }] });
                                     console.log("Add network request sent. Re-initializing provider...");
-                                    provider = new ethers.BrowserProvider(window.ethereum); // Re-init
-                                    console.log("Provider re-initialized after add attempt.");
+                                    provider = new ethers.BrowserProvider(window.ethereum); // Re-init provider
+                                    signer = await provider.getSigner(); // Re-get signer
+                                    console.log("Provider/Signer re-initialized after add attempt.");
                                     const addedNetwork = await provider.getNetwork();
                                      if (addedNetwork.chainId !== BigInt(arbitrumChainId)) {
                                          throw new Error('Failed to add Arbitrum One network.');
@@ -405,26 +408,30 @@
                                 } catch (addError) { throw new Error('Add Arbitrum One network manually.'); }
                            } else { throw new Error('Switch to Arbitrum One network.'); }
                      }
+                } else {
+                     // Network is already correct, get signer
+                     console.log("Network is correct. Getting signer...");
+                     signer = await provider.getSigner();
                 }
 
+
                 console.log("Requesting accounts...");
-                // Use requestAccounts which is standard in Ethers v6 via provider
+                // Use requestAccounts standard method
                 const accounts = await provider.send("eth_requestAccounts", []);
                 console.log("Accounts requested:", accounts);
                 if (!accounts || accounts.length === 0) {
+                     // This case might happen if the user disconnects during the request
                      throw new Error("No accounts found. Please unlock MetaMask or grant permission.");
                 }
-
-                console.log("Getting signer...");
-                signer = await provider.getSigner();
-                userAddress = await signer.getAddress();
+                userAddress = accounts[0]; // Use the first account
                 console.log("Signer obtained:", userAddress);
 
+                // Re-instantiate contracts with the potentially new signer
                 mtyldContract = new ethers.Contract(contractAddress, contractABI, signer);
-                console.log("MTYLD contract instance created");
+                console.log("MTYLD contract instance created/updated");
                 const usdcAbiMinimal = ["function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)","function allowance(address, address) view returns (uint256)","function approve(address, uint256) returns (bool)","function transferFrom(address, address, uint256) returns (bool)"];
                 usdcContract = new ethers.Contract(usdcAddress, usdcAbiMinimal, signer);
-                console.log("USDC contract instance created");
+                console.log("USDC contract instance created/updated");
                 usdcDecimals = await usdcContract.decimals();
                 console.log("USDC decimals:", Number(usdcDecimals));
 
@@ -440,116 +447,89 @@
 
             } catch (error) {
                 console.error("Connection failed:", error);
-                 // Check if the error is due to user rejection
                  let displayError = error.message;
-                 if (error.code === 4001 || error.message?.includes('User rejected')) {
-                     displayError = "Connection request rejected by user.";
-                 }
-                showStatus(`Wallet connection failed: ${displayError}`, 'error');
-                resetState(); // Ensure UI resets fully on error
+                 if (error.code === 4001 || error.message?.includes('User rejected')) { displayError = "Connection request rejected."; }
+                 else if (error.message?.includes('unknown account')) { displayError = "MetaMask may be locked or needs permissions."; }
+                 else if (error.message?.includes('missing provider')) { displayError = "Wallet provider not found. Refresh?"; }
+                 showStatus(`Wallet connect failed: ${displayError}`, 'error');
+                resetState();
             } finally {
                  console.log("Connect wallet finished.");
-                 // Ensure button is correctly set based on final state
-                 if (userAddress) {
-                      setLoading(connectBtn, false, shortenAddress(userAddress));
-                      connectBtn.disabled = true;
-                 } else {
-                     // If connection failed, ensure button is reset
-                     setLoading(connectBtn, false, originalConnectText);
-                     connectBtn.disabled = false;
-                 }
+                 if (userAddress) { setLoading(connectBtn, false, shortenAddress(userAddress)); connectBtn.disabled = true; }
+                 else { setLoading(connectBtn, false, originalConnectText); connectBtn.disabled = false; }
             }
         }
 
 
         // Combined function to load data after connection
-        async function loadInitialData() {
-            // Fetch protocol info first as it contains delay needed by others
-            await updateProtocolInfo();
-
-            // Then fetch other data concurrently
-            const results = await Promise.allSettled([
-                // updateProtocolInfo(), // Already called above
-                updateWalletInfo(),
-                fetchAndStoreAllWorkOrders(),
-                fetchPendingProposals()
-            ]);
-
-            results.forEach((result, index) => {
-                if (result.status === 'rejected') {
-                    console.error(`Error during initial load step ${index}:`, result.reason);
-                }
-            });
-
-            await checkAdminStatus();
-        }
+        async function loadInitialData() { /* ... */ }
 
 
-        function resetState() { /* ... (same as before) ... */ }
+        function resetState() { /* ... */ }
 
 
-        async function checkAdminStatus() { /* ... (same as before) ... */ }
+        async function checkAdminStatus() { /* ... */ }
 
-        async function updateAdminInfo() { /* ... (same as before) ... */ }
+        async function updateAdminInfo() { /* ... */ }
 
          // Combined proposal check function
-         async function checkPendingProposals() { /* ... (same as before) ... */ }
+         async function checkPendingProposals() { /* ... */ }
 
 
         // Helper to check and display pending mint details based on input ID (Admin Panel ONLY)
          let checkMintTimeout;
-        async function checkPendingMintDetails() { /* ... (same as before) ... */ }
+        async function checkPendingMintDetails() { /* ... */ }
 
 
-        async function updateWalletInfo() { /* ... (same as before) ... */ }
+        async function updateWalletInfo() { /* ... */ }
 
-        async function updateProtocolInfo() { /* ... (same as before) ... */ }
+        async function updateProtocolInfo() { /* ... */ }
 
         // --- Buy/Redeem Logic ---
-        async function updateBuyEstimate() { /* ... (same as before) ... */ }
-        async function updateRedeemEstimate() { /* ... (same as before) ... */ }
-        async function handleApproveUSDC(isAdmin = false) { /* ... (same as before) ... */ }
-        async function handleBuyTokens(event) { /* ... (same as before) ... */ }
-        async function handleRedeemTokens(event) { /* ... (same as before) ... */ }
+        async function updateBuyEstimate() { /* ... */ }
+        async function updateRedeemEstimate() { /* ... */ }
+        async function handleApproveUSDC(isAdmin = false) { /* ... */ }
+        async function handleBuyTokens(event) { /* ... */ }
+        async function handleRedeemTokens(event) { /* ... */ }
 
 
         // --- Work Order & Pending Proposal Display ---
-        async function fetchAndStoreAllWorkOrders() { /* ... (same as before) ... */ }
-        function populateYearFilter() { /* ... (same as before) ... */ }
-        function filterAndRenderOrders() { /* ... (same as before) ... */ }
-        function renderWorkOrdersTable(ordersToRender) { /* ... (same as before) ... */ }
+        async function fetchAndStoreAllWorkOrders() { /* ... */ }
+        function populateYearFilter() { /* ... */ }
+        function filterAndRenderOrders() { /* ... */ }
+        function renderWorkOrdersTable(ordersToRender) { /* ... */ }
 
         // Fetch and Render Pending Mint Proposals (Public View) - ADJUSTED
-        async function fetchPendingProposals() { /* ... (same as before) ... */ }
+        async function fetchPendingProposals() { /* ... */ }
 
 
         // --- Admin Actions (Updated for Timelock & Pause) ---
-        async function handleProposeMint(event) { /* ... (same as before) ... */ }
-        async function handleExecuteMint() { /* ... (same as before) ... */ }
-        async function handlePayoutOrder(event) { /* ... (same as before) ... */ }
-        async function handleCancelOrder(event) { /* ... (same as before) ... */ }
-        async function handleProposeFeeChange(event) { /* ... (same as before) ... */ }
-        async function handleExecuteFeeChange() { /* ... (same as before) ... */ }
-        async function handleWithdrawFees() { /* ... (same as before) ... */ }
-        async function handleEmergencyWithdraw(event) { /* ... (same as before) ... */ }
+        async function handleProposeMint(event) { /* ... */ }
+        async function handleExecuteMint() { /* ... */ }
+        async function handlePayoutOrder(event) { /* ... */ }
+        async function handleCancelOrder(event) { /* ... */ }
+        async function handleProposeFeeChange(event) { /* ... */ }
+        async function handleExecuteFeeChange() { /* ... */ }
+        async function handleWithdrawFees() { /* ... */ }
+        async function handleEmergencyWithdraw(event) { /* ... */ }
          // --- Pause/Unpause Logic ---
-         async function handlePause() { /* ... (same as before) ... */ }
-        async function handleUnpause() { /* ... (same as before) ... */ }
-        function updatePauseUI(isPaused) { /* ... (same as before) ... */ }
-        function updatePauseButtons(isPaused) { /* ... (same as before) ... */ }
+         async function handlePause() { /* ... */ }
+        async function handleUnpause() { /* ... */ }
+        function updatePauseUI(isPaused) { /* ... */ }
+        function updatePauseButtons(isPaused) { /* ... */ }
 
 
         // --- Event Listeners Setup ---
-         function setupEventListeners() { /* ... (same as before) ... */ }
-         function setupWalletListeners() { /* ... (same as before) ... */ }
+         function setupEventListeners() { /* ... */ }
+         function setupWalletListeners() { /* ... */ }
 
 
         // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => { /* ... (same as before) ... */
+        document.addEventListener('DOMContentLoaded', () => { /* ... */
              connectButton.addEventListener('click', connectWallet);
              setupEventListeners();
              workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Connect wallet to view orders.</td></tr>';
-             pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">Connect wallet to view proposals.</td></tr>'; // Init pending table
+             pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">Connect wallet to view proposals.</td></tr>';
              populateYearFilter();
         });
 
