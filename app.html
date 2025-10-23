@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <!-- Ethers.js v6 -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js" type="application/javascript"></script>
+    <!-- Favicon link removed to prevent 404 error if file doesn't exist -->
+    <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
 
     <style>
         :root {
@@ -75,13 +77,12 @@
     </div>
 
 
+    <!-- Reverted Navbar -->
     <nav class="bg-secondary sticky top-0 z-50 shadow-lg mb-8">
         <div class="container mx-auto max-w-7xl p-4 flex justify-between items-center">
-            <!-- Logo Added -->
-            <a href="index.html" class="flex items-center space-x-2">
-                 <img src="https://imageview.replit.app/objects/uploads/254102d8-5988-4774-bb48-a191db030456" alt="YieldWorks Logo" class="h-10 w-auto">
-                 <span class="text-2xl font-bold hidden sm:inline-block">YieldWorks</span>
-                 <!-- <span class="text-sm font-normal text-secondary hidden sm:inline-block ml-2">by Mechanical Temp</span> -->
+            <a href="index.html" class="text-2xl font-bold">
+                 YieldWorks
+                 <span class="text-sm font-normal text-secondary hidden sm:inline-block ml-2">Dashboard</span>
             </a>
             <div class="flex items-center space-x-4">
                  <span id="pause-status-indicator" class="hidden text-xs font-bold px-3 py-1 rounded-full"></span>
@@ -347,7 +348,7 @@
         const redeemFeePercentSpan = document.getElementById('redeem-fee-percent');
 
         // Pending Mints Elements
-        const pendingMintsTableBody = document.getElementById('pending-mints-body'); // Added
+        const pendingMintsTableBody = document.getElementById('pending-mints-body');
 
 
         // Work Orders Elements
@@ -364,7 +365,7 @@
         const executeMintButton = document.getElementById('execute-mint-button');
         const payoutOrderForm = document.getElementById('payout-order-form');
         const payoutTokenizedValueSpan = document.getElementById('payout-tokenized-value');
-        const payoutIdInput = document.getElementById('payout-id'); // Defined here
+        const payoutIdInput = document.getElementById('payout-id');
         const cancelOrderForm = document.getElementById('cancel-order-form');
         const proposeFeeForm = document.getElementById('propose-fee-form');
         const executeFeeButton = document.getElementById('execute-fee-button');
@@ -390,12 +391,12 @@
         let mtyldDecimals = 18;
         let allWorkOrders = [];
         let availableYears = new Set();
-        let currentProposalDelay = null; // Store proposal delay (BigInt)
-        let blockTimestamp = null; // Store latest block timestamp (BigInt)
+        let currentProposalDelay = null;
+        let blockTimestamp = null;
 
 
         // --- Helper Functions ---
-        // ... (showStatus, formatUnits, parseUnits, formatDate, setLoading, shortenAddress, formatSeconds, calculateTimeRemaining functions remain the same) ...
+        // ... (showStatus, formatUnits, parseUnits, formatDate, setLoading, shortenAddress, formatSeconds, calculateTimeRemaining functions) ...
         function showStatus(message, type = 'info') {
             statusMessageDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
             statusMessageDiv.classList.remove('hidden');
@@ -447,6 +448,7 @@
         function formatSeconds(seconds) {
              if (seconds === null || seconds === undefined) return '...';
              const totalSeconds = Number(seconds);
+             if (totalSeconds < 0) return "Expired"; // Handle expired delay
              const d = Math.floor(totalSeconds / 86400);
              const h = Math.floor((totalSeconds % 86400) / 3600);
              const m = Math.floor((totalSeconds % 3600) / 60);
@@ -459,10 +461,14 @@
              return parts.join(' ');
         }
         function calculateTimeRemaining(futureTimestamp) {
-            if (!blockTimestamp || !futureTimestamp || futureTimestamp <= blockTimestamp) {
+            // Use current browser time as fallback if blockTimestamp isn't available
+             const nowSeconds = blockTimestamp ? Number(blockTimestamp) : Math.floor(Date.now() / 1000);
+            const futureSeconds = Number(futureTimestamp);
+
+            if (!futureTimestamp || futureSeconds <= nowSeconds) {
                 return "Now";
             }
-            const remainingSeconds = futureTimestamp - blockTimestamp;
+            const remainingSeconds = futureSeconds - nowSeconds;
             return formatSeconds(remainingSeconds);
         }
 
@@ -514,6 +520,7 @@
              // Ensure contract and necessary info like delay are available
              if (!mtyldContract || currentProposalDelay === null) {
                  pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">Connect wallet first or refresh data.</td></tr>';
+                 console.log("fetchPendingProposals skipped: Contract or delay not ready.");
                  return;
              }
              pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">Loading pending proposals...</td></tr>';
@@ -524,20 +531,19 @@
                  console.log("Next Proposal/Work Order ID:", nextId.toString());
 
                  if (nextId <= 1n) {
-                     pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">No proposals found.</td></tr>';
+                     pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">No proposals found yet.</td></tr>';
+                     console.log("No proposals found (nextId <= 1).");
                      return;
                  }
 
                  const proposalPromises = [];
                  // Check a reasonable range of past IDs. Start from nextId - 1 down.
-                 // Limit the check range to avoid excessive calls on contracts with many proposals.
-                 const MAX_PROPOSALS_TO_CHECK = 50; // Check up to 50 previous IDs
+                 const MAX_PROPOSALS_TO_CHECK = 50;
                  const startCheckId = (nextId - 1n) > BigInt(MAX_PROPOSALS_TO_CHECK)
                                      ? (nextId - 1n) - BigInt(MAX_PROPOSALS_TO_CHECK) + 1n
-                                     : 1n; // Start checking from 1 or (nextId - MAX_PROPOSALS_TO_CHECK)
+                                     : 1n;
 
                 console.log(`Checking pending proposals from ID ${startCheckId} up to ${nextId - 1n}`);
-
 
                  for (let i = nextId - 1n; i >= startCheckId; i--) {
                       proposalPromises.push(
@@ -545,7 +551,7 @@
                              .then(p => ({id: i, proposal: p}))
                              .catch(e => {
                                  console.warn(`Error fetching pending mint ${i}:`, e);
-                                 return null; // Return null if fetching a specific proposal fails
+                                 return null;
                              })
                       );
                  }
@@ -554,15 +560,14 @@
                  pendingMintsTableBody.innerHTML = ''; // Clear loading message
 
                  results.forEach(result => {
-                      // Check if result is not null and proposal exists
                       if (result && result.proposal && result.proposal.exists) {
                            pendingFound = true;
                            const proposal = result.proposal;
                            const proposalId = result.id;
-                           const { fullDate: proposedTime } = formatDate(proposal.proposedAt); // Get Date object
-                           const delaySeconds = Number(currentProposalDelay); // Use stored delay
+                           const { fullDate: proposedTime } = formatDate(proposal.proposedAt);
+                           const delaySeconds = Number(currentProposalDelay); // Use previously fetched delay
                            const executableTimestamp = proposal.proposedAt + BigInt(delaySeconds);
-                           const { fullDate: executableDate } = formatDate(executableTimestamp); // Get Date object
+                           const { fullDate: executableDate } = formatDate(executableTimestamp); // Get Date object for display
 
                            const row = pendingMintsTableBody.insertRow();
                            row.innerHTML = `
@@ -577,6 +582,9 @@
 
                  if (!pendingFound) {
                       pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">No pending mint proposals found.</td></tr>';
+                      console.log("Finished checking proposals, none found in range.");
+                 } else {
+                     console.log("Rendered pending proposals.");
                  }
 
              } catch (error) {
