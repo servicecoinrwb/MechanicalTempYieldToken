@@ -230,74 +230,74 @@
 
         <!-- Admin Panel (Initially hidden) -->
         <div id="admin-panel" class="card mt-8 hidden">
-            <h2 class="text-2xl font-bold mb-6 text-center text-accent">Admin Panel</h2>
-            <div class="bg-tertiary p-4 rounded-lg border border-border-color mb-6 text-center">
-                 <h3 class="text-lg font-semibold mb-3">Pause Control</h3>
-                 <p class="text-xs text-secondary mb-3">Pause contract interactions in case of emergency.</p>
-                 <div class="flex justify-center gap-4">
-                      <button id="pause-button" class="btn btn-danger w-40">Pause Contract</button>
-                      <button id="unpause-button" class="btn btn-primary w-40">Unpause Contract</button>
-                 </div>
-            </div>
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <form id="propose-mint-form" class="bg-tertiary p-4 rounded-lg border border-border-color">
-                    <h3 class="text-lg font-semibold mb-3">1. Propose New Work Order</h3>
-                    <div class="mb-3"><label for="propose-yield">Gross Yield (USDC)</label><input type="number" id="propose-yield" step="0.01" min="0.01" placeholder="e.g., 1000.00" required></div>
-                    <div class="mb-3"><label for="propose-desc">Description</label><input type="text" id="propose-desc" placeholder="e.g., Install #12345" required></div>
-                    <button type="submit" class="btn btn-secondary w-full">Propose Mint</button>
-                </form>
+             <h2 class="text-2xl font-bold mb-6 text-center text-accent">Admin Panel</h2>
+             <div class="bg-tertiary p-4 rounded-lg border border-border-color mb-6 text-center">
+                  <h3 class="text-lg font-semibold mb-3">Pause Control</h3>
+                  <p class="text-xs text-secondary mb-3">Pause contract interactions in case of emergency.</p>
+                  <div class="flex justify-center gap-4">
+                       <button id="pause-button" class="btn btn-danger w-40">Pause Contract</button>
+                       <button id="unpause-button" class="btn btn-primary w-40">Unpause Contract</button>
+                  </div>
+             </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                 <form id="propose-mint-form" class="bg-tertiary p-4 rounded-lg border border-border-color">
+                     <h3 class="text-lg font-semibold mb-3">1. Propose New Work Order</h3>
+                     <div class="mb-3"><label for="propose-yield">Gross Yield (USDC)</label><input type="number" id="propose-yield" step="0.01" min="0.01" placeholder="e.g., 1000.00" required></div>
+                     <div class="mb-3"><label for="propose-desc">Description</label><input type="text" id="propose-desc" placeholder="e.g., Install #12345" required></div>
+                     <button type="submit" class="btn btn-secondary w-full">Propose Mint</button>
+                 </form>
+                  <div class="bg-tertiary p-4 rounded-lg border border-border-color">
+                      <h3 class="text-lg font-semibold mb-3">2. Execute Pending Mint</h3>
+                      <div class="mb-3"><label for="execute-mint-id">Proposal ID to Execute</label><input type="number" id="execute-mint-id" min="1" placeholder="Enter ID from proposal" required></div>
+                      <div id="pending-mint-details" class="proposal-card hidden"></div>
+                      <button id="execute-mint-button" class="btn btn-primary w-full mt-3" disabled>Execute Mint (after delay)</button>
+                  </div>
+             </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <form id="payout-order-form" class="bg-tertiary p-4 rounded-lg border border-border-color">
+                      <h3 class="text-lg font-semibold mb-3">Payout Work Order</h3>
+                      <p class="text-xs text-secondary mb-3">Pay back Tokenized Value to mark complete.</p>
+                       <div class="mb-3"><label for="payout-id">Work Order ID</label><input type="number" id="payout-id" min="1" placeholder="e.g., 1" required></div>
+                     <div class="mb-3"><label for="payout-amount">Payout Amount (USDC)</label><input type="number" id="payout-amount" step="0.01" min="0.01" placeholder="Must equal Tokenized Value" required><p class="text-xs text-secondary mt-1">Order Tokenized Value: <span id="payout-tokenized-value">--</span></p></div>
+                      <p class="text-xs text-secondary mb-3">Requires prior USDC approval.</p>
+                       <div class="flex gap-3"><button type="button" id="admin-approve-usdc-button" class="btn btn-secondary flex-1">Approve USDC</button><button type="submit" class="btn btn-primary flex-1">Submit Payout</button></div>
+                  </form>
+                  <form id="cancel-order-form" class="bg-tertiary p-4 rounded-lg border border-border-color">
+                      <h3 class="text-lg font-semibold mb-3">Cancel Work Order</h3>
+                       <p class="text-xs text-secondary mb-3">Deactivate order (no token burn).</p>
+                      <div class="mb-3"><label for="cancel-id">Work Order ID</label><input type="number" id="cancel-id" min="1" placeholder="e.g., 1" required></div>
+                      <button type="submit" class="btn btn-danger w-full">Cancel Order</button>
+                  </form>
+             </div>
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <form id="propose-fee-form" class="bg-tertiary p-4 rounded-lg border border-border-color">
+                      <h3 class="text-lg font-semibold mb-3">1. Propose Fee Change</h3>
+                      <div class="mb-3"><label for="propose-new-fee">New Fee % (0-20)</label><input type="number" id="propose-new-fee" min="0" max="20" step="0.1" placeholder="e.g., 10" required></div>
+                       <p class="text-xs text-secondary mb-3">Current Fee: <span id="current-redeem-fee">--</span>%</p>
+                      <button type="submit" class="btn btn-secondary w-full">Propose Fee Change</button>
+                  </form>
+                  <div class="bg-tertiary p-4 rounded-lg border border-border-color">
+                       <h3 class="text-lg font-semibold mb-3">2. Execute Fee Change</h3>
+                       <div id="pending-fee-details" class="proposal-card hidden"></div>
+                       <button id="execute-fee-button" class="btn btn-primary w-full mt-3" disabled>Execute Fee Change (after delay)</button>
+                  </div>
                  <div class="bg-tertiary p-4 rounded-lg border border-border-color">
-                     <h3 class="text-lg font-semibold mb-3">2. Execute Pending Mint</h3>
-                     <div class="mb-3"><label for="execute-mint-id">Proposal ID to Execute</label><input type="number" id="execute-mint-id" min="1" placeholder="Enter ID from proposal" required></div>
-                     <div id="pending-mint-details" class="proposal-card hidden"></div>
-                     <button id="execute-mint-button" class="btn btn-primary w-full mt-3" disabled>Execute Mint (after delay)</button>
-                 </div>
-            </div>
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                 <form id="payout-order-form" class="bg-tertiary p-4 rounded-lg border border-border-color">
-                     <h3 class="text-lg font-semibold mb-3">Payout Work Order</h3>
-                     <p class="text-xs text-secondary mb-3">Pay back Tokenized Value to mark complete.</p>
-                      <div class="mb-3"><label for="payout-id">Work Order ID</label><input type="number" id="payout-id" min="1" placeholder="e.g., 1" required></div>
-                    <div class="mb-3"><label for="payout-amount">Payout Amount (USDC)</label><input type="number" id="payout-amount" step="0.01" min="0.01" placeholder="Must equal Tokenized Value" required><p class="text-xs text-secondary mt-1">Order Tokenized Value: <span id="payout-tokenized-value">--</span></p></div>
-                     <p class="text-xs text-secondary mb-3">Requires prior USDC approval.</p>
-                      <div class="flex gap-3"><button type="button" id="admin-approve-usdc-button" class="btn btn-secondary flex-1">Approve USDC</button><button type="submit" class="btn btn-primary flex-1">Submit Payout</button></div>
-                 </form>
-                 <form id="cancel-order-form" class="bg-tertiary p-4 rounded-lg border border-border-color">
-                     <h3 class="text-lg font-semibold mb-3">Cancel Work Order</h3>
-                      <p class="text-xs text-secondary mb-3">Deactivate order (no token burn).</p>
-                     <div class="mb-3"><label for="cancel-id">Work Order ID</label><input type="number" id="cancel-id" min="1" placeholder="e.g., 1" required></div>
-                     <button type="submit" class="btn btn-danger w-full">Cancel Order</button>
-                 </form>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                 <form id="propose-fee-form" class="bg-tertiary p-4 rounded-lg border border-border-color">
-                     <h3 class="text-lg font-semibold mb-3">1. Propose Fee Change</h3>
-                     <div class="mb-3"><label for="propose-new-fee">New Fee % (0-20)</label><input type="number" id="propose-new-fee" min="0" max="20" step="0.1" placeholder="e.g., 10" required></div>
-                      <p class="text-xs text-secondary mb-3">Current Fee: <span id="current-redeem-fee">--</span>%</p>
-                     <button type="submit" class="btn btn-secondary w-full">Propose Fee Change</button>
-                 </form>
-                 <div class="bg-tertiary p-4 rounded-lg border border-border-color">
-                      <h3 class="text-lg font-semibold mb-3">2. Execute Fee Change</h3>
-                      <div id="pending-fee-details" class="proposal-card hidden"></div>
-                      <button id="execute-fee-button" class="btn btn-primary w-full mt-3" disabled>Execute Fee Change (after delay)</button>
-                 </div>
-                <div class="bg-tertiary p-4 rounded-lg border border-border-color">
-                     <h3 class="text-lg font-semibold mb-3">Withdraw Fees</h3>
-                     <p class="text-sm mb-3">Collected Fees: <span id="collected-fees" class="font-bold">Loading...</span> USDC</p>
-                    <button id="withdraw-fees-button" class="btn btn-secondary w-full" disabled>Withdraw All Fees</button>
-                 </div>
-            </div>
-             <form id="emergency-withdraw-form" class="bg-tertiary p-4 rounded-lg border border-border-color mt-6">
-                 <h3 class="text-lg font-semibold mb-3">Emergency Withdraw (Owner Only)</h3>
-                 <p class="text-xs text-secondary mb-3">Withdraw non-USDC ERC20 tokens.</p>
-                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                     <div><label for="emergency-token">Token Address (Non-USDC)</label><input type="text" id="emergency-token" placeholder="0x..." required></div>
-                     <div><label for="emergency-to">Recipient Address</label><input type="text" id="emergency-to" placeholder="0x..." required></div>
-                      <div><label for="emergency-amount">Amount (Raw Units)</label><input type="number" id="emergency-amount" min="1" placeholder="e.g., 1000..." required></div>
-                 </div>
-                 <button type="submit" class="btn btn-danger w-full mt-3">Withdraw Other Token</button>
-             </form>
-        </div>
+                      <h3 class="text-lg font-semibold mb-3">Withdraw Fees</h3>
+                      <p class="text-sm mb-3">Collected Fees: <span id="collected-fees" class="font-bold">Loading...</span> USDC</p>
+                     <button id="withdraw-fees-button" class="btn btn-secondary w-full" disabled>Withdraw All Fees</button>
+                  </div>
+             </div>
+              <form id="emergency-withdraw-form" class="bg-tertiary p-4 rounded-lg border border-border-color mt-6">
+                  <h3 class="text-lg font-semibold mb-3">Emergency Withdraw (Owner Only)</h3>
+                  <p class="text-xs text-secondary mb-3">Withdraw non-USDC ERC20 tokens.</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div><label for="emergency-token">Token Address (Non-USDC)</label><input type="text" id="emergency-token" placeholder="0x..." required></div>
+                      <div><label for="emergency-to">Recipient Address</label><input type="text" id="emergency-to" placeholder="0x..." required></div>
+                       <div><label for="emergency-amount">Amount (Raw Units)</label><input type="number" id="emergency-amount" min="1" placeholder="e.g., 1000..." required></div>
+                  </div>
+                  <button type="submit" class="btn btn-danger w-full mt-3">Withdraw Other Token</button>
+              </form>
+         </div>
 
     </main>
 
@@ -309,6 +309,7 @@
         const arbitrumChainId = '0xa4b1'; // 42161 in hex
 
         // --- DOM Elements ---
+        // ... (Keep all existing DOM element references) ...
         const connectButton = document.getElementById('connect-button');
         const statusMessageDiv = document.getElementById('status-message');
         const walletInfoDiv = document.getElementById('wallet-info');
@@ -318,8 +319,6 @@
         const mtyldBalanceSpan = document.getElementById('mtyld-balance');
         const buyUsdcBalanceSpan = document.getElementById('buy-usdc-balance');
         const redeemMtyldBalanceSpan = document.getElementById('redeem-mtyld-balance');
-
-        // Protocol Info Elements
         const tokenNameSpan = document.getElementById('token-name');
         const tokenSymbolSpan = document.getElementById('token-symbol');
         const totalSupplySpan = document.getElementById('total-supply');
@@ -328,8 +327,6 @@
         const mtyldPriceSpan = document.getElementById('mtyld-price');
         const availableMtyldSpan = document.getElementById('available-mtyld');
         const proposalDelaySpan = document.getElementById('proposal-delay');
-
-        // Buy Form Elements
         const buyForm = document.getElementById('buy-form');
         const buyUsdcAmountInput = document.getElementById('buy-usdc-amount');
         const buySlippageSelect = document.getElementById('buy-slippage');
@@ -337,8 +334,6 @@
         const minTokensOutInput = document.getElementById('min-tokens-out');
         const approveUsdcButton = document.getElementById('approve-usdc-button');
         const buyButton = document.getElementById('buy-button');
-
-        // Redeem Form Elements
         const redeemForm = document.getElementById('redeem-form');
         const redeemMtyldAmountInput = document.getElementById('redeem-mtyld-amount');
         const redeemSlippageSelect = document.getElementById('redeem-slippage');
@@ -346,18 +341,10 @@
         const minUsdcOutInput = document.getElementById('min-usdc-out');
         const redeemButton = document.getElementById('redeem-button');
         const redeemFeePercentSpan = document.getElementById('redeem-fee-percent');
-
-        // Pending Mints Elements
         const pendingMintsTableBody = document.getElementById('pending-mints-body');
-
-
-        // Work Orders Elements
         const workOrdersTableBody = document.getElementById('work-orders-body');
         const filterMonthSelect = document.getElementById('filter-month');
         const filterYearSelect = document.getElementById('filter-year');
-
-
-        // Admin Panel Elements
         const adminPanelDiv = document.getElementById('admin-panel');
         const proposeMintForm = document.getElementById('propose-mint-form');
         const executeMintIdInput = document.getElementById('execute-mint-id');
@@ -380,7 +367,9 @@
         const pauseStatusIndicator = document.getElementById('pause-status-indicator');
         const pausedOverlay = document.getElementById('paused-overlay');
 
+
         // --- State Variables ---
+        // ... (Keep all existing state variables) ...
         let provider = null;
         let signer = null;
         let userAddress = null;
@@ -396,7 +385,7 @@
 
 
         // --- Helper Functions ---
-        // ... (showStatus, formatUnits, parseUnits, formatDate, setLoading, shortenAddress, formatSeconds, calculateTimeRemaining functions) ...
+        // ... (Keep all existing helper functions) ...
         function showStatus(message, type = 'info') {
             statusMessageDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
             statusMessageDiv.classList.remove('hidden');
@@ -448,7 +437,7 @@
         function formatSeconds(seconds) {
              if (seconds === null || seconds === undefined) return '...';
              const totalSeconds = Number(seconds);
-             if (totalSeconds < 0) return "Expired"; // Handle expired delay
+             if (totalSeconds < 0) return "Expired";
              const d = Math.floor(totalSeconds / 86400);
              const h = Math.floor((totalSeconds % 86400) / 3600);
              const m = Math.floor((totalSeconds % 3600) / 60);
@@ -461,13 +450,9 @@
              return parts.join(' ');
         }
         function calculateTimeRemaining(futureTimestamp) {
-            // Use current browser time as fallback if blockTimestamp isn't available
              const nowSeconds = blockTimestamp ? Number(blockTimestamp) : Math.floor(Date.now() / 1000);
             const futureSeconds = Number(futureTimestamp);
-
-            if (!futureTimestamp || futureSeconds <= nowSeconds) {
-                return "Now";
-            }
+            if (!futureTimestamp || futureSeconds <= nowSeconds) return "Now";
             const remainingSeconds = futureSeconds - nowSeconds;
             return formatSeconds(remainingSeconds);
         }
@@ -475,10 +460,134 @@
 
         // --- Blockchain Interaction ---
 
-        async function connectWallet() { /* ... (same as before) ... */ }
+        async function connectWallet() {
+            console.log("connectWallet called"); // Log start
+            if (typeof window.ethereum === 'undefined') {
+                console.log("MetaMask not detected");
+                return showStatus('MetaMask is not installed.', 'error');
+            }
+            const connectBtn = connectButton;
+            const originalConnectText = 'Connect Wallet';
+            setLoading(connectBtn, true, originalConnectText);
+            console.log("Setting loading state");
+
+            try {
+                // Explicitly check if ethers is defined
+                if (typeof ethers === 'undefined') {
+                    console.error("Ethers.js is not loaded!");
+                    throw new Error('Ethers.js library not loaded. Refresh page.');
+                }
+                console.log("Ethers.js found");
+
+                provider = new ethers.BrowserProvider(window.ethereum, "any");
+                console.log("Provider created");
+
+                if (!window.walletListenersAttached) {
+                     console.log("Setting up wallet listeners");
+                     setupWalletListeners();
+                     window.walletListenersAttached = true;
+                }
+
+                console.log("Getting network...");
+                const network = await provider.getNetwork();
+                console.log("Current network:", network.chainId, network.name);
+
+                if (network.chainId !== BigInt(arbitrumChainId)) {
+                     console.log("Wrong network, attempting to switch...");
+                     showStatus("Wrong network. Please switch to Arbitrum One in MetaMask.", 'warning');
+                     try {
+                          await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: arbitrumChainId }] });
+                          console.log("Switch request sent. Re-initializing provider...");
+                          provider = new ethers.BrowserProvider(window.ethereum); // Re-init
+                          console.log("Provider re-initialized after switch attempt.");
+                          const switchedNetwork = await provider.getNetwork();
+                          if (switchedNetwork.chainId !== BigInt(arbitrumChainId)) {
+                               throw new Error('Failed to switch to Arbitrum One network.');
+                          }
+                          console.log("Successfully switched network.");
+                     } catch (switchError) {
+                          console.error("Switch error:", switchError);
+                          if (switchError.code === 4902) {
+                               console.log("Arbitrum network not found, attempting to add...");
+                               try {
+                                   await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: arbitrumChainId, chainName: 'Arbitrum One', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://arb1.arbitrum.io/rpc'], blockExplorerUrls: ['https://arbiscan.io'] }] });
+                                    console.log("Add network request sent. Re-initializing provider...");
+                                    provider = new ethers.BrowserProvider(window.ethereum); // Re-init
+                                    console.log("Provider re-initialized after add attempt.");
+                                    const addedNetwork = await provider.getNetwork();
+                                     if (addedNetwork.chainId !== BigInt(arbitrumChainId)) {
+                                         throw new Error('Failed to add Arbitrum One network.');
+                                     }
+                                     console.log("Successfully added network.");
+                                } catch (addError) { throw new Error('Add Arbitrum One network manually.'); }
+                           } else { throw new Error('Switch to Arbitrum One network.'); }
+                     }
+                }
+
+                console.log("Requesting accounts...");
+                await provider.send("eth_requestAccounts", []);
+                console.log("Accounts requested. Getting signer...");
+                signer = await provider.getSigner();
+                userAddress = await signer.getAddress();
+                console.log("Signer obtained:", userAddress);
+
+                mtyldContract = new ethers.Contract(contractAddress, contractABI, signer);
+                console.log("MTYLD contract instance created");
+                const usdcAbiMinimal = ["function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)","function allowance(address, address) view returns (uint256)","function approve(address, uint256) returns (bool)","function transferFrom(address, address, uint256) returns (bool)"];
+                usdcContract = new ethers.Contract(usdcAddress, usdcAbiMinimal, signer);
+                console.log("USDC contract instance created");
+                usdcDecimals = await usdcContract.decimals();
+                console.log("USDC decimals:", Number(usdcDecimals));
+
+                connectButton.textContent = shortenAddress(userAddress);
+                connectButton.disabled = true;
+                walletInfoDiv.classList.remove('hidden');
+                console.log("UI updated for connected state");
+
+                console.log("Loading initial data...");
+                await loadInitialData();
+                console.log("Initial data loaded.");
+                showStatus('Wallet connected!', 'success');
+
+            } catch (error) {
+                console.error("Connection failed:", error);
+                showStatus(`Wallet connection failed: ${error.message}`, 'error');
+                resetState();
+            } finally {
+                 console.log("Connect wallet finished.");
+                 // Ensure button is correctly set
+                 if (userAddress) {
+                      setLoading(connectBtn, false, shortenAddress(userAddress));
+                      connectBtn.disabled = true;
+                 } else {
+                     setLoading(connectBtn, false, originalConnectText);
+                     connectBtn.disabled = false;
+                 }
+            }
+        }
+
 
         // Combined function to load data after connection
-        async function loadInitialData() { /* ... (same as before) ... */ }
+        async function loadInitialData() {
+            // Use Promise.allSettled to allow parts to fail without stopping others
+             const results = await Promise.allSettled([
+                 updateProtocolInfo(),
+                 updateWalletInfo(),
+                 fetchAndStoreAllWorkOrders(),
+                 fetchPendingProposals() // Now fetches public pending proposals
+             ]);
+
+             // Check results for errors if needed
+             results.forEach((result, index) => {
+                 if (result.status === 'rejected') {
+                     console.error(`Error during initial load step ${index}:`, result.reason);
+                     // Optionally show a specific error message for failed parts
+                 }
+             });
+
+             // Check admin status after main data load
+             await checkAdminStatus();
+         }
 
 
         function resetState() { /* ... (same as before) ... */ }
@@ -523,7 +632,7 @@
                  console.log("fetchPendingProposals skipped: Contract or delay not ready.");
                  return;
              }
-             pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">Loading pending proposals...</td></tr>';
+             pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary"><span class="loading-spinner !w-4 !h-4 !border-2 mr-2"></span>Loading pending proposals...</td></tr>'; // Added spinner
              let pendingFound = false;
              try {
                  // Fetch nextWorkOrderId inside the function to ensure it's up-to-date
@@ -568,6 +677,7 @@
                            const delaySeconds = Number(currentProposalDelay); // Use previously fetched delay
                            const executableTimestamp = proposal.proposedAt + BigInt(delaySeconds);
                            const { fullDate: executableDate } = formatDate(executableTimestamp); // Get Date object for display
+                            const timeRemainingStr = calculateTimeRemaining(executableTimestamp); // Get remaining time string
 
                            const row = pendingMintsTableBody.insertRow();
                            row.innerHTML = `
@@ -575,7 +685,7 @@
                               <td class="max-w-xs truncate" title="${proposal.description}">${proposal.description}</td>
                               <td>${parseFloat(formatUnits(proposal.grossYield, Number(usdcDecimals))).toFixed(2)}</td>
                               <td>${proposedTime ? proposedTime.toLocaleString() : 'N/A'}</td>
-                              <td>${executableDate ? executableDate.toLocaleString() : 'N/A'} (${calculateTimeRemaining(executableTimestamp)} left)</td>
+                              <td>${executableDate ? executableDate.toLocaleString() : 'N/A'} (${timeRemainingStr === "Now" ? '<span class="text-green">Ready</span>' : timeRemainingStr + ' left'})</td>
                            `;
                       }
                  });
