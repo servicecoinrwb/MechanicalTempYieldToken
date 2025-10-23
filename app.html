@@ -300,29 +300,29 @@
             console.log("loadInitialData started");
             resetLoadingStates(); // Reset UI to loading state
             try {
-                // Fetch data sequentially with logging
-                console.log("-> Fetching protocol info...");
+                // Fetch data sequentially with more logging
+                console.log("--> updateProtocolInfo: START");
                 await updateProtocolInfo();
-                console.log("<- Protocol info finished.");
+                console.log("<-- updateProtocolInfo: END");
 
-                console.log("-> Fetching wallet info...");
+                console.log("--> updateWalletInfo: START");
                 await updateWalletInfo();
-                console.log("<- Wallet info finished.");
+                console.log("<-- updateWalletInfo: END");
 
-                console.log("-> Fetching work orders...");
+                console.log("--> fetchAndStoreAllWorkOrders: START");
                 await fetchAndStoreAllWorkOrders();
-                console.log("<- Work orders finished.");
+                console.log("<-- fetchAndStoreAllWorkOrders: END");
 
                 // No pending proposals for this contract version
 
-                console.log("-> Checking admin status...");
+                console.log("--> checkAdminStatus: START");
                 await checkAdminStatus();
-                console.log("<- Admin check finished.");
+                console.log("<-- checkAdminStatus: END");
 
             } catch (error) {
                  // Catch errors from any step
-                 console.error("!!! Error during loadInitialData:", error);
-                 showStatus("Failed to load initial application data. Check console.", "error");
+                 console.error("!!! Error during loadInitialData sequence:", error);
+                 showStatus("Failed to load application data. Check console.", "error");
                  clearLoadingStatesWithError(); // Set UI to error state
             }
             console.log("loadInitialData finished");
@@ -340,42 +340,45 @@
 
 
         async function updateWalletInfo() {
-            console.log("updateWalletInfo started");
-            if (!provider || !userAddress || !usdcContract || !mtyldContract) {
-                console.warn("updateWalletInfo skipped: Missing provider/user/contracts");
-                usdcBalanceSpan.textContent = '<span class="error-text">Connect Wallet</span>';
-                mtyldBalanceSpan.textContent = '<span class="error-text">Connect Wallet</span>';
-                return;
-            }
-            usdcBalanceSpan.textContent = 'Loading...'; mtyldBalanceSpan.textContent = 'Loading...'; // Show loading
-            buyUsdcBalanceSpan.textContent = '...'; redeemMtyldBalanceSpan.textContent = '...';
-            try {
-                const network = await provider.getNetwork();
-                networkNameSpan.textContent = network.name === 'arbitrum' ? 'Arbitrum One' : network.name;
-                userAddressSpan.textContent = userAddress; // Show full address here
+             console.log("updateWalletInfo started");
+             if (!provider || !userAddress || !usdcContract || !mtyldContract) {
+                 console.warn("updateWalletInfo skipped: Missing provider/user/contracts");
+                 usdcBalanceSpan.innerHTML = '<span class="error-text">Connect Wallet</span>';
+                 mtyldBalanceSpan.innerHTML = '<span class="error-text">Connect Wallet</span>';
+                 return;
+             }
+             usdcBalanceSpan.textContent = 'Loading...'; mtyldBalanceSpan.textContent = 'Loading...';
+             buyUsdcBalanceSpan.textContent = '...'; redeemMtyldBalanceSpan.textContent = '...';
+             try {
+                 console.log("  -> Getting network info...");
+                 const network = await provider.getNetwork();
+                 networkNameSpan.textContent = network.name === 'arbitrum' ? 'Arbitrum One' : network.name;
+                 userAddressSpan.textContent = userAddress;
+                 console.log("  -> Network/Address updated.");
 
-                const [usdcBal, mtyldBal] = await Promise.all([
-                    usdcContract.balanceOf(userAddress),
-                    mtyldContract.balanceOf(userAddress)
-                ]);
-                console.log("Balances fetched:", usdcBal.toString(), mtyldBal.toString());
+                 console.log("  -> Fetching balances...");
+                 const [usdcBal, mtyldBal] = await Promise.all([
+                     usdcContract.balanceOf(userAddress),
+                     mtyldContract.balanceOf(userAddress)
+                 ]);
+                 console.log("  <- Balances fetched:", usdcBal.toString(), mtyldBal.toString());
 
-                // Update main display
-                usdcBalanceSpan.textContent = `${parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2)} USDC`;
-                mtyldBalanceSpan.textContent = `${parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4)} MTYLD`;
-                // Update form hints
-                buyUsdcBalanceSpan.textContent = parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2);
-                redeemMtyldBalanceSpan.textContent = parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4);
-                console.log("Wallet info UI updated successfully");
-            } catch (error) {
-                console.error("!!! Error updating wallet info:", error);
-                showStatus('Failed to update wallet balances.', 'error');
-                usdcBalanceSpan.innerHTML = '<span class="error-text">Error</span>'; // Use innerHTML for style
-                mtyldBalanceSpan.innerHTML = '<span class="error-text">Error</span>';
-                buyUsdcBalanceSpan.textContent = 'Error';
-                redeemMtyldBalanceSpan.textContent = 'Error';
-            }
-             console.log("updateWalletInfo finished");
+                 // Update main display
+                 usdcBalanceSpan.textContent = `${parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2)} USDC`;
+                 mtyldBalanceSpan.textContent = `${parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4)} MTYLD`;
+                 // Update form hints
+                 buyUsdcBalanceSpan.textContent = parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2);
+                 redeemMtyldBalanceSpan.textContent = parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4);
+                 console.log("  Wallet info UI updated successfully");
+             } catch (error) {
+                 console.error("!!! Error updating wallet info:", error);
+                 showStatus('Failed to update wallet balances.', 'error');
+                 usdcBalanceSpan.innerHTML = '<span class="error-text">Error</span>';
+                 mtyldBalanceSpan.innerHTML = '<span class="error-text">Error</span>';
+                 buyUsdcBalanceSpan.textContent = 'Error';
+                 redeemMtyldBalanceSpan.textContent = 'Error';
+             }
+              console.log("updateWalletInfo finished");
          }
 
 
@@ -383,44 +386,37 @@
              console.log("updateProtocolInfo started");
              if (!mtyldContract || !usdcContract || !provider) {
                  console.warn("updateProtocolInfo skipped: Missing contracts or provider");
-                 clearLoadingStatesWithError(); return; // Clear loading state on skip
+                 clearLoadingStatesWithError(); return;
              }
-             // Ensure loading states are set at the beginning
-             resetLoadingStates();
+             resetLoadingStates(); // Set loading placeholders
+             let name, symbol, supply, contractUSDCBalance, available, feePercent;
              try {
+                 console.log("  -> Getting block...");
                  const block = await provider.getBlock("latest");
                  blockTimestamp = block ? BigInt(block.timestamp) : null;
-                 console.log("Block timestamp:", blockTimestamp?.toString());
+                 console.log("  <- Block timestamp:", blockTimestamp?.toString());
 
-                 // Fetch data using Promise.allSettled for individual error handling
-                 const results = await Promise.allSettled([
-                     mtyldContract.name(),                  // 0
-                     mtyldContract.symbol(),                 // 1
-                     mtyldContract.totalSupply(),            // 2
-                     mtyldContract.contractPaymentTokenBalance(), // 3
-                     mtyldContract.availableTokens(),        // 4
-                     mtyldContract.redemptionFeePercentage() // 5
-                 ]);
-                 console.log("Protocol data fetched results:", results);
+                 console.log("  -> Fetching protocol data points...");
+                 // Fetch individually for better error isolation
+                 try { name = await mtyldContract.name(); console.log("   - Name:", name); } catch(e) { console.error("Error fetching name:", e); tokenNameSpan.innerHTML = '<span class="error-text">Error</span>'; }
+                 try { symbol = await mtyldContract.symbol(); console.log("   - Symbol:", symbol); } catch(e) { console.error("Error fetching symbol:", e); tokenSymbolSpan.innerHTML = '<span class="error-text">Err</span>'; }
+                 try { supply = await mtyldContract.totalSupply(); console.log("   - Supply:", supply?.toString()); } catch(e) { console.error("Error fetching supply:", e); totalSupplySpan.innerHTML = '<span class="error-text">Error</span>'; }
+                 try { contractUSDCBalance = await mtyldContract.contractPaymentTokenBalance(); console.log("   - Contract USDC:", contractUSDCBalance?.toString()); } catch(e) { console.error("Error fetching contract balance:", e); contractUsdcSpan.innerHTML = '<span class="error-text">Error</span>'; }
+                 try { available = await mtyldContract.availableTokens(); console.log("   - Available MTYLD:", available?.toString()); } catch(e) { console.error("Error fetching available tokens:", e); availableMtyldSpan.innerHTML = '<span class="error-text">Error</span>'; }
+                 try { feePercent = await mtyldContract.redemptionFeePercentage(); console.log("   - Fee %:", feePercent?.toString()); } catch(e) { console.error("Error fetching fee:", e); redeemFeePercentSpan.innerHTML = '<span class="error-text">Error</span>'; }
 
-                 // Process results individually
-                 tokenNameSpan.textContent = results[0].status === 'fulfilled' ? results[0].value : '<span class="error-text">Error</span>';
-                 tokenSymbolSpan.textContent = results[1].status === 'fulfilled' ? results[1].value : '<span class="error-text">Err</span>';
+                 console.log("  <- Protocol data fetching complete.");
 
-                 const supply = results[2].status === 'fulfilled' ? results[2].value : null;
-                 totalSupplySpan.innerHTML = supply !== null ? parseFloat(formatUnits(supply, mtyldDecimals)).toFixed(4) : '<span class="error-text">Error</span>';
+                 // Update UI elements if data was fetched
+                 if (name !== undefined) tokenNameSpan.textContent = name;
+                 if (symbol !== undefined) tokenSymbolSpan.textContent = symbol;
+                 if (supply !== undefined) totalSupplySpan.textContent = parseFloat(formatUnits(supply, mtyldDecimals)).toFixed(4);
+                 if (contractUSDCBalance !== undefined) contractUsdcSpan.textContent = parseFloat(formatUnits(contractUSDCBalance, usdcDecimals)).toFixed(2);
+                 if (available !== undefined) availableMtyldSpan.textContent = parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4);
+                 if (feePercent !== undefined) redeemFeePercentSpan.textContent = feePercent.toString() + '%';
 
-                 const contractUSDCBalance = results[3].status === 'fulfilled' ? results[3].value : null;
-                 contractUsdcSpan.innerHTML = contractUSDCBalance !== null ? parseFloat(formatUnits(contractUSDCBalance, usdcDecimals)).toFixed(2) : '<span class="error-text">Error</span>';
-
-                 const available = results[4].status === 'fulfilled' ? results[4].value : null;
-                 availableMtyldSpan.innerHTML = available !== null ? parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4) : '<span class="error-text">Error</span>';
-
-                 const feePercent = results[5].status === 'fulfilled' ? results[5].value : null;
-                 redeemFeePercentSpan.innerHTML = feePercent !== null ? feePercent.toString() + '%' : '<span class="error-text">Error</span>';
-                 // Also update admin fee display if admin panel is visible
-                 if (!adminPanelDiv.classList.contains('hidden')) {
-                      currentRedeemFeeSpan.innerHTML = feePercent !== null ? feePercent.toString() : '<span class="error-text">Error</span>';
+                 if (!adminPanelDiv.classList.contains('hidden') && feePercent !== undefined) {
+                      currentRedeemFeeSpan.textContent = feePercent.toString();
                  }
 
                  contractAddressLink.textContent = shortenAddress(contractAddress);
@@ -428,24 +424,25 @@
 
                  // Calculate price only if supply and balance fetched successfully
                  let price = 0;
-                 if (supply !== null && contractUSDCBalance !== null && supply > 0n && contractUSDCBalance >= 0n) {
+                 if (supply !== undefined && contractUSDCBalance !== undefined && supply > 0n && contractUSDCBalance >= 0n) {
                      const scaleFactor = 10n ** BigInt(18 - usdcDecimals);
                      const priceBigInt = supply > 0n ? (contractUSDCBalance * scaleFactor) / supply : 0n;
                      price = parseFloat(formatUnits(priceBigInt, usdcDecimals));
                      mtyldPriceSpan.textContent = price > 0 ? price.toFixed(6) : '0.000000';
                  } else if (supply === 0n) {
-                     mtyldPriceSpan.textContent = '0.000000'; // Handle zero supply case
+                     mtyldPriceSpan.textContent = '0.000000';
                  } else {
+                      // If either failed, show error for price
                      mtyldPriceSpan.innerHTML = '<span class="error-text">Error</span>';
                  }
-                 console.log("Calculated price:", mtyldPriceSpan.textContent);
+                 console.log("  Calculated price:", mtyldPriceSpan.textContent);
 
                  updateBuyEstimate(); updateRedeemEstimate();
-                 console.log("Estimates updated after protocol info");
+                 console.log("  Estimates updated");
 
-             } catch (error) { // Catch errors from Promise.allSettled itself (unlikely but possible)
-                 console.error("!!! Critical Error updating protocol info:", error);
-                 showStatus('Failed to fetch critical protocol data.', 'error');
+             } catch (error) { // Catch any unexpected errors during the process
+                 console.error("!!! Unexpected Error updating protocol info:", error);
+                 showStatus('Failed to fetch protocol data.', 'error');
                  clearLoadingStatesWithError();
              }
              console.log("updateProtocolInfo finished");
