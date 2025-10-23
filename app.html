@@ -317,7 +317,7 @@
         let mtyldContract = null;
         let usdcContract = null;
         let contractOwner = null;
-        let usdcDecimals = 6;
+        let usdcDecimals = 6; // Hardcoded, as fetching failed previously
         let mtyldDecimals = 18;
         let allWorkOrders = [];
         let availableYears = new Set();
@@ -340,121 +340,74 @@
         // --- Blockchain Interaction ---
 
         async function connectWallet() {
-            console.log("connectWallet called"); // Log start
-            // Add a check right at the beginning
+            console.log("connectWallet called");
             if (typeof ethers === 'undefined') {
                 console.error("Ethers.js is NOT loaded!");
-                 alert("Required library (Ethers.js) failed to load. Please check your internet connection or browser extensions, then refresh the page.");
-                 connectButton.textContent = 'Error Loading Library';
-                 connectButton.disabled = true;
-                 return; // Stop execution
+                alert("Required library (Ethers.js) failed to load. Refresh.");
+                connectButton.textContent = 'Lib Error'; connectButton.disabled = true; return;
             }
             if (typeof window.ethereum === 'undefined') {
                 console.log("MetaMask not detected");
-                return showStatus('MetaMask is not installed.', 'error');
+                return showStatus('MetaMask not installed.', 'error');
             }
-            const connectBtn = connectButton;
-            const originalConnectText = 'Connect Wallet';
-            setLoading(connectBtn, true, originalConnectText);
-            console.log("Setting loading state");
+            const connectBtn = connectButton; const originalConnectText = 'Connect Wallet';
+            setLoading(connectBtn, true, originalConnectText); console.log("Loading state set");
 
             try {
-                // Ethers check is done above
                 console.log("Ethers.js found");
-
-                provider = new ethers.BrowserProvider(window.ethereum, "any");
-                console.log("Provider created");
-
-                if (!window.walletListenersAttached) {
-                     console.log("Setting up wallet listeners");
-                     setupWalletListeners();
-                     window.walletListenersAttached = true;
-                }
+                provider = new ethers.BrowserProvider(window.ethereum, "any"); console.log("Provider created");
+                if (!window.walletListenersAttached) { console.log("Setting listeners"); setupWalletListeners(); window.walletListenersAttached = true; }
 
                 console.log("Getting network...");
-                const network = await provider.getNetwork();
-                console.log("Current network:", network.chainId, network.name);
+                const network = await provider.getNetwork(); console.log("Network:", network.chainId, network.name);
 
                 if (network.chainId !== BigInt(arbitrumChainId)) {
-                     console.log("Wrong network, attempting to switch...");
-                     showStatus("Wrong network. Please switch to Arbitrum One in MetaMask.", 'warning');
+                     console.log("Wrong network, switching..."); showStatus("Switch to Arbitrum One.", 'warning');
                      try {
                           await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: arbitrumChainId }] });
-                          console.log("Switch request sent. Re-initializing provider...");
-                          // IMPORTANT: Re-initialize provider AND signer after network change
-                          provider = new ethers.BrowserProvider(window.ethereum);
-                          signer = await provider.getSigner(); // Re-get signer on new network
-                          console.log("Provider/Signer re-initialized after switch attempt.");
-                          const switchedNetwork = await provider.getNetwork();
-                          if (switchedNetwork.chainId !== BigInt(arbitrumChainId)) {
-                               throw new Error('Failed to switch to Arbitrum One network.');
-                          }
-                          console.log("Successfully switched network.");
+                          console.log("Switch req sent. Re-init..."); provider = new ethers.BrowserProvider(window.ethereum); signer = await provider.getSigner();
+                          const switchedNetwork = await provider.getNetwork(); if (switchedNetwork.chainId !== BigInt(arbitrumChainId)) throw new Error('Switch failed.'); console.log("Switch OK.");
                      } catch (switchError) {
                           console.error("Switch error:", switchError);
                           if (switchError.code === 4902) {
-                               console.log("Arbitrum network not found, attempting to add...");
+                               console.log("Network not found, adding...");
                                try {
                                    await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: arbitrumChainId, chainName: 'Arbitrum One', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://arb1.arbitrum.io/rpc'], blockExplorerUrls: ['https://arbiscan.io'] }] });
-                                    console.log("Add network request sent. Re-initializing provider...");
-                                    provider = new ethers.BrowserProvider(window.ethereum); // Re-init provider
-                                    signer = await provider.getSigner(); // Re-get signer
-                                    console.log("Provider/Signer re-initialized after add attempt.");
-                                    const addedNetwork = await provider.getNetwork();
-                                     if (addedNetwork.chainId !== BigInt(arbitrumChainId)) {
-                                         throw new Error('Failed to add Arbitrum One network.');
-                                     }
-                                     console.log("Successfully added network.");
-                                } catch (addError) { throw new Error('Add Arbitrum One network manually.'); }
-                           } else { throw new Error('Switch to Arbitrum One network.'); }
+                                    console.log("Add req sent. Re-init..."); provider = new ethers.BrowserProvider(window.ethereum); signer = await provider.getSigner();
+                                    const addedNetwork = await provider.getNetwork(); if (addedNetwork.chainId !== BigInt(arbitrumChainId)) throw new Error('Add failed.'); console.log("Add OK.");
+                                } catch (addError) { throw new Error('Add Arbitrum manually.'); }
+                           } else { throw new Error('Switch network.'); }
                      }
-                } else {
-                     // Network is already correct, get signer
-                     console.log("Network is correct. Getting signer...");
-                     signer = await provider.getSigner();
-                }
-
+                } else { console.log("Network OK. Getting signer..."); signer = await provider.getSigner(); }
 
                 console.log("Requesting accounts...");
-                // Use requestAccounts standard method
-                const accounts = await provider.send("eth_requestAccounts", []);
-                console.log("Accounts requested:", accounts);
-                if (!accounts || accounts.length === 0) {
-                     // This case might happen if the user disconnects during the request
-                     throw new Error("No accounts found. Please unlock MetaMask or grant permission.");
-                }
-                userAddress = accounts[0]; // Use the first account
-                console.log("Signer obtained:", userAddress);
+                const accounts = await provider.send("eth_requestAccounts", []); console.log("Accounts:", accounts);
+                if (!accounts || accounts.length === 0) throw new Error("No accounts found/permission denied.");
+                userAddress = accounts[0]; console.log("Signer:", userAddress);
 
-                // Re-instantiate contracts with the potentially new signer
-                mtyldContract = new ethers.Contract(contractAddress, contractABI, signer);
-                console.log("MTYLD contract instance created/updated");
+                mtyldContract = new ethers.Contract(contractAddress, contractABI, signer); console.log("MTYLD contract OK");
                 const usdcAbiMinimal = ["function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)","function allowance(address, address) view returns (uint256)","function approve(address, uint256) returns (bool)","function transferFrom(address, address, uint256) returns (bool)"];
-                usdcContract = new ethers.Contract(usdcAddress, usdcAbiMinimal, signer);
-                console.log("USDC contract instance created/updated");
-                usdcDecimals = await usdcContract.decimals();
-                console.log("USDC decimals:", Number(usdcDecimals));
+                usdcContract = new ethers.Contract(usdcAddress, usdcAbiMinimal, signer); console.log("USDC contract OK");
+                // Removed dynamic decimals call - Hardcoded usdcDecimals = 6 is used
+                console.log("USDC decimals (hardcoded):", usdcDecimals);
 
-                connectButton.textContent = shortenAddress(userAddress);
-                connectButton.disabled = true;
-                walletInfoDiv.classList.remove('hidden');
-                console.log("UI updated for connected state");
+                connectButton.textContent = shortenAddress(userAddress); connectButton.disabled = true;
+                walletInfoDiv.classList.remove('hidden'); console.log("UI updated connected");
 
-                console.log("Loading initial data...");
-                await loadInitialData();
-                console.log("Initial data loaded.");
+                console.log("Loading initial data..."); await loadInitialData(); console.log("Initial data loaded.");
                 showStatus('Wallet connected!', 'success');
 
             } catch (error) {
                 console.error("Connection failed:", error);
-                 let displayError = error.message;
-                 if (error.code === 4001 || error.message?.includes('User rejected')) { displayError = "Connection request rejected."; }
-                 else if (error.message?.includes('unknown account')) { displayError = "MetaMask may be locked or needs permissions."; }
-                 else if (error.message?.includes('missing provider')) { displayError = "Wallet provider not found. Refresh?"; }
-                 showStatus(`Wallet connect failed: ${displayError}`, 'error');
+                 let displayError = error.message || "Unknown error";
+                 if (error.code === 4001 || error.message?.includes('User rejected')) { displayError = "Connection rejected."; }
+                 else if (error.message?.includes('unknown account')) { displayError = "MetaMask locked/needs permissions."; }
+                 else if (error.message?.includes('missing provider')) { displayError = "Wallet provider not found."; }
+                 else if (error.code === 'CALL_EXCEPTION') { displayError = "Network/Contract call failed. Check console."; } // Catch CALL_EXCEPTION
+                 showStatus(`Connect failed: ${displayError}`, 'error');
                 resetState();
             } finally {
-                 console.log("Connect wallet finished.");
+                 console.log("Connect finished.");
                  if (userAddress) { setLoading(connectBtn, false, shortenAddress(userAddress)); connectBtn.disabled = true; }
                  else { setLoading(connectBtn, false, originalConnectText); connectBtn.disabled = false; }
             }
