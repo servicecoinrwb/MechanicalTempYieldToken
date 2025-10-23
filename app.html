@@ -293,7 +293,7 @@
             </div>
         </div>
 
-        <!-- NEW: Pending Work Order Proposals Section -->
+        <!-- Pending Work Order Proposals Section -->
          <div class="card mt-6">
              <h2 class="text-xl font-bold mb-4">Pending Work Order Proposals</h2>
              <div class="overflow-x-auto">
@@ -363,7 +363,7 @@
 
 
         <!-- Admin Panel (Initially hidden) -->
-        <div id="admin-panel" class="card mt-8 hidden"> <!-- FIX: Added class="card" -->
+        <div id="admin-panel" class="card mt-8 hidden">
             <h2 class="text-2xl font-bold mb-6 text-center text-accent">Admin Panel</h2>
 
             <!-- Pause/Unpause Controls -->
@@ -443,7 +443,6 @@
                  <form id="propose-fee-form" class="bg-tertiary p-4 rounded-lg border border-border-color">
                      <h3 class="text-lg font-semibold mb-3">1. Propose Fee Change</h3>
                      <div class="mb-3">
-                          <!-- FIX: Changed label, step, and placeholder -->
                           <label for="propose-new-fee">New Fee Percentage (Whole Number)</label>
                           <input type="number" id="propose-new-fee" min="0" max="20" step="1" placeholder="e.g., 10" required>
                      </div>
@@ -1161,57 +1160,91 @@
              });
          }
 
-        // --- NEW: Pending Proposals Logic ---
+        // --- Pending Proposals Logic ---
         async function fetchPendingWorkOrders() {
-            if (!mtyldContract) return;
+            // --- FIX: Added detailed logging and refined logic ---
+            console.log("Fetching pending work orders...");
+            if (!mtyldContract) {
+                console.log("Contract not initialized.");
+                pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet first.</td></tr>';
+                return;
+            }
             pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Fetching pending proposals...</td></tr>';
-            pendingWorkOrderProposals = [];
-            const MAX_PROPOSALS_TO_CHECK = 10; // Check the last 10 potential IDs
+            let localPendingProposals = []; // Use a local array to build the list
+            const MAX_PROPOSALS_TO_CHECK = 10;
 
             try {
-                const nextId = await mtyldContract.nextProposalId();
-                if (nextId <= 1n) {
-                    pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>';
+                const nextIdBigInt = await mtyldContract.nextProposalId();
+                const nextId = Number(nextIdBigInt); // Convert to number for easier looping
+                console.log(`Next Proposal ID from contract: ${nextId}`);
+
+                if (nextId <= 1) {
+                    console.log("No proposals created yet (nextId <= 1).");
+                    pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No proposals found.</td></tr>';
+                    pendingWorkOrderProposals = []; // Ensure state is empty
                     return;
                 }
 
-                let proposalsFound = 0;
-                for (let i = 1n; i <= BigInt(MAX_PROPOSALS_TO_CHECK); i++) {
-                    const proposalIdToCheck = nextId - i;
-                    if (proposalIdToCheck < 1n) break; // Don't check ID 0 or lower
+                let proposalsFoundCount = 0;
+                const proposalChecks = []; // Array to hold promises
 
-                    try {
-                        const proposal = await mtyldContract.pendingMints(proposalIdToCheck);
-                        if (proposal.exists) {
-                            pendingWorkOrderProposals.push({
-                                id: proposalIdToCheck,
-                                grossYield: proposal.grossYield,
-                                description: proposal.description,
-                                proposedAt: proposal.proposedAt
-                            });
-                            proposalsFound++;
-                        }
-                    } catch (fetchError) {
-                        console.error(`Error fetching pending mint ${proposalIdToCheck}:`, fetchError);
-                        // Continue checking others even if one fails
-                    }
+                // Determine the starting ID to check (latest possible proposal ID is nextId - 1)
+                const startCheckId = nextId - 1;
+                // Determine the ending ID (go back MAX_PROPOSALS_TO_CHECK or until ID 1)
+                const endCheckId = Math.max(1, startCheckId - MAX_PROPOSALS_TO_CHECK + 1);
+                console.log(`Checking proposal IDs from ${startCheckId} down to ${endCheckId}`);
+
+
+                for (let currentId = startCheckId; currentId >= endCheckId; currentId--) {
+                     // Push the promise into the array
+                    proposalChecks.push(
+                        mtyldContract.pendingMints(BigInt(currentId))
+                            .then(proposal => {
+                                console.log(`Checked ID ${currentId}: Exists = ${proposal.exists}`);
+                                if (proposal.exists) {
+                                    localPendingProposals.push({
+                                        id: BigInt(currentId), // Keep as BigInt
+                                        grossYield: proposal.grossYield,
+                                        description: proposal.description,
+                                        proposedAt: proposal.proposedAt
+                                    });
+                                    proposalsFoundCount++;
+                                }
+                            })
+                            .catch(fetchError => {
+                                console.error(`Error fetching pending mint ${currentId}:`, fetchError);
+                                // Don't stop checking other proposals if one fails
+                            })
+                    );
                 }
 
-                renderPendingProposalsTable();
-                if (proposalsFound === 0) {
-                     pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>';
+                // Wait for all checks to complete
+                await Promise.all(proposalChecks);
+
+                console.log(`Found ${proposalsFoundCount} pending proposals.`, localPendingProposals);
+                pendingWorkOrderProposals = localPendingProposals; // Update global state *after* all checks
+                renderPendingProposalsTable(); // Render using the updated global state
+
+                if (proposalsFoundCount === 0) {
+                     pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found in the last checked range.</td></tr>';
                 }
 
             } catch (error) {
                 console.error("Fetch pending proposals failed:", error);
                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-400">Error fetching pending proposals.</td></tr>';
+                pendingWorkOrderProposals = []; // Clear state on error
             }
         }
 
+
         function renderPendingProposalsTable() {
-            pendingProposalsTableBody.innerHTML = ''; // Clear previous content
+            // ... (renderPendingProposalsTable remains the same) ...
+             pendingProposalsTableBody.innerHTML = ''; // Clear previous content
             if (pendingWorkOrderProposals.length === 0) {
-                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>';
+                 // The message might be set by the fetch function if nothing is found
+                 if (pendingProposalsTableBody.innerHTML === '') {
+                     pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>';
+                 }
                  return;
             }
 
