@@ -1,140 +1,140 @@
 # 🧰 MTYLD Vault dApp (Mechanical Temp Yield)
 
-**MTYLD (Mechanical Temp Yield)** is a decentralized revenue-backed vault built on **Arbitrum**.  
-It tokenizes real HVAC business income from **Mechanical Temp LLC** into an on-chain yield system.  
-The more verified business revenue the DAO injects, the higher the token’s value (NAV).
+**MTYLD (Mechanical Temp Yield)** is a decentralized revenue-backed vault built on **Arbitrum**, powered by  
+[**Mechanical Temp**](https://mechanicaltemp.com/) — a Michigan-based HVAC company integrating real-world service profits with on-chain yield.
 
-This lightweight HTML dApp lets users **mint / redeem MTYLD tokens** and lets the owner manage the vault directly on-chain — without extra infrastructure.
+This mini dApp allows users to **mint and redeem MTYLD tokens**, while the business owner can **queue and apply real revenue** to grow the vault’s value (NAV) — turning verified HVAC income into transparent blockchain yield.
 
 ---
 
 ## ⚙️ Features
 
-- 🧮 **Live NAV display** — updates as new revenue is applied  
-- 💰 **Mint / Redeem flow** — convert between USDC and MTYLD tokens  
-- ⏳ **Revenue Queue System** — real job profits are added as “pending” until released  
-- 🛠️ **Owner Panel** with:
+- 🧮 **Live NAV display** — updates automatically as new revenue is applied  
+- 💰 **Mint / Redeem flow** — convert between USDC and MTYLD  
+- ⏳ **Revenue Queue System** — real business profits enter as pending, then activate after a delay  
+- 🛠️ **Owner Panel**
   - Queue & apply revenue  
-  - Set fees & recipient  
-  - Toggle rounding mode  
-  - Change NAV delay  
-  - Guarded-launch whitelist  
-  - Epoch open/close controls  
+  - Adjust fees and recipient  
+  - Toggle rounding (up/down)  
+  - Set NAV delay  
+  - Guarded-launch & whitelist control  
+  - Begin / End Epoch close periods  
 
-Everything runs through a single HTML + Ethers.js file — no backend or build step required.
+> ⚡️ Everything runs in a single HTML + Ethers.js file — no backend, no build tools, instant deploy.
 
 ---
 
-## 🔗 Live Contract (Arbitrum)
+## 🔗 Live Contracts (Arbitrum)
 
-| Item | Address |
-|------|----------|
-| **Vault** | [`0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880`](https://arbiscan.io/address/0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880) |
-| **USDC** | [`0xaf88d065e77c8cC2239327C5EDb3A432268e5831`](https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831) |
+| Type | Address | Description |
+|------|----------|-------------|
+| **Vault (MTYLD)** | [`0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880`](https://arbiscan.io/address/0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880) | Core yield vault |
+| **Stablecoin (USDC)** | [`0xaf88d065e77c8cC2239327C5EDb3A432268e5831`](https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831) | Backing asset (6 decimals) |
 
 ---
 
 ## 🪙 How the Vault Works
 
 ### 1. **Mint**
-Users deposit **USDC** → the contract mints MTYLD tokens based on current price (NAV).
+Users deposit **USDC** → vault mints MTYLD tokens based on current NAV (price per token).
 
-### 2. **Revenue Injection**
-Mechanical Temp (the owner wallet) calls `injectRevenue(usdcAmount)`  
-→ this transfers real business profits into the vault  
-→ creates **pendingRevenueUSDC** locked for `navDelaySec` (default 3600 s)
+### 2. **Queue Revenue**
+Mechanical Temp (the owner) calls `injectRevenue(usdcAmount)` to deposit verified business profits.  
+Funds move into `pendingRevenueUSDC` and lock for `navDelaySec` seconds (e.g., 1 hour).
 
-### 3. **Revenue Application**
-After the delay expires, anyone calls `applyPendingRevenue()`  
-→ moves pending funds into the active treasury  
-→ **increases NAV** (token value per MTYLD)
+### 3. **Apply Revenue**
+After the delay, anyone can call `applyPendingRevenue()` —  
+pending funds become active treasury → **NAV rises** (token value increases).
 
 ### 4. **Redeem**
-Holders can redeem MTYLD for USDC at current NAV, minus any redeem fee.
+Holders can redeem MTYLD back to USDC at the updated NAV, minus optional fees.
 
-This process ties the token’s appreciation directly to **verified HVAC job profits**, not speculation or trading fees.
+| Step | Active Treasury | Pending | Action |
+|------|-----------------|----------|--------|
+| Initial | 10,000 | 0 | — |
+| Owner queues 3,000 | 10,000 | 3,000 | `injectRevenue(3000)` |
+| Wait 1 hr | 10,000 | 3,000 | — |
+| Apply pending | 13,000 | 0 | `applyPendingRevenue()` |
+| NAV ↑ 30% | — | — | Price increases |
 
 ---
 
-## 🧑‍💻 Using the dApp
+## 🧑‍💻 How to Use the dApp
 
-### 🧩 Connect & View
-1. Open `index.html` in your browser.  
-2. Click **Connect Wallet** (MetaMask → Arbitrum network).  
+### 🧩 Connect Wallet
+1. Open `index.html` in your browser (MetaMask → Arbitrum One).  
+2. Click **Connect Wallet**.  
 3. Dashboard shows:
-   - Price per token (NAV)  
+   - Current NAV (Price per MTYLD)  
    - Active Treasury (USDC)  
    - Pending Revenue  
-   - Countdown until next apply  
-
-### 💵 For Regular Users
-1. **Mint**
-   - Enter amount of USDC → click *Preview* → *Mint*  
-   - Confirm MetaMask approval if prompted  
-
-2. **Redeem**
-   - Enter MTYLD amount → click *Preview* → *Redeem*  
-
-Slippage field protects you from NAV changes between transaction and confirmation.
+   - Countdown to next apply  
 
 ---
 
-## 🧑‍🔧 For Owner (Mechanical Temp DAO)
+### 💵 For Users
+- **Mint MTYLD**  
+  Enter amount of USDC → click *Preview* → *Mint*.  
+  Approve spending if prompted.  
 
-1. **Queue Revenue**
-   - Enter USDC amount → click *Approve & Queue*  
-   - USDC moves into contract as pendingRevenue  
-
-2. **Apply Pending**
-   - After delay, click *Apply Pending*  
-   - Funds move into active treasury, raising NAV  
-
-3. **Epoch Control**
-   - *Begin Epoch Close* → temporarily pause mint/redeem  
-   - *End Epoch Close* → reopen after applying revenue  
-
-4. **Fee Settings**
-   - Set mint/redeem fee in bps (100 bps = 1%)  
-   - Choose recipient wallet  
-   - Optionally round fees upward for exact USDC precision  
-
-5. **Guarded Launch**
-   - Enable to restrict minting to whitelisted wallets  
-   - Add/remove whitelisted addresses  
-
-6. **NAV Delay**
-   - Adjust time (in seconds) before pending revenue can be applied  
+- **Redeem MTYLD**  
+  Enter MTYLD amount → click *Preview* → *Redeem*.  
+  Tokens convert back to USDC at current NAV.
 
 ---
 
-## 🧠 Design Notes
+### 🧑‍🔧 For Owner (Mechanical Temp / DAO)
+Use the **Owner Panel** at the bottom of the dashboard:
 
-- Uses **Safe math** and **reentrancy guards** in Solidity  
-- NAV precision: 1e18 (18 decimals)  
-- Treasury accounting: all values in 6-decimals USDC units  
-- Anti-front-run: revenue is delayed (NAV locked until apply)  
-- Protocol fee: configurable by owner (optional)  
-- Read-only functions available for analytics dashboards (`pricePerToken`, `treasuryActiveUSDC`, `pendingRevenueUSDC`, etc.)
+| Action | Function |
+|---------|-----------|
+| **Queue Revenue** | `injectRevenue(amount)` — transfers USDC into pending state |
+| **Apply Revenue** | `applyPendingRevenue()` — activates pending funds |
+| **Begin / End Epoch Close** | Temporarily pauses mint/redeem during sensitive updates |
+| **Set Fees** | Adjust mint/redeem fees (in bps), recipient address, rounding mode |
+| **Guarded Launch** | Enable/disable restricted minting; whitelist specific wallets |
+| **NAV Delay** | Set how long pending revenue must sit before activation |
+
+---
+
+## 🧠 Design & Security
+
+- 🧩 **SafeMath & ReentrancyGuard** protection  
+- 📊 **NAV precision:** 1e18 (18 decimals)  
+- 💵 **USDC accounting:** 6 decimals  
+- ⏱️ **Anti-front-run:** time-delayed NAV updates  
+- 🧰 **Owner fee controls:** adjustable in real time  
+- 🔒 **Guarded launch mode:** whitelist-only minting until public release  
 
 ---
 
 ## 🧩 Tech Stack
 
-- **Frontend:** pure HTML + CSS + [Ethers.js v6](https://docs.ethers.org/v6/)
+- **Frontend:** pure HTML + CSS + [Ethers.js v6](https://docs.ethers.org/v6/)  
 - **Blockchain:** Arbitrum One  
-- **Token Standard:** ERC-20 compatible vault token (MTYLD)  
-- **Stablecoin:** USDC (6 decimals)  
+- **Stablecoin:** USDC  
+- **Token:** ERC-20 compatible MTYLD vault token  
 
-No framework, no build tools — drop `index.html` anywhere (GitHub Pages, Netlify, Vercel).
+No dependencies, no build tools — simply open or host the HTML file.
 
 ---
 
-## 🚀 Quick Deploy (GitHub Pages)
+## 🚀 Deploy on GitHub Pages
 
-1. Create a new GitHub repo  
+1. Create a new repo (e.g. `MTYLD-dapp`)  
 2. Upload your `index.html`  
-3. In repo settings → *Pages* → set branch to `main` and root folder `/`  
-4. Visit `https://<your-username>.github.io/<repo-name>/`
+3. Go to **Settings → Pages**  
+4. Choose branch `main` and folder `/`  
+5. Access at:  
+   `https://<your-username>.github.io/MTYLD-dapp/`
+
+---
+
+## 🌐 Official Links
+
+- 💻 **Website:** [https://mechanicaltemp.com/](https://mechanicaltemp.com/)  
+- 🧱 **Service Coin DAO GitHub:** [https://github.com/servicecoinrwb](https://github.com/servicecoinrwb)  
+- 🌍 **Docs & Brand Ecosystem:** *Coming soon on [service.money](https://service.money)*  
 
 ---
 
@@ -142,15 +142,12 @@ No framework, no build tools — drop `index.html` anywhere (GitHub Pages, Netli
 
 MIT License © 2025 Mechanical Temp LLC  
 
-Use at your own risk. Smart contracts are immutable once deployed.  
-Always test with small amounts before production usage.
+> This vault represents real-world HVAC revenue tokenization.  
+> Use at your own risk — always test with small amounts before production use.
 
 ---
 
-### 💬 Questions / Support
+### 💬 Support
 
-For community & documentation, visit:
-
-- 🌐 [mechanicaltemp.com](https://mechanicaltemp.com)  
-- 💧 [service.money](https://service.money)  
-- 🧱 [Service Coin DAO GitHub](https://github.com/servicecoinrwb)
+For help integrating or verifying, contact:  
+**info@mechanicaltemp.com** or open an issue in the repo.
