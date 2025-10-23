@@ -141,6 +141,14 @@
             justify-content: center;
             text-align: center;
         }
+        /* Added table and smaller padding */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.875rem; }
+        th { background-color: var(--bg-tertiary); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background-color: var(--bg-tertiary); }
+        #pending-proposals-table th, #pending-proposals-table td { padding: 0.5rem 0.75rem; }
+
     </style>
 </head>
 <body class="min-h-screen pb-16">
@@ -196,6 +204,28 @@
                  <div><strong>Proposal Delay:</strong> <span id="proposal-delay">Loading...</span></div>
             </div>
         </div>
+
+         <!-- Added Section for Pending Proposals (previously missing in some simplified versions) -->
+         <div id="pending-proposals-section" class="card mt-6 hidden">
+             <h2 class="text-xl font-bold mb-4">Pending Work Order Proposals</h2>
+             <div class="overflow-x-auto">
+                 <table id="pending-proposals-table">
+                     <thead>
+                         <tr>
+                             <th>ID</th>
+                             <th>Description</th>
+                             <th>Gross Yield (USDC)</th>
+                             <th>Proposed At</th>
+                             <th>Executable</th>
+                         </tr>
+                     </thead>
+                     <tbody id="pending-proposals-body">
+                         <tr><td colspan="5" class="text-center py-4 text-text-secondary">Loading pending proposals...</td></tr>
+                     </tbody>
+                 </table>
+             </div>
+         </div>
+
 
         <!-- Buy / Redeem Section -->
         <div id="interaction-section" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
@@ -382,6 +412,11 @@
         const pauseStatusIndicator = document.getElementById('pause-status-indicator');
         const pausedOverlay = document.getElementById('paused-overlay');
 
+        // Added Pending Proposals Elements (needed for display)
+        const pendingProposalsSectionDiv = document.getElementById('pending-proposals-section');
+        const pendingProposalsTableBody = document.getElementById('pending-proposals-body');
+
+
         // --- State Variables ---
         let provider = null;
         let signer = null;
@@ -394,6 +429,8 @@
         let blockTimestamp = null;
         let currentProposalDelay = null; // Restored
         let checkMintTimeout; // Restored
+        let pendingWorkOrderProposals = []; // Added back state for pending proposals display
+
 
         // --- Helper Functions ---
         // showStatus, setLoading, shortenAddress, formatUnits, parseUnits, formatSeconds remain the same
@@ -525,9 +562,11 @@
                  walletInfoDiv.classList.remove('hidden');
                  protocolInfoDiv.classList.remove('hidden');
                  interactionSectionDiv.classList.remove('hidden');
+                 pendingProposalsSectionDiv.classList.remove('hidden'); // Show pending proposals section
                  console.log("Updating UI elements...");
                  await updateWalletInfo();
                  await updateProtocolInfo();
+                 await fetchPendingWorkOrders(); // Fetch pending proposals for display
                  await checkAdminStatus();
                  showStatus('Wallet connected successfully!', 'success');
                  console.log("Connection process complete.");
@@ -551,6 +590,7 @@
              walletInfoDiv.classList.add('hidden');
              protocolInfoDiv.classList.add('hidden');
              interactionSectionDiv.classList.add('hidden');
+             pendingProposalsSectionDiv.classList.add('hidden'); // Hide pending proposals
              adminPanelDiv.classList.add('hidden');
              networkNameSpan.textContent = 'Loading...';
              userAddressSpan.textContent = 'Loading...';
@@ -575,19 +615,20 @@
              availableMtyldSpan.textContent = 'Loading...';
              redeemFeePercentInfoSpan.textContent = 'Loading...';
              redeemFeePercentFormSpan.textContent = '--';
-             proposalDelaySpan.textContent = 'Loading...'; // Restored
+             proposalDelaySpan.textContent = 'Loading...';
              pauseStatusIndicator.classList.add('hidden');
              pausedOverlay.classList.add('hidden');
-             // Reset admin mint fields
              if (proposeMintForm) proposeMintForm.reset();
              if (executeMintIdInput) executeMintIdInput.value = '';
              pendingMintDetailsDiv.classList.add('hidden');
              pendingMintDetailsDiv.innerHTML = '';
              if (executeMintButton) executeMintButton.disabled = true;
+             pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet first.</td></tr>'; // Reset pending table message
+
         }
 
         async function checkAdminStatus() {
-             // checkAdminStatus now calls checkPendingProposals again
+             // checkAdminStatus remains the same
              if (!mtyldContract || !userAddress) return;
             try {
                 contractOwner = await mtyldContract.owner();
@@ -606,13 +647,12 @@
         }
 
         async function updateAdminInfo() {
-             // updateAdminInfo now calls checkPendingProposals again
-            if (!mtyldContract || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return; // Added full check
+             // updateAdminInfo remains the same
+            if (!mtyldContract || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
              try {
                  const isPaused = await mtyldContract.paused();
                  updatePauseButtons(isPaused);
-                 updatePauseUI(isPaused); // Keep this to update overall UI lock
-                 // Check pending mints/fees specific to admin view
+                 updatePauseUI(isPaused);
                  await checkPendingProposals();
              } catch (error) {
                  console.error("Error fetching admin info (pause/proposals):", error);
@@ -621,31 +661,19 @@
              }
         }
 
-         // --- Restored checkPendingProposals and checkPendingMintDetails ---
          async function checkPendingProposals() {
+             // checkPendingProposals remains the same
              if (!mtyldContract || !contractOwner || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
              console.log("Checking pending proposals for admin panel...");
              try {
-                 // Fetch latest block timestamp if available
                  if (provider) {
-                    try {
-                        const block = await provider.getBlock("latest");
-                        blockTimestamp = block ? BigInt(block.timestamp) : null;
-                    } catch (blockError){ console.warn("Could not fetch latest block timestamp:", blockError); blockTimestamp = null; }
+                    try { const block = await provider.getBlock("latest"); blockTimestamp = block ? BigInt(block.timestamp) : null; }
+                    catch (blockError){ console.warn("Could not fetch latest block timestamp:", blockError); blockTimestamp = null; }
                  } else { blockTimestamp = null; }
-
-
-                 // Check pending fee change (removed as per simplification request, can be added back if needed)
-                 // const feeProposal = await mtyldContract.pendingFeeChange();
-                 // ... fee change display logic ...
-
-                 // Check pending mint details based on the input field value
-                 checkPendingMintDetails(); // Checks ID in the "Execute Mint" input
-
+                 checkPendingMintDetails();
              } catch (error) {
                  console.error("Error checking pending proposals:", error);
                  showStatus("Could not fetch pending proposal status.", "error");
-                 // Reset related UI elements on error
                  pendingMintDetailsDiv.classList.add('hidden');
                  pendingMintDetailsDiv.innerHTML = '<p class="text-red-400">Error</p>';
                  if(executeMintButton) executeMintButton.disabled = true;
@@ -653,25 +681,17 @@
          }
 
          async function checkPendingMintDetails() {
-              if (!mtyldContract || !executeMintIdInput || !executeMintIdInput.value) { // Ensure input element exists
+              // checkPendingMintDetails remains the same
+              if (!mtyldContract || !executeMintIdInput || !executeMintIdInput.value) {
                     if(pendingMintDetailsDiv) pendingMintDetailsDiv.classList.add('hidden');
                     if(pendingMintDetailsDiv) pendingMintDetailsDiv.innerHTML = '';
                     if(executeMintButton) executeMintButton.disabled = true;
                     return;
                }
-
                const proposalIdStr = executeMintIdInput.value;
                let proposalId;
-               try {
-                   proposalId = BigInt(proposalIdStr);
-                   if (proposalId <= 0n) throw new Error("ID must be positive");
-               } catch {
-                   if(pendingMintDetailsDiv) pendingMintDetailsDiv.classList.remove('hidden');
-                   if(pendingMintDetailsDiv) pendingMintDetailsDiv.innerHTML = '<p class="text-yellow-400">Invalid ID</p>';
-                   if(executeMintButton) executeMintButton.disabled = true;
-                   return;
-               }
-
+               try { proposalId = BigInt(proposalIdStr); if (proposalId <= 0n) throw new Error("ID must be positive"); }
+               catch { if(pendingMintDetailsDiv) pendingMintDetailsDiv.classList.remove('hidden'); if(pendingMintDetailsDiv) pendingMintDetailsDiv.innerHTML = '<p class="text-yellow-400">Invalid ID</p>'; if(executeMintButton) executeMintButton.disabled = true; return; }
                console.log(`Checking details for pending mint ID: ${proposalId}`);
                try {
                     const mintProposal = await mtyldContract.pendingMints(proposalId);
@@ -680,17 +700,10 @@
                          pendingMintDetailsDiv.classList.remove('hidden');
                          const proposedTime = new Date(Number(mintProposal.proposedAt) * 1000);
                          const now = new Date();
-                         const delaySeconds = Number(currentProposalDelay || 0n); // Use fetched delay
+                         const delaySeconds = Number(currentProposalDelay || 0n);
                          const canExecuteMint = blockTimestamp ? blockTimestamp >= mintProposal.proposedAt + BigInt(delaySeconds) : false;
                          const canExecuteMintEstimate = (now.getTime() / 1000) >= Number(mintProposal.proposedAt) + delaySeconds;
-
-                         pendingMintDetailsDiv.innerHTML = `
-                           <p><strong>ID:</strong> ${proposalId}</p>
-                           <p><strong>Yield:</strong> ${parseFloat(formatUnits(mintProposal.grossYield, usdcDecimals)).toFixed(2)} USDC</p>
-                           <p><strong>Desc:</strong> ${mintProposal.description}</p>
-                           <p><strong>Proposed At:</strong> ${formatDate(mintProposal.proposedAt).dateStr}</p>
-                           <p><strong>Executable:</strong> ${canExecuteMint || canExecuteMintEstimate ? '<span class="text-green-400">Yes</span>' : 'No (Waiting)'}</p>
-                         `;
+                         pendingMintDetailsDiv.innerHTML = ` <p><strong>ID:</strong> ${proposalId}</p> <p><strong>Yield:</strong> ${parseFloat(formatUnits(mintProposal.grossYield, usdcDecimals)).toFixed(2)} USDC</p> <p><strong>Desc:</strong> ${mintProposal.description}</p> <p><strong>Proposed At:</strong> ${formatDate(mintProposal.proposedAt).dateStr}</p> <p><strong>Executable:</strong> ${canExecuteMint || canExecuteMintEstimate ? '<span class="text-green-400">Yes</span>' : 'No (Waiting)'}</p> `;
                          executeMintButton.disabled = !(canExecuteMint || canExecuteMintEstimate);
                          console.log(`Proposal ${proposalId} details displayed. Executable: ${executeMintButton.disabled ? 'No':'Yes'}`);
                     } else {
@@ -706,7 +719,6 @@
                     executeMintButton.disabled = true;
                }
           }
-         // --- End Restored Proposal Checks ---
 
 
         async function updateWalletInfo() {
@@ -779,7 +791,6 @@
                   updateBuyEstimate();
                   updateRedeemEstimate();
 
-                  // Re-check proposal executability if admin is connected
                   if (contractOwner && userAddress && userAddress.toLowerCase() === contractOwner.toLowerCase()){
                        await checkPendingProposals();
                   }
@@ -939,6 +950,7 @@
                  showStatus(`Mint proposal #${proposalId} created! Executable after delay.`, 'success');
                  proposeMintForm.reset();
                  await checkPendingProposals(); // Update admin panel view
+                 await fetchPendingWorkOrders(); // Update public pending list (added back)
              } catch (error) {
                  console.error("Propose Mint tx failed:", error);
                  let reason = error?.reason || error.message || "Unknown error";
@@ -968,12 +980,69 @@
                  showStatus(`Mint proposal #${proposalId} executed successfully! Tokens minted.`, 'success');
                  executeMintIdInput.value = ''; // Clear input
                  await checkPendingProposals(); // Update admin panel
+                 await fetchPendingWorkOrders(); // Update public pending list (added back)
                  await updateProtocolInfo(); // Update available tokens, etc.
                  // Consider adding fetchAndStoreAllWorkOrders() if needed immediately
              } catch (error) { console.error("Execute Mint tx failed:", error); showStatus(`Execute fail: ${error?.reason || error.message || error}`, 'error'); }
              finally { setLoading(button, false, originalText); await checkPendingMintDetails(); } // Re-check specific ID status
         }
         // --- End Restored Admin Mint Actions ---
+
+        // --- Added back fetchPendingWorkOrders and renderPendingProposalsTable ---
+         async function fetchPendingWorkOrders() {
+            console.log("Fetching pending work orders...");
+            if (!mtyldContract) { console.log("Contract not initialized."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet first.</td></tr>'; return; }
+            pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Fetching pending proposals...</td></tr>';
+            let localPendingProposals = [];
+            const MAX_PROPOSALS_TO_CHECK = 10;
+            try {
+                const nextIdBigInt = await mtyldContract.nextWorkOrderId(); // Use work order ID
+                const nextId = Number(nextIdBigInt);
+                console.log(`Next Work Order ID (used for proposals): ${nextId}`);
+                if (nextId <= 1) { console.log("No proposals (nextId <= 1)."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No proposals found.</td></tr>'; pendingWorkOrderProposals = []; return; }
+                let proposalsFoundCount = 0;
+                const startCheckId = nextId - 1;
+                const endCheckId = Math.max(1, startCheckId - MAX_PROPOSALS_TO_CHECK + 1);
+                console.log(`Checking proposal IDs from ${startCheckId} down to ${endCheckId}`);
+                for (let currentId = startCheckId; currentId >= endCheckId; currentId--) {
+                     console.log(`Checking ID ${currentId}...`); // Add log before await
+                     try {
+                        const proposal = await mtyldContract.pendingMints(BigInt(currentId));
+                        console.log(`Checked ID ${currentId}: Exists = ${proposal.exists}`);
+                        if (proposal.exists) {
+                            console.log(`   -> Found pending proposal:`, proposal);
+                            localPendingProposals.push({ id: BigInt(currentId), grossYield: proposal.grossYield, description: proposal.description, proposedAt: proposal.proposedAt });
+                            proposalsFoundCount++;
+                        }
+                     } catch (fetchError) { console.error(`Error fetching pending mint ${currentId}:`, fetchError); }
+                }
+                console.log(`Finished checking. Found ${proposalsFoundCount} pending proposals. Data:`, localPendingProposals);
+                pendingWorkOrderProposals = localPendingProposals;
+                console.log("Calling renderPendingProposalsTable...");
+                renderPendingProposalsTable();
+                if (proposalsFoundCount === 0 && pendingProposalsTableBody.innerHTML.includes('Fetching')) { pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found in range.</td></tr>'; }
+            } catch (error) { console.error("Fetch pending proposals failed globally:", error); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-400">Error fetching proposals.</td></tr>'; pendingWorkOrderProposals = []; }
+        }
+
+        function renderPendingProposalsTable() {
+             console.log("renderPendingProposalsTable called. Data:", pendingWorkOrderProposals);
+             pendingProposalsTableBody.innerHTML = '';
+            if (!pendingWorkOrderProposals || pendingWorkOrderProposals.length === 0) { console.log("No pending proposals to render."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>'; return; }
+            const delaySeconds = Number(currentProposalDelay || 0n);
+            const nowSeconds = Date.now() / 1000;
+            pendingWorkOrderProposals.sort((a, b) => Number(b.id - a.id)).forEach(proposal => {
+                const { dateStr } = formatDate(proposal.proposedAt);
+                const proposedAtSeconds = Number(proposal.proposedAt);
+                const canExec = blockTimestamp ? blockTimestamp >= proposal.proposedAt + BigInt(delaySeconds) : false;
+                const canExecEst = nowSeconds >= proposedAtSeconds + delaySeconds;
+                const executableStatus = (canExec || canExecEst) ? '<span class="text-green-400">Yes</span>' : '<span class="text-yellow-400">No (Waiting)</span>';
+                console.log(`Rendering proposal ID: ${proposal.id}`);
+                const row = pendingProposalsTableBody.insertRow();
+                row.innerHTML = ` <td>${proposal.id.toString()}</td> <td class="max-w-xs truncate" title="${proposal.description}">${proposal.description}</td> <td>${parseFloat(formatUnits(proposal.grossYield, usdcDecimals)).toFixed(2)}</td> <td>${dateStr}</td> <td>${executableStatus}</td> `;
+            });
+            console.log("Finished rendering pending proposals table.");
+        }
+        // --- End Added Back Functions ---
 
 
         // --- Admin Pause/Withdraw Actions ---
@@ -1031,11 +1100,9 @@
              buySlippageSelect.disabled = isPaused;
              redeemMtyldAmountInput.disabled = isPaused;
              redeemSlippageSelect.disabled = isPaused;
-             // --- Disable Admin Mint Forms when paused ---
              if(proposeMintForm) proposeMintForm.querySelectorAll('input, button').forEach(el => el.disabled = isPaused);
              if(executeMintIdInput) executeMintIdInput.disabled = isPaused;
-             if(executeMintButton) executeMintButton.disabled = isPaused || executeMintButton.textContent.includes('Processing'); // Keep existing disabled logic too
-             // ---
+             if(executeMintButton) executeMintButton.disabled = isPaused || executeMintButton.textContent.includes('Processing');
              if(emergencyWithdrawForm) { emergencyWithdrawForm.querySelectorAll('input, button').forEach(el => el.disabled = isPaused); }
              updatePauseButtons(isPaused);
          }
@@ -1084,6 +1151,9 @@
              console.log("DOM Loaded. Adding connect button listener and setting up other listeners.");
              connectButton.addEventListener('click', connectWallet);
              setupEventListeners();
+             // Ensure pending proposals table has initial message
+             pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet first.</td></tr>';
+
         });
 
     </script>
