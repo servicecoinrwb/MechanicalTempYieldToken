@@ -1241,8 +1241,9 @@
                     proposalChecks.push(
                         mtyldContract.pendingMints(BigInt(currentId))
                             .then(proposal => {
-                                console.log(`Checked ID ${currentId}: Exists = ${proposal.exists}`);
+                                console.log(`Checked ID ${currentId}: Exists = ${proposal.exists}`); // DEBUG LOG
                                 if (proposal.exists) {
+                                    console.log(`   -> Found pending proposal:`, proposal); // DEBUG LOG
                                     localPendingProposals.push({
                                         id: BigInt(currentId),
                                         grossYield: proposal.grossYield,
@@ -1260,37 +1261,37 @@
 
                 await Promise.all(proposalChecks);
 
-                console.log(`Found ${proposalsFoundCount} pending proposals.`, localPendingProposals);
-                pendingWorkOrderProposals = localPendingProposals;
-                renderPendingProposalsTable();
+                console.log(`Finished checking. Found ${proposalsFoundCount} pending proposals. Data:`, localPendingProposals); // DEBUG LOG
+                pendingWorkOrderProposals = localPendingProposals; // Update global state
+                console.log("Calling renderPendingProposalsTable..."); // DEBUG LOG
+                renderPendingProposalsTable(); // Render table
 
-                if (proposalsFoundCount === 0) {
+                if (proposalsFoundCount === 0 && pendingProposalsTableBody.innerHTML.includes('Fetching')) { // Update message only if still showing 'Fetching'
                      pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found in the last checked range.</td></tr>';
                 }
 
             } catch (error) {
-                console.error("Fetch pending proposals failed:", error);
+                console.error("Fetch pending proposals failed globally:", error); // DEBUG LOG
                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-400">Error fetching pending proposals.</td></tr>';
-                pendingWorkOrderProposals = [];
+                pendingWorkOrderProposals = []; // Clear state on error
             }
         }
 
 
         function renderPendingProposalsTable() {
-            // ... (renderPendingProposalsTable remains the same) ...
+             console.log("renderPendingProposalsTable called. Data:", pendingWorkOrderProposals); // DEBUG LOG
              pendingProposalsTableBody.innerHTML = ''; // Clear previous content
             if (pendingWorkOrderProposals.length === 0) {
-                 // The message might be set by the fetch function if nothing is found
-                 if (pendingProposalsTableBody.innerHTML === '') {
-                     pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>';
-                 }
+                 console.log("No pending proposals to render."); // DEBUG LOG
+                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>';
                  return;
             }
 
             const delaySeconds = Number(currentProposalDelay || 0n);
             const nowSeconds = Date.now() / 1000;
 
-            pendingWorkOrderProposals.sort((a, b) => Number(b.id - a.id)).forEach(proposal => { // Sort descending by ID
+            // Sort descending by ID before rendering
+            pendingWorkOrderProposals.sort((a, b) => Number(b.id - a.id)).forEach(proposal => {
                 const { dateStr } = formatDate(proposal.proposedAt);
                 const proposedAtSeconds = Number(proposal.proposedAt);
                 const canExec = blockTimestamp ? blockTimestamp >= proposal.proposedAt + BigInt(delaySeconds) : false;
@@ -1299,6 +1300,7 @@
                     ? '<span class="text-green-400">Yes</span>'
                     : '<span class="text-yellow-400">No (Waiting)</span>';
 
+                console.log(`Rendering proposal ID: ${proposal.id}`); // DEBUG LOG
                 const row = pendingProposalsTableBody.insertRow();
                 row.innerHTML = `
                     <td>${proposal.id.toString()}</td>
@@ -1308,6 +1310,7 @@
                     <td>${executableStatus}</td>
                 `;
             });
+            console.log("Finished rendering pending proposals table."); // DEBUG LOG
         }
 
 
