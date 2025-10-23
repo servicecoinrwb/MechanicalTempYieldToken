@@ -1,473 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>YieldWorks | MTYLD Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Make sure ethers is loaded. You already have this, which is perfect! -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #000000;
-      --card: #0b0b0b;
-      --text: #e6fef5;
-      --muted: #9fdac7;
-      --accent: #00e0a4;
-      --border: #1f4031;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 6px 18px rgba(0, 224, 164, 0.1);
-    }
-    .btn {
-      background: var(--accent);
-      color: #000;
-      border-radius: 12px;
-      padding: 0.7rem 1.2rem;
-      font-weight: 700;
-      transition: all 0.2s;
-      /* Added for disabled state */
-      opacity: 1;
-      cursor: pointer;
-    }
-    .btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-    .btn:hover:not(:disabled) { filter: brightness(1.1); }
-    .input {
-      background: #001b12;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      padding: 0.65rem 0.8rem;
-      width: 100%;
-    }
-    .tab { cursor: pointer; padding: 0.6rem 1rem; border-bottom: 2px solid transparent; color: var(--muted); }
-    .tab.active { border-color: var(--accent); color: var(--accent); font-weight: 600; }
-    .pill { border: 1px solid var(--border); border-radius: 9999px; padding: 0.25rem 0.6rem; color: var(--muted); font-size: 0.8rem; }
-    .hero {
-      background: radial-gradient(circle at center, #001f15 0%, #000000 80%);
-      text-align: center;
-      padding: 6rem 1rem;
-    }
-    .hero h1 { font-size: 3rem; font-weight: 900; color: var(--text); }
-    .hero h2 { font-size: 2rem; font-weight: 800; color: var(--accent); margin-top: 0.5rem; }
-    .hero p { max-width: 600px; margin: 1rem auto; color: var(--muted); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YieldWorks - Real-World HVAC Yield</title>
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0a; /* Very dark background */
+            --bg-secondary: #1a1a1a; /* Slightly lighter for cards/nav */
+            --text-primary: #f0f0f0; /* Main text color (light gray) */
+            --text-secondary: #a0a0a0; /* Muted text color */
+            --accent: #00b894; /* A modern teal/green accent */
+            --brand-blue: #0ea5e9; /* Sky-500 from mechanicaltemp.com */
+            --border-color: #3a3a3a; /* Added */
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 2.5rem; /* 40px */
+            line-height: 1.2;
+            font-weight: 900;
+        }
+
+        .bg-secondary { background-color: var(--bg-secondary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-accent { color: var(--accent); }
+        .border-accent { border-color: var(--accent); }
+        .border-gray-700 { border-color: var(--border-color); } /* Adjusted for theme */
+
+        /* Button Styles */
+        .btn {
+            display: inline-block;
+            font-weight: 600;
+            text-align: center;
+            border-radius: 0.5rem; /* 8px */
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            padding: 0.75rem 1.5rem; /* Default padding */
+        }
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+        }
+        .btn-primary:hover {
+            background-color: transparent;
+            color: var(--accent);
+        }
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border-color: var(--text-secondary);
+        }
+        .btn-secondary:hover {
+            background-color: var(--bg-secondary);
+            border-color: var(--text-primary);
+        }
+        /* New Brand Blue Button */
+        .btn-brand-blue {
+            background-color: var(--brand-blue);
+            color: white;
+            border-color: var(--brand-blue);
+        }
+        .btn-brand-blue:hover {
+             background-color: #0284c7; /* Darker blue */
+             border-color: #0284c7;
+        }
+
+
+        /* Footer */
+        .footer {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--bg-secondary);
+            margin-top: 4rem;
+        }
+        .footer-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer-link:hover {
+            color: var(--accent);
+        }
+
+        /* Added shadow utility */
+        .shadow-glow {
+             box-shadow: 0 0 15px rgba(0, 184, 148, 0.3); /* Accent color glow */
+        }
+        .shadow-xl { /* Ensure shadow-xl is defined if using Tailwind defaults */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+         }
+         /* Icon styling for features */
+         .feature-icon {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              width: 3rem; /* 48px */
+              height: 3rem; /* 48px */
+              background-color: var(--bg-tertiary);
+              border-radius: 50%;
+              margin-bottom: 1rem;
+              border: 1px solid var(--border-color);
+         }
+         .feature-icon svg {
+              width: 1.5rem; /* 24px */
+              height: 1.5rem; /* 24px */
+              color: var(--accent);
+         }
+    </style>
 </head>
-<body>
-  <section class="hero">
-    <h1>Invest in Verified HVAC Projects</h1>
-    <h2>Earn Real‑World Yield</h2>
-    <p>YieldWorks is a decentralized protocol powered by <strong>Mechanical Temp</strong>, a real‑world HVAC service company. We tokenize completed and verified jobs, letting investors earn sustainable on‑chain yield.</p>
-    <p>Invest in <strong>$MTYLD</strong>, a token backed by revenue from completed HVAC projects and client payouts.</p>
-    <button id="launchBtn" class="btn mt-6">Launch Dashboard</button>
-  </section>
-
-  <main id="app" class="hidden max-w-6xl mx-auto p-6">
-    <header class="flex justify-between items-center mb-8">
-      <div class="text-2xl font-bold text-[var(--accent)]">MTYLD Dashboard</div>
-      <button id="connectBtn" class="btn">Connect Wallet</button>
-    </header>
-
-    <!-- Main Dashboard Card -->
-    <section class="card p-6 mb-8">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
-        <div>
-          <div class="text-sm text-[var(--muted)]">Token</div>
-          <div id="tokenName" class="text-xl font-bold">—</div>
-          <div id="tokenSymbol" class="text-sm text-[var(--muted)]">—</div>
+<body class="min-h-screen">
+    <nav class="bg-secondary sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto max-w-7xl p-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">
+                YieldWorks
+                <span class="text-sm font-normal text-secondary hidden sm:inline-block ml-2">by Mechanical Temp</span>
+            </h1>
+            <a href="#about" class="btn btn-secondary px-4 py-2 text-sm">Why Trust Us?</a>
         </div>
-        <div>
-          <div class="text-sm text-[var(--muted)]">Total Supply</div>
-          <div id="totalSupply" class="text-xl font-bold">—</div>
-        </div>
-        <div>
-          <div class="text-sm text-[var(--muted)]">Your Balance</div>
-          <div id="myBalance" class="text-xl font-bold">—</div>
-        </div>
-        <div>
-          <div class="text-sm text-[var(--muted)]">Reserve Fund (USDC)</div>
-          <div id="reserve" class="text-xl font-bold">—</div>
-        </div>
-      </div>
-    </section>
+    </nav>
 
-    <!-- Interaction Card -->
-    <section class="card p-6">
-      <div class="flex gap-4 border-b border-[var(--border)] mb-6">
-        <div class="tab active" data-tab="buyTab">Buy</div>
-        <div class="tab" data-tab="redeemTab">Redeem</div>
-      </div>
+    <main class="container mx-auto max-w-7xl p-4 md:p-8">
+        <section class="text-center my-16 md:my-24">
+            <h2 class="text-5xl md:text-7xl font-bold leading-tight">
+                Invest in Verifiable HVAC Projects. <br/>
+                <span class="text-accent">Earn Real-World Yield.</span>
+            </h2>
+            <p class="text-secondary text-xl mt-6 max-w-3xl mx-auto">
+                YieldWorks is a decentralized protocol built by **Mechanical Temp**, a real-world HVAC service company. We tokenize **10% of the value** of our own verified projects to raise working capital.
+                <br/><br/>
+                Invest in <span class="font-bold text-primary">$MTYLD</span>, a token backed by the USDC value derived from completed and paid HVAC jobs on the Arbitrum network.
+            </p>
+            <div class="mt-10 flex justify-center items-center">
+               <a href="./app.html" class="btn btn-primary text-lg px-10 py-4 shadow-glow">Launch Dashboard</a>
+            </div>
+        </section>
 
-      <!-- Buy Panel -->
-      <div id="buyTab" class="tabPanel">
-        <div class="grid md:grid-cols-2 gap-4">
-          <div>
-            <label class="text-sm text-[var(--muted)]">USDC Amount</label>
-            <input id="buyUsdc" class="input" placeholder="e.g. 100" type="number" />
-          </div>
-          <div>
-            <label class="text-sm text-[var(--muted)]">Slippage %</label>
-            <input id="buySlip" class="input" value="1" type="number" />
-          </div>
-        </div>
-        <div class="mt-3 text-sm">Estimated MTYLD: <span id="estTokens" class="font-semibold">0</span></div>
-        <div class="mt-4 flex flex-wrap gap-3">
-          <button id="approveBtn" class="btn" disabled>Approve USDC</button>
-          <button id="buyBtn" class="btn" disabled>Buy Tokens</button>
-        </div>
-        <div id="buyMsg" class="mt-3 text-sm text-[var(--muted)] min-h-[1.2em]"></div>
-      </div>
+        <section class="my-16 md:my-24">
+            <h2 class="text-center">How It Works</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 text-center">
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700">
+                    <!-- Updated Text -->
+                    <h3 class="text-2xl font-bold mb-2 text-accent">1. Propose & Mint</h3>
+                    <p class="text-secondary">
+                        Mechanical Temp proposes new HVAC jobs via the contract. After a **safety delay**, `$MTYLD` tokens representing **10% of the job's value** (less a 5% reserve on that 10%) are minted.
+                    </p>
+                </div>
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700">
+                     <!-- Updated Text -->
+                    <h3 class="text-2xl font-bold mb-2 text-accent">2. Back with Capital</h3>
+                    <p class="text-secondary">
+                        Investors buy the newly minted `$MTYLD` with **USDC**, providing the capital that funds the tokenized portion of the HVAC projects.
+                    </p>
+                </div>
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700">
+                     <!-- Updated Text -->
+                    <h3 class="text-2xl font-bold mb-2 text-accent">3. Earn Yield</h3>
+                    <p class="text-secondary">
+                        As projects are completed, Mechanical Temp pays back the **10% tokenized value** in USDC to the contract. This increases the USDC balance backing all `$MTYLD` tokens, generating yield.
+                    </p>
+                </div>
+            </div>
+        </section>
 
-      <!-- Redeem Panel -->
-      <div id="redeemTab" class="tabPanel hidden">
-        <div class="grid md:grid-cols-2 gap-4">
-          <div>
-            <label class="text-sm text-[var(--muted)]">MTYLD Amount</label>
-            <input id="redeemAmt" class="input" placeholder="e.g. 50" type="number" />
-          </div>
-          <div>
-            <label class="text-sm text-[var(--muted)]">Slippage %</label>
-            <input id="redeemSlip" class="input" value="1" type="number" />
-          </div>
-        </div>
-        <div class="mt-3 text-sm">Estimated USDC Out: <span id="estUsdc" class="font-semibold">0</span></div>
-        <div class="mt-4 flex gap-3">
-          <button id="redeemBtn" class="btn" disabled>Redeem</button>
-        </div>
-        <div id="redeemMsg" class="mt-3 text-sm text-[var(--muted)] min-h-[1.2em]"></div>
-      </div>
-    </section>
-  </main>
+        <section class="my-16 md:my-24 bg-secondary p-8 md:p-12 rounded-lg shadow-xl border border-gray-700">
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <div class="md:w-1/3 text-center">
+                    <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp Logo" class="h-20 w-auto mx-auto mb-4">
+                     <a href="https://www.mechanicaltemp.com/" target="_blank" rel="noopener noreferrer" class="btn btn-brand-blue text-sm px-6 py-2">
+                        Visit MechanicalTemp.com
+                    </a>
+                </div>
+                <div class="md:w-2/3">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4 text-center md:text-left">Meet the Operator: Mechanical Temp</h2>
+                    <p class="text-secondary text-lg">
+                        YieldWorks isn't run by an anonymous team. It's the innovative financing arm of **Mechanical Temp**, your trusted local HVAC expert serving Southfield and Metro Detroit. We specialize in furnace and air conditioner repair, installation, and maintenance.
+                    </p>
+                    <p class="text-secondary text-lg mt-4">
+                        The projects tokenized through YieldWorks are real jobs completed by our certified technicians. Your investment directly supports a portion of our operations, backed by our established reputation.
+                    </p>
+                </div>
+            </div>
+        </section>
 
-  <script>
-    // --- Initial UI setup ---
-    const app = document.getElementById('app');
-    document.getElementById('launchBtn').addEventListener('click', () => {
-      document.querySelector('.hero').style.display = 'none';
-      app.classList.remove('hidden');
-    });
+        <section class="my-16 md:my-24" id="about">
+            <h2 class="text-center">Why Trust YieldWorks?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+                <!-- Feature 1: Real Business -->
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700 text-center">
+                    <div class="feature-icon">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M8.25 21h7.5M12 3v18m0 0v-6.75M9.75 14.25h4.5M12 14.25v6.75m0-6.75h2.25m-4.5 0H9.75M5.25 6h13.5M5.25 9h13.5m-13.5 3h13.5" /></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Real, Public Business</h3>
+                    <p class="text-secondary">
+                        Operated by **Mechanical Temp**, an established HVAC company in Southfield, MI. Our reputation (<a href="https://www.mechanicaltemp.com/" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline">visit our site</a>) is on the line.
+                    </p>
+                </div>
+                <!-- Feature 2: Transparency -->
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700 text-center">
+                     <div class="feature-icon">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                     </div>
+                    <h3 class="text-xl font-bold mb-2">On-Chain & Timelocked</h3>
+                    <p class="text-secondary">
+                        All token mints, USDC balances, and repayments are publicly verifiable on Arbitrum. Critical actions like minting and fee changes have a **built-in delay** for transparency.
+                    </p>
+                </div>
+                 <!-- Feature 3: Pausable -->
+                <div class="bg-secondary p-8 rounded-lg shadow-xl border border-gray-700 text-center">
+                    <div class="feature-icon">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Pause Protection</h3>
+                    <p class="text-secondary">
+                         As an added security measure, the contract owner can temporarily pause interactions (like buys or redeems) in case of emergencies, protecting user funds while issues are addressed.
+                    </p>
+                </div>
+            </div>
+        </section>
 
-    // --- NEW WEB3 CODE STARTS HERE ---
+    </main>
 
-    // 1. Ethers constants
-    // We get the 'ethers' object from the global window object, where the script tag loaded it.
-    const { ethers } = window.ethers;
-
-    // --- IMPORTANT: REPLACE WITH YOUR CONTRACT ADDRESSES AND ABIS ---
-    // You must get these from your contract deployment (e.g., from Remix, Hardhat, or Etherscan)
-    
-    // This is the address of your main MTYLD contract (which is likely also the dashboard)
-    const MTYLD_CONTRACT_ADDRESS = "0x..."; // <--- !!! REPLACE ME !!!
-    
-    // This is the address of the USDC token contract on the *same network* as your MTYLD contract
-    const USDC_CONTRACT_ADDRESS = "0x...";  // <--- !!! REPLACE ME !!! (e.g., Sepolia USDC, Mainnet USDC)
-
-    // A minimal ABI (Application Binary Interface) for an ERC-20 token
-    // This is standard for tokens like USDC and your MTYLD token.
-    const ERC20_ABI = [
-      "function name() view returns (string)",
-      "function symbol() view returns (string)",
-      "function totalSupply() view returns (uint256)",
-      "function decimals() view returns (uint8)",
-      "function balanceOf(address account) view returns (uint256)",
-      "function approve(address spender, uint256 amount) returns (bool)",
-      "function allowance(address owner, address spender) view returns (uint256)"
-    ];
-    
-    // A minimal ABI for your main MTYLD Dashboard contract
-    // This is a GUESS based on your UI. You MUST replace this with your actual contract's ABI.
-    const MTYLD_DASHBOARD_ABI = [
-        // Function for "Reserve Fund" - I'm guessing it's in USDC
-        "function reserveFund() view returns (uint256)", 
-        
-        // Function for "Buy"
-        "function buyTokens(uint256 usdcAmount, uint256 minMtyldAmount) returns (bool)", 
-        
-        // Function for "Redeem"
-        "function redeemTokens(uint256 mtyldAmount, uint256 minUsdcAmount) returns (bool)" 
-    ];
-    
-    // 2. Global state variables
-    // We'll store our provider, signer, and contract instances here
-    let provider;
-    let signer;
-    let userAddress;
-    let mtyldContract;
-    let usdcContract;
-    let dashboardContract; // This might be the same as mtyldContract
-
-    // 3. DOM Elements
-    // Get all the interactive elements from the page
-    const connectBtn = document.getElementById('connectBtn');
-    const approveBtn = document.getElementById('approveBtn');
-    const buyBtn = document.getElementById('buyBtn');
-    const redeemBtn = document.getElementById('redeemBtn');
-    
-    const tokenNameEl = document.getElementById('tokenName');
-    const tokenSymbolEl = document.getElementById('tokenSymbol');
-    const totalSupplyEl = document.getElementById('totalSupply');
-    const myBalanceEl = document.getElementById('myBalance');
-    const reserveEl = document.getElementById('reserve');
-
-    // 4. Main Connect Function
-    // This function runs when the "Connect Wallet" button is clicked
-    const connectWallet = async () => {
-      // Check if MetaMask (or other browser wallet) is installed
-      if (typeof window.ethereum !== 'undefined') {
-        try {
-          // 1. Create a new Ethers provider
-          provider = new ethers.BrowserProvider(window.ethereum);
-          
-          // 2. Request account access (this pops up MetaMask)
-          await provider.send('eth_requestAccounts', []);
-          
-          // 3. Get the signer (the user's wallet)
-          signer = await provider.getSigner();
-          
-          // 4. Get the user's address
-          userAddress = await signer.getAddress();
-          
-          // 5. Update the button to show the connected address
-          connectBtn.textContent = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
-          
-          // 6. Initialize contracts and load all blockchain data
-          await loadBlockchainData();
-          
-          // 7. Enable the buttons now that we are connected
-          approveBtn.disabled = false;
-          buyBtn.disabled = false;
-          redeemBtn.disabled = false;
-
-        } catch (error) {
-          console.error("User rejected connection:", error);
-          setMessage('buyMsg', 'User rejected connection.', true);
-        }
-      } else {
-        // If no wallet is found
-        connectBtn.textContent = 'Install MetaMask!';
-        // Make the button link to MetaMask download page
-        connectBtn.onclick = () => window.open('https://metamask.io/download/', '_blank');
-        console.log('Please install MetaMask!');
-        setMessage('buyMsg', 'Please install a browser wallet like MetaMask.', true);
-      }
-    };
-
-    // 5. Load Blockchain Data Function
-    // This function fetches data from the contracts and updates the dashboard
-    const loadBlockchainData = async () => {
-      if (!signer) return; // Don't run if wallet isn't connected
-      
-      // Check if the user has replaced the placeholder addresses
-      if (MTYLD_CONTRACT_ADDRESS === "0x..." || USDC_CONTRACT_ADDRESS === "0x...") {
-        setMessage('buyMsg', 'Please update contract addresses in the script!', true);
-        console.error("Contract addresses are not set. Please edit index.html.");
-        return;
-      }
-      
-      try {
-        // Initialize contract instances
-        // We connect the 'signer' to the contract to allow sending transactions
-        mtyldContract = new ethers.Contract(MTYLD_CONTRACT_ADDRESS, ERC20_ABI, signer);
-        usdcContract = new ethers.Contract(USDC_CONTRACT_ADDRESS, ERC20_ABI, signer);
-        
-        // This assumes your main contract (with buy/redeem) is the MTYLD address.
-        // If it's a *different* contract, use that address here.
-        dashboardContract = new ethers.Contract(MTYLD_CONTRACT_ADDRESS, MTYLD_DASHBOARD_ABI, signer); 
-
-        // --- Fetch and Display Data ---
-        
-        // Get MTYLD token info
-        const name = await mtyldContract.name();
-        const symbol = await mtyldContract.symbol();
-        const mtyldDecimals = await mtyldContract.decimals();
-        tokenNameEl.textContent = name;
-        tokenSymbolEl.textContent = `$${symbol}`;
-
-        // Get total supply
-        const totalSupply = await mtyldContract.totalSupply();
-        totalSupplyEl.textContent = parseFloat(ethers.formatUnits(totalSupply, mtyldDecimals)).toLocaleString(undefined, { maximumFractionDigits: 2 });
-
-        // Get user's MTYLD balance
-        const balance = await mtyldContract.balanceOf(userAddress);
-        myBalanceEl.textContent = parseFloat(ethers.formatUnits(balance, mtyldDecimals)).toFixed(4);
-        
-        // Get USDC token info (for reserve fund decimals)
-        const usdcDecimals = await usdcContract.decimals();
-        
-        // Get reserve fund (from your dashboard contract)
-        // This function 'reserveFund' is a GUESS from your ABI.
-        if (dashboardContract.reserveFund) {
-            const reserve = await dashboardContract.reserveFund();
-            reserveEl.textContent = `$${parseFloat(ethers.formatUnits(reserve, usdcDecimals)).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-        } else {
-             reserveEl.textContent = "N/A";
-             console.warn("`reserveFund` function not found on dashboard contract ABI.");
-        }
-
-      } catch (error) {
-        console.error("Error loading blockchain data:", error);
-        setMessage('buyMsg', 'Error loading contract data. Check console.', true);
-      }
-    };
-    
-    // 6. Helper function for showing messages
-    const setMessage = (elementId, message, isError = false) => {
-        const el = document.getElementById(elementId);
-        if (el) {
-            el.textContent = message;
-            // Use red for errors, default 'muted' color for success/info
-            el.style.color = isError ? '#ff6b6b' : 'var(--muted)';
-        }
-    };
-
-    // 7. Event Listeners for Wallet and Actions
-    
-    // Main connect button
-    connectBtn.addEventListener('click', connectWallet);
-
-    // --- Button Logic ---
-    
-    approveBtn.addEventListener('click', async () => {
-        const usdcAmount = document.getElementById('buyUsdc').value;
-        if (!usdcAmount || isNaN(usdcAmount) || usdcAmount <= 0) {
-            setMessage('buyMsg', 'Please enter a valid USDC amount.', true);
-            return;
-        }
-        
-        setMessage('buyMsg', 'Waiting for approval in wallet...');
-        try {
-            const usdcDecimals = await usdcContract.decimals();
-            // Convert to smallest unit (e.g., 100 USDC -> 100 * 10**6)
-            const amountToApprove = ethers.parseUnits(usdcAmount, usdcDecimals);
-            
-            // Send approval transaction
-            // This allows the MTYLD_CONTRACT_ADDRESS to spend your USDC
-            const tx = await usdcContract.approve(MTYLD_CONTRACT_ADDRESS, amountToApprove);
-            await tx.wait(); // Wait for transaction to be mined
-            
-            setMessage('buyMsg', 'USDC approved! You can now buy tokens.');
-        } catch (error) {
-            console.error("Approve failed:", error);
-            setMessage('buyMsg', 'Approval failed. Check console.', true);
-        }
-    });
-    
-    buyBtn.addEventListener('click', async () => {
-        const usdcAmount = document.getElementById('buyUsdc').value;
-        
-        // TODO: Add slippage calculation for minMtyldAmount
-        const minMtyldAmount = 0; // <-- DANGEROUS! You must calculate this properly based on slippage.
-        
-        if (!usdcAmount || isNaN(usdcAmount) || usdcAmount <= 0) {
-            setMessage('buyMsg', 'Please enter a valid USDC amount.', true);
-            return;
-        }
-        
-        setMessage('buyMsg', 'Processing purchase... Please confirm in wallet.');
-        try {
-            const usdcDecimals = await usdcContract.decimals();
-            const amountToBuy = ethers.parseUnits(usdcAmount, usdcDecimals);
-
-            // Check if user has sufficient allowance
-            const allowance = await usdcContract.allowance(userAddress, MTYLD_CONTRACT_ADDRESS);
-            if (allowance < amountToBuy) {
-                 setMessage('buyMsg', 'Insufficient USDC approval. Please approve first.', true);
-                 return;
-            }
-            
-            // Send buy transaction
-            // This function 'buyTokens' is a GUESS from your ABI.
-            const tx = await dashboardContract.buyTokens(amountToBuy, minMtyldAmount);
-            await tx.wait();
-            
-            setMessage('buyMsg', 'Purchase successful!');
-            await loadBlockchainData(); // Refresh all data on dashboard
-            document.getElementById('buyUsdc').value = ''; // Clear input
-            
-        } catch (error) {
-            console.error("Buy failed:", error);
-            setMessage('buyMsg', 'Purchase failed. Check console.', true);
-        }
-    });
-    
-    // TODO: Add logic for your redeemBtn
-
-    // 8. Handle account or network changes
-    if (window.ethereum) {
-      // Listen for when the user changes their account
-      window.ethereum.on('accountsChanged', (accounts) => {
-        if (accounts.length > 0) {
-          // User switched account, re-connect
-          console.log("Account switched to:", accounts[0]);
-          connectWallet();
-        } else {
-          // User disconnected all accounts
-          console.log("User disconnected.");
-          connectBtn.textContent = 'Connect Wallet';
-          // Reset UI
-          tokenNameEl.textContent = '—';
-          tokenSymbolEl.textContent = '—';
-          totalSupplyEl.textContent = '—';
-          myBalanceEl.textContent = '—';
-          reserveEl.textContent = '—';
-          // Disable buttons
-          approveBtn.disabled = true;
-          buyBtn.disabled = true;
-          redeemBtn.disabled = true;
-          // Clear state
-          userAddress = null;
-          signer = null;
-        }
-      });
-      
-      // Listen for network changes
-      window.ethereum.on('chainChanged', (chainId) => {
-        console.log("Network changed to:", chainId);
-        // Reload the page to reset the state for the new network
-        window.location.reload();
-      });
-    }
-    
-    // 9. Tab switching logic
-    // This makes your "Buy" and "Redeem" tabs work
-    const tabs = document.querySelectorAll('.tab');
-    const tabPanels = document.querySelectorAll('.tabPanel');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Remove 'active' class from all tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            // Add 'active' class to the clicked tab
-            tab.classList.add('active');
-            
-            const targetTab = tab.getAttribute('data-tab');
-            
-            // Hide all tab panels
-            tabPanels.forEach(panel => {
-                panel.classList.add('hidden');
-            });
-            
-            // Show the target tab panel
-            document.getElementById(targetTab).classList.remove('hidden');
-        });
-    });
-
-  </script>
+    <footer class="footer">
+        <p>&copy; 2025 Mechanical Temp. All Rights Reserved.</p>
+        <p class="mt-2">
+            YieldWorks is built on
+            <a href="https://arbitrum.io/" target="_blank" rel="noopener noreferrer" class="footer-link">
+                Arbitrum
+            </a>
+        </p>
+         <p class="text-xs mt-4">
+             Disclaimer: Investing in cryptocurrency involves risk. Yield is generated from real-world business activity and is not guaranteed. $MTYLD is backed solely by the USDC held within the smart contract.
+         </p>
+    </footer>
 </body>
 </html>
