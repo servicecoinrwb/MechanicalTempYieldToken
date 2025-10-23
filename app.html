@@ -78,6 +78,10 @@
             background-color: #dc2626; /* red-600 */
             border-color: #dc2626;
          }
+         .btn-sm { /* Smaller button */
+             padding: 0.3rem 0.8rem;
+             font-size: 0.8rem;
+         }
         input[type="text"], input[type="number"], select, textarea { /* Added textarea */
             background-color: var(--bg-tertiary);
             border: 1px solid var(--border-color);
@@ -119,7 +123,7 @@
             margin-right: 0.5rem;
             vertical-align: middle;
         }
-         .proposal-card { /* Style for pending details */
+         .proposal-card { /* Style for pending details in admin */
             background-color: var(--bg-tertiary);
             padding: 1rem;
             border-radius: 0.5rem;
@@ -143,7 +147,7 @@
         }
         /* Added table and smaller padding */
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.875rem; }
+        th, td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.875rem; vertical-align: top; } /* Align top */
         th { background-color: var(--bg-tertiary); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
         tbody tr:last-child td { border-bottom: none; }
         tbody tr:hover { background-color: var(--bg-tertiary); }
@@ -350,9 +354,9 @@
                            <input type="number" id="execute-mint-id" min="1" placeholder="Enter ID from Pending Proposals" required>
                      </div>
                      <div id="pending-mint-details" class="proposal-card hidden">
-                          {/* Details loaded dynamically */}
+                          {/* Details loaded dynamically - not used in this simplified version */}
                      </div>
-                     <button id="execute-mint-button" class="btn btn-primary w-full mt-3" disabled>Execute Mint (after delay)</button>
+                     <button id="execute-mint-button" class="btn btn-primary w-full mt-3">Execute Selected Mint</button> <!-- Will target selected row -->
                  </div>
              </div>
              <!-- End Mint Section -->
