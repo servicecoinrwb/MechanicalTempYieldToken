@@ -177,6 +177,10 @@
             margin-top: 1rem;
             font-size: 0.875rem;
          }
+         /* Added style for pending proposals table */
+         #pending-proposals-table th, #pending-proposals-table td {
+             padding: 0.5rem 0.75rem; /* Smaller padding */
+         }
     </style>
 </head>
 <body class="min-h-screen pb-16">
@@ -289,10 +293,32 @@
             </div>
         </div>
 
-        <!-- Work Orders Table Section -->
+        <!-- NEW: Pending Work Order Proposals Section -->
+         <div class="card mt-6">
+             <h2 class="text-xl font-bold mb-4">Pending Work Order Proposals</h2>
+             <div class="overflow-x-auto">
+                 <table id="pending-proposals-table">
+                     <thead>
+                         <tr>
+                             <th>ID</th>
+                             <th>Description</th>
+                             <th>Gross Yield (USDC)</th>
+                             <th>Proposed At</th>
+                             <th>Executable</th>
+                         </tr>
+                     </thead>
+                     <tbody id="pending-proposals-body">
+                         <tr><td colspan="5" class="text-center py-4 text-text-secondary">Loading pending proposals...</td></tr>
+                     </tbody>
+                 </table>
+             </div>
+         </div>
+
+
+        <!-- Executed Work Orders Table Section -->
          <div class="card mt-6">
              <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
-                 <h2 class="text-xl font-bold mb-3 sm:mb-0">Recent Work Orders</h2>
+                 <h2 class="text-xl font-bold mb-3 sm:mb-0">Executed Work Orders</h2>
                  <div class="flex items-center space-x-3">
                      <label for="filter-month" class="text-sm text-text-secondary whitespace-nowrap">Filter by:</label>
                      <select id="filter-month" class="filter-select w-32">
@@ -337,7 +363,7 @@
 
 
         <!-- Admin Panel (Initially hidden) -->
-        <div id="admin-panel" classs="card mt-8 hidden">
+        <div id="admin-panel" class="card mt-8 hidden"> <!-- FIX: Added class="card" -->
             <h2 class="text-2xl font-bold mb-6 text-center text-accent">Admin Panel</h2>
 
             <!-- Pause/Unpause Controls -->
@@ -491,7 +517,7 @@
         const contractUsdcSpan = document.getElementById('contract-usdc');
         const mtyldPriceSpan = document.getElementById('mtyld-price');
         const availableMtyldSpan = document.getElementById('available-mtyld');
-        const proposalDelaySpan = document.getElementById('proposal-delay'); // Added
+        const proposalDelaySpan = document.getElementById('proposal-delay');
 
         // Buy Form Elements
         const buyForm = document.getElementById('buy-form');
@@ -517,29 +543,32 @@
         const filterMonthSelect = document.getElementById('filter-month');
         const filterYearSelect = document.getElementById('filter-year');
 
+        // NEW: Pending Proposals Elements
+        const pendingProposalsTableBody = document.getElementById('pending-proposals-body');
+
 
         // Admin Panel Elements
         const adminPanelDiv = document.getElementById('admin-panel');
-        const proposeMintForm = document.getElementById('propose-mint-form'); // Renamed form ID
-        const executeMintIdInput = document.getElementById('execute-mint-id'); // Added input ID
-        const pendingMintDetailsDiv = document.getElementById('pending-mint-details'); // Added div ID
-        const executeMintButton = document.getElementById('execute-mint-button'); // Added button ID
+        const proposeMintForm = document.getElementById('propose-mint-form');
+        const executeMintIdInput = document.getElementById('execute-mint-id');
+        const pendingMintDetailsDiv = document.getElementById('pending-mint-details');
+        const executeMintButton = document.getElementById('execute-mint-button');
         const payoutOrderForm = document.getElementById('payout-order-form');
-        const payoutTokenizedValueSpan = document.getElementById('payout-tokenized-value'); // Added span ID
-        const payoutIdInput = document.getElementById('payout-id'); // Added ID for payout input
+        const payoutTokenizedValueSpan = document.getElementById('payout-tokenized-value');
+        const payoutIdInput = document.getElementById('payout-id');
         const cancelOrderForm = document.getElementById('cancel-order-form');
-        const proposeFeeForm = document.getElementById('propose-fee-form'); // Renamed form ID
-        const executeFeeButton = document.getElementById('execute-fee-button'); // Added button ID
-        const pendingFeeDetailsDiv = document.getElementById('pending-fee-details'); // Added div ID
+        const proposeFeeForm = document.getElementById('propose-fee-form');
+        const executeFeeButton = document.getElementById('execute-fee-button');
+        const pendingFeeDetailsDiv = document.getElementById('pending-fee-details');
         const currentRedeemFeeSpan = document.getElementById('current-redeem-fee');
         const collectedFeesSpan = document.getElementById('collected-fees');
         const withdrawFeesButton = document.getElementById('withdraw-fees-button');
         const adminApproveUsdcButton = document.getElementById('admin-approve-usdc-button');
         const emergencyWithdrawForm = document.getElementById('emergency-withdraw-form');
-        const pauseButton = document.getElementById('pause-button'); // Added button ID
-        const unpauseButton = document.getElementById('unpause-button'); // Added button ID
-        const pauseStatusIndicator = document.getElementById('pause-status-indicator'); // Added span ID
-        const pausedOverlay = document.getElementById('paused-overlay'); // Added overlay ID
+        const pauseButton = document.getElementById('pause-button');
+        const unpauseButton = document.getElementById('unpause-button');
+        const pauseStatusIndicator = document.getElementById('pause-status-indicator');
+        const pausedOverlay = document.getElementById('paused-overlay');
 
         // --- State Variables ---
         let provider = null;
@@ -551,8 +580,9 @@
         let usdcDecimals = 6;
         let mtyldDecimals = 18;
         let allWorkOrders = [];
+        let pendingWorkOrderProposals = []; // NEW: State for pending proposals
         let availableYears = new Set();
-        let currentProposalDelay = null; // Store proposal delay
+        let currentProposalDelay = null;
 
 
         // --- Helper Functions ---
@@ -603,7 +633,7 @@
             if (!timestamp || timestamp === 0n) return { dateStr: 'N/A', month: -1, year: -1, fullDate: null };
             try {
                 const date = new Date(Number(timestamp) * 1000);
-                 const dateStr = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                 const dateStr = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                  const month = date.getMonth(); // 0-11
                  const year = date.getFullYear();
                  return { dateStr, month, year, fullDate: date };
@@ -625,7 +655,6 @@
             if (!address) return '';
             return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
         }
-        // Format seconds into readable time (days, hours, minutes)
         function formatSeconds(seconds) {
              if (seconds === null || seconds === undefined) return '...';
              const totalSeconds = Number(seconds); // Convert BigInt to Number
@@ -644,7 +673,8 @@
         // --- Blockchain Interaction ---
 
         async function connectWallet() {
-            if (typeof window.ethereum === 'undefined') {
+            // ... (connectWallet function remains the same) ...
+             if (typeof window.ethereum === 'undefined') {
                 return showStatus('MetaMask is not installed.', 'error');
             }
             const connectBtn = connectButton; // Use existing reference
@@ -701,17 +731,16 @@
                 await updateWalletInfo();
                 await updateProtocolInfo(); // Includes pause status check now
                 await fetchAndStoreAllWorkOrders();
+                await fetchPendingWorkOrders(); // NEW: Fetch pending proposals
                 await checkAdminStatus(); // Includes proposal checks
 
                 showStatus('Wallet connected!', 'success');
-                // Don't call setupEventListeners here - called by DOMContentLoaded
 
             } catch (error) {
                 console.error("Connection failed:", error);
                 showStatus(`Wallet connection failed: ${error.message}`, 'error');
                 resetState(); // Reset UI on connection failure
             } finally {
-                 // Final check on button state
                  if (userAddress) {
                       setLoading(connectBtn, false, shortenAddress(userAddress));
                       connectBtn.disabled = true;
@@ -725,17 +754,19 @@
         function resetState() {
              userAddress = null; signer = null; provider = null;
              contractOwner = null; allWorkOrders = []; availableYears.clear(); currentProposalDelay = null;
+             pendingWorkOrderProposals = []; // NEW: Reset pending proposals
              walletInfoDiv.classList.add('hidden');
              connectButton.textContent = 'Connect Wallet';
              connectButton.disabled = false;
              adminPanelDiv.classList.add('hidden');
              workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-text-secondary">Connect wallet to view orders.</td></tr>';
+             pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet to view proposals.</td></tr>'; // NEW: Reset pending table
              populateYearFilter();
              document.getElementById('usdc-balance').textContent = 'Disconnected';
              document.getElementById('mtyld-balance').textContent = 'Disconnected';
              buyUsdcBalanceSpan.textContent = '--';
              redeemMtyldBalanceSpan.textContent = '--';
-             tokenNameSpan.textContent = 'Loading...'; // Reset protocol info
+             tokenNameSpan.textContent = 'Loading...';
              tokenSymbolSpan.textContent = '---';
              totalSupplySpan.textContent = 'Loading...';
              contractAddressLink.textContent = 'Loading...';
@@ -749,7 +780,8 @@
 
 
         async function checkAdminStatus() {
-            if (!mtyldContract) return;
+            // ... (checkAdminStatus function remains the same) ...
+             if (!mtyldContract) return;
             try {
                 contractOwner = await mtyldContract.owner();
                 if (userAddress && contractOwner && userAddress.toLowerCase() === contractOwner.toLowerCase()) {
@@ -768,7 +800,8 @@
         }
 
         async function updateAdminInfo() {
-             if (!mtyldContract) return;
+            // ... (updateAdminInfo function remains the same) ...
+            if (!mtyldContract) return;
              try {
                    const fees = await mtyldContract.collectedFees();
                    collectedFeesSpan.textContent = parseFloat(formatUnits(fees, usdcDecimals)).toFixed(2);
@@ -787,8 +820,8 @@
              }
         }
 
-         // Check pending mint and fee proposals
-         async function checkPendingProposals() {
+         async function checkPendingProposals() { // Checks fee + calls mint check helper
+            // ... (checkPendingProposals function remains largely the same) ...
              if (!mtyldContract || !contractOwner || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
 
              try {
@@ -798,10 +831,9 @@
                      pendingFeeDetailsDiv.classList.remove('hidden');
                      const proposedTime = new Date(Number(feeProposal.proposedAt) * 1000);
                      const now = new Date();
-                     const delaySeconds = Number(currentProposalDelay || 0n); // Use fetched delay
-                     const canExecuteFee = blockTimestamp ? blockTimestamp >= feeProposal.proposedAt + BigInt(delaySeconds) : false; // Use blockTimestamp if available
-                      // Fallback estimate if blockTimestamp not available (less accurate)
-                      const canExecuteFeeEstimate = now.getTime() / 1000 >= Number(feeProposal.proposedAt) + delaySeconds;
+                     const delaySeconds = Number(currentProposalDelay || 0n);
+                     const canExecuteFee = blockTimestamp ? blockTimestamp >= feeProposal.proposedAt + BigInt(delaySeconds) : false;
+                     const canExecuteFeeEstimate = now.getTime() / 1000 >= Number(feeProposal.proposedAt) + delaySeconds;
 
                      pendingFeeDetailsDiv.innerHTML = `
                          <p><strong>Proposed Fee:</strong> ${feeProposal.newFeePercentage}%</p>
@@ -818,17 +850,15 @@
                  // Check pending mint for the ID entered (if any)
                  checkPendingMintDetails(); // Call helper to check based on input field
 
-
              } catch (error) {
                  console.error("Error checking pending proposals:", error);
                  showStatus("Could not fetch pending proposals.", "error");
              }
          }
 
-         // Helper to check and display pending mint details based on input ID
-          let checkMintTimeout;
-         async function checkPendingMintDetails() {
-              if (!mtyldContract || !executeMintIdInput.value) {
+         async function checkPendingMintDetails() { // Checks specific mint ID in admin panel
+            // ... (checkPendingMintDetails function remains the same) ...
+             if (!mtyldContract || !executeMintIdInput.value) {
                    pendingMintDetailsDiv.classList.add('hidden');
                    pendingMintDetailsDiv.innerHTML = '';
                    executeMintButton.disabled = true;
@@ -871,7 +901,8 @@
 
 
         async function updateWalletInfo() {
-            if (!provider || !userAddress || !usdcContract || !mtyldContract) return;
+            // ... (updateWalletInfo function remains the same) ...
+             if (!provider || !userAddress || !usdcContract || !mtyldContract) return;
             try {
                 const network = await provider.getNetwork();
                 networkNameSpan.textContent = network.name === 'arbitrum' ? 'Arbitrum One' : network.name;
@@ -894,11 +925,10 @@
             }
         }
 
-        let blockTimestamp = null; // Store latest block timestamp
         async function updateProtocolInfo() {
-             if (!mtyldContract || !usdcContract) return;
+             // ... (updateProtocolInfo function remains the same, still calls checkPendingProposals if admin) ...
+              if (!mtyldContract || !usdcContract) return;
              try {
-                 // Fetch block timestamp for more accurate timelock checks
                  const block = await provider.getBlock("latest");
                  blockTimestamp = block ? BigInt(block.timestamp) : null;
 
@@ -909,8 +939,8 @@
                        mtyldContract.contractPaymentTokenBalance(),
                        mtyldContract.availableTokens(),
                        mtyldContract.redemptionFeePercentage(),
-                       mtyldContract.paused(), // Check pause status
-                       mtyldContract.PROPOSAL_DELAY() // Get delay from contract
+                       mtyldContract.paused(),
+                       mtyldContract.PROPOSAL_DELAY()
                   ]);
 
                   tokenNameSpan.textContent = name;
@@ -921,18 +951,14 @@
                   contractUsdcSpan.textContent = parseFloat(formatUnits(contractUSDCBalance, usdcDecimals)).toFixed(2);
                   availableMtyldSpan.textContent = parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4);
                   redeemFeePercentSpan.textContent = feePercent.toString();
-                  currentProposalDelay = delaySeconds; // Store for later use
-                  proposalDelaySpan.textContent = delaySeconds.toString() + ` (${formatSeconds(delaySeconds)})`; // Display formatted delay
+                  currentProposalDelay = delaySeconds;
+                  proposalDelaySpan.textContent = delaySeconds.toString() + ` (${formatSeconds(delaySeconds)})`;
 
-                  // Update pause status UI
                   updatePauseUI(isPaused);
 
                   let price = 0;
                   if (supply > 0n && contractUSDCBalance >= 0n) {
-                       // FIX: Correct price calculation
-                       // We want (USDC Balance / MTYLD Supply)
-                       // (USDC_Bal * 10**18) / MTYLD_Bal = Price scaled by USDC_Decimals
-                       const scaleFactor = 10n ** 18n; 
+                       const scaleFactor = 10n ** 18n;
                        const priceBigInt = supply > 0n ? (contractUSDCBalance * scaleFactor) / supply : 0n;
                        price = parseFloat(formatUnits(priceBigInt, usdcDecimals));
                   }
@@ -941,22 +967,20 @@
                   updateBuyEstimate();
                   updateRedeemEstimate();
 
-                  // Re-check proposal executability with updated block timestamp
                   if (contractOwner && userAddress && userAddress.toLowerCase() === contractOwner.toLowerCase()){
                        await checkPendingProposals();
                   }
-
 
              } catch (error) {
                   console.error("Error updating protocol info:", error);
                   showStatus('Failed to fetch protocol data.', 'error');
                   tokenNameSpan.textContent = 'Error';
-                  // etc.
              }
          }
 
-        // --- Buy/Redeem Logic (Relies on whenNotPaused modifier in contract) ---
+        // --- Buy/Redeem Logic ---
         async function updateBuyEstimate() {
+            // ... (updateBuyEstimate function remains the same) ...
              const usdcAmountStr = buyUsdcAmountInput.value;
              if (!mtyldContract || !usdcAmountStr || parseFloat(usdcAmountStr) <= 0) {
                  estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0'; return;
@@ -975,8 +999,8 @@
                   console.error("Buy estimate error:", error); estimatedMtyldSpan.textContent = 'Error'; minTokensOutInput.value = '0';
              }
         }
-
         async function updateRedeemEstimate() {
+            // ... (updateRedeemEstimate function remains the same) ...
              const mtyldAmountStr = redeemMtyldAmountInput.value;
              if (!mtyldContract || !mtyldAmountStr || parseFloat(mtyldAmountStr) <= 0) {
                  estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0'; return;
@@ -990,7 +1014,7 @@
                   ]);
                   const feePercent = Number(feePercentBigInt);
                   const fee = (usdcValueBeforeFee * BigInt(feePercent)) / 100n;
-                  const usdcToReceive = usdcValueBeforeFee >= fee ? usdcValueBeforeFee - fee : 0n; // Prevent underflow
+                  const usdcToReceive = usdcValueBeforeFee >= fee ? usdcValueBeforeFee - fee : 0n;
 
                   estimatedUsdcSpan.textContent = parseFloat(formatUnits(usdcToReceive, usdcDecimals)).toFixed(2);
                   const slippagePercent = parseFloat(redeemSlippageSelect.value);
@@ -1001,9 +1025,9 @@
                   console.error("Redeem estimate error:", error); estimatedUsdcSpan.textContent = 'Error'; minUsdcOutInput.value = '0';
              }
         }
-
         async function handleApproveUSDC(isAdmin = false) {
-             const amountInput = isAdmin ? document.getElementById('payout-amount') : buyUsdcAmountInput;
+            // ... (handleApproveUSDC function remains the same) ...
+            const amountInput = isAdmin ? document.getElementById('payout-amount') : buyUsdcAmountInput;
              const button = isAdmin ? adminApproveUsdcButton : approveUsdcButton;
              const originalText = button.textContent;
              const usdcAmountStr = amountInput.value;
@@ -1018,7 +1042,7 @@
                  if (currentAllowance >= usdcAmount) {
                      showStatus('Sufficient allowance already approved.', 'info');
                      if (!isAdmin) buyButton.disabled = false;
-                     return; // Done
+                     return;
                  }
                   const tx = await usdcContract.approve(contractAddress, usdcAmount);
                    showStatus('Approval sent. Waiting...', 'info'); await tx.wait();
@@ -1027,9 +1051,9 @@
              } catch (error) {
                  console.error("Approval failed:", error); showStatus(`Approval failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
              } finally { setLoading(button, false, originalText); }
-         }
-
+        }
         async function handleBuyTokens(event) {
+            // ... (handleBuyTokens function remains the same) ...
              event.preventDefault();
              if (!mtyldContract || !signer) return showStatus('Connect wallet.', 'error');
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
@@ -1059,8 +1083,8 @@
                  console.error("Buy failed:", error); showStatus(`Buy failed: ${error?.data?.message || error?.reason || error.message || error}`, 'error');
              } finally { setLoading(buyButton, false, 'Buy MTYLD'); }
         }
-
         async function handleRedeemTokens(event) {
+            // ... (handleRedeemTokens function remains the same) ...
              event.preventDefault();
              if (!mtyldContract || !signer) return showStatus('Connect wallet.', 'error');
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
@@ -1090,7 +1114,8 @@
 
         // --- Work Order Display & Filtering Logic ---
         async function fetchAndStoreAllWorkOrders() {
-            if (!mtyldContract) return;
+            // ... (fetchAndStoreAllWorkOrders remains the same) ...
+             if (!mtyldContract) return;
             workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-text-secondary">Fetching orders...</td></tr>';
             allWorkOrders = []; availableYears.clear();
             try {
@@ -1118,10 +1143,17 @@
                 populateYearFilter(); filterAndRenderOrders(); showStatus(`Loaded ${allWorkOrders.length} orders.`, 'success');
             } catch (error) { console.error("Fetch orders failed:", error); workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-400">Error fetching orders.</td></tr>'; populateYearFilter(); }
         }
-        function populateYearFilter() { filterYearSelect.innerHTML = '<option value="all">All Years</option>'; Array.from(availableYears).sort((a, b) => b - a).forEach(year => { const option = document.createElement('option'); option.value = year; option.textContent = year; filterYearSelect.appendChild(option); }); }
-        function filterAndRenderOrders() { const selectedMonth = filterMonthSelect.value; const selectedYear = filterYearSelect.value; const filteredOrders = allWorkOrders.filter(order => (selectedMonth === 'all' || order.createdMonth == selectedMonth) && (selectedYear === 'all' || order.createdYear == selectedYear)); renderWorkOrdersTable(filteredOrders); }
+        function populateYearFilter() {
+            // ... (populateYearFilter remains the same) ...
+            filterYearSelect.innerHTML = '<option value="all">All Years</option>'; Array.from(availableYears).sort((a, b) => b - a).forEach(year => { const option = document.createElement('option'); option.value = year; option.textContent = year; filterYearSelect.appendChild(option); });
+        }
+        function filterAndRenderOrders() {
+            // ... (filterAndRenderOrders remains the same) ...
+             const selectedMonth = filterMonthSelect.value; const selectedYear = filterYearSelect.value; const filteredOrders = allWorkOrders.filter(order => (selectedMonth === 'all' || order.createdMonth == selectedMonth) && (selectedYear === 'all' || order.createdYear == selectedYear)); renderWorkOrdersTable(filteredOrders);
+        }
         function renderWorkOrdersTable(ordersToRender) {
-             workOrdersTableBody.innerHTML = '';
+             // ... (renderWorkOrdersTable remains the same) ...
+              workOrdersTableBody.innerHTML = '';
              if (ordersToRender.length === 0) { workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-text-secondary">No orders match filters.</td></tr>'; return; }
              ordersToRender.forEach(order => {
                  const row = workOrdersTableBody.insertRow();
@@ -1129,10 +1161,88 @@
              });
          }
 
+        // --- NEW: Pending Proposals Logic ---
+        async function fetchPendingWorkOrders() {
+            if (!mtyldContract) return;
+            pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Fetching pending proposals...</td></tr>';
+            pendingWorkOrderProposals = [];
+            const MAX_PROPOSALS_TO_CHECK = 10; // Check the last 10 potential IDs
+
+            try {
+                const nextId = await mtyldContract.nextProposalId();
+                if (nextId <= 1n) {
+                    pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>';
+                    return;
+                }
+
+                let proposalsFound = 0;
+                for (let i = 1n; i <= BigInt(MAX_PROPOSALS_TO_CHECK); i++) {
+                    const proposalIdToCheck = nextId - i;
+                    if (proposalIdToCheck < 1n) break; // Don't check ID 0 or lower
+
+                    try {
+                        const proposal = await mtyldContract.pendingMints(proposalIdToCheck);
+                        if (proposal.exists) {
+                            pendingWorkOrderProposals.push({
+                                id: proposalIdToCheck,
+                                grossYield: proposal.grossYield,
+                                description: proposal.description,
+                                proposedAt: proposal.proposedAt
+                            });
+                            proposalsFound++;
+                        }
+                    } catch (fetchError) {
+                        console.error(`Error fetching pending mint ${proposalIdToCheck}:`, fetchError);
+                        // Continue checking others even if one fails
+                    }
+                }
+
+                renderPendingProposalsTable();
+                if (proposalsFound === 0) {
+                     pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>';
+                }
+
+            } catch (error) {
+                console.error("Fetch pending proposals failed:", error);
+                pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-400">Error fetching pending proposals.</td></tr>';
+            }
+        }
+
+        function renderPendingProposalsTable() {
+            pendingProposalsTableBody.innerHTML = ''; // Clear previous content
+            if (pendingWorkOrderProposals.length === 0) {
+                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>';
+                 return;
+            }
+
+            const delaySeconds = Number(currentProposalDelay || 0n);
+            const nowSeconds = Date.now() / 1000;
+
+            pendingWorkOrderProposals.sort((a, b) => Number(b.id - a.id)).forEach(proposal => { // Sort descending by ID
+                const { dateStr } = formatDate(proposal.proposedAt);
+                const proposedAtSeconds = Number(proposal.proposedAt);
+                const canExec = blockTimestamp ? blockTimestamp >= proposal.proposedAt + BigInt(delaySeconds) : false;
+                const canExecEst = nowSeconds >= proposedAtSeconds + delaySeconds;
+                const executableStatus = (canExec || canExecEst)
+                    ? '<span class="text-green-400">Yes</span>'
+                    : '<span class="text-yellow-400">No (Waiting)</span>';
+
+                const row = pendingProposalsTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${proposal.id.toString()}</td>
+                    <td class="max-w-xs truncate" title="${proposal.description}">${proposal.description}</td>
+                    <td>${parseFloat(formatUnits(proposal.grossYield, usdcDecimals)).toFixed(2)}</td>
+                    <td>${dateStr}</td>
+                    <td>${executableStatus}</td>
+                `;
+            });
+        }
+
 
         // --- Admin Actions ---
         async function handleProposeMint(event) {
-             event.preventDefault();
+            // ... (remains the same, but add fetchPendingWorkOrders on success) ...
+            event.preventDefault();
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
              const yieldStr = document.getElementById('propose-yield').value; const description = document.getElementById('propose-desc').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Propose Mint';
@@ -1144,11 +1254,15 @@
                  let proposalId = 'N/A';
                  const eventInterface = new ethers.Interface(contractABI);
                  if(receipt?.logs) { for (const log of receipt.logs) { if (log.topics && log.data && log.address.toLowerCase() === contractAddress.toLowerCase()) { try { const pLog = eventInterface.parseLog({ topics: [...log.topics], data: log.data }); if (pLog?.name === "MintProposed") { proposalId = pLog.args.proposalId.toString(); break; } } catch (e) { /* ignore */ } } } }
-                 showStatus(`Mint proposal #${proposalId} created! Executable after delay.`, 'success'); proposeMintForm.reset(); await checkPendingProposals();
+                 showStatus(`Mint proposal #${proposalId} created! Executable after delay.`, 'success');
+                 proposeMintForm.reset();
+                 await checkPendingProposals(); // Update admin panel view
+                 await fetchPendingWorkOrders(); // NEW: Update public pending list
              } catch (error) { console.error("Propose Mint fail:", error); showStatus(`Propose fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
              finally { setLoading(button, false, originalText); }
-         }
+        }
         async function handleExecuteMint() {
+            // ... (remains the same, but add fetchPendingWorkOrders on success) ...
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
              const proposalIdStr = executeMintIdInput.value; const button = executeMintButton; const originalText = 'Execute Mint (after delay)';
@@ -1163,11 +1277,15 @@
              try {
                  const tx = await mtyldContract.executeMint(proposalId); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Execute Mint:", receipt);
                  showStatus(`Mint #${proposalId} executed! Order created.`, 'success'); executeMintIdInput.value = '';
-                 await checkPendingProposals(); await updateProtocolInfo(); await fetchAndStoreAllWorkOrders();
+                 await checkPendingProposals(); // Update admin panel view
+                 await fetchPendingWorkOrders(); // NEW: Update public pending list
+                 await updateProtocolInfo();
+                 await fetchAndStoreAllWorkOrders();
              } catch (error) { console.error("Execute Mint fail:", error); showStatus(`Execute fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
-             finally { setLoading(button, false, originalText); await checkPendingMintDetails(); }
-         }
+             finally { setLoading(button, false, originalText); await checkPendingMintDetails(); } // Recheck specific ID in admin
+        }
         async function handlePayoutOrder(event) {
+            // ... (handlePayoutOrder function remains the same) ...
              event.preventDefault();
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
@@ -1186,30 +1304,29 @@
                  await updateProtocolInfo(); await updateWalletInfo(); await fetchAndStoreAllWorkOrders();
              } catch (error) { console.error("Payout fail:", error); showStatus(`Payout fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
              finally { setLoading(button, false, originalText); payoutTokenizedValueSpan.textContent = '--'; }
-         }
+        }
         async function handleCancelOrder(event) {
+            // ... (handleCancelOrder function remains the same) ...
              event.preventDefault();
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
              const orderIdStr = document.getElementById('cancel-id').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Cancel Order';
              if (!orderIdStr || parseInt(orderIdStr) < 1) return showStatus('Valid ID.', 'error'); const orderId = BigInt(orderIdStr);
-             
-             // FIX: Removed confirm() call which fails in iframes
-             
+
              setLoading(button, true, originalText); showStatus(`Cancelling #${orderId}...`);
              try {
                  const tx = await mtyldContract.cancelWorkOrder(orderId); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Cancel:", receipt);
                  showStatus(`Order #${orderId} cancelled!`, 'success'); cancelOrderForm.reset(); await fetchAndStoreAllWorkOrders();
              } catch (error) { console.error("Cancel fail:", error); showStatus(`Cancel fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
              finally { setLoading(button, false, originalText); }
-         }
+        }
         async function handleProposeFeeChange(event) {
+            // ... (handleProposeFeeChange function remains the same) ...
              event.preventDefault();
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
              const feeStr = document.getElementById('propose-new-fee').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Propose Fee Change';
              
-             // FIX: Parse as Int, check for decimals, and use BigInt(fee)
              const fee = parseInt(feeStr, 10); 
              if (isNaN(fee) || fee < 0 || fee > 20 || feeStr.includes('.')) {
                 return showStatus('Fee must be a whole number between 0-20.', 'error');
@@ -1222,8 +1339,9 @@
                  showStatus(`Fee change to ${fee}% proposed! Executable after delay.`, 'success'); proposeFeeForm.reset(); await checkPendingProposals();
              } catch (error) { console.error("Propose Fee fail:", error); showStatus(`Propose fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
              finally { setLoading(button, false, originalText); }
-         }
+        }
         async function handleExecuteFeeChange() {
+            // ... (handleExecuteFeeChange function remains the same) ...
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
              const button = executeFeeButton; const originalText = 'Execute Fee Change (after delay)';
@@ -1238,9 +1356,10 @@
                  showStatus('Fee updated!', 'success'); await checkPendingProposals(); await updateAdminInfo(); await updateProtocolInfo();
              } catch (error) { console.error("Execute Fee fail:", error); showStatus(`Execute fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
              finally { setLoading(button, false, originalText); await checkPendingProposals(); }
-         }
+        }
         async function handleWithdrawFees() {
-            if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
+            // ... (handleWithdrawFees function remains the same) ...
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
             if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
             const button = withdrawFeesButton; const originalText = 'Withdraw All Fees';
             const feesAvailable = await mtyldContract.collectedFees(); if (feesAvailable === 0n) return showStatus('No fees.', 'info');
@@ -1252,6 +1371,7 @@
             finally { setLoading(button, false, originalText); }
         }
         async function handleEmergencyWithdraw(event) {
+            // ... (handleEmergencyWithdraw function remains the same) ...
              event.preventDefault();
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
@@ -1266,13 +1386,11 @@
              } catch (error) { console.error("Emergency Withdraw fail:", error); showStatus(`Emergency Withdraw fail: ${error?.data?.message || error?.reason || error.message || error}`, 'error'); }
              finally { setLoading(button, false, originalText); }
          }
-          // --- Pause/Unpause Logic ---
           async function handlePause() {
+            // ... (handlePause function remains the same) ...
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
              if (await mtyldContract.paused()) return showStatus('Already paused.', 'warning');
              const button = pauseButton; const originalText = 'Pause Contract';
-
-             // FIX: Removed confirm() call
              
              setLoading(button, true, originalText); showStatus('Sending pause...');
              try {
@@ -1282,11 +1400,10 @@
              finally { setLoading(button, false, originalText); const isPaused = await mtyldContract.paused(); updatePauseUI(isPaused); updatePauseButtons(isPaused); }
          }
         async function handleUnpause() {
+            // ... (handleUnpause function remains the same) ...
              if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-             if (!(await mtyldContract.paused())) return showStatus('Already unpaused.', 'warning'); // Added check
+             if (!(await mtyldContract.paused())) return showStatus('Already unpaused.', 'warning');
              const button = unpauseButton; const originalText = 'Unpause Contract';
-             
-             // FIX: Removed confirm() call
 
              setLoading(button, true, originalText); showStatus('Sending unpause...');
              try {
@@ -1296,6 +1413,7 @@
              finally { setLoading(button, false, originalText); const isPaused = await mtyldContract.paused(); updatePauseUI(isPaused); updatePauseButtons(isPaused); }
          }
         function updatePauseUI(isPaused) {
+            // ... (updatePauseUI function remains the same) ...
              const isActive = !isPaused;
              pausedOverlay.classList.toggle('hidden', isActive);
              pauseStatusIndicator.textContent = isPaused ? 'PAUSED' : 'Active';
@@ -1305,36 +1423,31 @@
              pauseStatusIndicator.classList.toggle('bg-green-400', isActive);
              pauseStatusIndicator.classList.toggle('text-green-900', isActive);
 
-             // Disable interactive elements when paused
              const elementsToDisable = [buyButton, redeemButton, approveUsdcButton, adminApproveUsdcButton, withdrawFeesButton, pauseButton, executeMintButton, executeFeeButton];
              elementsToDisable.forEach(el => { if(el) el.disabled = isPaused; });
              
-             // Re-enable unpause button if paused
              if (isPaused) {
                 if (unpauseButton) unpauseButton.disabled = false;
              }
 
-             // Handle forms
              const formsToDisable = [buyForm, redeemForm, proposeMintForm, payoutOrderForm, cancelOrderForm, proposeFeeForm, emergencyWithdrawForm];
              formsToDisable.forEach(form => {
                  if (form) {
                      form.querySelectorAll('input, select, textarea, button').forEach(input => {
-                         // Don't disable buttons handled above or the unpause button
                          if (input.tagName === 'BUTTON' && (elementsToDisable.includes(input) || input.id === 'unpause-button')) return;
                          input.disabled = isPaused;
                      });
                  }
              });
-             updatePauseButtons(isPaused); // Ensure correct pause/unpause state
+             updatePauseButtons(isPaused);
          }
          function updatePauseButtons(isPaused) {
+            // ... (updatePauseButtons function remains the same) ...
               if (pauseButton) pauseButton.disabled = isPaused;
               if (unpauseButton) unpauseButton.disabled = !isPaused;
          }
-
-         // --- NEW: Helper to auto-fill payout amount details ---
-         let checkPayoutTimeout;
          async function checkPayoutOrderDetails() {
+            // ... (checkPayoutOrderDetails function remains the same) ...
             if (!mtyldContract || !payoutIdInput.value) {
                 payoutTokenizedValueSpan.textContent = '--';
                 return;
@@ -1364,7 +1477,8 @@
 
         // --- Event Listeners Setup ---
          function setupEventListeners() {
-            if (window.eventListenersAttached) return;
+            // ... (setupEventListeners remains the same) ...
+             if (window.eventListenersAttached) return;
              buyUsdcAmountInput.addEventListener('input', updateBuyEstimate); buySlippageSelect.addEventListener('change', updateBuyEstimate);
              redeemMtyldAmountInput.addEventListener('input', updateRedeemEstimate); redeemSlippageSelect.addEventListener('change', updateRedeemEstimate);
              approveUsdcButton.addEventListener('click', () => handleApproveUSDC(false));
@@ -1382,13 +1496,13 @@
              if (pauseButton) pauseButton.addEventListener('click', handlePause);
              if (unpauseButton) unpauseButton.addEventListener('click', handleUnpause);
 
-             // NEW: Add debounced listeners for admin inputs
              if(executeMintIdInput) executeMintIdInput.addEventListener('input', () => { clearTimeout(checkMintTimeout); checkMintTimeout = setTimeout(checkPendingMintDetails, 500); });
              if(payoutIdInput) payoutIdInput.addEventListener('input', () => { clearTimeout(checkPayoutTimeout); checkPayoutTimeout = setTimeout(checkPayoutOrderDetails, 500); });
 
              window.eventListenersAttached = true;
          }
          function setupWalletListeners() {
+            // ... (setupWalletListeners remains the same) ...
               if (window.ethereum?.on) {
                    window.ethereum.on('accountsChanged', (accounts) => { console.log('Acc change:', accounts); if (accounts.length === 0) { showStatus('Wallet disconnected.', 'warning'); resetState(); } else if (!userAddress || accounts[0].toLowerCase() !== userAddress.toLowerCase()) { showStatus('Account switched. Reconnecting...', 'info'); resetState(); connectWallet(); } });
                    window.ethereum.on('chainChanged', (chainId) => { console.log('Chain change:', chainId); if (chainId !== arbitrumChainId) { showStatus('Wrong network. Switch to Arbitrum One.', 'error'); resetState(); connectButton.textContent = 'Wrong Network'; connectButton.disabled = true; } else { showStatus('Arbitrum One detected. Reconnect or refresh.', 'info'); resetState(); connectWallet(); } });
@@ -1398,9 +1512,11 @@
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
+             // ... (Initialization remains the same, but add reset for pending proposals table) ...
              connectButton.addEventListener('click', connectWallet);
              setupEventListeners();
              workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-text-secondary">Connect wallet to view orders.</td></tr>';
+             pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet to view pending proposals.</td></tr>'; // NEW: Reset pending table on load
              populateYearFilter();
         });
 
