@@ -8,10 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <!-- Ethers.js v6 -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js" type="application/javascript"></script>
-    <!-- Favicon link removed -->
-    <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
 
     <style>
         :root {
@@ -20,11 +17,11 @@
             --bg-tertiary: #2a2a2a;
             --text-primary: #f0f0f0;
             --text-secondary: #a0a0a0;
-            --accent: #00b894; /* Teal accent */
+            --accent: #00d9b4;
             --border-color: #3a3a3a;
             --red: #ef4444;
-            --yellow: #facc15; /* yellow-500 */
-            --green: #4ade80; /* green-500 */
+            --yellow: #facc15;
+            --green: #4ade80;
         }
         body { background-color: var(--bg-primary); color: var(--text-primary); font-family: 'Inter', sans-serif; }
         .card { background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; }
@@ -37,7 +34,7 @@
         .btn-danger { background-color: var(--red); color: white; border-color: var(--red); }
         .btn-danger:hover:not(:disabled) { background-color: #dc2626; border-color: #dc2626; }
         input[type="text"], input[type="number"], input[type="password"], textarea, select { background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 0.375rem; padding: 0.5rem 0.75rem; width: 100%; }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0, 184, 148, 0.3); }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0, 217, 180, 0.3); }
         label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: var(--text-secondary); font-weight: 500; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.875rem; }
@@ -52,7 +49,7 @@
         .loading-spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-top: 4px solid var(--accent); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; margin-right: 0.5rem; vertical-align: middle; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .filter-select { background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 0.375rem; padding: 0.5rem 0.75rem; height: 42px; }
-        .filter-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0, 184, 148, 0.3); }
+        .filter-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0, 217, 180, 0.3); }
         .paused-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.8); z-index: 100; display: flex; align-items: center; justify-content: center; text-align: center; }
         .proposal-card { background-color: var(--bg-tertiary); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); margin-top: 1rem; font-size: 0.875rem; }
         .text-green { color: var(--green); }
@@ -62,12 +59,10 @@
         .bg-yellow { background-color: var(--yellow); }
         .text-green-foreground { color: #052e16; }
         .text-yellow-foreground { color: #713f12; }
-
     </style>
 </head>
 <body class="min-h-screen pb-16">
 
-    <!-- Paused Overlay -->
     <div id="paused-overlay" class="paused-overlay hidden">
         <div class="bg-secondary p-8 rounded-lg shadow-xl max-w-md">
             <h2 class="text-2xl font-bold text-yellow mb-4">Contract Paused</h2>
@@ -76,8 +71,6 @@
         </div>
     </div>
 
-
-    <!-- Navbar -->
     <nav class="bg-secondary sticky top-0 z-50 shadow-lg mb-8">
         <div class="container mx-auto max-w-7xl p-4 flex justify-between items-center">
             <a href="index.html" class="text-2xl font-bold">
@@ -93,10 +86,8 @@
 
     <main class="container mx-auto max-w-7xl px-4">
 
-        <!-- Status Messages -->
         <div id="status-message" class="hidden"></div>
 
-        <!-- Wallet Info -->
         <div id="wallet-info" class="card hidden">
             <h2 class="text-xl font-bold mb-3">Wallet Connected</h2>
             <p class="text-sm"><strong>Network:</strong> <span id="network-name"></span></p>
@@ -105,7 +96,6 @@
             <p class="text-sm"><strong>MTYLD Balance:</strong> <span id="mtyld-balance">Loading...</span></p>
         </div>
 
-        <!-- Protocol Info -->
         <div class="card">
             <h2 class="text-xl font-bold mb-4">Protocol Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
@@ -119,7 +109,6 @@
             </div>
         </div>
 
-        <!-- Pending Mint Proposals Section -->
         <div class="card">
             <h2 class="text-xl font-bold mb-4">Pending Mint Proposals</h2>
             <div class="overflow-x-auto">
@@ -135,10 +124,7 @@
             </div>
         </div>
 
-
-        <!-- Buy / Redeem Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Buy Card -->
             <div class="card">
                 <h2 class="text-xl font-bold mb-4">Buy MTYLD</h2>
                 <form id="buy-form">
@@ -148,7 +134,6 @@
                     <div class="flex flex-col sm:flex-row gap-3"><button type="button" id="approve-usdc-button" class="btn btn-secondary flex-1">Approve USDC</button><button type="submit" id="buy-button" class="btn btn-primary flex-1" disabled>Buy MTYLD</button></div>
                 </form>
             </div>
-            <!-- Redeem Card -->
             <div class="card">
                 <h2 class="text-xl font-bold mb-4">Redeem MTYLD</h2>
                 <form id="redeem-form">
@@ -160,7 +145,6 @@
             </div>
         </div>
 
-        <!-- Work Orders Table Section -->
          <div class="card mt-6">
              <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
                  <h2 class="text-xl font-bold mb-3 sm:mb-0">Completed/Active Work Orders</h2>
@@ -178,7 +162,6 @@
              </div>
          </div>
 
-        <!-- Admin Panel -->
         <div id="admin-panel" class="card mt-8 hidden">
              <h2 class="text-2xl font-bold mb-6 text-center text-accent">Admin Panel</h2>
              <div class="bg-tertiary p-4 rounded-lg border border-border-color mb-6 text-center">
@@ -242,374 +225,189 @@
 
     </main>
 
-    <script type="text/javascript">
-        // --- CONFIGURATION ---
+    <script>
         const contractAddress = "0xae2C05f01DBCC6C8AF40EbFA3339Af10dbECdFD0";
-        const contractABI = [{"inputs":[{"internalType":"address","name":"initialOwner","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"target","type":"address"}],"name":"AddressCallToNonContract","type":"error"},{"inputs":[],"name":"AddressEmptyRevertData","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"AddressInsufficientBalance","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"inputs":[],"name":"ReentrancyGuardReentrantCall","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"burner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Burn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EmergencyWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"FeeChangeExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"FeeChangeProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FeesWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"MintExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"MintProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"reserveAmount","type":"uint256"}],"name":"ReserveFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"usdcAmount","type":"uint256"}],"name":"TokensRedeemed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"WorkOrderCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"}],"name":"WorkOrderMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"WorkOrderPaid","type":"event"},{"inputs":[],"name":"PROPOSAL_DELAY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RESERVE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"TOKENIZATION_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"},{"internalType":"uint256","name":"minTokensOut","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"executeFeeChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"executeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"}],"name":"getRedemptionValue","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"}],"name":"getTokensForUSDC","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"startId","type":"uint256"},{"internalType":"uint256","name":"endId","type":"uint256"}],"name":"getWorkOrderRange","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"internalType":"struct MechanicalTempYieldToken.WorkOrder[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextProposalId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"payoutAmount","type":"uint256"}],"name":"payoutWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"pendingFeeChange","outputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"pendingMints","outputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"proposeFeeChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"name":"proposeMint","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"internalType":"uint256","name":"minUsdcOut","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"redemptionFeePercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}]; // <-- NEW ABI
-        // Fix: Correct Arbitrum native USDC address
-        const usdcAddress = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"; // Arbitrum Native USDC
-        const arbitrumChainId = '0xa4b1'; // 42161 in hex
+        const contractABI = [{"inputs":[{"internalType":"address","name":"initialOwner","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"target","type":"address"}],"name":"AddressCallToNonContract","type":"error"},{"inputs":[],"name":"AddressEmptyRevertData","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"AddressInsufficientBalance","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"inputs":[],"name":"ReentrancyGuardReentrantCall","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"burner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Burn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EmergencyWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"FeeChangeExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"FeeChangeProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FeesWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"MintExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"MintProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"reserveAmount","type":"uint256"}],"name":"ReserveFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"usdcAmount","type":"uint256"}],"name":"TokensRedeemed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"WorkOrderCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"}],"name":"WorkOrderMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"payoutAmount","type":"uint256"}],"name":"WorkOrderPaid","type":"event"},{"inputs":[],"name":"PROPOSAL_DELAY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RESERVE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"TOKENIZATION_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"},{"internalType":"uint256","name":"minTokensOut","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"executeFeeChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"executeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"}],"name":"getRedemptionValue","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"}],"name":"getTokensForUSDC","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"startId","type":"uint256"},{"internalType":"uint256","name":"endId","type":"uint256"}],"name":"getWorkOrderRange","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"internalType":"struct MechanicalTempYieldToken.WorkOrder[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextProposalId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"payoutAmount","type":"uint256"}],"name":"payoutWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"pendingFeeChange","outputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"pendingMints","outputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"proposeFeeChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"name":"proposeMint","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"internalType":"uint256","name":"minUsdcOut","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"redemptionFeePercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}];
+        const usdcAddress = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+        const arbitrumChainId = '0xa4b1';
 
-        // --- DOM Elements ---
-        // ... (Keep all existing DOM element references) ...
-        const connectButton = document.getElementById('connect-button');
-        const statusMessageDiv = document.getElementById('status-message');
-        const walletInfoDiv = document.getElementById('wallet-info');
-        const networkNameSpan = document.getElementById('network-name');
-        const userAddressSpan = document.getElementById('user-address');
-        const usdcBalanceSpan = document.getElementById('usdc-balance');
-        const mtyldBalanceSpan = document.getElementById('mtyld-balance');
-        const buyUsdcBalanceSpan = document.getElementById('buy-usdc-balance');
-        const redeemMtyldBalanceSpan = document.getElementById('redeem-mtyld-balance');
-        const tokenNameSpan = document.getElementById('token-name');
-        const tokenSymbolSpan = document.getElementById('token-symbol');
-        const totalSupplySpan = document.getElementById('total-supply');
-        const contractAddressLink = document.getElementById('contract-address-link');
-        const contractUsdcSpan = document.getElementById('contract-usdc');
-        const mtyldPriceSpan = document.getElementById('mtyld-price');
-        const availableMtyldSpan = document.getElementById('available-mtyld');
-        const proposalDelaySpan = document.getElementById('proposal-delay');
-        const buyForm = document.getElementById('buy-form');
-        const buyUsdcAmountInput = document.getElementById('buy-usdc-amount');
-        const buySlippageSelect = document.getElementById('buy-slippage');
-        const estimatedMtyldSpan = document.getElementById('estimated-mtyld');
-        const minTokensOutInput = document.getElementById('min-tokens-out');
-        const approveUsdcButton = document.getElementById('approve-usdc-button');
-        const buyButton = document.getElementById('buy-button');
-        const redeemForm = document.getElementById('redeem-form');
-        const redeemMtyldAmountInput = document.getElementById('redeem-mtyld-amount');
-        const redeemSlippageSelect = document.getElementById('redeem-slippage');
-        const estimatedUsdcSpan = document.getElementById('estimated-usdc');
-        const minUsdcOutInput = document.getElementById('min-usdc-out');
-        const redeemButton = document.getElementById('redeem-button');
-        const redeemFeePercentSpan = document.getElementById('redeem-fee-percent');
-        const pendingMintsTableBody = document.getElementById('pending-mints-body');
-        const workOrdersTableBody = document.getElementById('work-orders-body');
-        const filterMonthSelect = document.getElementById('filter-month');
-        const filterYearSelect = document.getElementById('filter-year');
-        const adminPanelDiv = document.getElementById('admin-panel');
-        const proposeMintForm = document.getElementById('propose-mint-form');
-        const executeMintIdInput = document.getElementById('execute-mint-id');
-        const pendingMintDetailsDiv = document.getElementById('pending-mint-details');
-        const executeMintButton = document.getElementById('execute-mint-button');
-        const payoutOrderForm = document.getElementById('payout-order-form');
-        const payoutTokenizedValueSpan = document.getElementById('payout-tokenized-value');
-        const payoutIdInput = document.getElementById('payout-id');
-        const cancelOrderForm = document.getElementById('cancel-order-form');
-        const proposeFeeForm = document.getElementById('propose-fee-form');
-        const executeFeeButton = document.getElementById('execute-fee-button');
-        const pendingFeeDetailsDiv = document.getElementById('pending-fee-details');
-        const currentRedeemFeeSpan = document.getElementById('current-redeem-fee');
-        const collectedFeesSpan = document.getElementById('collected-fees');
-        const withdrawFeesButton = document.getElementById('withdraw-fees-button');
-        const adminApproveUsdcButton = document.getElementById('admin-approve-usdc-button');
-        const emergencyWithdrawForm = document.getElementById('emergency-withdraw-form');
-        const pauseButton = document.getElementById('pause-button');
-        const unpauseButton = document.getElementById('unpause-button');
-        const pauseStatusIndicator = document.getElementById('pause-status-indicator');
-        const pausedOverlay = document.getElementById('paused-overlay');
+        const USDC_ABI = ["function balanceOf(address) view returns (uint256)","function allowance(address,address) view returns (uint256)","function approve(address,uint256) returns (bool)","function decimals() view returns (uint8)"];
 
+        let provider, signer, userAddress, mtyldContract, usdcContract, contractOwner;
+        let usdcDecimals = 6, mtyldDecimals = 18, allWorkOrders = [], availableYears = new Set();
+        let currentProposalDelay = null, blockTimestamp = null;
 
-        // --- State Variables ---
-        // ... (Keep all existing state variables) ...
-        let provider = null;
-        let signer = null;
-        let userAddress = null;
-        let mtyldContract = null;
-        let usdcContract = null;
-        let contractOwner = null;
-        let usdcDecimals = 6; // Hardcoded
-        let mtyldDecimals = 18;
-        let allWorkOrders = [];
-        let availableYears = new Set();
-        let currentProposalDelay = null;
-        let blockTimestamp = null;
-
-
-        // --- Helper Functions ---
-        // === Minimal ABIs ===
-        const USDC_ABI = [ // Use minimal ABI provided by user
-          "function balanceOf(address) view returns (uint256)",
-          "function allowance(address,address) view returns (uint256)",
-          "function approve(address,uint256) returns (bool)",
-          "function decimals() view returns (uint8)"
-        ];
-
-        // === Helpers ===
-        function showStatus(message, type = "info") {
-          const classes = { info: "alert alert-info", success: "alert alert-success", warning: "alert alert-warning", error: "alert alert-error" };
-          statusMessageDiv.className = classes[type] || classes.info;
-          statusMessageDiv.textContent = message;
-          statusMessageDiv.classList.remove("hidden");
-          clearTimeout(showStatus._t); // Use a static property for timeout ID
-          const timeout = (type === 'error' || type === 'warning') ? 8000 : 5000;
-          showStatus._t = setTimeout(() => statusMessageDiv.classList.add("hidden"), timeout);
+        function showStatus(msg, type = "info") {
+          const classes = { info: "alert-info", success: "alert-success", warning: "alert-warning", error: "alert-error" };
+          const el = document.getElementById('status-message');
+          el.className = `alert ${classes[type] || classes.info}`;
+          el.textContent = msg;
+          el.classList.remove("hidden");
+          clearTimeout(showStatus._t);
+          showStatus._t = setTimeout(() => el.classList.add("hidden"), (type === 'error' || type === 'warning') ? 8000 : 5000);
         }
-        function formatUnits(v, d) {
-          try { return ethers.formatUnits(v ?? 0n, d); }
-          catch(e){ console.error("FmtErr:", e, v, d); return "Err"; }
-        }
-        function parseUnits(v, d) {
-          try { const s = String(v||0).trim(); if(!s) throw new Error("empty"); return ethers.parseUnits(s, d); }
-          catch(e){ console.error("ParseErr:", e, v, d); showStatus(`Invalid number: '${v}'`, 'error'); return null; }
-        }
+
+        function formatUnits(v, d) { try { return ethers.formatUnits(v ?? 0n, d); } catch(e){ console.error("FmtErr:", e); return "Err"; } }
+        function parseUnits(v, d) { try { const s = String(v||0).trim(); if(!s) throw new Error("empty"); return ethers.parseUnits(s, d); } catch(e){ console.error("ParseErr:", e); showStatus(`Invalid number: '${v}'`, 'error'); return null; } }
         function shortenAddress(a){ return a ? a.slice(0,6) + "…" + a.slice(-4) : ""; }
-        function formatSeconds(total) {
-          if (total === null || total === undefined || total < 0) return "N/A";
-          const s = Number(total);
-          const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-          return `${h}h ${m}m ${sec}s`;
-        }
+        function formatSeconds(s) { if (s === null || s < 0) return "N/A"; const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60; return `${h}h ${m}m ${sec}s`; }
+        
         function updatePauseUI(isPaused) {
-          pauseStatusIndicator.classList.remove("hidden");
+          const indicator = document.getElementById('pause-status-indicator');
+          indicator.classList.remove("hidden");
           if (isPaused) {
-            pauseStatusIndicator.textContent = "Paused";
-            pauseStatusIndicator.className = "text-xs font-bold px-3 py-1 rounded-full bg-yellow text-yellow-foreground";
+            indicator.textContent = "Paused";
+            indicator.className = "text-xs font-bold px-3 py-1 rounded-full bg-yellow text-yellow-foreground";
           } else {
-            pauseStatusIndicator.textContent = "Live";
-            pauseStatusIndicator.className = "text-xs font-bold px-3 py-1 rounded-full bg-green text-green-foreground";
+            indicator.textContent = "Live";
+            indicator.className = "text-xs font-bold px-3 py-1 rounded-full bg-green text-green-foreground";
           }
-          pausedOverlay.classList.toggle("hidden", !isPaused);
-          updatePauseButtons(isPaused); // Also update admin buttons
-        }
-        function updatePauseButtons(isPaused) {
-          if (!pauseButton || !unpauseButton) return;
-          pauseButton.disabled = isPaused;
-          unpauseButton.disabled = !isPaused;
-        }
-        function resetState() {
-          walletInfoDiv.classList.add("hidden"); userAddress = null; signer = null; mtyldContract = null; usdcContract = null;
-          workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Connect wallet to view orders.</td></tr>';
-          pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">Connect wallet to view proposals.</td></tr>';
-          connectButton.textContent = 'Connect Wallet'; connectButton.disabled = false; // Ensure button reset
-          resetLoadingStates(); // Reset loading placeholders
-          console.log("State reset");
-        }
-        // Helper to reset loading placeholders specifically
-        function resetLoadingStates() {
-            tokenNameSpan.textContent = 'Loading...'; tokenSymbolSpan.textContent = '---'; totalSupplySpan.textContent = 'Loading...';
-            contractAddressLink.textContent = 'Loading...'; contractUsdcSpan.textContent = 'Loading...'; mtyldPriceSpan.textContent = 'Loading...';
-            availableMtyldSpan.textContent = 'Loading...'; proposalDelaySpan.textContent = 'Loading...';
-            usdcBalanceSpan.textContent = 'Loading...'; mtyldBalanceSpan.textContent = 'Loading...';
-            buyUsdcBalanceSpan.textContent = '--'; redeemMtyldBalanceSpan.textContent = '--';
-            estimatedMtyldSpan.textContent = '0.00'; estimatedUsdcSpan.textContent = '0.00';
-            minTokensOutInput.value = '0'; minUsdcOutInput.value = '0';
+          document.getElementById('paused-overlay').classList.toggle("hidden", !isPaused);
+          updatePauseButtons(isPaused);
         }
 
-        // === Wallet connect (ethers v6) ===
+        function updatePauseButtons(isPaused) {
+          const pauseBtn = document.getElementById('pause-button');
+          const unpauseBtn = document.getElementById('unpause-button');
+          if (pauseBtn) pauseBtn.disabled = isPaused;
+          if (unpauseBtn) unpauseBtn.disabled = !isPaused;
+        }
+
+        function resetState() {
+          document.getElementById('wallet-info').classList.add("hidden");
+          userAddress = null; signer = null; mtyldContract = null; usdcContract = null;
+          document.getElementById('work-orders-body').innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Connect wallet to view orders.</td></tr>';
+          document.getElementById('pending-mints-body').innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">Connect wallet to view proposals.</td></tr>';
+          document.getElementById('connect-button').textContent = 'Connect Wallet';
+          document.getElementById('connect-button').disabled = false;
+          resetLoadingStates();
+        }
+
+        function resetLoadingStates() {
+          document.getElementById('token-name').textContent = 'Loading...';
+          document.getElementById('token-symbol').textContent = '---';
+          document.getElementById('total-supply').textContent = 'Loading...';
+          document.getElementById('contract-address-link').textContent = 'Loading...';
+          document.getElementById('contract-usdc').textContent = 'Loading...';
+          document.getElementById('mtyld-price').textContent = 'Loading...';
+          document.getElementById('available-mtyld').textContent = 'Loading...';
+          document.getElementById('proposal-delay').textContent = 'Loading...';
+          document.getElementById('usdc-balance').textContent = 'Loading...';
+          document.getElementById('mtyld-balance').textContent = 'Loading...';
+        }
+
+        function setLoading(btn, isLoading, originalText) {
+          if (!btn) return;
+          if (isLoading) {
+            btn.dataset._text = originalText || btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="loading-spinner"></span> Processing...`;
+          } else {
+            btn.disabled = false;
+            btn.innerHTML = btn.dataset._text || originalText || btn.textContent;
+            delete btn.dataset._text;
+          }
+        }
+
         async function connectWallet() {
-          console.log("Connect attempt started...");
-          const connectBtn = connectButton; const originalText = 'Connect Wallet';
-          setLoading(connectBtn, true, originalText); // Show loading immediately
+          const connectBtn = document.getElementById('connect-button');
+          const originalText = 'Connect Wallet';
+          setLoading(connectBtn, true, originalText);
           try {
             if (typeof window.ethereum === 'undefined') throw new Error("MetaMask not found.");
             if (typeof ethers === 'undefined') throw new Error("Ethers.js not loaded.");
 
-            console.log("Requesting provider...");
             provider = new ethers.BrowserProvider(window.ethereum, "any");
 
-            // Setup listeners *before* requesting accounts if not already done
-             if (!window.walletListenersAttached) {
-                  console.log("Setting up wallet listeners for the first time.");
-                  setupWalletListeners();
-                  window.walletListenersAttached = true;
-             }
-
-            console.log("Checking network...");
-            const net = await provider.getNetwork();
-            if (net.chainId !== BigInt(arbitrumChainId)) { // Use BigInt for comparison
-              console.log("Incorrect network, requesting switch...");
-              showStatus("Switch to Arbitrum One requested...", "info");
-              await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: arbitrumChainId }] });
-              // Ethers v6 often requires re-initialization after chain switch
-              provider = new ethers.BrowserProvider(window.ethereum);
-              console.log("Provider re-initialized after switch.");
+            if (!window.walletListenersAttached) {
+              setupWalletListeners();
+              window.walletListenersAttached = true;
             }
 
-            console.log("Requesting accounts...");
-            // Request accounts *after* ensuring correct network (or attempting switch)
+            const net = await provider.getNetwork();
+            if (net.chainId !== BigInt(arbitrumChainId)) {
+              showStatus("Switch to Arbitrum One requested...", "info");
+              await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: arbitrumChainId }] });
+              provider = new ethers.BrowserProvider(window.ethereum);
+            }
+
             await provider.send("eth_requestAccounts", []);
             signer = await provider.getSigner();
             userAddress = await signer.getAddress();
-            console.log("Signer obtained:", userAddress);
 
-            // Verify network *again* after getting signer, just in case
             const finalNet = await provider.getNetwork();
             if (finalNet.chainId !== BigInt(arbitrumChainId)) {
-                throw new Error("Wallet connected but not on Arbitrum One.");
+              throw new Error("Wallet connected but not on Arbitrum One.");
             }
-            networkNameSpan.textContent = "Arbitrum One"; // Confirmed
-            userAddressSpan.textContent = userAddress;
+            document.getElementById('network-name').textContent = "Arbitrum One";
+            document.getElementById('user-address').textContent = userAddress;
 
-            // Instantiate contracts
             mtyldContract = new ethers.Contract(contractAddress, contractABI, signer);
             usdcContract = new ethers.Contract(usdcAddress, USDC_ABI, signer);
-            console.log("Contracts instantiated");
 
-            // Fetch decimals (safe to assume 6 if this fails, but log error)
             try {
-                usdcDecimals = await usdcContract.decimals();
-                console.log("Fetched USDC decimals:", Number(usdcDecimals));
-            } catch (decError) {
-                console.error("Could not fetch USDC decimals, defaulting to 6:", decError);
-                usdcDecimals = 6n; // Use BigInt for consistency internally
+              usdcDecimals = await usdcContract.decimals();
+            } catch (e) {
+              console.error("USDC decimals error:", e);
+              usdcDecimals = 6;
             }
 
-
-            walletInfoDiv.classList.remove("hidden");
-            console.log("Wallet UI visible");
-
+            document.getElementById('wallet-info').classList.remove("hidden");
             await loadInitialData();
             showStatus("Wallet connected.", "success");
 
           } catch (err) {
-            console.error("Connect Wallet Error:", err);
+            console.error("Connect error:", err);
             let errMsg = err.message || "Unknown connection error.";
-            if (err.code === 4001 || err.message?.includes('rejected')) errMsg = "Connection rejected by user.";
-            if (err.message?.includes('Already processing')) errMsg = "Connection request already pending in MetaMask.";
+            if (err.code === 4001) errMsg = "Connection rejected by user.";
             showStatus(errMsg, "error");
-            resetState(); // Reset UI fully on any connection error
+            resetState();
           } finally {
-               // Ensure button state is correct based on whether userAddress was set
-               if (userAddress) {
-                    setLoading(connectBtn, false, shortenAddress(userAddress));
-                    connectBtn.disabled = true;
-               } else {
-                    setLoading(connectBtn, false, originalText);
-                    connectBtn.disabled = false;
-               }
-               console.log("Connect attempt finished.");
+            if (userAddress) {
+              setLoading(connectBtn, false, shortenAddress(userAddress));
+              connectBtn.disabled = true;
+            } else {
+              setLoading(connectBtn, false, originalText);
+            }
           }
         }
 
         function setupWalletListeners() {
-          if (!window.ethereum || !window.ethereum.on) return console.warn("Cannot setup listeners: window.ethereum missing or .on not supported");
-
-          // Remove potential old listeners first
+          if (!window.ethereum) return;
           window.ethereum.removeAllListeners?.("accountsChanged");
           window.ethereum.removeAllListeners?.("chainChanged");
-          console.log("Removed previous wallet listeners.");
 
           window.ethereum.on("accountsChanged", async (accounts) => {
-             console.log("accountsChanged:", accounts);
             if (!accounts || accounts.length === 0) {
-              resetState(); showStatus("Wallet disconnected.", "warning"); return;
+              resetState();
+              showStatus("Wallet disconnected.", "warning");
+              return;
             }
-            // Only reconnect if the address is actually different
             if (!userAddress || ethers.getAddress(accounts[0]) !== ethers.getAddress(userAddress)) {
-                showStatus("Account changed, reconnecting...", "info");
-                resetState(); // Reset before reconnecting with new account
-                await connectWallet(); // Trigger full reconnect
+              showStatus("Account changed, reconnecting...", "info");
+              resetState();
+              await connectWallet();
             }
           });
 
           window.ethereum.on("chainChanged", async (hexId) => {
-             console.log("chainChanged:", hexId);
             if (hexId !== arbitrumChainId) {
               showStatus("Switched to wrong network. Please switch back to Arbitrum One.", "error");
-              resetState(); connectButton.textContent = 'Wrong Network'; connectButton.disabled = true;
+              resetState();
+              document.getElementById('connect-button').textContent = 'Wrong Network';
+              document.getElementById('connect-button').disabled = true;
             } else {
-                // Switched back to correct network, refresh might be needed
-                showStatus("Network changed to Arbitrum One. Refreshing data...", "info");
-                resetState(); // Reset state
-                await connectWallet(); // Reconnect fully on correct chain
-                // Alternatively: window.location.reload(); // Simpler but full page reload
+              showStatus("Network changed to Arbitrum One. Refreshing data...", "info");
+              resetState();
+              await connectWallet();
             }
           });
-           console.log("Wallet listeners attached.");
         }
-        // (Optional) small quality-of-life helpers used elsewhere:
-        function setLoading(btn, isLoading, originalText) { // Use the provided one
-          if (!btn) return;
-          if (isLoading) {
-            btn.dataset._text = originalText || btn.textContent; // Store original text
-            btn.disabled = true;
-            // Use consistent spinner style
-            btn.innerHTML = `<span class="loading-spinner"></span> Processing...`; // Keep "Processing..." for consistency
-          } else {
-            btn.disabled = false;
-            // Restore original text or default if not stored
-            btn.innerHTML = btn.dataset._text || originalText || btn.textContent;
-            delete btn.dataset._text; // Clean up stored text
+
+        async function loadInitialData() {
+          try {
+            await Promise.all([updateWalletInfo(), updateProtocolInfo(), checkAdminStatus(), fetchAndStoreAllWorkOrders(), fetchPendingProposals()]);
+          } catch (err) {
+            console.error("Load data error:", err);
+            showStatus("Error loading data: " + err.message, "error");
           }
-        }
-
-
-        // Combined function to load data after connection
-        async function loadInitialData() { /* ... */ }
-
-
-        function resetState() { /* ... */ }
-
-        // --- UI Update Helper Functions ---
-        function resetLoadingStates() { /* ... */ }
-        function clearLoadingStatesWithError() { /* ... */ }
-
-
-        async function checkAdminStatus() { /* ... */ }
-
-        async function updateAdminInfo() { /* ... */ }
-
-         // Combined proposal check function
-         async function checkPendingProposals() { /* ... */ }
-
-
-        // Helper to check and display pending mint details based on input ID (Admin Panel ONLY)
-         let checkMintTimeout;
-        async function checkPendingMintDetails() { /* ... */ }
-
-
-        async function updateWalletInfo() { /* ... */ }
-
-        async function updateProtocolInfo() { /* ... */ }
-
-        // --- Buy/Redeem Logic ---
-        async function updateBuyEstimate() { /* ... */ }
-        async function updateRedeemEstimate() { /* ... */ }
-        async function handleApproveUSDC(isAdmin = false) { /* ... */ }
-        async function handleBuyTokens(event) { /* ... */ }
-        async function handleRedeemTokens(event) { /* ... */ }
-
-
-        // --- Work Order & Pending Proposal Display ---
-        async function fetchAndStoreAllWorkOrders() { /* ... */ }
-        function populateYearFilter() { /* ... */ }
-        function filterAndRenderOrders() { /* ... */ }
-        function renderWorkOrdersTable(ordersToRender) { /* ... */ }
-        async function fetchPendingProposals() { /* ... */ }
-
-
-        // --- Admin Actions (Updated for Timelock & Pause) ---
-        async function handleProposeMint(event) { /* ... */ }
-        async function handleExecuteMint() { /* ... */ }
-        async function handlePayoutOrder(event) { /* ... */ }
-        async function handleCancelOrder(event) { /* ... */ }
-        async function handleProposeFeeChange(event) { /* ... */ }
-        async function handleExecuteFeeChange() { /* ... */ }
-        async function handleWithdrawFees() { /* ... */ }
-        async function handleEmergencyWithdraw(event) { /* ... */ }
-         // --- Pause/Unpause Logic ---
-         async function handlePause() { /* ... */ }
-        async function handleUnpause() { /* ... */ }
-        function updatePauseUI(isPaused) { /* ... */ }
-        function updatePauseButtons(isPaused) { /* ... */ }
-
-
-        // --- Event Listeners Setup ---
-         function setupEventListeners() { /* ... */ }
-         // setupWalletListeners is now called within connectWallet
-
-
-        // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => { /* ... */
-             connectButton.addEventListener('click', connectWallet);
-             setupEventListeners();
-             workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Connect wallet to view orders.</td></tr>';
-             pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">Connect wallet to view proposals.</td></tr>';
-             populateYearFilter();
-        });
-
-    </script>
-</body>
-</html>
-
