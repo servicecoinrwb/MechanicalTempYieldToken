@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <!-- Ethers.js v6 -->
+    <!-- Ethers.js v6 - Moved to head -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js" type="application/javascript"></script>
 
     <style>
@@ -353,10 +353,8 @@
                            <label for="execute-mint-id">Proposal ID to Execute</label>
                            <input type="number" id="execute-mint-id" min="1" placeholder="Enter ID from Pending Proposals" required>
                      </div>
-                     <div id="pending-mint-details" class="proposal-card hidden">
-                          {/* Details loaded dynamically - not used in this simplified version */}
-                     </div>
-                     <button id="execute-mint-button" class="btn btn-primary w-full mt-3">Execute Selected Mint</button> <!-- Will target selected row -->
+                     <!-- Removed pending-mint-details div as execution is now tied to the table -->
+                     <button id="execute-mint-button" class="btn btn-primary w-full mt-3">Execute Selected Mint</button>
                  </div>
              </div>
              <!-- End Mint Section -->
@@ -389,5 +387,749 @@
         // --- CONFIGURATION ---
         const contractAddress = "0xEC365463A5007289118fAF0A8daf7cEFb036abD3"; // NEW V4 ADDRESS
         // --- NEW V4 ABI ---
-        const contractABI = [{"inputs":[{"internalType":"address","name":"admin","type":"address"},{"internalType":"address","name":"initialFeeRecipient","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"burner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Burn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newDelay","type":"uint256"}],"name":"DelayChangeExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newDelay","type":"uint256"},{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"DelayChangeProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EmergencyWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"newRecipient","type":"address"}],"name":"FeeRecipientChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FeesWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"minUsdcLiquidity","type":"uint256"}],"name":"MinLiquiditySet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":true,"internalType":"address","name":"canceller","type":"address"}],"name":"MintCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"executor","type":"address"}],"name":"MintExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"string","name":"adminNote","type":"string"},{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"MintProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeeBps","type":"uint256"},{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"RedemptionFeeProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeeBps","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bool","name":"enabled","type":"bool"}],"name":"RedemptionToggle","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"usdcOut","type":"uint256"}],"name":"TokensRedeemed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"}],"name":"WorkOrderMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"payoutAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"totalPaid","type":"uint256"},{"indexed":false,"internalType":"bool","name":"isNowPaid","type":"bool"}],"name":"WorkOrderPaid","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"bool","name":"isActive","type":"bool"},{"indexed":false,"internalType":"bool","name":"isPaid","type":"bool"},{"indexed":false,"internalType":"uint256","name":"paidAmount","type":"uint256"}],"name":"WorkOrderStatusChanged","type":"event"},{"inputs":[],"name":"ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ARBITRUM_USDC","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"BPS_DENOMINATOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DOMAIN_SEPARATOR","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"EXECUTOR_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DESC","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_NOTE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PAUSER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PERMIT_TYPEHASH","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PROPOSER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RESERVE_PERCENT_BPS","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"TOKENIZATION_PERCENT_BPS","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"TREASURER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"},{"internalType":"uint256","name":"minTokensOut","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"cancelMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"cancelWindowSeconds","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"executeDelayChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"executeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"executeRedemptionFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"feeRecipient","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"getPending","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"adminNote","type":"string"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"address","name":"proposer","type":"address"},{"internalType":"bool","name":"exists","type":"bool"}],"internalType":"struct MechanicalTempYieldTokenV4.MintProposal","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getPendingCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"offset","type":"uint256"},{"internalType":"uint256","name":"limit","type":"uint256"}],"name":"getPendingIds","outputs":[{"internalType":"uint256[]","name":"out","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"}],"name":"getRedemptionValue","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"}],"name":"getTokensForUSDC","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"getWorkOrder","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"uint256","name":"paidAmount","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"internalType":"struct MechanicalTempYieldTokenV4.WorkOrder","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getWorkOrderCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"startId","type":"uint256"},{"internalType":"uint256","name":"endId","type":"uint256"}],"name":"getWorkOrderRange","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"uint256","name":"paidAmount","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"internalType":"struct MechanicalTempYieldTokenV4.WorkOrder[]","name":"arr","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"offset","type":"uint256"},{"internalType":"uint256","name":"limit","type":"uint256"}],"name":"getWorkOrders","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"uint256","name":"paidAmount","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"internalType":"struct MechanicalTempYieldTokenV4.WorkOrder[]","name":"out","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lastProposalId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lastWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"minUsdcLiquidity","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"nonces","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentTokenDecimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"payoutAmount","type":"uint256"}],"name":"payoutWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"pendingDelayChange","outputs":[{"internalType":"uint256","name":"newDelay","type":"uint256"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"address","name":"proposer","type":"address"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pendingFeeChange","outputs":[{"internalType":"uint256","name":"newFeeBps","type":"uint256"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"address","name":"proposer","type":"address"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"pendingMints","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"adminNote","type":"string"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"address","name":"proposer","type":"address"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"permit","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"proposalDelay","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proposalTtl","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"newDelay","type":"uint256"}],"name":"proposeDelayChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"adminNote","type":"string"}],"name":"proposeMint","outputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFeeBps","type":"uint256"}],"name":"proposeRedemptionFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"internalType":"uint256","name":"minUsdcOut","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"redemptionEnabled","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"redemptionFeeBps","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"seconds_","type":"uint256"}],"name":"setCancelWindow","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"r","type":"address"}],"name":"setFeeRecipient","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"v","type":"uint256"}],"name":"setMinUsdcLiquidity","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"seconds_","type":"uint256"}],"name":"setProposalTtl","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bool","name":"e","type":"bool"}],"name":"setRedemptionEnabled","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"uint256","name":"paidAmount","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}]
+        const contractABI = [{"inputs":[{"internalType":"address","name":"admin","type":"address"},{"internalType":"address","name":"initialFeeRecipient","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"burner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Burn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newDelay","type":"uint256"}],"name":"DelayChangeExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newDelay","type":"uint256"},{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"DelayChangeProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EmergencyWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"newRecipient","type":"address"}],"name":"FeeRecipientChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FeesWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"minUsdcLiquidity","type":"uint256"}],"name":"MinLiquiditySet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":true,"internalType":"address","name":"canceller","type":"address"}],"name":"MintCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"executor","type":"address"}],"name":"MintExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"string","name":"adminNote","type":"string"},{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"MintProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeeBps","type":"uint256"},{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"RedemptionFeeProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeeBps","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bool","name":"enabled","type":"bool"}],"name":"RedemptionToggle","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"usdcOut","type":"uint256"}],"name":"TokensRedeemed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"}],"name":"WorkOrderMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"payoutAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"totalPaid","type":"uint256"},{"indexed":false,"internalType":"bool","name":"isNowPaid","type":"bool"}],"name":"WorkOrderPaid","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"bool","name":"isActive","type":"bool"},{"indexed":false,"internalType":"bool","name":"isPaid","type":"bool"},{"indexed":false,"internalType":"uint256","name":"paidAmount","type":"uint256"}],"name":"WorkOrderStatusChanged","type":"event"},{"inputs":[],"name":"ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ARBITRUM_USDC","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"BPS_DENOMINATOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DOMAIN_SEPARATOR","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"EXECUTOR_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DESC","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_NOTE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PAUSER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PERMIT_TYPEHASH","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PROPOSER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RESERVE_PERCENT_BPS","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"TOKENIZATION_PERCENT_BPS","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"TREASURER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"},{"internalType":"uint256","name":"minTokensOut","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"cancelMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"cancelWindowSeconds","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"executeDelayChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"executeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"executeRedemptionFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"feeRecipient","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"getPending","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"adminNote","type":"string"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"address","name":"proposer","type":"address"},{"internalType":"bool","name":"exists","type":"bool"}],"internalType":"struct MechanicalTempYieldTokenV4.MintProposal","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getPendingCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"offset","type":"uint256"},{"internalType":"uint256","name":"limit","type":"uint256"}],"name":"getPendingIds","outputs":[{"internalType":"uint256[]","name":"out","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"}],"name":"getRedemptionValue","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"}],"name":"getTokensForUSDC","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"getWorkOrder","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"uint256","name":"paidAmount","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"internalType":"struct MechanicalTempYieldTokenV4.WorkOrder","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getWorkOrderCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"startId","type":"uint256"},{"internalType":"uint256","name":"endId","type":"uint256"}],"name":"getWorkOrderRange","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"uint256","name":"paidAmount","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"internalType":"struct MechanicalTempYieldTokenV4.WorkOrder[]","name":"arr","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"offset","type":"uint256"},{"internalType":"uint256","name":"limit","type":"uint256"}],"name":"getWorkOrders","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"uint256","name":"paidAmount","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"internalType":"struct MechanicalTempYieldTokenV4.WorkOrder[]","name":"out","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lastProposalId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lastWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"minUsdcLiquidity","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"nonces","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentTokenDecimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"payoutAmount","type":"uint256"}],"name":"payoutWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"pendingDelayChange","outputs":[{"internalType":"uint256","name":"newDelay","type":"uint256"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"address","name":"proposer","type":"address"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pendingFeeChange","outputs":[{"internalType":"uint256","name":"newFeeBps","type":"uint256"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"address","name":"proposer","type":"address"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"pendingMints","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"adminNote","type":"string"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"address","name":"proposer","type":"address"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"permit","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"proposalDelay","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proposalTtl","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"newDelay","type":"uint256"}],"name":"proposeDelayChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"adminNote","type":"string"}],"name":"proposeMint","outputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFeeBps","type":"uint256"}],"name":"proposeRedemptionFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"internalType":"uint256","name":"minUsdcOut","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"redemptionEnabled","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"redemptionFeeBps","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"seconds_","type":"uint256"}],"name":"setCancelWindow","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"r","type":"address"}],"name":"setFeeRecipient","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"v","type":"uint256"}],"name":"setMinUsdcLiquidity","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"seconds_","type":"uint256"}],"name":"setProposalTtl","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bool","name":"e","type":"bool"}],"name":"setRedemptionEnabled","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"uint256","name":"paidAmount","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}];
+        const usdcAddress = "0xaf8d065e77c8cC2239327C5EDb3A432268e5831"; // Arbitrum Native USDC (matches ARBITRUM_USDC in contract)
+        const arbitrumChainId = '0xa4b1'; // 42161 in hex
+        const arbitrumRpcUrl = "https://arb1.arbitrum.io/rpc";
+
+        // --- DOM Elements ---
+        const connectButton = document.getElementById('connect-button');
+        const statusMessageDiv = document.getElementById('status-message');
+        const walletInfoDiv = document.getElementById('wallet-info');
+        const networkNameSpan = document.getElementById('network-name');
+        const userAddressSpan = document.getElementById('user-address');
+        const usdcBalanceSpan = document.getElementById('usdc-balance');
+        const mtyldBalanceSpan = document.getElementById('mtyld-balance');
+        const protocolInfoDiv = document.getElementById('protocol-info');
+        const interactionSectionDiv = document.getElementById('interaction-section');
+        const tokenNameSpan = document.getElementById('token-name');
+        const tokenSymbolSpan = document.getElementById('token-symbol');
+        const contractAddressLink = document.getElementById('contract-address-link');
+        const contractUsdcSpan = document.getElementById('contract-usdc');
+        const mtyldPriceSpan = document.getElementById('mtyld-price');
+        const availableMtyldSpan = document.getElementById('available-mtyld');
+        const redeemFeePercentInfoSpan = document.getElementById('redeem-fee-percent-info');
+        const proposalDelaySpan = document.getElementById('proposal-delay');
+        const redemptionStatusSpan = document.getElementById('redemption-status'); // Added
+        const feeRecipientSpan = document.getElementById('fee-recipient'); // Added
+
+        // Buy Form Elements
+        const buyForm = document.getElementById('buy-form');
+        const buyUsdcAmountInput = document.getElementById('buy-usdc-amount');
+        const buySlippageSelect = document.getElementById('buy-slippage');
+        const estimatedMtyldSpan = document.getElementById('estimated-mtyld');
+        const minTokensOutInput = document.getElementById('min-tokens-out');
+        const approveUsdcButton = document.getElementById('approve-usdc-button');
+        const buyButton = document.getElementById('buy-button');
+        const buyUsdcBalanceSpan = document.getElementById('buy-usdc-balance');
+
+        // Redeem Form Elements
+        const redeemForm = document.getElementById('redeem-form');
+        const redeemMtyldAmountInput = document.getElementById('redeem-mtyld-amount');
+        const redeemSlippageSelect = document.getElementById('redeem-slippage');
+        const estimatedUsdcSpan = document.getElementById('estimated-usdc');
+        const minUsdcOutInput = document.getElementById('min-usdc-out');
+        const redeemButton = document.getElementById('redeem-button');
+        const redeemFeePercentFormSpan = document.getElementById('redeem-fee-percent-form');
+        const redeemMtyldBalanceSpan = document.getElementById('redeem-mtyld-balance');
+
+        // Admin Panel Elements
+        const adminPanelDiv = document.getElementById('admin-panel');
+        const proposeMintForm = document.getElementById('propose-mint-form');
+        const executeMintIdInput = document.getElementById('execute-mint-id');
+        // Removed pending-mint-details div, info will be in table
+        const executeMintButton = document.getElementById('execute-mint-button');
+        const emergencyWithdrawForm = document.getElementById('emergency-withdraw-form');
+        const pauseButton = document.getElementById('pause-button');
+        const unpauseButton = document.getElementById('unpause-button');
+        const pauseStatusIndicator = document.getElementById('pause-status-indicator');
+        const pausedOverlay = document.getElementById('paused-overlay');
+        const roleInfoDiv = document.getElementById('role-info'); // Added role info div
+
+        // Pending Proposals Elements
+        const pendingProposalsSectionDiv = document.getElementById('pending-proposals-section');
+        const pendingProposalsTableBody = document.getElementById('pending-proposals-body');
+
+
+        // --- State Variables ---
+        let browserProvider = null;
+        let staticProvider = null;
+        let signer = null;
+        let userAddress = null;
+        let mtyldContract = null; // Signer-connected
+        let usdcContract = null; // Signer-connected
+        let mtyldContractReadOnly = null; // Read-only
+        let usdcContractReadOnly = null; // Read-only
+        // Removed contractOwner state, will use roles
+        let usdcDecimals = 6; // Contract specifies 6
+        let mtyldDecimals = 18; // Default ERC20
+        let blockTimestamp = null;
+        let currentProposalDelay = null;
+        let pendingWorkOrderProposals = []; // Now stores array of {id, data}
+        let userRoles = {}; // To store user's roles
+        let roleHashes = {}; // To store contract role hashes
+
+        // --- Helper Functions ---
+        // showStatus, setLoading, shortenAddress, formatUnits, parseUnits, formatDate, formatSeconds remain the same
+        function showStatus(message, type = 'info') {
+             const el = document.createElement('div'); el.className = `alert alert-${type}`; el.textContent = message;
+             statusMessageDiv.innerHTML = ''; statusMessageDiv.appendChild(el); statusMessageDiv.classList.remove('hidden');
+             let timeout = (type === 'error' || type === 'warning') ? 8000 : 5000;
+             setTimeout(() => { el.style.transition = 'opacity 0.5s ease'; el.style.opacity = '0'; setTimeout(() => { if (statusMessageDiv.contains(el)) statusMessageDiv.removeChild(el); if (statusMessageDiv.children.length === 0) statusMessageDiv.classList.add('hidden'); }, 500); }, timeout);
+        }
+        function setLoading(button, isLoading, originalText) { if (!button) return; button.disabled = isLoading; button.innerHTML = isLoading ? `<span class="loading-spinner"></span> Processing...` : originalText; }
+        function shortenAddress(address) { if (!address || address.length < 11) return address || ''; return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`; }
+        function formatUnits(amount, decimals) { if (amount == null) return '...'; const numDecimals = Number(decimals); if (isNaN(numDecimals) || numDecimals < 0 || numDecimals > 18) { console.error("Invalid decimals:", decimals); return 'ERR'; } try { return ethers.formatUnits(amount, numDecimals); } catch (error) { console.error("FmtErr:", error, amount, numDecimals); return 'ERR'; } }
+        function parseUnits(amount, decimals) { const numDecimals = Number(decimals); if (isNaN(numDecimals) || numDecimals < 0 || numDecimals > 18) { console.error("Invalid decimals:", decimals); showStatus(`Internal error: Invalid decimals (${decimals})`, 'error'); return null; } try { const amountStr = String(amount).trim(); if (!amountStr) throw new Error("Input empty"); return ethers.parseUnits(amountStr, numDecimals); } catch (error) { console.error("ParseErr:", error, amount, numDecimals); showStatus(`Invalid input: '${amount}'. Need valid number.`, 'error'); return null; } }
+        function formatDate(timestamp) { if (!timestamp || timestamp === 0n) return { dateStr: 'N/A', fullDate: null }; try { const date = new Date(Number(timestamp) * 1000); const dateStr = date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }); return { dateStr, fullDate: date }; } catch { return { dateStr: 'Invalid Date', fullDate: null }; } }
+        function formatSeconds(seconds) { if (seconds == null) return '...'; const totalSeconds = Number(seconds); const d = Math.floor(totalSeconds / 86400); const h = Math.floor((totalSeconds % 86400) / 3600); const m = Math.floor((totalSeconds % 3600) / 60); const s = Math.floor(totalSeconds % 60); let r = ''; if (d > 0) r += `${d}d `; if (h > 0 || d > 0) r += `${h}h `; if (m > 0 || h > 0 || d > 0) r += `${m}m `; r += `${s}s`; return r.trim(); }
+
+        // --- Blockchain Interaction ---
+
+        function initializeStaticProvider() {
+            try {
+                console.log("Initializing StaticJsonRpcProvider...");
+                if (typeof ethers === 'undefined') throw new Error("Ethers.js not loaded.");
+                // Use ethers directly, not ethers.providers
+                if (!ethers.StaticJsonRpcProvider) throw new Error("StaticJsonRpcProvider not found.");
+                staticProvider = new ethers.StaticJsonRpcProvider(arbitrumRpcUrl, 42161);
+                if (!ethers.Contract) throw new Error("Contract class not found.");
+                mtyldContractReadOnly = new ethers.Contract(contractAddress, contractABI, staticProvider);
+                const usdcAbiMinimal = ["function decimals() view returns (uint8)"]; // Only need decimals initially
+                usdcContractReadOnly = new ethers.Contract(usdcAddress, usdcAbiMinimal, staticProvider);
+                console.log("Static provider and read-only contracts OK.");
+                return true;
+            } catch (error) {
+                console.error("Static provider init failed:", error);
+                showStatus(`Init Error: ${error.message}. Cannot load data.`, "error");
+                connectButton.disabled = true; connectButton.textContent = "Init Error";
+                return false;
+            }
+        }
+
+        async function fetchInitialData() {
+            if (!mtyldContractReadOnly || !usdcContractReadOnly) { console.error("Read-only contracts not ready."); showStatus("Init error.", "error"); return; }
+            console.log("Fetching initial data (decimals, protocol info, pending proposals)...");
+            pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-text-secondary">Loading...</td></tr>'; // Updated colspan
+            try {
+                console.log("Fetching decimals...");
+                let mtyldDecResult, usdcDecResult;
+                try {
+                    // Fetch decimals using read-only instances
+                    [mtyldDecResult, usdcDecResult] = await Promise.all([
+                        mtyldContractReadOnly.decimals(),
+                        usdcContractReadOnly.decimals()
+                    ]);
+                    mtyldDecimals = Number(mtyldDecResult);
+                    usdcDecimals = Number(usdcDecResult);
+                     if (isNaN(mtyldDecimals) || mtyldDecimals < 0 || mtyldDecimals > 18 || isNaN(usdcDecimals) || usdcDecimals < 0 || usdcDecimals > 18) {
+                         throw new Error(`Invalid decimals: MTYLD=${mtyldDecimals}, USDC=${usdcDecimals}`);
+                     }
+                    console.log(`Initial Decimals OK: MTYLD=${mtyldDecimals}, USDC=${usdcDecimals}`);
+                } catch (decError) {
+                      console.error("CRITICAL: Decimals fetch failed:", decError);
+                      showStatus(`Error fetching critical token decimals: ${decError.message}. Cannot proceed.`, "error");
+                      tokenNameSpan.textContent = 'ERR'; tokenSymbolSpan.textContent = 'ERR';
+                      pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-red-400">Decimal Error</td></tr>'; // Updated colspan
+                      connectButton.disabled = true; connectButton.textContent = "Config Error";
+                      return; // Stop
+                 }
+
+                 console.log("Fetching initial protocol info...");
+                 await updateProtocolInfo(true); // Use read-only
+                 console.log("Fetching initial pending work orders...");
+                 await fetchPendingWorkOrders(true); // Use read-only
+
+                 protocolInfoDiv.classList.remove('hidden');
+                 pendingProposalsSectionDiv.classList.remove('hidden');
+                 console.log("Initial data loaded.");
+
+            } catch (error) {
+                 console.error("Error during initial data fetch:", error);
+                 showStatus("Failed to load initial contract data. Check console.", "error");
+                 tokenNameSpan.textContent = 'Error'; tokenSymbolSpan.textContent = 'Err';
+                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-red-400">Load Error</td></tr>'; // Updated colspan
+                 // Still show sections even if data failed
+                 protocolInfoDiv.classList.remove('hidden');
+                 pendingProposalsSectionDiv.classList.remove('hidden');
+            }
+        }
+
+        async function connectWallet() {
+             if (typeof window.ethereum === 'undefined') { return showStatus('MetaMask is not installed.', 'error'); }
+              if (typeof ethers === 'undefined' || !ethers.BrowserProvider || !ethers.Contract) {
+                   console.error("Ethers classes not available for connect."); showStatus("Ethers library error. Refresh.", "error"); return;
+              }
+             const arbitrumNetwork = new ethers.Network("arbitrum", 42161); arbitrumNetwork.ensAddress = null;
+             const connectBtn = connectButton; const originalConnectText = 'Connect Wallet';
+             setLoading(connectBtn, true, originalConnectText); console.log("Connecting wallet...");
+             try {
+                 browserProvider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork); console.log("BrowserProvider created.");
+                 if (!window.walletListenersAttached) { setupWalletListeners(); window.walletListenersAttached = true; }
+                 await new Promise(resolve => setTimeout(resolve, 100)); // Short delay
+                 const currentMetaMaskNetwork = await browserProvider.getNetwork(); console.log("MetaMask Network:", currentMetaMaskNetwork);
+                 if (currentMetaMaskNetwork.chainId !== BigInt(arbitrumChainId)) {
+                      console.log(`Requesting switch to Arbitrum...`);
+                      try {
+                           await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: arbitrumChainId }] });
+                           browserProvider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork); console.log("Switched network OK.");
+                      } catch (switchError) { /* ... (switch/add logic same as before) ... */
+                          console.error("Switch Network Error:", switchError);
+                           if (switchError.code === 4902) {
+                                console.log("Arbitrum not found, requesting add.");
+                                try {
+                                     await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: arbitrumChainId, chainName: 'Arbitrum One', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://arb1.arbitrum.io/rpc'], blockExplorerUrls: ['https://arbiscan.io'] }] });
+                                     browserProvider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork); console.log("Added network OK.");
+                                } catch (addError) { console.error("Add Network Error:", addError); throw new Error('Please add Arbitrum One manually.'); }
+                           } else { throw new Error('Please switch MetaMask to Arbitrum One.'); }
+                       }
+                 }
+                 console.log("Requesting accounts...");
+                 signer = await browserProvider.getSigner(); userAddress = await signer.getAddress(); console.log("Account:", userAddress);
+
+                 // --- Create Signer-Connected Contracts ---
+                 mtyldContract = new ethers.Contract(contractAddress, contractABI, signer);
+                 const usdcAbiMinimal = ["function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)","function allowance(address, address) view returns (uint256)","function approve(address, uint256) returns (bool)"];
+                 usdcContract = new ethers.Contract(usdcAddress, usdcAbiMinimal, signer);
+                 console.log("Signer contracts OK.");
+                 // ---
+
+                 connectButton.textContent = shortenAddress(userAddress); connectButton.disabled = true;
+                 walletInfoDiv.classList.remove('hidden'); interactionSectionDiv.classList.remove('hidden');
+
+                 console.log("Updating UI with signer data...");
+                 await updateWalletInfo(); // Includes roles now
+                 await updateProtocolInfo(false); // Use signer contract
+                 await fetchPendingWorkOrders(false); // Use signer contract
+                 // checkAdminStatus is called within updateWalletInfo/updateProtocolInfo if needed
+
+                 showStatus('Wallet connected!', 'success'); console.log("Connection OK.");
+
+             } catch (error) { /* ... (error handling same as before) ... */
+                 console.error("Connection failed:", error);
+                  let reason = error.message;
+                  if ((error.code === 'UNSUPPORTED_OPERATION' && error.operation?.includes('getEnsAddress')) || (error.message && error.message.toLowerCase().includes("ens"))) { reason = "ENS Resolution Failed. Refresh."; console.error("ENS error during connect."); }
+                  else if (error.code === 'CALL_EXCEPTION' && error.reason) { reason = error.reason; }
+                  else if (error.info?.error?.message) { reason = error.info.error.message; }
+                  showStatus(`Wallet connection failed: ${reason}`, 'error');
+                 resetState(false);
+             } finally {
+                  if (userAddress) { setLoading(connectBtn, false, shortenAddress(userAddress)); connectBtn.disabled = true; }
+                  else { setLoading(connectBtn, false, originalConnectText); connectBtn.disabled = false; }
+             }
+        }
+
+        function resetState(isFullReset = true) {
+             userAddress = null; signer = null; browserProvider = null;
+             mtyldContract = null; usdcContract = null; userRoles = {}; roleHashes = {}; // Clear roles
+             walletInfoDiv.classList.add('hidden'); roleInfoDiv.classList.add('hidden'); // Hide role info
+             interactionSectionDiv.classList.add('hidden'); adminPanelDiv.classList.add('hidden');
+             networkNameSpan.textContent = 'Loading...'; userAddressSpan.textContent = 'Loading...';
+             usdcBalanceSpan.textContent = 'Loading...'; mtyldBalanceSpan.textContent = 'Loading...';
+             connectButton.textContent = 'Connect Wallet'; connectButton.disabled = false;
+             if(buyForm) buyForm.reset(); if(redeemForm) redeemForm.reset();
+             estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0';
+             estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0';
+             if(buyButton) buyButton.disabled = true;
+             buyUsdcBalanceSpan.textContent = '--'; redeemMtyldBalanceSpan.textContent = '--';
+             pauseStatusIndicator.classList.add('hidden'); pausedOverlay.classList.add('hidden');
+             if (proposeMintForm) proposeMintForm.reset();
+             if (executeMintIdInput) executeMintIdInput.value = '';
+             // Removed pendingMintDetailsDiv elements
+             if (executeMintButton) executeMintButton.disabled = true;
+
+             if (isFullReset) {
+                 protocolInfoDiv.classList.add('hidden'); pendingProposalsSectionDiv.classList.add('hidden');
+                 tokenNameSpan.textContent = 'Loading...'; tokenSymbolSpan.textContent = '---';
+                 mtyldPriceSpan.textContent = 'Loading...'; contractAddressLink.textContent = 'Loading...';
+                 contractUsdcSpan.textContent = 'Loading...'; availableMtyldSpan.textContent = 'Loading...';
+                 redeemFeePercentInfoSpan.textContent = 'Loading...'; redeemFeePercentFormSpan.textContent = '--';
+                 proposalDelaySpan.textContent = 'Loading...'; redemptionStatusSpan.textContent = 'Loading...'; feeRecipientSpan.textContent = 'Loading...';
+                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-text-secondary">Initializing...</td></tr>'; // Updated colspan
+             } else {
+                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-text-secondary">Connect wallet to refresh proposals.</td></tr>'; // Updated colspan
+             }
+        }
+
+        // --- Fetch Role Hashes ---
+        async function fetchRoleHashes() {
+            if (!mtyldContractReadOnly) { console.error("Read-only contract needed for role hashes"); return; }
+            console.log("Fetching role hashes...");
+            try {
+                const [admin, proposer, executor, pauser, treasurer, defaultAdmin] = await Promise.all([
+                    mtyldContractReadOnly.ADMIN_ROLE(),
+                    mtyldContractReadOnly.PROPOSER_ROLE(),
+                    mtyldContractReadOnly.EXECUTOR_ROLE(),
+                    mtyldContractReadOnly.PAUSER_ROLE(),
+                    mtyldContractReadOnly.TREASURER_ROLE(),
+                    mtyldContractReadOnly.DEFAULT_ADMIN_ROLE() // Often the same as ADMIN_ROLE but good to fetch
+                ]);
+                roleHashes = { admin, proposer, executor, pauser, treasurer, defaultAdmin };
+                console.log("Role Hashes:", roleHashes);
+            } catch (error) {
+                console.error("Error fetching role hashes:", error);
+                showStatus("Error fetching contract roles configuration.", "warning");
+            }
+        }
+
+
+        // --- Check User Roles and Update UI ---
+        async function checkUserRoles() {
+            const contractInstance = mtyldContract || mtyldContractReadOnly;
+            if (!contractInstance || !userAddress || Object.keys(roleHashes).length === 0) {
+                 console.log("Cannot check roles: contract, userAddress, or roleHashes missing.");
+                 roleInfoDiv.classList.add('hidden'); // Hide role info if cannot check
+                 adminPanelDiv.classList.add('hidden'); // Also hide admin panel
+                 return;
+            }
+            console.log("Checking user roles for address:", userAddress);
+            userRoles = {}; // Reset roles
+            try {
+                const [isAdmin, isProposer, isExecutor, isPauser, isTreasurer] = await Promise.all([
+                    contractInstance.hasRole(roleHashes.admin, userAddress),
+                    contractInstance.hasRole(roleHashes.proposer, userAddress),
+                    contractInstance.hasRole(roleHashes.executor, userAddress),
+                    contractInstance.hasRole(roleHashes.pauser, userAddress),
+                    contractInstance.hasRole(roleHashes.treasurer, userAddress)
+                ]);
+                userRoles = { isAdmin, isProposer, isExecutor, isPauser, isTreasurer };
+                console.log("User Roles:", userRoles);
+
+                // Update role indicators
+                document.getElementById('role-admin').classList.toggle('role-active', isAdmin);
+                document.getElementById('role-admin').classList.toggle('role-inactive', !isAdmin);
+                document.getElementById('role-proposer').classList.toggle('role-active', isProposer);
+                document.getElementById('role-proposer').classList.toggle('role-inactive', !isProposer);
+                document.getElementById('role-executor').classList.toggle('role-active', isExecutor);
+                document.getElementById('role-executor').classList.toggle('role-inactive', !isExecutor);
+                document.getElementById('role-pauser').classList.toggle('role-active', isPauser);
+                document.getElementById('role-pauser').classList.toggle('role-inactive', !isPauser);
+                 document.getElementById('role-treasurer').classList.toggle('role-active', isTreasurer);
+                document.getElementById('role-treasurer').classList.toggle('role-inactive', !isTreasurer);
+
+                roleInfoDiv.classList.remove('hidden');
+
+                // Show admin panel if user has ANY relevant role (adjust visibility inside updateAdminInfo based on specific roles)
+                 const hasAnyAdminRole = isAdmin || isProposer || isExecutor || isPauser || isTreasurer;
+                 adminPanelDiv.classList.toggle('hidden', !hasAnyAdminRole);
+                 if (hasAnyAdminRole) {
+                    await updateAdminInfo(); // Refresh admin UI state based on roles
+                 }
+
+
+            } catch (error) {
+                console.error("Error checking user roles:", error);
+                showStatus("Could not verify user roles.", "warning");
+                roleInfoDiv.classList.add('hidden');
+                adminPanelDiv.classList.add('hidden');
+            }
+        }
+
+
+        async function updateAdminInfo() {
+            // Update admin UI based on fetched roles
+             const contractInstance = mtyldContract || mtyldContractReadOnly;
+            if (!contractInstance || Object.keys(userRoles).length === 0) return; // Need roles now
+             try {
+                 const isPaused = await contractInstance.paused();
+
+                 // Enable/disable sections based on roles
+                 proposeMintForm.style.display = userRoles.isProposer ? 'block' : 'none';
+                 // The parent div of execute mint parts
+                 executeMintButton.closest('div').style.display = userRoles.isExecutor ? 'block' : 'none';
+                 emergencyWithdrawForm.style.display = userRoles.isAdmin ? 'block' : 'none';
+                 pauseButton.closest('div.text-center').style.display = userRoles.isPauser ? 'block' : 'none';
+
+                 updatePauseButtons(isPaused);
+                 updatePauseUI(isPaused); // Keep this to update overall UI lock/indicator
+
+                 // Only check pending proposals if relevant roles exist
+                 if (userRoles.isExecutor) {
+                     await checkPendingProposals(contractInstance);
+                 } else {
+                     // Clear proposal details if user is not executor
+                      if(executeMintIdInput) executeMintIdInput.value = '';
+                     // Removed pendingMintDetailsDiv logic
+                      if(executeMintButton) executeMintButton.disabled = true;
+                 }
+
+             } catch (error) {
+                 console.error("Error updating admin info:", error);
+                 // Disable all admin controls on error
+                 if(pauseButton) pauseButton.disabled = true; if(unpauseButton) unpauseButton.disabled = true;
+                 if(proposeMintForm) proposeMintForm.querySelector('button').disabled = true;
+                 if(executeMintButton) executeMintButton.disabled = true;
+                 if(emergencyWithdrawForm) emergencyWithdrawForm.querySelector('button').disabled = true;
+
+             }
+        }
+
+         async function checkPendingProposals(contractToCheck) {
+             // Only needs to run if executor role is present (handled in updateAdminInfo)
+             if (!contractToCheck) return;
+             console.log("Checking pending proposals for admin executor...");
+             try {
+                 const currentProvider = browserProvider || staticProvider;
+                 if (currentProvider) { try { const block = await currentProvider.getBlock("latest"); blockTimestamp = block ? BigInt(block.timestamp) : null; } catch (e){ console.warn("Could not get block timestamp"); blockTimestamp = null; } }
+                 else { blockTimestamp = null; }
+
+                 // Fetch details for the ID entered in the execute box
+                 checkPendingMintDetails(contractToCheck);
+             } catch (error) {
+                 console.error("Error checking pending proposals:", error);
+                 showStatus("Could not fetch proposal status.", "error");
+                 // Removed pendingMintDetailsDiv logic
+                 if(executeMintButton) executeMintButton.disabled = true;
+             }
+         }
+
+         async function checkPendingMintDetails(contractToCheck) {
+             // Fetches details for the single ID in the execute input box
+              if (!contractToCheck || !executeMintIdInput || !executeMintIdInput.value) {
+                    // Removed pendingMintDetailsDiv logic
+                    if(executeMintButton) executeMintButton.disabled = true;
+                    return;
+               }
+               const proposalIdStr = executeMintIdInput.value; let proposalId;
+               try { proposalId = BigInt(proposalIdStr); if (proposalId <= 0n) throw new Error("ID"); }
+               catch { /* Removed pendingMintDetailsDiv logic */ if(executeMintButton) executeMintButton.disabled = true; return; }
+               console.log(`Checking details for pending mint ID: ${proposalId}`);
+               try {
+                    const mintProposal = await contractToCheck.getPending(proposalId); // Use getPending
+                    console.log(`Proposal ${proposalId} exists: ${mintProposal.exists}, Data:`, mintProposal);
+                    if (mintProposal.exists) {
+                         const proposedAtSeconds = Number(mintProposal.proposedAt); const delaySeconds = Number(currentProposalDelay || 0n);
+                         const canExecute = blockTimestamp ? blockTimestamp >= mintProposal.proposedAt + BigInt(delaySeconds) : false; const canExecuteEstimate = (Date.now() / 1000) >= proposedAtSeconds + delaySeconds;
+                         console.log(`Proposal ${proposalId} details checked. Executable: ${canExecute || canExecuteEstimate}`);
+                         // Enable/disable EXECUTE button based on executability
+                         executeMintButton.disabled = !(canExecute || canExecuteEstimate);
+                    } else {
+                         executeMintButton.disabled = true; console.log(`No pending mint found for ID ${proposalId}`);
+                         showStatus(`Proposal ID ${proposalId} not found or already processed.`, 'warning'); // Inform admin
+                    }
+               } catch (error) { console.error(`Error checking pending mint ${proposalId}:`, error); executeMintButton.disabled = true; }
+          }
+
+
+        async function updateWalletInfo() {
+             const currentUsdcContract = usdcContract || usdcContractReadOnly;
+             const currentMtyldContract = mtyldContract || mtyldContractReadOnly;
+             if (!browserProvider || !userAddress || !currentUsdcContract || !currentMtyldContract) return;
+             console.log("Updating wallet info (balances + roles)...");
+             try {
+                const network = await browserProvider.getNetwork();
+                networkNameSpan.textContent = network.name === 'arbitrum' ? 'Arbitrum One' : network.name;
+                userAddressSpan.textContent = userAddress;
+                const [usdcBal, mtyldBal] = await Promise.all([ currentUsdcContract.balanceOf(userAddress), currentMtyldContract.balanceOf(userAddress) ]);
+                usdcBalanceSpan.textContent = `${parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2)} USDC`;
+                mtyldBalanceSpan.textContent = `${parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4)} MTYLD`;
+                buyUsdcBalanceSpan.textContent = parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2);
+                redeemMtyldBalanceSpan.textContent = parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4);
+                console.log(`Balances OK. Checking roles...`);
+                // Check and display roles after connecting
+                await checkUserRoles();
+
+             } catch (error) { console.error("Error updating wallet info:", error); networkNameSpan.textContent = 'Error'; userAddressSpan.textContent = 'Error'; usdcBalanceSpan.textContent = 'Error'; mtyldBalanceSpan.textContent = 'Error'; buyUsdcBalanceSpan.textContent = 'Error'; redeemMtyldBalanceSpan.textContent = 'Error'; showStatus("Failed to update wallet info.", "error"); roleInfoDiv.classList.add('hidden'); adminPanelDiv.classList.add('hidden'); /* Hide admin if roles fail */ }
+        }
+
+        async function updateProtocolInfo(useReadOnly = false) {
+             const contractInstance = useReadOnly ? mtyldContractReadOnly : (mtyldContract || mtyldContractReadOnly);
+             if (!contractInstance) return;
+             console.log(`Updating protocol info... (Using ${useReadOnly || !mtyldContract ? 'read-only' : 'signer'} contract)`);
+             try {
+                 const currentProvider = browserProvider || staticProvider;
+                 if (currentProvider) { try { const block = await currentProvider.getBlock("latest"); blockTimestamp = block ? BigInt(block.timestamp) : null; } catch(e){ console.warn("Block timestamp fetch failed", e); blockTimestamp = null;} }
+                 else { blockTimestamp = null; }
+
+                 const [name, symbol, supply, contractUSDCBalance, available, feeBps, isPaused, delaySeconds, redeemEnabled, feeRecipientAddr] = await Promise.all([
+                       contractInstance.name(),
+                       contractInstance.symbol(),
+                       contractInstance.totalSupply(),
+                       contractInstance.contractPaymentTokenBalance(),
+                       contractInstance.availableTokens(),
+                       contractInstance.redemptionFeeBps(), // Use Bps function
+                       contractInstance.paused(),
+                       contractInstance.proposalDelay(), // Use correct function name
+                       contractInstance.redemptionEnabled(), // Fetch redemption status
+                       contractInstance.feeRecipient() // Fetch fee recipient
+                  ]);
+
+                  tokenNameSpan.textContent = name; tokenSymbolSpan.textContent = symbol;
+                  contractAddressLink.textContent = shortenAddress(contractAddress); contractAddressLink.href = `https://arbiscan.io/address/${contractAddress}`;
+                  contractUsdcSpan.textContent = parseFloat(formatUnits(contractUSDCBalance, usdcDecimals)).toFixed(2);
+                  availableMtyldSpan.textContent = parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4);
+                  redeemFeePercentInfoSpan.textContent = feeBps.toString(); // Display Bps
+                  redeemFeePercentFormSpan.textContent = feeBps.toString(); // Display Bps in form
+                  currentProposalDelay = delaySeconds; proposalDelaySpan.textContent = delaySeconds.toString() + ` (${formatSeconds(delaySeconds)})`;
+                  redemptionStatusSpan.textContent = redeemEnabled ? 'Enabled' : 'Disabled';
+                  feeRecipientSpan.textContent = shortenAddress(feeRecipientAddr);
+
+                  updatePauseUI(isPaused);
+
+                  let price = 0;
+                  if (supply > 0n && contractUSDCBalance >= 0n) {
+                       const scaleFactor = 10n**BigInt(mtyldDecimals); // Use correct decimals
+                       const priceBigInt = supply > 0n ? (contractUSDCBalance * scaleFactor) / supply : 0n;
+                       price = parseFloat(formatUnits(priceBigInt, usdcDecimals));
+                  }
+                  mtyldPriceSpan.textContent = price > 0 ? price.toFixed(6) : 'N/A';
+
+                  console.log(`Protocol Info Updated: Name=${name}, Price=${mtyldPriceSpan.textContent}, Paused=${isPaused}, Delay=${currentProposalDelay}, Redeem Status=${redeemEnabled}`);
+                  updateBuyEstimate(); updateRedeemEstimate();
+
+                  // Re-check admin status and roles if signer is connected
+                  if (!useReadOnly) { await checkAdminStatus(); }
+
+             } catch (error) { console.error("Error updating protocol info:", error); showStatus('Failed to fetch protocol data.', 'error'); tokenNameSpan.textContent = 'Error'; proposalDelaySpan.textContent = 'Error'; /* ... etc */ }
+         }
+
+        // --- Buy/Redeem Logic ---
+        async function updateBuyEstimate() { const contractInstance = mtyldContract || mtyldContractReadOnly; if (!contractInstance) return; const usdcAmountStr = buyUsdcAmountInput.value; if (!usdcAmountStr || parseFloat(usdcAmountStr) <= 0) { estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0'; buyButton.disabled = true; return; } const usdcAmount = parseUnits(usdcAmountStr, usdcDecimals); if (usdcAmount === null) { estimatedMtyldSpan.textContent = 'Invalid'; minTokensOutInput.value = '0'; buyButton.disabled = true; return; } try { const estimatedTokens = await contractInstance.getTokensForUSDC(usdcAmount); estimatedMtyldSpan.textContent = parseFloat(formatUnits(estimatedTokens, mtyldDecimals)).toFixed(4); const slippagePercent = parseFloat(buySlippageSelect.value); const slippageFactor = BigInt(Math.floor((1 - slippagePercent / 100) * 10000)); const minTokens = (estimatedTokens * slippageFactor) / 10000n; minTokensOutInput.value = minTokens.toString(); checkAllowanceAndEnableBuy(); } catch (error) { console.error("Buy estimate error:", error); estimatedMtyldSpan.textContent = 'Error'; minTokensOutInput.value = '0'; buyButton.disabled = true; } }
+        async function updateRedeemEstimate() { const contractInstance = mtyldContract || mtyldContractReadOnly; if (!contractInstance) return; const mtyldAmountStr = redeemMtyldAmountInput.value; if (!mtyldAmountStr || parseFloat(mtyldAmountStr) <= 0) { estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0'; return; } const mtyldAmount = parseUnits(mtyldAmountStr, mtyldDecimals); if (mtyldAmount === null) { estimatedUsdcSpan.textContent = 'Invalid'; minUsdcOutInput.value = '0'; return; } try { const [ usdcValueBeforeFee, feeBpsBigInt ] = await Promise.all([ contractInstance.getRedemptionValue(mtyldAmount), contractInstance.redemptionFeeBps() ]); const feeBps = Number(feeBpsBigInt); redeemFeePercentFormSpan.textContent = feeBps.toString(); const fee = (usdcValueBeforeFee * BigInt(feeBps)) / 10000n; /* Use BPS Denom */ const usdcToReceive = usdcValueBeforeFee >= fee ? usdcValueBeforeFee - fee : 0n; estimatedUsdcSpan.textContent = parseFloat(formatUnits(usdcToReceive, usdcDecimals)).toFixed(2); const slippagePercent = parseFloat(redeemSlippageSelect.value); const slippageFactor = BigInt(Math.floor((1 - slippagePercent / 100) * 10000)); const minUsdc = (usdcToReceive * slippageFactor) / 10000n; minUsdcOutInput.value = minUsdc.toString(); } catch (error) { console.error("Redeem estimate error:", error); estimatedUsdcSpan.textContent = 'Error'; minUsdcOutInput.value = '0'; redeemFeePercentFormSpan.textContent = 'Error'; } }
+        async function checkAllowanceAndEnableBuy() { if (!usdcContract || !userAddress || !buyUsdcAmountInput.value) { buyButton.disabled = true; return; } const usdcAmount = parseUnits(buyUsdcAmountInput.value, usdcDecimals); if (usdcAmount === null || usdcAmount <= 0n) { buyButton.disabled = true; return; } try { const allowance = await usdcContract.allowance(userAddress, contractAddress); buyButton.disabled = allowance < usdcAmount; } catch (error) { console.error("Allowance check failed:", error); buyButton.disabled = true; } }
+        async function handleApproveUSDC() { if (!usdcContract || !userAddress) return showStatus('Connect wallet first.', 'error'); const button = approveUsdcButton; const originalText = button.textContent; const usdcAmountStr = buyUsdcAmountInput.value; if (!usdcAmountStr || parseFloat(usdcAmountStr) <= 0) return showStatus('Enter valid amount.', 'error'); const usdcAmount = parseUnits(usdcAmountStr, usdcDecimals); if (usdcAmount === null) return; setLoading(button, true, originalText); showStatus('Requesting approval...'); try { const currentAllowance = await usdcContract.allowance(userAddress, contractAddress); if (currentAllowance >= usdcAmount) { showStatus('Sufficient allowance.', 'info'); buyButton.disabled = false; return; } const tx = await usdcContract.approve(contractAddress, usdcAmount); showStatus('Approval sent. Waiting...', 'info'); await tx.wait(); showStatus('Approved!', 'success'); buyButton.disabled = false; } catch (error) { console.error("Approval failed:", error); showStatus(`Approval failed: ${error?.reason || error.message || error}`, 'error'); buyButton.disabled = true; } finally { setLoading(button, false, originalText); } }
+        async function handleBuyTokens(event) { if (!mtyldContract || !usdcContract || !signer) return showStatus('Connect wallet.', 'error'); event.preventDefault(); if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning'); const usdcAmountStr = buyUsdcAmountInput.value; const minTokensOut = minTokensOutInput.value; if (!usdcAmountStr || parseFloat(usdcAmountStr) <= 0 || !minTokensOut || minTokensOut === '0' || minTokensOut === 'Invalid') { return showStatus('Enter valid amount & estimate.', 'error'); } const usdcAmount = parseUnits(usdcAmountStr, usdcDecimals); if (usdcAmount === null) return; const minTokensBigInt = BigInt(minTokensOut); try { const allowance = await usdcContract.allowance(userAddress, contractAddress); if (allowance < usdcAmount) { buyButton.disabled = true; return showStatus('Insufficient allowance.', 'error'); } } catch (error) { console.error("Allowance check fail:", error); return showStatus('Allowance check failed.', 'error'); } setLoading(buyButton, true, 'Buy MTYLD'); showStatus('Sending buy tx...'); try { const tx = await mtyldContract.buyTokens(usdcAmount, minTokensBigInt); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Buy Receipt:", receipt); showStatus('Buy successful!', 'success'); buyForm.reset(); estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0'; buyButton.disabled = true; await updateWalletInfo(); await updateProtocolInfo(); } catch (error) { console.error("Buy fail:", error); showStatus(`Buy failed: ${error?.reason || error.message || error}`, 'error'); } finally { setLoading(buyButton, false, 'Buy MTYLD'); } }
+        async function handleRedeemTokens(event) { if (!mtyldContract || !signer) return showStatus('Connect wallet.', 'error'); event.preventDefault(); if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning'); if (!(await mtyldContract.redemptionEnabled())) return showStatus('Redemption currently disabled by admin.', 'warning'); /* Check if enabled */ const mtyldAmountStr = redeemMtyldAmountInput.value; const minUsdcOut = minUsdcOutInput.value; if (!mtyldAmountStr || parseFloat(mtyldAmountStr) <= 0 || !minUsdcOut || minUsdcOut === '0' || minUsdcOut === 'Invalid') { return showStatus('Enter valid amount & estimate.', 'error'); } const mtyldAmount = parseUnits(mtyldAmountStr, mtyldDecimals); if (mtyldAmount === null) return; const minUsdcBigInt = BigInt(minUsdcOut); try { const balance = await mtyldContract.balanceOf(userAddress); if (balance < mtyldAmount) { return showStatus('Insufficient balance.', 'error'); } } catch(error) { console.error("Balance check fail:", error); return showStatus('Balance check failed.', 'error'); } setLoading(redeemButton, true, 'Redeem MTYLD'); showStatus('Sending redeem tx...'); try { const tx = await mtyldContract.redeemTokens(mtyldAmount, minUsdcBigInt); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Redeem Receipt:", receipt); showStatus('Redeem successful!', 'success'); redeemForm.reset(); estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0'; await updateWalletInfo(); await updateProtocolInfo(); } catch (error) { console.error("Redeem fail:", error); showStatus(`Redeem failed: ${error?.reason || error.message || error}`, 'error'); } finally { setLoading(redeemButton, false, 'Redeem MTYLD'); } }
+
+        // --- Admin Actions ---
+        async function handleProposeMint(event) {
+             if (!mtyldContract || !signer || !userRoles.isProposer) return showStatus('Connect wallet with Proposer role.', 'error'); // Role check
+             event.preventDefault(); console.log("handleProposeMint triggered");
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
+
+             const yieldStr = document.getElementById('propose-yield').value;
+             const description = document.getElementById('propose-desc').value;
+             const adminNote = document.getElementById('propose-note').value; // Get admin note
+             const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Propose Mint';
+
+             console.log(`Yield: ${yieldStr}, Desc: ${description}, Note: ${adminNote}`);
+             if (!yieldStr || parseFloat(yieldStr) <= 0 || !description) return showStatus('Valid yield & description required.', 'error');
+              // Basic length check (contract also checks)
+             if (description.length > 256 || adminNote.length > 128) return showStatus('Description or note too long.', 'error');
+
+             const grossYield = parseUnits(yieldStr, usdcDecimals); if (grossYield === null) return;
+             console.log(`Parsed Gross Yield (Wei): ${grossYield.toString()}`);
+
+             setLoading(button, true, originalText); showStatus('Sending propose mint transaction...'); console.log("Calling contract.proposeMint...");
+             try {
+                 const tx = await mtyldContract.proposeMint(grossYield, description, adminNote); // Pass adminNote
+                 console.log("Tx sent:", tx.hash); showStatus(`Tx sent (${shortenAddress(tx.hash)}...). Waiting...`, 'info');
+                 const receipt = await tx.wait(); console.log("Propose Mint Receipt:", receipt);
+                 let proposalId = 'N/A'; const eventInterface = new ethers.Interface(contractABI);
+                 if(receipt?.logs) { for (const log of receipt.logs) { if (log.address.toLowerCase() === contractAddress.toLowerCase()) { try { const pLog = eventInterface.parseLog(log); if (pLog?.name === "MintProposed") { proposalId = pLog.args.proposalId.toString(); console.log(`Parsed MintProposed event, ID: ${proposalId}`); break; } } catch (e) { /* Ignore other logs */ } } } }
+                 showStatus(`Mint proposal #${proposalId} created! Executable after delay.`, 'success'); proposeMintForm.reset();
+                 await fetchPendingWorkOrders(false); // Refresh pending list
+             } catch (error) { console.error("Propose Mint tx failed:", error); let reason = error?.reason || error.message || "Unknown error"; if (error.info?.error?.message) { reason = error.info.error.message; } else if (error.error?.data?.message) { reason = error.error.data.message; } console.error("Revert Reason:", reason); showStatus(`Propose fail: ${reason}`, 'error');
+             } finally { console.log("Propose Mint finished."); setLoading(button, false, originalText); }
+        }
+
+        async function handleExecuteMint() {
+             if (!mtyldContract || !signer || !userRoles.isExecutor) return showStatus('Connect wallet with Executor role.', 'error'); // Role check
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
+
+             const proposalIdStr = executeMintIdInput.value;
+             const button = executeMintButton; const originalText = 'Execute Selected Mint';
+             if (!proposalIdStr || parseInt(proposalIdStr) < 1) return showStatus('Valid Proposal ID required.', 'error');
+             const proposalId = BigInt(proposalIdStr);
+
+             try { // Client-side check for existence and delay
+                  const mintP = await mtyldContract.getPending(proposalId); if (!mintP.exists) return showStatus(`Proposal ${proposalId} not found or already processed.`, 'error');
+                  const delayS = Number(currentProposalDelay || 0n); const canExec = blockTimestamp ? blockTimestamp >= mintP.proposedAt + BigInt(delayS) : false; const canExecEst = (Date.now() / 1000) >= Number(mintP.proposedAt) + delayS;
+                  if (!(canExec || canExecEst)) return showStatus(`Proposal ${proposalId} not executable yet (delay not met).`, 'warning');
+             } catch (e) { console.error("Execute Mint pre-check error:", e); return showStatus('Failed to check proposal status.', 'error'); }
+
+             setLoading(button, true, originalText); showStatus(`Executing mint proposal #${proposalId}...`);
+             try {
+                 const tx = await mtyldContract.executeMint(proposalId); showStatus('Tx sent. Waiting...', 'info');
+                 const receipt = await tx.wait(); console.log("Execute Mint Receipt:", receipt);
+                 showStatus(`Mint proposal #${proposalId} executed! Tokens minted.`, 'success');
+                 executeMintIdInput.value = ''; // Clear input
+                 await fetchPendingWorkOrders(false); // Refresh pending list
+                 await updateProtocolInfo(false); // Update available tokens, etc.
+                 // Could add fetch for executed work orders here if needed
+             } catch (error) { console.error("Execute Mint tx failed:", error); showStatus(`Execute fail: ${error?.reason || error.message || error}`, 'error'); }
+             finally { setLoading(button, false, originalText); executeMintButton.disabled = true; /* Disable after attempt, re-enabled by check if still valid */ }
+        }
+         // Added handleCancelMint function
+         async function handleCancelMint(proposalId) {
+             if (!mtyldContract || !signer || !(userRoles.isAdmin || userRoles.isProposer)) { // Admin or Original Proposer
+                 return showStatus('Connect wallet with Admin or Proposer role.', 'error');
+             }
+             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
+
+             const proposalIdBigInt = BigInt(proposalId); // Ensure it's BigInt
+
+             // Optional: Add confirmation dialog
+             // if (!confirm(`Cancel proposal #${proposalId}? This cannot be undone.`)) return;
+
+             const buttonId = `cancel-proposal-${proposalId}`;
+             const button = document.getElementById(buttonId);
+             const originalText = button ? button.textContent : 'Cancel';
+             if(button) setLoading(button, true, originalText);
+             showStatus(`Cancelling proposal #${proposalId}...`);
+             console.log(`Calling cancelMint(${proposalId})...`);
+
+             try {
+                 const tx = await mtyldContract.cancelMint(proposalIdBigInt);
+                 showStatus('Tx sent. Waiting...', 'info');
+                 const receipt = await tx.wait();
+                 console.log("Cancel Mint Receipt:", receipt);
+                 showStatus(`Proposal #${proposalId} cancelled successfully!`, 'success');
+                 await fetchPendingWorkOrders(false); // Refresh the list
+             } catch (error) {
+                 console.error("Cancel Mint tx failed:", error);
+                 let reason = error?.reason || error.message || "Unknown error";
+                  if (error.info?.error?.message) { reason = error.info.error.message; }
+                  else if (error.error?.data?.message) { reason = error.error.data.message; }
+                 showStatus(`Cancel fail: ${reason}`, 'error');
+                 if(button) setLoading(button, false, originalText); // Re-enable on failure
+             }
+             // No finally needed as the row will disappear on success
+         }
+
+        async function handleEmergencyWithdraw(event) { if (!mtyldContract || !signer || !userRoles.isAdmin) return showStatus('Connect wallet with Admin role.', 'error'); /* Role check */ event.preventDefault(); /* Pause check not strictly needed for emergency, but maybe desired */ const tokenAddress = document.getElementById('emergency-token').value; const toAddress = document.getElementById('emergency-to').value; const amountStr = document.getElementById('emergency-amount').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Withdraw Other Token'; let amount; try { amount = BigInt(amountStr); if (amount <= 0n) throw new Error(); } catch { return showStatus('Valid amount.', 'error'); } if (!ethers.isAddress(tokenAddress) || !ethers.isAddress(toAddress)) return showStatus('Valid addresses.', 'error'); if (tokenAddress.toLowerCase() === usdcAddress.toLowerCase()) return showStatus('Cannot withdraw USDC.', 'error'); setLoading(button, true, originalText); showStatus(`Withdrawing ${shortenAddress(tokenAddress)}...`); try { const tx = await mtyldContract.emergencyWithdraw(tokenAddress, toAddress, amount); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Emergency Withdraw:", receipt); showStatus('Emergency withdraw success!', 'success'); emergencyWithdrawForm.reset(); } catch (error) { console.error("Emergency Withdraw fail:", error); showStatus(`Withdraw fail: ${error?.reason || error.message || error}`, 'error'); } finally { setLoading(button, false, originalText); } }
+        async function handlePause() { if (!mtyldContract || !signer || !userRoles.isPauser) return showStatus('Connect wallet with Pauser role.', 'error'); /* Role check */ if (await mtyldContract.paused()) return showStatus('Already paused.', 'warning'); const button = pauseButton; const originalText = 'Pause Contract'; setLoading(button, true, originalText); showStatus('Sending pause...'); try { const tx = await mtyldContract.pause(); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Pause:", receipt); showStatus('Contract paused!', 'success'); updatePauseUI(true); updatePauseButtons(true); } catch (error) { console.error("Pause fail:", error); showStatus(`Pause fail: ${error?.reason || error.message || error}`, 'error'); updatePauseButtons(false); } finally { setLoading(button, false, originalText); } }
+        async function handleUnpause() { if (!mtyldContract || !signer || !userRoles.isPauser) return showStatus('Connect wallet with Pauser role.', 'error'); /* Role check */ if (!(await mtyldContract.paused())) return showStatus('Already unpaused.', 'warning'); const button = unpauseButton; const originalText = 'Unpause Contract'; setLoading(button, true, originalText); showStatus('Sending unpause...'); try { const tx = await mtyldContract.unpause(); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Unpause:", receipt); showStatus('Contract unpaused!', 'success'); updatePauseUI(false); updatePauseButtons(false); } catch (error) { console.error("Unpause fail:", error); showStatus(`Unpause fail: ${error?.reason || error.message || error}`, 'error'); updatePauseButtons(true); } finally { setLoading(button, false, originalText); } }
+        function updatePauseUI(isPaused) { const isActive = !isPaused; pausedOverlay.classList.toggle('hidden', isActive); pauseStatusIndicator.textContent = isPaused ? 'PAUSED' : 'Active'; pauseStatusIndicator.classList.remove('hidden'); pauseStatusIndicator.classList.toggle('bg-yellow-400', isPaused); pauseStatusIndicator.classList.toggle('text-yellow-900', isPaused); pauseStatusIndicator.classList.toggle('bg-green-400', isActive); pauseStatusIndicator.classList.toggle('text-green-900', isActive); if(buyButton) buyButton.disabled = isPaused; if(redeemButton) redeemButton.disabled = isPaused; if(approveUsdcButton) approveUsdcButton.disabled = isPaused; buyUsdcAmountInput.disabled = isPaused; buySlippageSelect.disabled = isPaused; redeemMtyldAmountInput.disabled = isPaused; redeemSlippageSelect.disabled = isPaused; /* Disable admin forms based on pause */ if(proposeMintForm) proposeMintForm.querySelectorAll('input, button, textarea').forEach(el => el.disabled = isPaused); if(executeMintIdInput) executeMintIdInput.disabled = isPaused; if(executeMintButton) executeMintButton.disabled = isPaused || executeMintButton.textContent.includes('Processing'); /* Emergency withdraw might still be allowed when paused, depends on contract logic - let's keep it enabled unless told otherwise */ /* if(emergencyWithdrawForm) { emergencyWithdrawForm.querySelectorAll('input, button').forEach(el => el.disabled = isPaused); } */ updatePauseButtons(isPaused); }
+        function updatePauseButtons(isPaused) { if (pauseButton) pauseButton.disabled = isPaused; if (unpauseButton) unpauseButton.disabled = !isPaused; }
+
+        // --- Fetch Pending Proposals (V4) ---
+         async function fetchPendingWorkOrders(useReadOnly = false) {
+             const contractInstance = useReadOnly ? mtyldContractReadOnly : (mtyldContract || mtyldContractReadOnly);
+             if (!contractInstance) { console.log("Contract not ready."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-text-secondary">Connect wallet first.</td></tr>'; return; } // Updated colspan
+             console.log(`Fetching pending work orders... (Using ${useReadOnly || !mtyldContract ? 'read-only':'signer'} contract)`);
+             pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-text-secondary">Fetching...</td></tr>'; // Updated colspan
+             let fetchedProposals = [];
+             try {
+                 const pendingCount = await contractInstance.getPendingCount();
+                 const count = Number(pendingCount); // Convert BigInt to Number
+                 console.log(`Pending proposal count: ${count}`);
+
+                 if (count === 0) {
+                     pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>'; // Updated colspan
+                     pendingWorkOrderProposals = [];
+                     return;
+                 }
+
+                 // Fetch IDs - Fetch all for simplicity, could paginate later if needed
+                 const pendingIds = await contractInstance.getPendingIds(0, count);
+                 console.log("Pending proposal IDs:", pendingIds);
+
+                 // Fetch details for each ID
+                 const proposalDetailsPromises = pendingIds.map(id =>
+                    contractInstance.getPending(id)
+                        .then(data => ({ id: id, data: data })) // Store ID with data
+                        .catch(err => {
+                            console.error(`Error fetching details for proposal ${id}:`, err);
+                            return null; // Return null on error for filtering
+                        })
+                 );
+
+                 const results = await Promise.all(proposalDetailsPromises);
+                 fetchedProposals = results.filter(p => p !== null && p.data.exists); // Filter out errors and non-existent
+
+                 console.log(`Found ${fetchedProposals.length} valid pending proposals.`);
+                 pendingWorkOrderProposals = fetchedProposals; // Update state
+                 renderPendingProposalsTable(); // Render table
+
+                 if (fetchedProposals.length === 0 && pendingProposalsTableBody.innerHTML.includes('Fetching')) {
+                      pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>'; // Updated colspan
+                 }
+
+             } catch (error) { console.error("Fetch pending failed:", error); pendingProposalsTableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-400">Error fetching proposals: ${error.message}</td></tr>`; pendingWorkOrderProposals = []; } // Updated colspan
+         }
+
+        function renderPendingProposalsTable() {
+             console.log("Rendering pending proposals table. Data:", pendingWorkOrderProposals);
+             pendingProposalsTableBody.innerHTML = '';
+            if (!pendingWorkOrderProposals || pendingWorkOrderProposals.length === 0) { console.log("No pending proposals to render."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>'; return; } // Updated colspan
+
+            const delaySeconds = Number(currentProposalDelay || 0n);
+            const nowSeconds = Date.now() / 1000;
+
+            // Sort descending by ID
+            pendingWorkOrderProposals.sort((a, b) => Number(b.id - a.id)).forEach(proposalItem => {
+                const proposal = proposalItem.data; // Access nested data
+                const proposalId = proposalItem.id; // Get the ID
+                const { dateStr } = formatDate(proposal.proposedAt);
+                const proposedAtSeconds = Number(proposal.proposedAt);
+                const canExec = blockTimestamp ? blockTimestamp >= proposal.proposedAt + BigInt(delaySeconds) : false;
+                const canExecEst = nowSeconds >= proposedAtSeconds + delaySeconds;
+                const executableStatus = (canExec || canExecEst) ? '<span class="text-green-400">Yes</span>' : '<span class="text-yellow-400">No (Waiting)</span>';
+
+                 // Determine if cancel button should be shown/enabled (Admin or Proposer)
+                 const canCancel = userRoles.isAdmin || (userAddress && proposal.proposer.toLowerCase() === userAddress.toLowerCase());
+                 // Add logic for cancel window if implemented: const isWithinCancelWindow = ... ; canCancel = canCancel && isWithinCancelWindow;
+                 const cancelBtnHtml = canCancel
+                    ? `<button id="cancel-proposal-${proposalId}" onclick="handleCancelMint(${proposalId})" class="btn btn-danger btn-sm">Cancel</button>`
+                    : '<span class="text-xs text-text-secondary">Cannot Cancel</span>';
+
+
+                console.log(`Rendering proposal ID: ${proposalId}`);
+                const row = pendingProposalsTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${proposalId.toString()}</td>
+                    <td class="max-w-[200px] truncate" title="${proposal.description}">${proposal.description || 'N/A'}</td>
+                    <td class="max-w-[150px] truncate" title="${proposal.adminNote}">${proposal.adminNote || '-'}</td>
+                    <td>${parseFloat(formatUnits(proposal.grossYield, usdcDecimals)).toFixed(2)}</td>
+                    <td class="truncate" title="${proposal.proposer}">${shortenAddress(proposal.proposer)}</td>
+                    <td>${dateStr}</td>
+                    <td>${executableStatus}</td>
+                    <td>${cancelBtnHtml}</td> <!-- Added Cancel Button/Status -->
+                `;
+            });
+            console.log("Finished rendering pending proposals table.");
+        }
+
+
+        // --- Event Listeners Setup ---
+         function setupEventListeners() {
+             if (window.eventListenersAttached) return;
+             buyUsdcAmountInput.addEventListener('input', updateBuyEstimate); buySlippageSelect.addEventListener('change', updateBuyEstimate);
+             approveUsdcButton.addEventListener('click', handleApproveUSDC); buyForm.addEventListener('submit', handleBuyTokens);
+             redeemMtyldAmountInput.addEventListener('input', updateRedeemEstimate); redeemSlippageSelect.addEventListener('change', updateRedeemEstimate);
+             redeemForm.addEventListener('submit', handleRedeemTokens);
+             if (proposeMintForm) proposeMintForm.addEventListener('submit', handleProposeMint);
+             if (executeMintButton) executeMintButton.addEventListener('click', handleExecuteMint);
+             // Removed checkPendingMintDetails listener - now happens based on role checks
+             if (emergencyWithdrawForm) emergencyWithdrawForm.addEventListener('submit', handleEmergencyWithdraw);
+             if (pauseButton) pauseButton.addEventListener('click', handlePause);
+             if (unpauseButton) unpauseButton.addEventListener('click', handleUnpause);
+             window.eventListenersAttached = true; console.log("Event listeners attached.");
+         }
+         function setupWalletListeners() {
+              if (window.ethereum?.on) {
+                   window.ethereum.on('accountsChanged', (accounts) => { console.log('Acc change:', accounts); if (accounts.length === 0) { showStatus('Wallet disconnected.', 'warning'); resetState(false); } else if (!userAddress || accounts[0].toLowerCase() !== userAddress.toLowerCase()) { showStatus('Account switched. Reconnecting...', 'info'); resetState(false); connectWallet(); } });
+                   window.ethereum.on('chainChanged', (chainId) => { console.log('Chain change:', chainId); if (chainId !== arbitrumChainId) { showStatus('Wrong network. Switch to Arbitrum One.', 'error'); resetState(false); connectButton.textContent = 'Wrong Network'; connectButton.disabled = true; } else { if (userAddress) { showStatus('Network correct. Refreshing...', 'info'); connectWallet(); } else { showStatus('Arbitrum One detected. Connect wallet.', 'info'); resetState(false); } } });
+             } else { console.warn("MetaMask listeners not available."); }
+         }
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', async () => {
+             console.log("DOM Loaded.");
+             connectButton.addEventListener('click', connectWallet);
+             setupEventListeners();
+             pendingProposalsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-text-secondary">Initializing...</td></tr>'; // Updated colspan
+             // Use setTimeout to ensure ethers object is likely available
+             setTimeout(async () => {
+                 console.log("Delayed initialization starting...");
+                 if (typeof ethers !== 'undefined') {
+                    if (initializeStaticProvider()) {
+                         await fetchRoleHashes(); // Fetch role hashes early
+                         await fetchInitialData();
+                     }
+                 } else {
+                     console.error("Ethers.js not loaded after delay. Cannot initialize.");
+                     showStatus("Error: Ethers.js library failed to load. Please refresh.", "error");
+                     connectButton.disabled = true; connectButton.textContent = "Load Error";
+                 }
+             }, 300); // Increased delay slightly more
+        });
+
+        // Removed initializeAndLoadData function, logic moved into DOMContentLoaded timeout
+
+    </script>
+</body>
+</html>
 
