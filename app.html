@@ -246,7 +246,8 @@
         // --- CONFIGURATION ---
         const contractAddress = "0xae2C05f01DBCC6C8AF40EbFA3339Af10dbECdFD0";
         const contractABI = [{"inputs":[{"internalType":"address","name":"initialOwner","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"target","type":"address"}],"name":"AddressCallToNonContract","type":"error"},{"inputs":[],"name":"AddressEmptyRevertData","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"AddressInsufficientBalance","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"inputs":[],"name":"ReentrancyGuardReentrantCall","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"burner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Burn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EmergencyWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"FeeChangeExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"FeeChangeProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FeesWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"MintExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"MintProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"reserveAmount","type":"uint256"}],"name":"ReserveFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"usdcAmount","type":"uint256"}],"name":"TokensRedeemed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"WorkOrderCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"}],"name":"WorkOrderMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"WorkOrderPaid","type":"event"},{"inputs":[],"name":"PROPOSAL_DELAY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RESERVE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"TOKENIZATION_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"},{"internalType":"uint256","name":"minTokensOut","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"executeFeeChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"executeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"}],"name":"getRedemptionValue","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"}],"name":"getTokensForUSDC","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"startId","type":"uint256"},{"internalType":"uint256","name":"endId","type":"uint256"}],"name":"getWorkOrderRange","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"internalType":"struct MechanicalTempYieldToken.WorkOrder[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextProposalId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"payoutAmount","type":"uint256"}],"name":"payoutWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"pendingFeeChange","outputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"pendingMints","outputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"proposeFeeChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"name":"proposeMint","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"internalType":"uint256","name":"minUsdcOut","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"redemptionFeePercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}]; // <-- NEW ABI
-        const usdcAddress = "0xaf8d065e77c8cC2239327C5EDb3A432268e5831"; // Arbitrum Native USDC
+        // Fix: Correct Arbitrum native USDC address
+        const usdcAddress = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"; // Arbitrum Native USDC
         const arbitrumChainId = '0xa4b1'; // 42161 in hex
 
         // --- DOM Elements ---
@@ -326,168 +327,241 @@
 
 
         // --- Helper Functions ---
-        // ... (Keep all existing helper functions) ...
-        function showStatus(message, type = 'info') { /* ... */ }
-        function formatUnits(amount, decimals) { /* ... */ }
-        function parseUnits(amount, decimals) { /* ... */ }
-        function formatDate(timestamp) { /* ... */ }
-        function setLoading(button, isLoading, originalText) { /* ... */ }
-        function shortenAddress(address) { /* ... */ }
-        function formatSeconds(seconds) { /* ... */ }
-        function calculateTimeRemaining(futureTimestamp) { /* ... */ }
+        // === Minimal ABIs ===
+        const USDC_ABI = [ // Use minimal ABI provided by user
+          "function balanceOf(address) view returns (uint256)",
+          "function allowance(address,address) view returns (uint256)",
+          "function approve(address,uint256) returns (bool)",
+          "function decimals() view returns (uint8)"
+        ];
+
+        // === Helpers ===
+        function showStatus(message, type = "info") {
+          const classes = { info: "alert alert-info", success: "alert alert-success", warning: "alert alert-warning", error: "alert alert-error" };
+          statusMessageDiv.className = classes[type] || classes.info;
+          statusMessageDiv.textContent = message;
+          statusMessageDiv.classList.remove("hidden");
+          clearTimeout(showStatus._t); // Use a static property for timeout ID
+          const timeout = (type === 'error' || type === 'warning') ? 8000 : 5000;
+          showStatus._t = setTimeout(() => statusMessageDiv.classList.add("hidden"), timeout);
+        }
+        function formatUnits(v, d) {
+          try { return ethers.formatUnits(v ?? 0n, d); }
+          catch(e){ console.error("FmtErr:", e, v, d); return "Err"; }
+        }
+        function parseUnits(v, d) {
+          try { const s = String(v||0).trim(); if(!s) throw new Error("empty"); return ethers.parseUnits(s, d); }
+          catch(e){ console.error("ParseErr:", e, v, d); showStatus(`Invalid number: '${v}'`, 'error'); return null; }
+        }
+        function shortenAddress(a){ return a ? a.slice(0,6) + "…" + a.slice(-4) : ""; }
+        function formatSeconds(total) {
+          if (total === null || total === undefined || total < 0) return "N/A";
+          const s = Number(total);
+          const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+          return `${h}h ${m}m ${sec}s`;
+        }
+        function updatePauseUI(isPaused) {
+          pauseStatusIndicator.classList.remove("hidden");
+          if (isPaused) {
+            pauseStatusIndicator.textContent = "Paused";
+            pauseStatusIndicator.className = "text-xs font-bold px-3 py-1 rounded-full bg-yellow text-yellow-foreground";
+          } else {
+            pauseStatusIndicator.textContent = "Live";
+            pauseStatusIndicator.className = "text-xs font-bold px-3 py-1 rounded-full bg-green text-green-foreground";
+          }
+          pausedOverlay.classList.toggle("hidden", !isPaused);
+          updatePauseButtons(isPaused); // Also update admin buttons
+        }
+        function updatePauseButtons(isPaused) {
+          if (!pauseButton || !unpauseButton) return;
+          pauseButton.disabled = isPaused;
+          unpauseButton.disabled = !isPaused;
+        }
+        function resetState() {
+          walletInfoDiv.classList.add("hidden"); userAddress = null; signer = null; mtyldContract = null; usdcContract = null;
+          workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Connect wallet to view orders.</td></tr>';
+          pendingMintsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-secondary">Connect wallet to view proposals.</td></tr>';
+          connectButton.textContent = 'Connect Wallet'; connectButton.disabled = false; // Ensure button reset
+          resetLoadingStates(); // Reset loading placeholders
+          console.log("State reset");
+        }
+        // Helper to reset loading placeholders specifically
+        function resetLoadingStates() {
+            tokenNameSpan.textContent = 'Loading...'; tokenSymbolSpan.textContent = '---'; totalSupplySpan.textContent = 'Loading...';
+            contractAddressLink.textContent = 'Loading...'; contractUsdcSpan.textContent = 'Loading...'; mtyldPriceSpan.textContent = 'Loading...';
+            availableMtyldSpan.textContent = 'Loading...'; proposalDelaySpan.textContent = 'Loading...';
+            usdcBalanceSpan.textContent = 'Loading...'; mtyldBalanceSpan.textContent = 'Loading...';
+            buyUsdcBalanceSpan.textContent = '--'; redeemMtyldBalanceSpan.textContent = '--';
+            estimatedMtyldSpan.textContent = '0.00'; estimatedUsdcSpan.textContent = '0.00';
+            minTokensOutInput.value = '0'; minUsdcOutInput.value = '0';
+        }
+
+        // === Wallet connect (ethers v6) ===
+        async function connectWallet() {
+          console.log("Connect attempt started...");
+          const connectBtn = connectButton; const originalText = 'Connect Wallet';
+          setLoading(connectBtn, true, originalText); // Show loading immediately
+          try {
+            if (typeof window.ethereum === 'undefined') throw new Error("MetaMask not found.");
+            if (typeof ethers === 'undefined') throw new Error("Ethers.js not loaded.");
+
+            console.log("Requesting provider...");
+            provider = new ethers.BrowserProvider(window.ethereum, "any");
+
+            // Setup listeners *before* requesting accounts if not already done
+             if (!window.walletListenersAttached) {
+                  console.log("Setting up wallet listeners for the first time.");
+                  setupWalletListeners();
+                  window.walletListenersAttached = true;
+             }
+
+            console.log("Checking network...");
+            const net = await provider.getNetwork();
+            if (net.chainId !== BigInt(arbitrumChainId)) { // Use BigInt for comparison
+              console.log("Incorrect network, requesting switch...");
+              showStatus("Switch to Arbitrum One requested...", "info");
+              await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: arbitrumChainId }] });
+              // Ethers v6 often requires re-initialization after chain switch
+              provider = new ethers.BrowserProvider(window.ethereum);
+              console.log("Provider re-initialized after switch.");
+            }
+
+            console.log("Requesting accounts...");
+            // Request accounts *after* ensuring correct network (or attempting switch)
+            await provider.send("eth_requestAccounts", []);
+            signer = await provider.getSigner();
+            userAddress = await signer.getAddress();
+            console.log("Signer obtained:", userAddress);
+
+            // Verify network *again* after getting signer, just in case
+            const finalNet = await provider.getNetwork();
+            if (finalNet.chainId !== BigInt(arbitrumChainId)) {
+                throw new Error("Wallet connected but not on Arbitrum One.");
+            }
+            networkNameSpan.textContent = "Arbitrum One"; // Confirmed
+            userAddressSpan.textContent = userAddress;
+
+            // Instantiate contracts
+            mtyldContract = new ethers.Contract(contractAddress, contractABI, signer);
+            usdcContract = new ethers.Contract(usdcAddress, USDC_ABI, signer);
+            console.log("Contracts instantiated");
+
+            // Fetch decimals (safe to assume 6 if this fails, but log error)
+            try {
+                usdcDecimals = await usdcContract.decimals();
+                console.log("Fetched USDC decimals:", Number(usdcDecimals));
+            } catch (decError) {
+                console.error("Could not fetch USDC decimals, defaulting to 6:", decError);
+                usdcDecimals = 6n; // Use BigInt for consistency internally
+            }
 
 
-        // --- Blockchain Interaction ---
+            walletInfoDiv.classList.remove("hidden");
+            console.log("Wallet UI visible");
 
-        async function connectWallet() { /* ... (Updated logic from previous response) ... */ }
+            await loadInitialData();
+            showStatus("Wallet connected.", "success");
+
+          } catch (err) {
+            console.error("Connect Wallet Error:", err);
+            let errMsg = err.message || "Unknown connection error.";
+            if (err.code === 4001 || err.message?.includes('rejected')) errMsg = "Connection rejected by user.";
+            if (err.message?.includes('Already processing')) errMsg = "Connection request already pending in MetaMask.";
+            showStatus(errMsg, "error");
+            resetState(); // Reset UI fully on any connection error
+          } finally {
+               // Ensure button state is correct based on whether userAddress was set
+               if (userAddress) {
+                    setLoading(connectBtn, false, shortenAddress(userAddress));
+                    connectBtn.disabled = true;
+               } else {
+                    setLoading(connectBtn, false, originalText);
+                    connectBtn.disabled = false;
+               }
+               console.log("Connect attempt finished.");
+          }
+        }
+
+        function setupWalletListeners() {
+          if (!window.ethereum || !window.ethereum.on) return console.warn("Cannot setup listeners: window.ethereum missing or .on not supported");
+
+          // Remove potential old listeners first
+          window.ethereum.removeAllListeners?.("accountsChanged");
+          window.ethereum.removeAllListeners?.("chainChanged");
+          console.log("Removed previous wallet listeners.");
+
+          window.ethereum.on("accountsChanged", async (accounts) => {
+             console.log("accountsChanged:", accounts);
+            if (!accounts || accounts.length === 0) {
+              resetState(); showStatus("Wallet disconnected.", "warning"); return;
+            }
+            // Only reconnect if the address is actually different
+            if (!userAddress || ethers.getAddress(accounts[0]) !== ethers.getAddress(userAddress)) {
+                showStatus("Account changed, reconnecting...", "info");
+                resetState(); // Reset before reconnecting with new account
+                await connectWallet(); // Trigger full reconnect
+            }
+          });
+
+          window.ethereum.on("chainChanged", async (hexId) => {
+             console.log("chainChanged:", hexId);
+            if (hexId !== arbitrumChainId) {
+              showStatus("Switched to wrong network. Please switch back to Arbitrum One.", "error");
+              resetState(); connectButton.textContent = 'Wrong Network'; connectButton.disabled = true;
+            } else {
+                // Switched back to correct network, refresh might be needed
+                showStatus("Network changed to Arbitrum One. Refreshing data...", "info");
+                resetState(); // Reset state
+                await connectWallet(); // Reconnect fully on correct chain
+                // Alternatively: window.location.reload(); // Simpler but full page reload
+            }
+          });
+           console.log("Wallet listeners attached.");
+        }
+        // (Optional) small quality-of-life helpers used elsewhere:
+        function setLoading(btn, isLoading, originalText) { // Use the provided one
+          if (!btn) return;
+          if (isLoading) {
+            btn.dataset._text = originalText || btn.textContent; // Store original text
+            btn.disabled = true;
+            // Use consistent spinner style
+            btn.innerHTML = `<span class="loading-spinner"></span> Processing...`; // Keep "Processing..." for consistency
+          } else {
+            btn.disabled = false;
+            // Restore original text or default if not stored
+            btn.innerHTML = btn.dataset._text || originalText || btn.textContent;
+            delete btn.dataset._text; // Clean up stored text
+          }
+        }
 
 
         // Combined function to load data after connection
-        async function loadInitialData() {
-             console.log("loadInitialData started");
-             try {
-                 console.log("Awaiting updateProtocolInfo...");
-                 await updateProtocolInfo(); // Fetch protocol info first (includes delay)
-                 console.log("updateProtocolInfo finished.");
-
-                 console.log("Fetching other data concurrently...");
-                 const results = await Promise.allSettled([
-                     updateWalletInfo(),
-                     fetchAndStoreAllWorkOrders(),
-                     fetchPendingProposals()
-                 ]);
-                 console.log("Concurrent fetches finished:", results);
-
-                 results.forEach((result, index) => {
-                     if (result.status === 'rejected') {
-                         console.error(`Error during load step ${index+1}:`, result.reason);
-                         // Show specific errors if needed
-                         if(index === 0) showStatus('Failed to update wallet info.', 'error');
-                         if(index === 1) showStatus('Failed to load work orders.', 'error');
-                         if(index === 2) showStatus('Failed to load pending proposals.', 'error');
-                     } else {
-                          console.log(`Load step ${index+1} successful.`);
-                     }
-                 });
-
-                 console.log("Checking admin status...");
-                 await checkAdminStatus();
-                 console.log("Admin status check finished.");
-
-             } catch (error) {
-                  console.error("Error in loadInitialData:", error);
-                  showStatus("Failed to load initial application data.", "error");
-             }
-             console.log("loadInitialData finished");
-         }
+        async function loadInitialData() { /* ... */ }
 
 
-        function resetState() { /* ... (same as before) ... */ }
+        function resetState() { /* ... */ }
+
+        // --- UI Update Helper Functions ---
+        function resetLoadingStates() { /* ... */ }
+        function clearLoadingStatesWithError() { /* ... */ }
 
 
-        async function checkAdminStatus() { /* ... (same as before) ... */ }
+        async function checkAdminStatus() { /* ... */ }
 
-        async function updateAdminInfo() { /* ... (same as before) ... */ }
+        async function updateAdminInfo() { /* ... */ }
 
          // Combined proposal check function
-         async function checkPendingProposals() { /* ... (same as before) ... */ }
+         async function checkPendingProposals() { /* ... */ }
 
 
         // Helper to check and display pending mint details based on input ID (Admin Panel ONLY)
          let checkMintTimeout;
-        async function checkPendingMintDetails() { /* ... (same as before) ... */ }
+        async function checkPendingMintDetails() { /* ... */ }
 
 
-        async function updateWalletInfo() {
-             console.log("updateWalletInfo started");
-             if (!provider || !userAddress || !usdcContract || !mtyldContract) {
-                 console.log("updateWalletInfo skipped: Missing provider/user/contracts");
-                 return;
-             }
-             try {
-                 const network = await provider.getNetwork();
-                 networkNameSpan.textContent = network.name === 'arbitrum' ? 'Arbitrum One' : network.name;
-                 userAddressSpan.textContent = userAddress;
+        async function updateWalletInfo() { /* ... */ }
 
-                 const [usdcBal, mtyldBal] = await Promise.all([
-                     usdcContract.balanceOf(userAddress),
-                     mtyldContract.balanceOf(userAddress)
-                 ]);
-                 console.log("Balances fetched:", usdcBal.toString(), mtyldBal.toString());
-
-                 usdcBalanceSpan.textContent = `${parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2)} USDC`;
-                 mtyldBalanceSpan.textContent = `${parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4)} MTYLD`;
-                 buyUsdcBalanceSpan.textContent = parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2);
-                 redeemMtyldBalanceSpan.textContent = parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4);
-                 console.log("Wallet info UI updated");
-             } catch (error) {
-                 console.error("Error updating wallet info:", error);
-                 showStatus('Failed to update wallet balances.', 'error');
-                 usdcBalanceSpan.textContent = 'Error'; mtyldBalanceSpan.textContent = 'Error';
-             }
-             console.log("updateWalletInfo finished");
-         }
-
-
-        async function updateProtocolInfo() {
-             console.log("updateProtocolInfo started");
-             if (!mtyldContract || !usdcContract) {
-                 console.log("updateProtocolInfo skipped: Missing contracts");
-                 return;
-             }
-             try {
-                 const block = await provider.getBlock("latest");
-                 blockTimestamp = block ? BigInt(block.timestamp) : null;
-                 console.log("Block timestamp:", blockTimestamp ? blockTimestamp.toString() : 'null');
-
-                 const [name, symbol, supply, contractUSDCBalance, available, feePercent, isPaused, delaySeconds] = await Promise.all([
-                     mtyldContract.name(),
-                     mtyldContract.symbol(),
-                     mtyldContract.totalSupply(),
-                     mtyldContract.contractPaymentTokenBalance(),
-                     mtyldContract.availableTokens(),
-                     mtyldContract.redemptionFeePercentage(),
-                     mtyldContract.paused(),
-                     mtyldContract.PROPOSAL_DELAY()
-                 ]);
-                 console.log("Protocol data fetched:", { name, symbol, supply: supply.toString(), contractUSDCBalance: contractUSDCBalance.toString(), available: available.toString(), feePercent: feePercent.toString(), isPaused, delaySeconds: delaySeconds.toString() });
-
-                 tokenNameSpan.textContent = name;
-                 tokenSymbolSpan.textContent = symbol;
-                 totalSupplySpan.textContent = parseFloat(formatUnits(supply, mtyldDecimals)).toFixed(4);
-                 contractAddressLink.textContent = shortenAddress(contractAddress);
-                 contractAddressLink.href = `https://arbiscan.io/address/${contractAddress}`;
-                 contractUsdcSpan.textContent = parseFloat(formatUnits(contractUSDCBalance, usdcDecimals)).toFixed(2);
-                 availableMtyldSpan.textContent = parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4);
-                 redeemFeePercentSpan.textContent = feePercent.toString();
-                 currentProposalDelay = delaySeconds;
-                 proposalDelaySpan.textContent = delaySeconds.toString() + ` (${formatSeconds(delaySeconds)})`;
-
-                 updatePauseUI(isPaused);
-
-                 let price = 0;
-                 if (supply > 0n && contractUSDCBalance >= 0n) {
-                      const scaleFactor = 10n ** BigInt(18 - usdcDecimals);
-                      const priceBigInt = supply > 0n ? (contractUSDCBalance * scaleFactor) / supply : 0n;
-                      price = parseFloat(formatUnits(priceBigInt, usdcDecimals));
-                 }
-                 mtyldPriceSpan.textContent = price > 0 ? price.toFixed(6) : '0.000000';
-                 console.log("Calculated price:", mtyldPriceSpan.textContent);
-
-                 updateBuyEstimate(); updateRedeemEstimate();
-                 console.log("Estimates updated");
-
-                 // Recheck proposals if admin, now that blockTimestamp is available
-                 if (userAddress && contractOwner && userAddress.toLowerCase() === contractOwner.toLowerCase()){ await checkPendingProposals(); }
-
-             } catch (error) {
-                 console.error("Error updating protocol info:", error);
-                 showStatus('Failed to fetch protocol data.', 'error');
-                 tokenNameSpan.textContent = 'Error'; /*...*/
-             }
-             console.log("updateProtocolInfo finished");
-         }
-
+        async function updateProtocolInfo() { /* ... */ }
 
         // --- Buy/Redeem Logic ---
         async function updateBuyEstimate() { /* ... */ }
@@ -523,7 +597,7 @@
 
         // --- Event Listeners Setup ---
          function setupEventListeners() { /* ... */ }
-         function setupWalletListeners() { /* ... */ }
+         // setupWalletListeners is now called within connectWallet
 
 
         // --- Initialization ---
