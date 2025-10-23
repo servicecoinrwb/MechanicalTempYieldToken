@@ -167,7 +167,7 @@
         <div class="container mx-auto max-w-7xl p-4 flex justify-between items-center">
             <a href="index.html" class="text-2xl font-bold">
                 YieldWorks
-                <span class="text-sm font-normal text-text-secondary hidden sm:inline-block ml-2">Buy/Redeem</span>
+                <span class="text-sm font-normal text-text-secondary hidden sm:inline-block ml-2">Simple Buy/Redeem</span>
             </a>
             <div class="flex items-center space-x-4">
                  <span id="pause-status-indicator" class="hidden text-xs font-bold px-3 py-1 rounded-full"></span>
@@ -517,28 +517,28 @@
              const connectBtn = connectButton;
              const originalConnectText = 'Connect Wallet';
              setLoading(connectBtn, true, originalConnectText);
-             console.log("Attempting wallet connection...");
+             console.log("Attempting wallet connection..."); // Added log
              try {
                  if (typeof ethers === 'undefined') { throw new Error('Ethers.js library not loaded.'); }
                  provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
-                 console.log("Provider created for Arbitrum (ENS disabled).");
+                 console.log("Provider created for Arbitrum (ENS disabled)."); // Added log
                  if (!window.walletListenersAttached) { setupWalletListeners(); window.walletListenersAttached = true; }
                  const currentMetaMaskNetwork = await provider.getNetwork();
-                 console.log("Detected MetaMask Network:", currentMetaMaskNetwork);
+                 console.log("Detected MetaMask Network:", currentMetaMaskNetwork); // Added log
                  if (currentMetaMaskNetwork.chainId !== BigInt(arbitrumChainId)) {
-                      console.log(`Requesting switch to Arbitrum One (Chain ID: ${arbitrumChainId})`);
+                      console.log(`Requesting switch to Arbitrum One (Chain ID: ${arbitrumChainId})`); // Added log
                       try {
                            await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: arbitrumChainId }] });
                            provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
-                           console.log("Switched to Arbitrum One successfully.");
+                           console.log("Switched to Arbitrum One successfully."); // Added log
                       } catch (switchError) {
-                          console.error("Switch Network Error:", switchError);
+                          console.error("Switch Network Error:", switchError); // Added log
                            if (switchError.code === 4902) {
-                                console.log("Arbitrum One not found, requesting add.");
+                                console.log("Arbitrum One not found, requesting add."); // Added log
                                 try {
                                      await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: arbitrumChainId, chainName: 'Arbitrum One', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://arb1.arbitrum.io/rpc'], blockExplorerUrls: ['https://arbiscan.io'] }] });
                                      provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
-                                     console.log("Added Arbitrum One successfully.");
+                                     console.log("Added Arbitrum One successfully."); // Added log
                                 } catch (addError) { console.error("Add Network Error:", addError); throw new Error('Please add Arbitrum One network manually and reconnect.'); }
                            } else { throw new Error('Please switch MetaMask to the Arbitrum One network.'); }
                       }
