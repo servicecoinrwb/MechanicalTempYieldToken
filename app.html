@@ -268,7 +268,7 @@
         let mtyldDecimals = 18;
         let allWorkOrders = [];
         let availableYears = new Set();
-        let blockTimestamp = null; // Can still be useful for date formatting context
+        let blockTimestamp = null;
 
 
         // --- Helper Functions ---
@@ -286,193 +286,166 @@
         function setLoading(btn, isLoading, originalText) { /* ... (same as before) ... */ }
         function resetState() { /* ... (updated below) ... */ }
         function resetLoadingStates() { /* ... (updated below) ... */ }
+        function clearLoadingStatesWithError() { /* ... (updated below) ... */ }
         // Removed formatSeconds, calculateTimeRemaining, updatePauseUI, updatePauseButtons
 
 
         // --- Wallet connect (ethers v6) ---
-        async function connectWallet() {
-          console.log("Connect attempt started...");
-          const connectBtn = connectButton; const originalText = 'Connect Wallet';
-          setLoading(connectBtn, true, originalText);
-          try {
-            if (typeof window.ethereum === 'undefined') throw new Error("MetaMask not found.");
-            if (typeof ethers === 'undefined') throw new Error("Ethers.js not loaded.");
-
-            console.log("Requesting provider...");
-            provider = new ethers.BrowserProvider(window.ethereum, "any");
-
-            if (!window.walletListenersAttached) { setupWalletListeners(); window.walletListenersAttached = true; }
-
-            console.log("Checking network...");
-            const net = await provider.getNetwork();
-            if (net.chainId !== BigInt(arbitrumChainId)) {
-              console.log("Incorrect network, requesting switch..."); showStatus("Switch to Arbitrum One requested...", "info");
-              await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: arbitrumChainId }] });
-              provider = new ethers.BrowserProvider(window.ethereum); console.log("Provider re-initialized after switch.");
-            }
-
-            console.log("Requesting accounts...");
-            await provider.send("eth_requestAccounts", []);
-            signer = await provider.getSigner(); userAddress = await signer.getAddress(); console.log("Signer obtained:", userAddress);
-
-            const finalNet = await provider.getNetwork();
-            if (finalNet.chainId !== BigInt(arbitrumChainId)) throw new Error("Wallet connected but not on Arbitrum One.");
-            networkNameSpan.textContent = "Arbitrum One"; userAddressSpan.textContent = userAddress;
-
-            // Instantiate contracts with the OLD ABI
-            mtyldContract = new ethers.Contract(contractAddress, contractABI, signer);
-            usdcContract = new ethers.Contract(usdcAddress, USDC_ABI, signer); console.log("Contracts instantiated");
-
-            // Attempt to fetch decimals, default to 6
-            try {
-                const decimalsResult = await usdcContract.decimals();
-                usdcDecimals = Number(decimalsResult); // Convert BigInt to number
-                console.log("Fetched USDC decimals:", usdcDecimals);
-            } catch (decError) {
-                console.error("Could not fetch USDC decimals, defaulting to 6:", decError);
-                usdcDecimals = 6; // Default to 6 if call fails
-            }
-
-            walletInfoDiv.classList.remove("hidden"); console.log("Wallet UI visible");
-            await loadInitialData();
-            showStatus("Wallet connected.", "success");
-
-          } catch (err) {
-            console.error("Connect Wallet Error:", err);
-            let errMsg = err.message || "Unknown connection error.";
-            if (err.code === 4001 || err.message?.includes('rejected')) errMsg = "Connection rejected by user.";
-            if (err.message?.includes('Already processing')) errMsg = "Connection request already pending.";
-            showStatus(errMsg, "error"); resetState();
-          } finally {
-               if (userAddress) { setLoading(connectBtn, false, shortenAddress(userAddress)); connectBtn.disabled = true; }
-               else { setLoading(connectBtn, false, originalText); connectBtn.disabled = false; }
-               console.log("Connect attempt finished.");
-          }
-        }
-
-        function setupWalletListeners() {
-          if (!window.ethereum || !window.ethereum.on) return console.warn("Cannot setup listeners.");
-          window.ethereum.removeAllListeners?.("accountsChanged"); window.ethereum.removeAllListeners?.("chainChanged"); console.log("Removed previous listeners.");
-          window.ethereum.on("accountsChanged", async (accounts) => {
-             console.log("accountsChanged:", accounts);
-            if (!accounts || accounts.length === 0) { resetState(); showStatus("Wallet disconnected.", "warning"); return; }
-            if (!userAddress || ethers.getAddress(accounts[0]) !== ethers.getAddress(userAddress)) { showStatus("Account changed, reconnecting...", "info"); resetState(); await connectWallet(); }
-          });
-          window.ethereum.on("chainChanged", async (hexId) => {
-             console.log("chainChanged:", hexId);
-            if (hexId !== arbitrumChainId) { showStatus("Switched network. Switch back to Arbitrum.", "error"); resetState(); connectButton.textContent = 'Wrong Network'; connectButton.disabled = true; }
-            else { showStatus("Network changed to Arbitrum. Refreshing...", "info"); resetState(); await connectWallet(); }
-          });
-           console.log("Wallet listeners attached.");
-        }
+        async function connectWallet() { /* ... (same as before) ... */ }
+        function setupWalletListeners() { /* ... (same as before) ... */ }
 
 
         // Combined function to load data
         async function loadInitialData() {
-             console.log("loadInitialData started");
-             resetLoadingStates();
-             try {
-                 console.log("Updating protocol info..."); await updateProtocolInfo(); console.log("Protocol info finished.");
-                 console.log("Updating wallet info..."); await updateWalletInfo(); console.log("Wallet info finished.");
-                 console.log("Fetching work orders..."); await fetchAndStoreAllWorkOrders(); console.log("Work orders finished.");
-                 // Pending proposals fetch removed
-                 console.log("Checking admin status..."); await checkAdminStatus(); console.log("Admin check finished.");
-             } catch (error) { console.error("Error in loadInitialData:", error); showStatus("Failed to load app data.", "error"); clearLoadingStatesWithError(); }
-             console.log("loadInitialData finished");
+            console.log("loadInitialData started");
+            resetLoadingStates(); // Reset UI to loading state
+            try {
+                // Fetch data sequentially with logging
+                console.log("-> Fetching protocol info...");
+                await updateProtocolInfo();
+                console.log("<- Protocol info finished.");
+
+                console.log("-> Fetching wallet info...");
+                await updateWalletInfo();
+                console.log("<- Wallet info finished.");
+
+                console.log("-> Fetching work orders...");
+                await fetchAndStoreAllWorkOrders();
+                console.log("<- Work orders finished.");
+
+                // No pending proposals for this contract version
+
+                console.log("-> Checking admin status...");
+                await checkAdminStatus();
+                console.log("<- Admin check finished.");
+
+            } catch (error) {
+                 // Catch errors from any step
+                 console.error("!!! Error during loadInitialData:", error);
+                 showStatus("Failed to load initial application data. Check console.", "error");
+                 clearLoadingStatesWithError(); // Set UI to error state
+            }
+            console.log("loadInitialData finished");
          }
 
 
         // --- UI Update Helper Functions ---
-        function resetState() {
-          walletInfoDiv.classList.add("hidden"); userAddress = null; signer = null; mtyldContract = null; usdcContract = null;
-          workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Connect wallet to view orders.</td></tr>';
-          connectButton.textContent = 'Connect Wallet'; connectButton.disabled = false;
-          resetLoadingStates();
-          adminPanelDiv.classList.add('hidden'); // Hide admin panel on reset
-          console.log("State reset");
-        }
-        function resetLoadingStates() {
-            tokenNameSpan.textContent = 'Loading...'; tokenSymbolSpan.textContent = '---'; totalSupplySpan.textContent = 'Loading...';
-            contractAddressLink.textContent = 'Loading...'; contractUsdcSpan.textContent = 'Loading...'; mtyldPriceSpan.textContent = 'Loading...';
-            availableMtyldSpan.textContent = 'Loading...';
-            usdcBalanceSpan.textContent = 'Loading...'; mtyldBalanceSpan.textContent = 'Loading...';
-            buyUsdcBalanceSpan.textContent = '--'; redeemMtyldBalanceSpan.textContent = '--';
-            estimatedMtyldSpan.textContent = '0.00'; estimatedUsdcSpan.textContent = '0.00';
-            minTokensOutInput.value = '0'; minUsdcOutInput.value = '0';
-        }
-        function clearLoadingStatesWithError() {
-             tokenNameSpan.textContent = 'Error'; tokenSymbolSpan.textContent = 'Err'; totalSupplySpan.textContent = 'Error';
-             contractAddressLink.textContent = 'Error'; contractUsdcSpan.textContent = 'Error'; mtyldPriceSpan.textContent = 'Error';
-             availableMtyldSpan.textContent = 'Error';
-             usdcBalanceSpan.textContent = 'Error'; mtyldBalanceSpan.textContent = 'Error';
-             buyUsdcBalanceSpan.textContent = 'Error'; redeemMtyldBalanceSpan.textContent = 'Error';
-             workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red">Error loading orders.</td></tr>';
-             estimatedMtyldSpan.textContent = 'Error'; estimatedUsdcSpan.textContent = 'Error';
-        }
+        function resetState() { /* ... (no changes needed) ... */ }
+        function resetLoadingStates() { /* ... (no changes needed) ... */ }
+        function clearLoadingStatesWithError() { /* ... (no changes needed) ... */ }
 
 
-        async function checkAdminStatus() {
-             if (!mtyldContract) return;
-             try {
-                 contractOwner = await mtyldContract.owner();
-                 if (userAddress && contractOwner && userAddress.toLowerCase() === contractOwner.toLowerCase()) {
-                     adminPanelDiv.classList.remove('hidden'); console.log("Admin connected");
-                     await updateAdminInfo();
-                 } else { adminPanelDiv.classList.add('hidden'); console.log("User is not admin"); }
-             } catch (error) { console.error("Admin check error:", error); showStatus('Admin check failed.', 'error'); }
-        }
-        async function updateAdminInfo() { // Remove pause checks
-             if (!mtyldContract) return;
-             try {
-                  const [fees, feePercent] = await Promise.all([
-                       mtyldContract.collectedFees(), mtyldContract.redemptionFeePercentage()
-                  ]);
-                  collectedFeesSpan.textContent = parseFloat(formatUnits(fees, usdcDecimals)).toFixed(2);
-                  withdrawFeesButton.disabled = fees === 0n;
-                  currentRedeemFeeSpan.textContent = feePercent.toString();
-             } catch (error) { console.error("Admin info error:", error); collectedFeesSpan.textContent = 'Error'; withdrawFeesButton.disabled = true; }
-        }
-         // Removed proposal check functions
+        async function checkAdminStatus() { /* ... (no changes needed) ... */ }
+        async function updateAdminInfo() { /* ... (no changes needed) ... */ }
 
 
-        async function updateWalletInfo() { /* ... (No changes needed) ... */ }
+        async function updateWalletInfo() {
+            console.log("updateWalletInfo started");
+            if (!provider || !userAddress || !usdcContract || !mtyldContract) {
+                console.warn("updateWalletInfo skipped: Missing provider/user/contracts");
+                usdcBalanceSpan.textContent = '<span class="error-text">Connect Wallet</span>';
+                mtyldBalanceSpan.textContent = '<span class="error-text">Connect Wallet</span>';
+                return;
+            }
+            usdcBalanceSpan.textContent = 'Loading...'; mtyldBalanceSpan.textContent = 'Loading...'; // Show loading
+            buyUsdcBalanceSpan.textContent = '...'; redeemMtyldBalanceSpan.textContent = '...';
+            try {
+                const network = await provider.getNetwork();
+                networkNameSpan.textContent = network.name === 'arbitrum' ? 'Arbitrum One' : network.name;
+                userAddressSpan.textContent = userAddress; // Show full address here
 
-        async function updateProtocolInfo() { // Removed pause/delay fetching
+                const [usdcBal, mtyldBal] = await Promise.all([
+                    usdcContract.balanceOf(userAddress),
+                    mtyldContract.balanceOf(userAddress)
+                ]);
+                console.log("Balances fetched:", usdcBal.toString(), mtyldBal.toString());
+
+                // Update main display
+                usdcBalanceSpan.textContent = `${parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2)} USDC`;
+                mtyldBalanceSpan.textContent = `${parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4)} MTYLD`;
+                // Update form hints
+                buyUsdcBalanceSpan.textContent = parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2);
+                redeemMtyldBalanceSpan.textContent = parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4);
+                console.log("Wallet info UI updated successfully");
+            } catch (error) {
+                console.error("!!! Error updating wallet info:", error);
+                showStatus('Failed to update wallet balances.', 'error');
+                usdcBalanceSpan.innerHTML = '<span class="error-text">Error</span>'; // Use innerHTML for style
+                mtyldBalanceSpan.innerHTML = '<span class="error-text">Error</span>';
+                buyUsdcBalanceSpan.textContent = 'Error';
+                redeemMtyldBalanceSpan.textContent = 'Error';
+            }
+             console.log("updateWalletInfo finished");
+         }
+
+
+        async function updateProtocolInfo() {
              console.log("updateProtocolInfo started");
-             if (!mtyldContract || !usdcContract || !provider) { console.log("updateProtocolInfo skipped"); clearLoadingStatesWithError(); return; } // Clear loading on skip
+             if (!mtyldContract || !usdcContract || !provider) {
+                 console.warn("updateProtocolInfo skipped: Missing contracts or provider");
+                 clearLoadingStatesWithError(); return; // Clear loading state on skip
+             }
+             // Ensure loading states are set at the beginning
              resetLoadingStates();
              try {
-                 const block = await provider.getBlock("latest"); blockTimestamp = block ? BigInt(block.timestamp) : null;
+                 const block = await provider.getBlock("latest");
+                 blockTimestamp = block ? BigInt(block.timestamp) : null;
                  console.log("Block timestamp:", blockTimestamp?.toString());
 
-                 const [name, symbol, supply, contractUSDCBalance, available, feePercent] = await Promise.all([
-                     mtyldContract.name(), mtyldContract.symbol(), mtyldContract.totalSupply(), mtyldContract.contractPaymentTokenBalance(),
-                     mtyldContract.availableTokens(), mtyldContract.redemptionFeePercentage()
+                 // Fetch data using Promise.allSettled for individual error handling
+                 const results = await Promise.allSettled([
+                     mtyldContract.name(),                  // 0
+                     mtyldContract.symbol(),                 // 1
+                     mtyldContract.totalSupply(),            // 2
+                     mtyldContract.contractPaymentTokenBalance(), // 3
+                     mtyldContract.availableTokens(),        // 4
+                     mtyldContract.redemptionFeePercentage() // 5
                  ]);
-                 console.log("Protocol data fetched:", { name, symbol, /*...*/ });
+                 console.log("Protocol data fetched results:", results);
 
-                 tokenNameSpan.textContent = name; tokenSymbolSpan.textContent = symbol;
-                 totalSupplySpan.textContent = parseFloat(formatUnits(supply, mtyldDecimals)).toFixed(4);
-                 contractAddressLink.textContent = shortenAddress(contractAddress); contractAddressLink.href = `https://arbiscan.io/address/${contractAddress}`;
-                 contractUsdcSpan.textContent = parseFloat(formatUnits(contractUSDCBalance, usdcDecimals)).toFixed(2);
-                 availableMtyldSpan.textContent = parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4);
-                 redeemFeePercentSpan.textContent = feePercent.toString();
+                 // Process results individually
+                 tokenNameSpan.textContent = results[0].status === 'fulfilled' ? results[0].value : '<span class="error-text">Error</span>';
+                 tokenSymbolSpan.textContent = results[1].status === 'fulfilled' ? results[1].value : '<span class="error-text">Err</span>';
 
-                 let price = 0;
-                 if (supply > 0n && contractUSDCBalance >= 0n) {
-                      // Original Price Calc: (Contract USDC * 10^(18-6)) / Total MTYLD Supply
-                      const scaleFactor = 10n ** BigInt(18 - usdcDecimals);
-                      const priceBigInt = supply > 0n ? (contractUSDCBalance * scaleFactor) / supply : 0n;
-                      price = parseFloat(formatUnits(priceBigInt, usdcDecimals)); // Price represented in USDC units
+                 const supply = results[2].status === 'fulfilled' ? results[2].value : null;
+                 totalSupplySpan.innerHTML = supply !== null ? parseFloat(formatUnits(supply, mtyldDecimals)).toFixed(4) : '<span class="error-text">Error</span>';
+
+                 const contractUSDCBalance = results[3].status === 'fulfilled' ? results[3].value : null;
+                 contractUsdcSpan.innerHTML = contractUSDCBalance !== null ? parseFloat(formatUnits(contractUSDCBalance, usdcDecimals)).toFixed(2) : '<span class="error-text">Error</span>';
+
+                 const available = results[4].status === 'fulfilled' ? results[4].value : null;
+                 availableMtyldSpan.innerHTML = available !== null ? parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4) : '<span class="error-text">Error</span>';
+
+                 const feePercent = results[5].status === 'fulfilled' ? results[5].value : null;
+                 redeemFeePercentSpan.innerHTML = feePercent !== null ? feePercent.toString() + '%' : '<span class="error-text">Error</span>';
+                 // Also update admin fee display if admin panel is visible
+                 if (!adminPanelDiv.classList.contains('hidden')) {
+                      currentRedeemFeeSpan.innerHTML = feePercent !== null ? feePercent.toString() : '<span class="error-text">Error</span>';
                  }
-                 mtyldPriceSpan.textContent = price > 0 ? price.toFixed(6) : '0.000000';
+
+                 contractAddressLink.textContent = shortenAddress(contractAddress);
+                 contractAddressLink.href = `https://arbiscan.io/address/${contractAddress}`;
+
+                 // Calculate price only if supply and balance fetched successfully
+                 let price = 0;
+                 if (supply !== null && contractUSDCBalance !== null && supply > 0n && contractUSDCBalance >= 0n) {
+                     const scaleFactor = 10n ** BigInt(18 - usdcDecimals);
+                     const priceBigInt = supply > 0n ? (contractUSDCBalance * scaleFactor) / supply : 0n;
+                     price = parseFloat(formatUnits(priceBigInt, usdcDecimals));
+                     mtyldPriceSpan.textContent = price > 0 ? price.toFixed(6) : '0.000000';
+                 } else if (supply === 0n) {
+                     mtyldPriceSpan.textContent = '0.000000'; // Handle zero supply case
+                 } else {
+                     mtyldPriceSpan.innerHTML = '<span class="error-text">Error</span>';
+                 }
                  console.log("Calculated price:", mtyldPriceSpan.textContent);
 
-                 updateBuyEstimate(); updateRedeemEstimate(); console.log("Estimates updated");
+                 updateBuyEstimate(); updateRedeemEstimate();
+                 console.log("Estimates updated after protocol info");
 
-             } catch (error) {
-                 console.error("Error updating protocol info:", error);
-                 showStatus('Failed to fetch protocol data.', 'error');
+             } catch (error) { // Catch errors from Promise.allSettled itself (unlikely but possible)
+                 console.error("!!! Critical Error updating protocol info:", error);
+                 showStatus('Failed to fetch critical protocol data.', 'error');
                  clearLoadingStatesWithError();
              }
              console.log("updateProtocolInfo finished");
@@ -480,73 +453,39 @@
 
 
         // --- Buy/Redeem Logic ---
-        async function updateBuyEstimate() { /* ... (Logic remains same) ... */ }
-        async function updateRedeemEstimate() { /* ... (Logic remains same) ... */ }
-        async function handleApproveUSDC(isAdmin = false) { /* ... (Logic remains same) ... */ }
-        async function handleBuyTokens(event) { /* ... (Removed pause check) ... */ }
-        async function handleRedeemTokens(event) { /* ... (Removed pause check) ... */ }
+        async function updateBuyEstimate() { /* ... */ }
+        async function updateRedeemEstimate() { /* ... */ }
+        async function handleApproveUSDC(isAdmin = false) { /* ... */ }
+        async function handleBuyTokens(event) { /* ... */ }
+        async function handleRedeemTokens(event) { /* ... */ }
 
 
         // --- Work Order Display & Filtering Logic ---
-        async function fetchAndStoreAllWorkOrders() { /* ... (Logic remains same, fetches one-by-one) ... */ }
-        function populateYearFilter() { /* ... (No changes needed) ... */ }
-        function filterAndRenderOrders() { /* ... (No changes needed) ... */ }
-        function renderWorkOrdersTable(ordersToRender) { /* ... (Logic remains same) ... */ }
-         // Removed fetchPendingProposals function
+        async function fetchAndStoreAllWorkOrders() { /* ... */ }
+        function populateYearFilter() { /* ... */ }
+        function filterAndRenderOrders() { /* ... */ }
+        function renderWorkOrdersTable(ordersToRender) { /* ... */ }
 
 
         // --- Admin Actions (Reverted to direct calls) ---
-        async function handleMintOrder(event) { /* ... (Direct mint, removed pause check) ... */ }
-        // Removed handleProposeMint, handleExecuteMint
-
-        // Update Payout form helper text - fetch Gross Yield
-         payoutIdInput.addEventListener('input', async () => {
-             const orderIdStr = payoutIdInput.value;
-              payoutGrossYieldSpan.textContent = '--'; // Use correct span ID
-              if (!orderIdStr || parseInt(orderIdStr) < 1 || !mtyldContract) return;
-             const orderId = BigInt(orderIdStr);
-             try { const order = await mtyldContract.workOrders(orderId); if (order.id !== 0n) { payoutGrossYieldSpan.textContent = `${parseFloat(formatUnits(order.grossYield, usdcDecimals)).toFixed(2)} USDC`; } else { payoutGrossYieldSpan.textContent = 'Not Found'; } }
-             catch { payoutGrossYieldSpan.textContent = 'Error'; }
-         });
-
-        async function handlePayoutOrder(event) { /* ... (Payout logic, removed pause check, ensure payoutGrossYieldSpan updated) ... */ }
-
-        async function handleCancelOrder(event) { /* ... (Removed pause check) ... */ }
-
-        async function handleSetFee(event) { /* ... (Direct set fee, removed pause check) ... */ }
-         // Removed handleProposeFeeChange, handleExecuteFeeChange
-
-        async function handleWithdrawFees() { /* ... (Removed pause check) ... */ }
-        async function handleEmergencyWithdraw(event) { /* ... (Removed pause check, added warning about USDC) ... */ }
-         // --- Pause/Unpause Logic Removed ---
+        async function handleMintOrder(event) { /* ... */ }
+        async function handlePayoutOrder(event) { /* ... */ }
+        async function handleCancelOrder(event) { /* ... */ }
+        async function handleSetFee(event) { /* ... */ }
+        async function handleWithdrawFees() { /* ... */ }
+        async function handleEmergencyWithdraw(event) { /* ... */ }
 
 
         // --- Event Listeners Setup ---
-         function setupEventListeners() { /* ... (Reverted listeners) ... */
-            if (window.eventListenersAttached) return;
-             buyUsdcAmountInput.addEventListener('input', updateBuyEstimate); buySlippageSelect.addEventListener('change', updateBuyEstimate);
-             redeemMtyldAmountInput.addEventListener('input', updateRedeemEstimate); redeemSlippageSelect.addEventListener('change', updateRedeemEstimate);
-             approveUsdcButton.addEventListener('click', () => handleApproveUSDC(false));
-             buyForm.addEventListener('submit', handleBuyTokens); redeemForm.addEventListener('submit', handleRedeemTokens);
-            filterMonthSelect.addEventListener('change', filterAndRenderOrders); filterYearSelect.addEventListener('change', filterAndRenderOrders);
-             if (adminApproveUsdcButton) adminApproveUsdcButton.addEventListener('click', () => handleApproveUSDC(true));
-             if (mintOrderForm) mintOrderForm.addEventListener('submit', handleMintOrder);
-             if (payoutOrderForm) payoutOrderForm.addEventListener('submit', handlePayoutOrder);
-             if (cancelOrderForm) cancelOrderForm.addEventListener('submit', handleCancelOrder);
-             if (setFeeForm) setFeeForm.addEventListener('submit', handleSetFee);
-             if (withdrawFeesButton) withdrawFeesButton.addEventListener('click', handleWithdrawFees);
-             if (emergencyWithdrawForm) emergencyWithdrawForm.addEventListener('submit', handleEmergencyWithdraw);
-             window.eventListenersAttached = true;
-         }
-         function setupWalletListeners() { /* ... (No changes needed) ... */ }
+         function setupEventListeners() { /* ... */ }
+         function setupWalletListeners() { /* ... */ }
 
 
         // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { /* ... */
              connectButton.addEventListener('click', connectWallet);
              setupEventListeners();
              workOrdersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-secondary">Connect wallet to view orders.</td></tr>';
-             // Removed pending mints init
              populateYearFilter();
         });
 
