@@ -584,6 +584,7 @@
         let currentProposalDelay = null;
         let checkMintTimeout; // Timeout for debouncing mint check
         let checkPayoutTimeout; // Timeout for debouncing payout check
+        let blockTimestamp = null; // Store latest block timestamp
 
 
         // --- Helper Functions ---
@@ -679,11 +680,11 @@
                 return showStatus('MetaMask is not installed.', 'error');
             }
 
-            // Define Arbitrum One network details
-            const arbitrumNetwork = {
-                chainId: 42161, // Chain ID for Arbitrum One
-                name: "arbitrum",
-            };
+            // Define Arbitrum One network details (disable ENS)
+            // --- FIX: Added ensAddress: null ---
+            const arbitrumNetwork = new ethers.Network("arbitrum", 42161);
+            arbitrumNetwork.ensAddress = null; // Disable ENS
+
 
             const connectBtn = connectButton; // Use existing reference
             const originalConnectText = 'Connect Wallet';
@@ -691,7 +692,7 @@
 
             try {
                 if (typeof ethers === 'undefined') { throw new Error('Ethers.js library not loaded.'); }
-                // --- FIX: Use the defined network when creating the provider ---
+                // --- FIX: Use the modified network when creating the provider ---
                 provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
 
                 // Add listeners ONCE here, if not already attached
@@ -701,6 +702,7 @@
                 }
 
                 // Check current network in MetaMask *before* requesting accounts
+                // --- FIX: Use getNetwork() which should now work correctly ---
                 const currentMetaMaskNetwork = await provider.getNetwork();
                 console.log("MetaMask Network:", currentMetaMaskNetwork);
 
@@ -708,7 +710,7 @@
                      console.log(`Requesting switch to Arbitrum One (Chain ID: ${arbitrumChainId})`);
                      try {
                           await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: arbitrumChainId }] });
-                          // Re-initialize provider after successful switch to ensure it's connected correctly
+                          // Re-initialize provider after successful switch
                           provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
                           console.log("Switched to Arbitrum One successfully.");
                      } catch (switchError) {
@@ -771,7 +773,9 @@
                 console.error("Connection failed:", error);
                  // Try to extract a more specific reason if available
                  let reason = error.message;
-                 if (error.code === 'CALL_EXCEPTION' && error.reason) {
+                 if (error.code === 'UNSUPPORTED_OPERATION' && error.operation?.includes('getEnsAddress')) {
+                     reason = "Network configuration issue (ENS). Please try reloading."; // More specific message
+                 } else if (error.code === 'CALL_EXCEPTION' && error.reason) {
                     reason = error.reason;
                  } else if (error.info?.error?.message) {
                     reason = error.info.error.message;
@@ -788,7 +792,6 @@
                  }
             }
         }
-
         function resetState() {
              userAddress = null; signer = null; provider = null;
              contractOwner = null; allWorkOrders = []; availableYears.clear(); currentProposalDelay = null;
@@ -1201,7 +1204,7 @@
 
         // --- Pending Proposals Logic ---
         async function fetchPendingWorkOrders() {
-            // --- FIX: Added detailed logging and refined logic ---
+             // --- FIX: Use nextWorkOrderId ---
             console.log("Fetching pending work orders...");
             if (!mtyldContract) {
                 console.log("Contract not initialized.");
@@ -1209,40 +1212,39 @@
                 return;
             }
             pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Fetching pending proposals...</td></tr>';
-            let localPendingProposals = []; // Use a local array to build the list
+            let localPendingProposals = [];
             const MAX_PROPOSALS_TO_CHECK = 10;
 
             try {
-                const nextIdBigInt = await mtyldContract.nextProposalId();
-                const nextId = Number(nextIdBigInt); // Convert to number for easier looping
-                console.log(`Next Proposal ID from contract: ${nextId}`);
+                // --- FIX: Fetch nextWorkOrderId as proposal IDs are based on this ---
+                const nextIdBigInt = await mtyldContract.nextWorkOrderId();
+                const nextId = Number(nextIdBigInt);
+                console.log(`Next Work Order ID (used for proposals): ${nextId}`);
 
                 if (nextId <= 1) {
-                    console.log("No proposals created yet (nextId <= 1).");
+                    console.log("No work orders created yet (nextId <= 1).");
                     pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No proposals found.</td></tr>';
-                    pendingWorkOrderProposals = []; // Ensure state is empty
+                    pendingWorkOrderProposals = [];
                     return;
                 }
 
                 let proposalsFoundCount = 0;
-                const proposalChecks = []; // Array to hold promises
+                const proposalChecks = [];
 
-                // Determine the starting ID to check (latest possible proposal ID is nextId - 1)
+                // --- FIX: Use nextWorkOrderId logic ---
                 const startCheckId = nextId - 1;
-                // Determine the ending ID (go back MAX_PROPOSALS_TO_CHECK or until ID 1)
                 const endCheckId = Math.max(1, startCheckId - MAX_PROPOSALS_TO_CHECK + 1);
                 console.log(`Checking proposal IDs from ${startCheckId} down to ${endCheckId}`);
 
 
                 for (let currentId = startCheckId; currentId >= endCheckId; currentId--) {
-                     // Push the promise into the array
                     proposalChecks.push(
                         mtyldContract.pendingMints(BigInt(currentId))
                             .then(proposal => {
                                 console.log(`Checked ID ${currentId}: Exists = ${proposal.exists}`);
                                 if (proposal.exists) {
                                     localPendingProposals.push({
-                                        id: BigInt(currentId), // Keep as BigInt
+                                        id: BigInt(currentId),
                                         grossYield: proposal.grossYield,
                                         description: proposal.description,
                                         proposedAt: proposal.proposedAt
@@ -1252,17 +1254,15 @@
                             })
                             .catch(fetchError => {
                                 console.error(`Error fetching pending mint ${currentId}:`, fetchError);
-                                // Don't stop checking other proposals if one fails
                             })
                     );
                 }
 
-                // Wait for all checks to complete
                 await Promise.all(proposalChecks);
 
                 console.log(`Found ${proposalsFoundCount} pending proposals.`, localPendingProposals);
-                pendingWorkOrderProposals = localPendingProposals; // Update global state *after* all checks
-                renderPendingProposalsTable(); // Render using the updated global state
+                pendingWorkOrderProposals = localPendingProposals;
+                renderPendingProposalsTable();
 
                 if (proposalsFoundCount === 0) {
                      pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found in the last checked range.</td></tr>';
@@ -1271,7 +1271,7 @@
             } catch (error) {
                 console.error("Fetch pending proposals failed:", error);
                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-400">Error fetching pending proposals.</td></tr>';
-                pendingWorkOrderProposals = []; // Clear state on error
+                pendingWorkOrderProposals = [];
             }
         }
 
