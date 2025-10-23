@@ -165,7 +165,7 @@
 
     <nav class="bg-secondary sticky top-0 z-50 shadow-lg mb-8">
         <div class="container mx-auto max-w-7xl p-4 flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-bold">
+            <a href="#" class="text-2xl font-bold">
                 YieldWorks
                 <span class="text-sm font-normal text-text-secondary hidden sm:inline-block ml-2">Simple Buy/Redeem</span>
             </a>
@@ -191,7 +191,7 @@
         </div>
 
         <!-- Protocol Info (Simplified) -->
-        <div id="protocol-info" class="card hidden">
+        <div id="protocol-info" class="card"> <!-- Made visible by default -->
             <h2 class="text-xl font-bold mb-4">Protocol Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div><strong>Token:</strong> <span id="token-name">Loading...</span> (<span id="token-symbol">---</span>)</div>
@@ -200,13 +200,12 @@
                 <div><strong>Contract USDC:</strong> <span id="contract-usdc">Loading...</span> USDC</div>
                 <div><strong>Available for Sale:</strong> <span id="available-mtyld">Loading...</span> MTYLD</div>
                 <div><strong>Redemption Fee:</strong> <span id="redeem-fee-percent-info">Loading...</span>%</div>
-                <!-- Added Proposal Delay display back -->
                  <div><strong>Proposal Delay:</strong> <span id="proposal-delay">Loading...</span></div>
             </div>
         </div>
 
-         <!-- Added Section for Pending Proposals (previously missing in some simplified versions) -->
-         <div id="pending-proposals-section" class="card mt-6 hidden">
+         <!-- Added Section for Pending Proposals -->
+         <div id="pending-proposals-section" class="card mt-6"> <!-- Made visible by default -->
              <h2 class="text-xl font-bold mb-4">Pending Work Order Proposals</h2>
              <div class="overflow-x-auto">
                  <table id="pending-proposals-table">
@@ -220,7 +219,7 @@
                          </tr>
                      </thead>
                      <tbody id="pending-proposals-body">
-                         <tr><td colspan="5" class="text-center py-4 text-text-secondary">Loading pending proposals...</td></tr>
+                         <!-- Initial message set in JS -->
                      </tbody>
                  </table>
              </div>
@@ -228,7 +227,7 @@
 
 
         <!-- Buy / Redeem Section -->
-        <div id="interaction-section" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+        <div id="interaction-section" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden"> <!-- Keep hidden initially -->
             <!-- Buy Card -->
             <div class="card">
                 <h2 class="text-xl font-bold mb-4">Buy MTYLD</h2>
@@ -284,7 +283,7 @@
             </div>
         </div>
 
-        <!-- Admin Panel (Restored Mint + Pause + Emergency Withdraw) -->
+        <!-- Admin Panel -->
         <div id="admin-panel" class="card mt-8 hidden">
             <h2 class="text-2xl font-bold mb-6 text-center text-accent">Admin Panel</h2>
 
@@ -298,7 +297,7 @@
                  </div>
             </div>
 
-            <!-- Mint Section - Restored -->
+            <!-- Mint Section -->
              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <!-- Propose Mint Work Order -->
                 <form id="propose-mint-form" class="bg-tertiary p-4 rounded-lg border border-border-color">
@@ -329,7 +328,7 @@
              </div>
              <!-- End Mint Section -->
 
-             <!-- Emergency Withdraw (Kept as requested before) -->
+             <!-- Emergency Withdraw -->
              <form id="emergency-withdraw-form" class="bg-tertiary p-4 rounded-lg border border-border-color mt-6">
                  <h3 class="text-lg font-semibold mb-3">Emergency Withdraw (Owner Only)</h3>
                  <p class="text-xs text-text-secondary mb-3">Withdraw non-USDC ERC20 tokens accidentally sent to this contract.</p>
@@ -356,10 +355,11 @@
     <script type="text/javascript">
         // --- CONFIGURATION ---
         const contractAddress = "0xae2C05f01DBCC6C8AF40EbFA3339Af10dbECdFD0";
-        // --- FULL ABI - Restored ---
         const contractABI = [{"inputs":[{"internalType":"address","name":"initialOwner","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"target","type":"address"}],"name":"AddressCallToNonContract","type":"error"},{"inputs":[],"name":"AddressEmptyRevertData","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"AddressInsufficientBalance","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"inputs":[],"name":"ReentrancyGuardReentrantCall","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"burner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Burn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"EmergencyWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"FeeChangeExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"FeeChangeProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FeesWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"MintExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"proposalId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"uint256","name":"proposedAt","type":"uint256"}],"name":"MintProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"reserveAmount","type":"uint256"}],"name":"ReserveFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"usdcAmount","type":"uint256"}],"name":"TokensRedeemed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"WorkOrderCancelled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"grossYield","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"indexed":false,"internalType":"string","name":"description","type":"string"}],"name":"WorkOrderMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"WorkOrderPaid","type":"event"},{"inputs":[],"name":"PROPOSAL_DELAY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RESERVE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"TOKENIZATION_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"},{"internalType":"uint256","name":"minTokensOut","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"executeFeeChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"proposalId","type":"uint256"}],"name":"executeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"}],"name":"getRedemptionValue","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount","type":"uint256"}],"name":"getTokensForUSDC","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"startId","type":"uint256"},{"internalType":"uint256","name":"endId","type":"uint256"}],"name":"getWorkOrderRange","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"internalType":"struct MechanicalTempYieldToken.WorkOrder[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextProposalId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"payoutAmount","type":"uint256"}],"name":"payoutWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"pendingFeeChange","outputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"pendingMints","outputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"proposedAt","type":"uint256"},{"internalType":"bool","name":"exists","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"proposeFeeChange","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"name":"proposeMint","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"mtyldAmount","type":"uint256"},{"internalType":"uint256","name":"minUsdcOut","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"redemptionFeePercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"tokenizedValue","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}];
         const usdcAddress = "0xaf8d065e77c8cC2239327C5EDb3A432268e5831"; // Arbitrum Native USDC
         const arbitrumChainId = '0xa4b1'; // 42161 in hex
+        // --- Added: Public Arbitrum RPC URL ---
+        const arbitrumRpcUrl = "https://arb1.arbitrum.io/rpc";
 
         // --- DOM Elements ---
         const connectButton = document.getElementById('connect-button');
@@ -378,7 +378,7 @@
         const mtyldPriceSpan = document.getElementById('mtyld-price');
         const availableMtyldSpan = document.getElementById('available-mtyld');
         const redeemFeePercentInfoSpan = document.getElementById('redeem-fee-percent-info');
-        const proposalDelaySpan = document.getElementById('proposal-delay'); // Restored
+        const proposalDelaySpan = document.getElementById('proposal-delay');
 
         // Buy Form Elements
         const buyForm = document.getElementById('buy-form');
@@ -400,40 +400,43 @@
         const redeemFeePercentFormSpan = document.getElementById('redeem-fee-percent-form');
         const redeemMtyldBalanceSpan = document.getElementById('redeem-mtyld-balance');
 
-        // Admin Panel Elements (Restored Mint + Pause + Emergency)
+        // Admin Panel Elements
         const adminPanelDiv = document.getElementById('admin-panel');
-        const proposeMintForm = document.getElementById('propose-mint-form'); // Restored
-        const executeMintIdInput = document.getElementById('execute-mint-id'); // Restored
-        const pendingMintDetailsDiv = document.getElementById('pending-mint-details'); // Restored
-        const executeMintButton = document.getElementById('execute-mint-button'); // Restored
+        const proposeMintForm = document.getElementById('propose-mint-form');
+        const executeMintIdInput = document.getElementById('execute-mint-id');
+        const pendingMintDetailsDiv = document.getElementById('pending-mint-details');
+        const executeMintButton = document.getElementById('execute-mint-button');
         const emergencyWithdrawForm = document.getElementById('emergency-withdraw-form');
         const pauseButton = document.getElementById('pause-button');
         const unpauseButton = document.getElementById('unpause-button');
         const pauseStatusIndicator = document.getElementById('pause-status-indicator');
         const pausedOverlay = document.getElementById('paused-overlay');
 
-        // Added Pending Proposals Elements (needed for display)
+        // Pending Proposals Elements
         const pendingProposalsSectionDiv = document.getElementById('pending-proposals-section');
         const pendingProposalsTableBody = document.getElementById('pending-proposals-body');
 
 
         // --- State Variables ---
-        let provider = null;
+        let browserProvider = null; // Renamed for clarity
+        let staticProvider = null; // Added static provider
         let signer = null;
         let userAddress = null;
-        let mtyldContract = null;
-        let usdcContract = null;
+        let mtyldContract = null; // Will hold signer-connected instance
+        let usdcContract = null; // Will hold signer-connected instance
+        let mtyldContractReadOnly = null; // Added read-only instance
+        let usdcContractReadOnly = null; // Added read-only instance
         let contractOwner = null;
         let usdcDecimals = 6;
         let mtyldDecimals = 18;
         let blockTimestamp = null;
-        let currentProposalDelay = null; // Restored
-        let checkMintTimeout; // Restored
-        let pendingWorkOrderProposals = []; // Added back state for pending proposals display
+        let currentProposalDelay = null;
+        let checkMintTimeout;
+        let pendingWorkOrderProposals = [];
 
 
         // --- Helper Functions ---
-        // showStatus, setLoading, shortenAddress, formatUnits, parseUnits, formatSeconds remain the same
+        // showStatus, setLoading, shortenAddress, formatUnits, parseUnits, formatDate, formatSeconds remain the same
         function showStatus(message, type = 'info') {
              const el = document.createElement('div');
              el.className = `alert alert-${type}`;
@@ -481,7 +484,6 @@
                    return null;
               }
          }
-         // Added back formatDate and formatSeconds
          function formatDate(timestamp) {
             if (!timestamp || timestamp === 0n) return { dateStr: 'N/A', fullDate: null };
             try {
@@ -509,88 +511,163 @@
 
         // --- Blockchain Interaction ---
 
+        // --- Initialize Static Provider and Read-Only Contracts ---
+        function initializeStaticProvider() {
+            try {
+                console.log("Initializing StaticJsonRpcProvider with URL:", arbitrumRpcUrl);
+                // Ensure ethers.StaticJsonRpcProvider is available
+                if (typeof ethers === 'undefined' || !ethers.StaticJsonRpcProvider) {
+                     throw new Error("Ethers.js or StaticJsonRpcProvider not loaded");
+                }
+                staticProvider = new ethers.StaticJsonRpcProvider(arbitrumRpcUrl, 42161);
+                console.log("Static provider instance:", staticProvider);
+
+                // Create read-only instances
+                 if (!ethers.Contract) { throw new Error("Ethers.js Contract class not loaded"); }
+                mtyldContractReadOnly = new ethers.Contract(contractAddress, contractABI, staticProvider);
+                const usdcAbiMinimal = ["function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)","function allowance(address, address) view returns (uint256)","function approve(address, uint256) returns (bool)"];
+                usdcContractReadOnly = new ethers.Contract(usdcAddress, usdcAbiMinimal, staticProvider);
+                console.log("Static provider and read-only contracts initialized successfully.");
+                return true;
+            } catch (error) {
+                console.error("Failed to initialize static provider:", error);
+                showStatus(`Initialization Error: ${error.message}. Cannot load contract data.`, "error");
+                connectButton.disabled = true;
+                connectButton.textContent = "Initialization Error";
+                return false;
+            }
+        }
+
+        async function fetchInitialData() {
+            if (!staticProvider || !mtyldContractReadOnly || !usdcContractReadOnly) {
+                console.error("Static provider/contracts not ready for initial fetch.");
+                showStatus("Initialization error prevented data loading.", "error");
+                pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-400">Initialization Error</td></tr>';
+                return;
+            }
+            console.log("Fetching initial decimals and protocol info using static provider...");
+            pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Loading...</td></tr>';
+            try {
+                 console.log("Fetching decimals via static provider...");
+                 const [mtyldDec, usdcDec] = await Promise.all([
+                     mtyldContractReadOnly.decimals(),
+                     usdcContractReadOnly.decimals()
+                 ]);
+                 mtyldDecimals = Number(mtyldDec);
+                 usdcDecimals = Number(usdcDec);
+                 console.log(`Initial Decimals: MTYLD=${mtyldDecimals}, USDC=${usdcDecimals}`);
+
+                 console.log("Fetching protocol info via static provider...");
+                 await updateProtocolInfo(true); // Pass flag to use read-only contract
+                 console.log("Fetching pending work orders via static provider...");
+                 await fetchPendingWorkOrders(true); // Pass flag to use read-only contract
+
+                 protocolInfoDiv.classList.remove('hidden');
+                 pendingProposalsSectionDiv.classList.remove('hidden');
+                 console.log("Initial data loaded and displayed.");
+
+            } catch (error) {
+                 console.error("Error fetching initial data:", error);
+                 // Check specifically for ENS-like errors during initial fetch
+                 if (error.code === 'UNSUPPORTED_OPERATION' && error.operation?.includes('getEnsAddress')) {
+                    showStatus("Network configuration error during initial load. Please ensure MetaMask is set to Arbitrum and try refreshing.", "error");
+                    console.error("ENS error during initial static load - this shouldn't happen with StaticJsonRpcProvider unless contract address itself is an ENS name?");
+                 } else {
+                    showStatus("Failed to load initial contract data. Check console.", "error");
+                 }
+                 tokenNameSpan.textContent = 'Error';
+                 tokenSymbolSpan.textContent = 'Err';
+                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-400">Error loading proposals.</td></tr>';
+            }
+        }
+        // --- END: Static Provider Init ---
+
+
         async function connectWallet() {
-            // connectWallet remains the same
              if (typeof window.ethereum === 'undefined') { return showStatus('MetaMask is not installed.', 'error'); }
+
              const arbitrumNetwork = new ethers.Network("arbitrum", 42161);
              arbitrumNetwork.ensAddress = null;
+
              const connectBtn = connectButton;
              const originalConnectText = 'Connect Wallet';
              setLoading(connectBtn, true, originalConnectText);
-             console.log("Attempting wallet connection..."); // Added log
+             console.log("Attempting wallet connection...");
              try {
-                 if (typeof ethers === 'undefined') { throw new Error('Ethers.js library not loaded.'); }
-                 provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
-                 console.log("Provider created for Arbitrum (ENS disabled)."); // Added log
+                 if (typeof ethers === 'undefined' || !ethers.BrowserProvider) { throw new Error('Ethers.js or BrowserProvider not loaded'); }
+
+                 // Initialize BrowserProvider
+                 browserProvider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
+                 console.log("BrowserProvider created.");
+
                  if (!window.walletListenersAttached) { setupWalletListeners(); window.walletListenersAttached = true; }
-                 const currentMetaMaskNetwork = await provider.getNetwork();
-                 console.log("Detected MetaMask Network:", currentMetaMaskNetwork); // Added log
+
+                 const currentMetaMaskNetwork = await browserProvider.getNetwork();
+                 console.log("Detected MetaMask Network via BrowserProvider:", currentMetaMaskNetwork);
                  if (currentMetaMaskNetwork.chainId !== BigInt(arbitrumChainId)) {
-                      console.log(`Requesting switch to Arbitrum One (Chain ID: ${arbitrumChainId})`); // Added log
+                      console.log(`Requesting switch to Arbitrum One (Chain ID: ${arbitrumChainId})`);
                       try {
                            await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: arbitrumChainId }] });
-                           provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
-                           console.log("Switched to Arbitrum One successfully."); // Added log
-                      } catch (switchError) {
-                          console.error("Switch Network Error:", switchError); // Added log
+                           browserProvider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork); // Re-init needed
+                           console.log("Switched to Arbitrum One successfully.");
+                      } catch (switchError) { /* ... (switch error handling) ... */
+                          console.error("Switch Network Error:", switchError);
                            if (switchError.code === 4902) {
-                                console.log("Arbitrum One not found, requesting add."); // Added log
+                                console.log("Arbitrum One not found, requesting add.");
                                 try {
                                      await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: arbitrumChainId, chainName: 'Arbitrum One', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://arb1.arbitrum.io/rpc'], blockExplorerUrls: ['https://arbiscan.io'] }] });
-                                     provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
-                                     console.log("Added Arbitrum One successfully."); // Added log
+                                     browserProvider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork); // Re-init needed
+                                     console.log("Added Arbitrum One successfully.");
                                 } catch (addError) { console.error("Add Network Error:", addError); throw new Error('Please add Arbitrum One network manually and reconnect.'); }
                            } else { throw new Error('Please switch MetaMask to the Arbitrum One network.'); }
-                      }
+                       }
                  }
-                 console.log("Requesting accounts...");
-                 await provider.send("eth_requestAccounts", []);
-                 signer = await provider.getSigner();
+
+                 console.log("Requesting accounts via BrowserProvider...");
+                 signer = await browserProvider.getSigner();
                  userAddress = await signer.getAddress();
                  console.log("Account connected:", userAddress);
+
+                 // --- Create Signer-Connected Contracts ---
                  mtyldContract = new ethers.Contract(contractAddress, contractABI, signer);
                  const usdcAbiMinimal = ["function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)","function allowance(address, address) view returns (uint256)","function approve(address, uint256) returns (bool)"];
                  usdcContract = new ethers.Contract(usdcAddress, usdcAbiMinimal, signer);
-                 console.log("Contracts initialized.");
-                 console.log("Fetching decimals...");
-                 const [mtyldDec, usdcDec] = await Promise.all([ mtyldContract.decimals(), usdcContract.decimals() ]).catch(decError => { console.error("Error fetching decimals:", decError); showStatus("Error fetching token decimals. Using defaults.", "warning"); return [18, 6]; });
-                 mtyldDecimals = Number(mtyldDec || 18);
-                 usdcDecimals = Number(usdcDec || 6);
-                 console.log(`Using Decimals: MTYLD=${mtyldDecimals}, USDC=${usdcDecimals}`);
+                 console.log("Signer-connected contracts initialized.");
+                 // ---
+
                  connectButton.textContent = shortenAddress(userAddress);
                  connectButton.disabled = true;
                  walletInfoDiv.classList.remove('hidden');
-                 protocolInfoDiv.classList.remove('hidden');
                  interactionSectionDiv.classList.remove('hidden');
-                 pendingProposalsSectionDiv.classList.remove('hidden'); // Show pending proposals section
-                 console.log("Updating UI elements...");
-                 await updateWalletInfo();
-                 await updateProtocolInfo();
-                 await fetchPendingWorkOrders(); // Fetch pending proposals for display
-                 await checkAdminStatus();
+
+                 console.log("Updating UI elements with signer data...");
+                 await updateWalletInfo(); // Update balances
+                 await updateProtocolInfo(false); // Re-fetch with SIGNER contract
+                 await fetchPendingWorkOrders(false); // Re-fetch with SIGNER contract
+                 await checkAdminStatus(); // Check admin with SIGNER contract
+
                  showStatus('Wallet connected successfully!', 'success');
                  console.log("Connection process complete.");
-             } catch (error) {
+
+             } catch (error) { /* ... (error handling) ... */
                  console.error("Connection failed:", error);
                   let reason = error.message;
-                  if (error.code === 'UNSUPPORTED_OPERATION' && error.operation?.includes('getEnsAddress')) { reason = "Network configuration issue (ENS). Please try reloading."; }
+                  if (error.code === 'UNSUPPORTED_OPERATION' && error.operation?.includes('getEnsAddress')) { reason = "Network/ENS configuration error during connection. Try refreshing."; } // Refined message
                   else if (error.code === 'CALL_EXCEPTION' && error.reason) { reason = error.reason; }
                   else if (error.info?.error?.message) { reason = error.info.error.message; }
                   showStatus(`Wallet connection failed: ${reason}`, 'error');
-                 resetState();
+                 resetState(false);
              } finally {
                   if (userAddress) { setLoading(connectBtn, false, shortenAddress(userAddress)); connectBtn.disabled = true; }
                   else { setLoading(connectBtn, false, originalConnectText); connectBtn.disabled = false; }
              }
         }
 
-        function resetState() {
-             userAddress = null; signer = null; provider = null;
+        function resetState(isFullReset = true) { // Added flag
+             userAddress = null; signer = null; browserProvider = null;
              mtyldContract = null; usdcContract = null; contractOwner = null;
              walletInfoDiv.classList.add('hidden');
-             protocolInfoDiv.classList.add('hidden');
              interactionSectionDiv.classList.add('hidden');
-             pendingProposalsSectionDiv.classList.add('hidden'); // Hide pending proposals
              adminPanelDiv.classList.add('hidden');
              networkNameSpan.textContent = 'Loading...';
              userAddressSpan.textContent = 'Loading...';
@@ -600,42 +677,47 @@
              connectButton.disabled = false;
              if(buyForm) buyForm.reset();
              if(redeemForm) redeemForm.reset();
-             estimatedMtyldSpan.textContent = '0.00';
-             minTokensOutInput.value = '0';
-             estimatedUsdcSpan.textContent = '0.00';
-             minUsdcOutInput.value = '0';
+             estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0';
+             estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0';
              if(buyButton) buyButton.disabled = true;
-             buyUsdcBalanceSpan.textContent = '--';
-             redeemMtyldBalanceSpan.textContent = '--';
-             tokenNameSpan.textContent = 'Loading...';
-             tokenSymbolSpan.textContent = '---';
-             mtyldPriceSpan.textContent = 'Loading...';
-             contractAddressLink.textContent = 'Loading...';
-             contractUsdcSpan.textContent = 'Loading...';
-             availableMtyldSpan.textContent = 'Loading...';
-             redeemFeePercentInfoSpan.textContent = 'Loading...';
-             redeemFeePercentFormSpan.textContent = '--';
-             proposalDelaySpan.textContent = 'Loading...';
-             pauseStatusIndicator.classList.add('hidden');
-             pausedOverlay.classList.add('hidden');
+             buyUsdcBalanceSpan.textContent = '--'; redeemMtyldBalanceSpan.textContent = '--';
+             pauseStatusIndicator.classList.add('hidden'); pausedOverlay.classList.add('hidden');
              if (proposeMintForm) proposeMintForm.reset();
              if (executeMintIdInput) executeMintIdInput.value = '';
-             pendingMintDetailsDiv.classList.add('hidden');
-             pendingMintDetailsDiv.innerHTML = '';
+             pendingMintDetailsDiv.classList.add('hidden'); pendingMintDetailsDiv.innerHTML = '';
              if (executeMintButton) executeMintButton.disabled = true;
-             pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet first.</td></tr>'; // Reset pending table message
 
+             if (isFullReset) {
+                 protocolInfoDiv.classList.add('hidden');
+                 pendingProposalsSectionDiv.classList.add('hidden');
+                 tokenNameSpan.textContent = 'Loading...'; tokenSymbolSpan.textContent = '---';
+                 mtyldPriceSpan.textContent = 'Loading...'; contractAddressLink.textContent = 'Loading...';
+                 contractUsdcSpan.textContent = 'Loading...'; availableMtyldSpan.textContent = 'Loading...';
+                 redeemFeePercentInfoSpan.textContent = 'Loading...'; redeemFeePercentFormSpan.textContent = '--';
+                 proposalDelaySpan.textContent = 'Loading...';
+                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Initializing...</td></tr>';
+             } else {
+                 pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet to refresh.</td></tr>';
+             }
         }
 
+
         async function checkAdminStatus() {
-             // checkAdminStatus remains the same
-             if (!mtyldContract || !userAddress) return;
+            // Use signer contract if available, otherwise read-only
+             const contractInstance = mtyldContract || mtyldContractReadOnly;
+             // Ensure userAddress is set before checking owner
+             if (!contractInstance || !userAddress) {
+                adminPanelDiv.classList.add('hidden');
+                console.log("Cannot check admin status: contract or user address not available.");
+                return;
+             }
             try {
-                contractOwner = await mtyldContract.owner();
+                contractOwner = await contractInstance.owner(); // Fetch owner
+                console.log("Contract Owner:", contractOwner);
                 if (contractOwner && userAddress.toLowerCase() === contractOwner.toLowerCase()) {
                     adminPanelDiv.classList.remove('hidden');
-                    console.log("Admin connected - showing panel with mint functions");
-                    await updateAdminInfo(); // Update pause buttons and check pending mints/fees
+                    console.log("Admin connected - showing panel");
+                    await updateAdminInfo();
                 } else {
                      adminPanelDiv.classList.add('hidden');
                      console.log("Connected user is not the admin");
@@ -643,46 +725,56 @@
             } catch (error) {
                 console.error("Error checking admin status:", error);
                  showStatus('Could not verify admin status.', 'error');
+                 adminPanelDiv.classList.add('hidden'); // Hide on error
             }
         }
 
         async function updateAdminInfo() {
-             // updateAdminInfo remains the same
-            if (!mtyldContract || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
+            // Use signer contract if available, otherwise read-only (for pause status)
+             const contractInstance = mtyldContract || mtyldContractReadOnly;
+            // Add full check including contractOwner being set
+            if (!contractInstance || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
              try {
-                 const isPaused = await mtyldContract.paused();
+                 const isPaused = await contractInstance.paused();
                  updatePauseButtons(isPaused);
-                 updatePauseUI(isPaused);
-                 await checkPendingProposals();
+                 updatePauseUI(isPaused); // Keep this to update overall UI lock
+                 // Check pending mints/fees specific to admin view using the appropriate contract
+                 await checkPendingProposals(contractInstance);
              } catch (error) {
-                 console.error("Error fetching admin info (pause/proposals):", error);
+                 console.error("Error fetching admin info:", error);
                  if(pauseButton) pauseButton.disabled = true;
                  if(unpauseButton) unpauseButton.disabled = true;
              }
         }
 
-         async function checkPendingProposals() {
-             // checkPendingProposals remains the same
-             if (!mtyldContract || !contractOwner || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
+        async function checkPendingProposals(contractToCheck) { // Accept contract instance
+            // Use passed contract instance (signer or read-only)
+             if (!contractToCheck || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return;
              console.log("Checking pending proposals for admin panel...");
              try {
-                 if (provider) {
-                    try { const block = await provider.getBlock("latest"); blockTimestamp = block ? BigInt(block.timestamp) : null; }
-                    catch (blockError){ console.warn("Could not fetch latest block timestamp:", blockError); blockTimestamp = null; }
-                 } else { blockTimestamp = null; }
-                 checkPendingMintDetails();
+                 // Use the connected provider (browser or static) to get block
+                 const currentProvider = browserProvider || staticProvider;
+                 if (currentProvider) {
+                    try { const block = await currentProvider.getBlock("latest"); blockTimestamp = block ? BigInt(block.timestamp) : null; console.log("Current Block Timestamp:", blockTimestamp?.toString());}
+                    catch (blockError){ console.warn("Could not fetch block timestamp:", blockError); blockTimestamp = null; }
+                 } else { blockTimestamp = null; console.log("No provider available for block timestamp.");}
+
+                 // Pass the contract instance to the details checker
+                 checkPendingMintDetails(contractToCheck);
              } catch (error) {
                  console.error("Error checking pending proposals:", error);
-                 showStatus("Could not fetch pending proposal status.", "error");
-                 pendingMintDetailsDiv.classList.add('hidden');
-                 pendingMintDetailsDiv.innerHTML = '<p class="text-red-400">Error</p>';
+                 showStatus("Could not fetch proposal status.", "error");
+                 if(pendingMintDetailsDiv){
+                     pendingMintDetailsDiv.classList.add('hidden');
+                     pendingMintDetailsDiv.innerHTML = '<p class="text-red-400">Error</p>';
+                 }
                  if(executeMintButton) executeMintButton.disabled = true;
              }
          }
 
-         async function checkPendingMintDetails() {
-              // checkPendingMintDetails remains the same
-              if (!mtyldContract || !executeMintIdInput || !executeMintIdInput.value) {
+         async function checkPendingMintDetails(contractToCheck) { // Accept contract instance
+              // Use passed contract instance
+              if (!contractToCheck || !executeMintIdInput || !executeMintIdInput.value) { /* ... (reset UI remains same) ... */
                     if(pendingMintDetailsDiv) pendingMintDetailsDiv.classList.add('hidden');
                     if(pendingMintDetailsDiv) pendingMintDetailsDiv.innerHTML = '';
                     if(executeMintButton) executeMintButton.disabled = true;
@@ -691,51 +783,87 @@
                const proposalIdStr = executeMintIdInput.value;
                let proposalId;
                try { proposalId = BigInt(proposalIdStr); if (proposalId <= 0n) throw new Error("ID must be positive"); }
-               catch { if(pendingMintDetailsDiv) pendingMintDetailsDiv.classList.remove('hidden'); if(pendingMintDetailsDiv) pendingMintDetailsDiv.innerHTML = '<p class="text-yellow-400">Invalid ID</p>'; if(executeMintButton) executeMintButton.disabled = true; return; }
+               catch { /* ... (invalid ID UI remains same) ... */
+                   if(pendingMintDetailsDiv) pendingMintDetailsDiv.classList.remove('hidden');
+                   if(pendingMintDetailsDiv) pendingMintDetailsDiv.innerHTML = '<p class="text-yellow-400">Invalid ID</p>';
+                   if(executeMintButton) executeMintButton.disabled = true;
+                   return;
+                }
                console.log(`Checking details for pending mint ID: ${proposalId}`);
                try {
-                    const mintProposal = await mtyldContract.pendingMints(proposalId);
-                    console.log(`Proposal ${proposalId} exists: ${mintProposal.exists}`);
+                    // Use the passed contract instance
+                    const mintProposal = await contractToCheck.pendingMints(proposalId);
+                    console.log(`Proposal ${proposalId} exists: ${mintProposal.exists}, Data:`, mintProposal); // Log full data
                     if (mintProposal.exists) {
                          pendingMintDetailsDiv.classList.remove('hidden');
-                         const proposedTime = new Date(Number(mintProposal.proposedAt) * 1000);
+                         const proposedAtSeconds = Number(mintProposal.proposedAt);
+                         const proposedTime = new Date(proposedAtSeconds * 1000);
                          const now = new Date();
                          const delaySeconds = Number(currentProposalDelay || 0n);
-                         const canExecuteMint = blockTimestamp ? blockTimestamp >= mintProposal.proposedAt + BigInt(delaySeconds) : false;
-                         const canExecuteMintEstimate = (now.getTime() / 1000) >= Number(mintProposal.proposedAt) + delaySeconds;
-                         pendingMintDetailsDiv.innerHTML = ` <p><strong>ID:</strong> ${proposalId}</p> <p><strong>Yield:</strong> ${parseFloat(formatUnits(mintProposal.grossYield, usdcDecimals)).toFixed(2)} USDC</p> <p><strong>Desc:</strong> ${mintProposal.description}</p> <p><strong>Proposed At:</strong> ${formatDate(mintProposal.proposedAt).dateStr}</p> <p><strong>Executable:</strong> ${canExecuteMint || canExecuteMintEstimate ? '<span class="text-green-400">Yes</span>' : 'No (Waiting)'}</p> `;
-                         executeMintButton.disabled = !(canExecuteMint || canExecuteMintEstimate);
-                         console.log(`Proposal ${proposalId} details displayed. Executable: ${executeMintButton.disabled ? 'No':'Yes'}`);
+                         const executionTime = proposedAtSeconds + delaySeconds;
+                         const executionDate = new Date(executionTime * 1000);
+
+                         // More precise check using available blockTimestamp
+                         const canExecute = blockTimestamp ? blockTimestamp >= mintProposal.proposedAt + BigInt(delaySeconds) : false;
+                         // Fallback estimate using local time
+                         const canExecuteEstimate = (now.getTime() / 1000) >= executionTime;
+
+                         console.log(` - Proposed At: ${proposedTime.toISOString()} (${proposedAtSeconds})`);
+                         console.log(` - Delay: ${delaySeconds}s`);
+                         console.log(` - Execution Time: ${executionDate.toISOString()} (${executionTime})`);
+                         console.log(` - Current Block Time: ${blockTimestamp ? new Date(Number(blockTimestamp)*1000).toISOString() : 'N/A'} (${blockTimestamp?.toString()})`);
+                         console.log(` - Local Time: ${now.toISOString()} (${now.getTime()/1000})`);
+                         console.log(` - Can Execute (Block): ${canExecute}, Can Execute (Estimate): ${canExecuteEstimate}`);
+
+
+                         pendingMintDetailsDiv.innerHTML = `
+                           <p><strong>ID:</strong> ${proposalId}</p>
+                           <p><strong>Yield:</strong> ${parseFloat(formatUnits(mintProposal.grossYield, usdcDecimals)).toFixed(2)} USDC</p>
+                           <p><strong>Desc:</strong> ${mintProposal.description}</p>
+                           <p><strong>Proposed At:</strong> ${formatDate(mintProposal.proposedAt).dateStr}</p>
+                           <p><strong>Executable At:</strong> ${executionDate.toLocaleString()}</p>
+                           <p><strong>Executable Now:</strong> ${canExecute || canExecuteEstimate ? '<span class="text-green-400">Yes</span>' : '<span class="text-yellow-400">No (Waiting)</span>'}</p>
+                         `;
+                         // Enable button only if executable
+                         executeMintButton.disabled = !(canExecute || canExecuteEstimate);
+                         console.log(`Proposal ${proposalId} details displayed. Executable button enabled: ${!executeMintButton.disabled}`);
                     } else {
+                         /* ... (no proposal found UI remains same) ... */
                          pendingMintDetailsDiv.classList.remove('hidden');
                          pendingMintDetailsDiv.innerHTML = '<p class="text-text-secondary text-center">No pending mint found for this ID.</p>';
                          executeMintButton.disabled = true;
                          console.log(`No pending mint found for ID ${proposalId}`);
                     }
-               } catch (error) {
+               } catch (error) { /* ... (error handling remains same) ... */
                     console.error(`Error checking pending mint ${proposalId}:`, error);
                     pendingMintDetailsDiv.classList.remove('hidden');
                     pendingMintDetailsDiv.innerHTML = '<p class="text-red-400 text-center">Error fetching details.</p>';
                     executeMintButton.disabled = true;
-               }
+                }
           }
 
 
         async function updateWalletInfo() {
-             // updateWalletInfo remains the same
-             if (!provider || !userAddress || !usdcContract || !mtyldContract) return;
+             // Now must use signer-connected contracts if available
+             const currentUsdcContract = usdcContract || usdcContractReadOnly;
+             const currentMtyldContract = mtyldContract || mtyldContractReadOnly;
+             if (!browserProvider || !userAddress || !currentUsdcContract || !currentMtyldContract) return; // Need browserProvider for network name
              console.log("Updating wallet info display (including balances)...");
              try {
-                const network = await provider.getNetwork();
+                const network = await browserProvider.getNetwork(); // Get network from browser provider
                 networkNameSpan.textContent = network.name === 'arbitrum' ? 'Arbitrum One' : network.name;
                 userAddressSpan.textContent = userAddress;
-                const [usdcBal, mtyldBal] = await Promise.all([ usdcContract.balanceOf(userAddress), mtyldContract.balanceOf(userAddress) ]);
+                // Fetch balances using signer contract if connected, else read-only
+                const [usdcBal, mtyldBal] = await Promise.all([
+                    currentUsdcContract.balanceOf(userAddress),
+                    currentMtyldContract.balanceOf(userAddress)
+                ]);
                 usdcBalanceSpan.textContent = `${parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2)} USDC`;
                 mtyldBalanceSpan.textContent = `${parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4)} MTYLD`;
                 buyUsdcBalanceSpan.textContent = parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2);
                 redeemMtyldBalanceSpan.textContent = parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4);
                 console.log(`Displaying Network: ${networkNameSpan.textContent}, Address: ${userAddressSpan.textContent}, USDC: ${usdcBalanceSpan.textContent}, MTYLD: ${mtyldBalanceSpan.textContent}`);
-             } catch (error) {
+             } catch (error) { /* ... (error handling remains same) ... */
                 console.error("Error updating wallet info display:", error);
                 networkNameSpan.textContent = networkNameSpan.textContent || 'Error';
                 userAddressSpan.textContent = userAddressSpan.textContent || 'Error';
@@ -745,25 +873,32 @@
              }
         }
 
-        async function updateProtocolInfo() {
-             // Added PROPOSAL_DELAY fetch back
-              if (!mtyldContract || !usdcContract) return;
-              console.log("Updating protocol info...");
+        async function updateProtocolInfo(useReadOnly = false) { // Added flag
+             // Use read-only instance if specified or if signer not ready
+             const contractInstance = useReadOnly ? mtyldContractReadOnly : (mtyldContract || mtyldContractReadOnly);
+             const usdcInstance = useReadOnly ? usdcContractReadOnly : (usdcContract || usdcContractReadOnly);
+             if (!contractInstance || !usdcInstance) return; // Check if instances are available
+             console.log(`Updating protocol info... (Using ${useReadOnly || !mtyldContract ? 'read-only' : 'signer'} contract)`);
              try {
-                 const block = await provider.getBlock("latest");
-                 blockTimestamp = block ? BigInt(block.timestamp) : null;
+                 // Use static or browser provider for block timestamp
+                 const currentProvider = browserProvider || staticProvider;
+                 if (currentProvider) {
+                    try { const block = await currentProvider.getBlock("latest"); blockTimestamp = block ? BigInt(block.timestamp) : null; }
+                    catch(e){ console.warn("Could not get block timestamp", e); blockTimestamp = null;}
+                 } else { blockTimestamp = null; }
 
-                 const [name, symbol, supply, contractUSDCBalance, available, feePercent, isPaused, delaySeconds] = await Promise.all([ // Added delaySeconds
-                       mtyldContract.name(),
-                       mtyldContract.symbol(),
-                       mtyldContract.totalSupply(),
-                       mtyldContract.contractPaymentTokenBalance(),
-                       mtyldContract.availableTokens(),
-                       mtyldContract.redemptionFeePercentage(),
-                       mtyldContract.paused(),
-                       mtyldContract.PROPOSAL_DELAY() // Fetch delay
+
+                 const [name, symbol, supply, contractUSDCBalance, available, feePercent, isPaused, delaySeconds] = await Promise.all([
+                       contractInstance.name(),
+                       contractInstance.symbol(),
+                       contractInstance.totalSupply(),
+                       contractInstance.contractPaymentTokenBalance(), // Read USDC balance held by main contract
+                       contractInstance.availableTokens(), // Read MTYLD balance held by main contract
+                       contractInstance.redemptionFeePercentage(),
+                       contractInstance.paused(),
+                       contractInstance.PROPOSAL_DELAY()
                   ]);
-
+                  // ... (rest of the UI updates remain the same) ...
                   tokenNameSpan.textContent = name;
                   tokenSymbolSpan.textContent = symbol;
                   contractAddressLink.textContent = shortenAddress(contractAddress);
@@ -772,12 +907,9 @@
                   availableMtyldSpan.textContent = parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4);
                   redeemFeePercentInfoSpan.textContent = feePercent.toString();
                   redeemFeePercentFormSpan.textContent = feePercent.toString();
-                  currentProposalDelay = delaySeconds; // Store delay
-                  proposalDelaySpan.textContent = delaySeconds.toString() + ` (${formatSeconds(delaySeconds)})`; // Display formatted delay
-
-
+                  currentProposalDelay = delaySeconds;
+                  proposalDelaySpan.textContent = delaySeconds.toString() + ` (${formatSeconds(delaySeconds)})`;
                   updatePauseUI(isPaused);
-
                   let price = 0;
                   if (supply > 0n && contractUSDCBalance >= 0n) {
                        const scaleFactor = 10n**18n;
@@ -785,52 +917,52 @@
                        price = parseFloat(formatUnits(priceBigInt, usdcDecimals));
                   }
                   mtyldPriceSpan.textContent = price > 0 ? price.toFixed(6) : 'N/A';
-
                   console.log(`Protocol Info Updated: Name=${name}, Symbol=${symbol}, Price=${mtyldPriceSpan.textContent}, Paused=${isPaused}, Delay=${currentProposalDelay}`);
-
                   updateBuyEstimate();
                   updateRedeemEstimate();
-
-                  if (contractOwner && userAddress && userAddress.toLowerCase() === contractOwner.toLowerCase()){
-                       await checkPendingProposals();
+                  // Check admin proposals only if using signer contract or if admin status already confirmed
+                  if (!useReadOnly || contractOwner) {
+                     await checkAdminStatus(); // Re-check admin and proposals
                   }
-
-
-             } catch (error) {
+             } catch (error) { /* ... (error handling remains same) ... */
                   console.error("Error updating protocol info:", error);
                   showStatus('Failed to fetch protocol data.', 'error');
                   tokenNameSpan.textContent = 'Error';
-                  proposalDelaySpan.textContent = 'Error'; // Show error for delay too
+                  proposalDelaySpan.textContent = 'Error';
              }
          }
 
 
         // --- Buy/Redeem Logic ---
-        // updateBuyEstimate, updateRedeemEstimate, checkAllowanceAndEnableBuy, handleApproveUSDC, handleBuyTokens, handleRedeemTokens remain the same
+        // Need to ensure these use the correct (signer-connected) contract instances
         async function updateBuyEstimate() {
+            const contractInstance = mtyldContract || mtyldContractReadOnly; // Prefer signer if connected
+            if (!contractInstance) return; // Exit if no contract instance available
+            // ... (rest of the logic remains the same) ...
              const usdcAmountStr = buyUsdcAmountInput.value;
-             if (!mtyldContract || !usdcAmountStr || parseFloat(usdcAmountStr) <= 0) {
-                 estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0'; buyButton.disabled = true; return;
-             }
+             if (!usdcAmountStr || parseFloat(usdcAmountStr) <= 0) { estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0'; buyButton.disabled = true; return; }
              const usdcAmount = parseUnits(usdcAmountStr, usdcDecimals);
              if (usdcAmount === null) { estimatedMtyldSpan.textContent = 'Invalid'; minTokensOutInput.value = '0'; buyButton.disabled = true; return; }
              try {
-                  const estimatedTokens = await mtyldContract.getTokensForUSDC(usdcAmount);
+                  const estimatedTokens = await contractInstance.getTokensForUSDC(usdcAmount); // Use correct instance
                   estimatedMtyldSpan.textContent = parseFloat(formatUnits(estimatedTokens, mtyldDecimals)).toFixed(4);
                   const slippagePercent = parseFloat(buySlippageSelect.value);
                   const slippageFactor = BigInt(Math.floor((1 - slippagePercent / 100) * 10000));
                   const minTokens = (estimatedTokens * slippageFactor) / 10000n;
                   minTokensOutInput.value = minTokens.toString();
-                  checkAllowanceAndEnableBuy();
+                  checkAllowanceAndEnableBuy(); // Check allowance using signer contract if available
              } catch (error) { console.error("Buy estimate error:", error); estimatedMtyldSpan.textContent = 'Error'; minTokensOutInput.value = '0'; buyButton.disabled = true; }
-         }
+        }
         async function updateRedeemEstimate() {
+            const contractInstance = mtyldContract || mtyldContractReadOnly; // Prefer signer if connected
+            if (!contractInstance) return;
+             // ... (rest of the logic remains the same) ...
              const mtyldAmountStr = redeemMtyldAmountInput.value;
-             if (!mtyldContract || !mtyldAmountStr || parseFloat(mtyldAmountStr) <= 0) { estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0'; return; }
+             if (!mtyldAmountStr || parseFloat(mtyldAmountStr) <= 0) { estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0'; return; }
              const mtyldAmount = parseUnits(mtyldAmountStr, mtyldDecimals);
              if (mtyldAmount === null) { estimatedUsdcSpan.textContent = 'Invalid'; minUsdcOutInput.value = '0'; return; }
              try {
-                  const [ usdcValueBeforeFee, feePercentBigInt ] = await Promise.all([ mtyldContract.getRedemptionValue(mtyldAmount), mtyldContract.redemptionFeePercentage() ]);
+                  const [ usdcValueBeforeFee, feePercentBigInt ] = await Promise.all([ contractInstance.getRedemptionValue(mtyldAmount), contractInstance.redemptionFeePercentage() ]); // Use correct instance
                   const feePercent = Number(feePercentBigInt);
                   redeemFeePercentFormSpan.textContent = feePercent.toString();
                   const fee = (usdcValueBeforeFee * BigInt(feePercent)) / 100n;
@@ -841,319 +973,194 @@
                   const minUsdc = (usdcToReceive * slippageFactor) / 10000n;
                   minUsdcOutInput.value = minUsdc.toString();
              } catch (error) { console.error("Redeem estimate error:", error); estimatedUsdcSpan.textContent = 'Error'; minUsdcOutInput.value = '0'; redeemFeePercentFormSpan.textContent = 'Error'; }
-         }
+        }
         async function checkAllowanceAndEnableBuy() {
+             // Must use signer-connected USDC contract for allowance check
              if (!usdcContract || !userAddress || !buyUsdcAmountInput.value) { buyButton.disabled = true; return; }
+             // ... (rest of the logic remains the same) ...
              const usdcAmount = parseUnits(buyUsdcAmountInput.value, usdcDecimals);
              if (usdcAmount === null || usdcAmount <= 0n) { buyButton.disabled = true; return; }
              try {
-                 const allowance = await usdcContract.allowance(userAddress, contractAddress);
+                 const allowance = await usdcContract.allowance(userAddress, contractAddress); // Use signer usdcContract
                  buyButton.disabled = allowance < usdcAmount;
              } catch (error) { console.error("Allowance check failed:", error); buyButton.disabled = true; }
          }
         async function handleApproveUSDC() {
-            const button = approveUsdcButton;
-             const originalText = button.textContent;
-             const usdcAmountStr = buyUsdcAmountInput.value;
-             if (!usdcContract || !userAddress) return showStatus('Connect wallet first.', 'error');
+            // Must use signer-connected USDC contract
+            if (!usdcContract || !userAddress) return showStatus('Connect wallet first.', 'error');
+            // ... (rest of the logic remains the same) ...
+            const button = approveUsdcButton; const originalText = button.textContent; const usdcAmountStr = buyUsdcAmountInput.value;
              if (!usdcAmountStr || parseFloat(usdcAmountStr) <= 0) return showStatus('Enter valid amount.', 'error');
              const usdcAmount = parseUnits(usdcAmountStr, usdcDecimals);
              if (usdcAmount === null) return;
              setLoading(button, true, originalText); showStatus('Requesting approval...');
              try {
-                 const currentAllowance = await usdcContract.allowance(userAddress, contractAddress);
+                 const currentAllowance = await usdcContract.allowance(userAddress, contractAddress); // Use signer usdcContract
                  if (currentAllowance >= usdcAmount) { showStatus('Sufficient allowance.', 'info'); buyButton.disabled = false; return; }
-                 const tx = await usdcContract.approve(contractAddress, usdcAmount);
+                 const tx = await usdcContract.approve(contractAddress, usdcAmount); // Use signer usdcContract
                  showStatus('Approval sent. Waiting...', 'info'); await tx.wait();
                  showStatus('Approved!', 'success'); buyButton.disabled = false;
              } catch (error) { console.error("Approval failed:", error); showStatus(`Approval failed: ${error?.reason || error.message || error}`, 'error'); buyButton.disabled = true; }
              finally { setLoading(button, false, originalText); }
          }
         async function handleBuyTokens(event) {
+             // Must use signer-connected contracts
+             if (!mtyldContract || !usdcContract || !signer) return showStatus('Connect wallet.', 'error'); // Check both
+             // ... (rest of the logic remains the same) ...
              event.preventDefault();
-             if (!mtyldContract || !signer) return showStatus('Connect wallet.', 'error');
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
-             const usdcAmountStr = buyUsdcAmountInput.value;
-             const minTokensOut = minTokensOutInput.value;
+             const usdcAmountStr = buyUsdcAmountInput.value; const minTokensOut = minTokensOutInput.value;
              if (!usdcAmountStr || parseFloat(usdcAmountStr) <= 0 || !minTokensOut || minTokensOut === '0' || minTokensOut === 'Invalid') { return showStatus('Enter valid amount & estimate.', 'error'); }
-             const usdcAmount = parseUnits(usdcAmountStr, usdcDecimals);
-             if (usdcAmount === null) return;
+             const usdcAmount = parseUnits(usdcAmountStr, usdcDecimals); if (usdcAmount === null) return;
              const minTokensBigInt = BigInt(minTokensOut);
-             try {
-                 const allowance = await usdcContract.allowance(userAddress, contractAddress);
-                 if (allowance < usdcAmount) { buyButton.disabled = true; return showStatus('Insufficient allowance.', 'error'); }
+             try { const allowance = await usdcContract.allowance(userAddress, contractAddress); if (allowance < usdcAmount) { buyButton.disabled = true; return showStatus('Insufficient allowance.', 'error'); }
              } catch (error) { console.error("Allowance check fail:", error); return showStatus('Allowance check failed.', 'error'); }
              setLoading(buyButton, true, 'Buy MTYLD'); showStatus('Sending buy tx...');
-             try {
-                 const tx = await mtyldContract.buyTokens(usdcAmount, minTokensBigInt);
-                 showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Buy Receipt:", receipt);
-                 showStatus('Buy successful!', 'success'); buyForm.reset(); estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0'; buyButton.disabled = true;
-                 await updateWalletInfo(); await updateProtocolInfo();
+             try { const tx = await mtyldContract.buyTokens(usdcAmount, minTokensBigInt); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Buy Receipt:", receipt); showStatus('Buy successful!', 'success'); buyForm.reset(); estimatedMtyldSpan.textContent = '0.00'; minTokensOutInput.value = '0'; buyButton.disabled = true; await updateWalletInfo(); await updateProtocolInfo();
              } catch (error) { console.error("Buy fail:", error); showStatus(`Buy failed: ${error?.reason || error.message || error}`, 'error'); }
              finally { setLoading(buyButton, false, 'Buy MTYLD'); }
          }
         async function handleRedeemTokens(event) {
-             event.preventDefault();
+             // Must use signer-connected MTYLD contract
              if (!mtyldContract || !signer) return showStatus('Connect wallet.', 'error');
+            // ... (rest of the logic remains the same) ...
+             event.preventDefault();
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
-             const mtyldAmountStr = redeemMtyldAmountInput.value;
-             const minUsdcOut = minUsdcOutInput.value;
+             const mtyldAmountStr = redeemMtyldAmountInput.value; const minUsdcOut = minUsdcOutInput.value;
              if (!mtyldAmountStr || parseFloat(mtyldAmountStr) <= 0 || !minUsdcOut || minUsdcOut === '0' || minUsdcOut === 'Invalid') { return showStatus('Enter valid amount & estimate.', 'error'); }
-             const mtyldAmount = parseUnits(mtyldAmountStr, mtyldDecimals);
-             if (mtyldAmount === null) return;
+             const mtyldAmount = parseUnits(mtyldAmountStr, mtyldDecimals); if (mtyldAmount === null) return;
              const minUsdcBigInt = BigInt(minUsdcOut);
-             try {
-                 const balance = await mtyldContract.balanceOf(userAddress);
-                 if (balance < mtyldAmount) { return showStatus('Insufficient balance.', 'error'); }
+             try { const balance = await mtyldContract.balanceOf(userAddress); if (balance < mtyldAmount) { return showStatus('Insufficient balance.', 'error'); }
              } catch(error) { console.error("Balance check fail:", error); return showStatus('Balance check failed.', 'error'); }
              setLoading(redeemButton, true, 'Redeem MTYLD'); showStatus('Sending redeem tx...');
-             try {
-                 const tx = await mtyldContract.redeemTokens(mtyldAmount, minUsdcBigInt);
-                 showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Redeem Receipt:", receipt);
-                 showStatus('Redeem successful!', 'success'); redeemForm.reset(); estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0';
-                 await updateWalletInfo(); await updateProtocolInfo();
+             try { const tx = await mtyldContract.redeemTokens(mtyldAmount, minUsdcBigInt); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Redeem Receipt:", receipt); showStatus('Redeem successful!', 'success'); redeemForm.reset(); estimatedUsdcSpan.textContent = '0.00'; minUsdcOutInput.value = '0'; await updateWalletInfo(); await updateProtocolInfo();
              } catch (error) { console.error("Redeem fail:", error); showStatus(`Redeem failed: ${error?.reason || error.message || error}`, 'error'); }
              finally { setLoading(redeemButton, false, 'Redeem MTYLD'); }
-         }
+        }
 
-        // --- Restored Admin Mint Actions ---
+        // --- Admin Actions ---
+        // All admin actions require the signer-connected mtyldContract
         async function handleProposeMint(event) {
-             event.preventDefault();
-             console.log("handleProposeMint triggered");
+             if (!mtyldContract || !signer) return showStatus('Connect wallet first.', 'error'); // Ensure signer contract exists
+            // ... (rest of the logic remains the same) ...
+             event.preventDefault(); console.log("handleProposeMint triggered");
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
-             if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-
-             const yieldStr = document.getElementById('propose-yield').value;
-             const description = document.getElementById('propose-desc').value;
-             const button = event.target.querySelector('button[type="submit"]');
-             const originalText = 'Propose Mint';
-
-             console.log(`Yield Input: ${yieldStr}, Desc: ${description}`);
-             if (!yieldStr || parseFloat(yieldStr) <= 0 || !description) return showStatus('Valid yield & description required.', 'error');
-
-             const grossYield = parseUnits(yieldStr, usdcDecimals);
-             if (grossYield === null) return;
-             console.log(`Parsed Gross Yield (Wei): ${grossYield.toString()}`);
-
-             setLoading(button, true, originalText);
-             showStatus('Sending propose mint transaction...');
-             console.log("Calling contract.proposeMint...");
-             try {
-                 const tx = await mtyldContract.proposeMint(grossYield, description);
-                 console.log("Transaction sent:", tx.hash);
-                 showStatus(`Tx sent (${shortenAddress(tx.hash)}...). Waiting...`, 'info');
-                 const receipt = await tx.wait();
-                 console.log("Propose Mint Receipt:", receipt);
-                 let proposalId = 'N/A';
-                 const eventInterface = new ethers.Interface(contractABI);
-                 if(receipt?.logs) { for (const log of receipt.logs) { if (log.topics && log.data && log.address.toLowerCase() === contractAddress.toLowerCase()) { try { const pLog = eventInterface.parseLog({ topics: [...log.topics], data: log.data }); if (pLog?.name === "MintProposed") { proposalId = pLog.args.proposalId.toString(); console.log(`Parsed MintProposed event, ID: ${proposalId}`); break; } } catch (e) { console.warn("Log parse error:", e); } } } }
-                 showStatus(`Mint proposal #${proposalId} created! Executable after delay.`, 'success');
-                 proposeMintForm.reset();
-                 await checkPendingProposals(); // Update admin panel view
-                 await fetchPendingWorkOrders(); // Update public pending list (added back)
-             } catch (error) {
-                 console.error("Propose Mint tx failed:", error);
-                 let reason = error?.reason || error.message || "Unknown error";
-                 if (error.info?.error?.message) { reason = error.info.error.message; }
-                 else if (error.error?.data?.message) { reason = error.error.data.message; }
-                 console.error("Revert Reason:", reason); showStatus(`Propose fail: ${reason}`, 'error');
+             if (!contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
+             const yieldStr = document.getElementById('propose-yield').value; const description = document.getElementById('propose-desc').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Propose Mint';
+             console.log(`Yield Input: ${yieldStr}, Desc: ${description}`); if (!yieldStr || parseFloat(yieldStr) <= 0 || !description) return showStatus('Valid yield & description required.', 'error');
+             const grossYield = parseUnits(yieldStr, usdcDecimals); if (grossYield === null) return; console.log(`Parsed Gross Yield (Wei): ${grossYield.toString()}`);
+             setLoading(button, true, originalText); showStatus('Sending propose mint transaction...'); console.log("Calling contract.proposeMint...");
+             try { const tx = await mtyldContract.proposeMint(grossYield, description); console.log("Transaction sent:", tx.hash); showStatus(`Tx sent (${shortenAddress(tx.hash)}...). Waiting...`, 'info'); const receipt = await tx.wait(); console.log("Propose Mint Receipt:", receipt); let proposalId = 'N/A'; const eventInterface = new ethers.Interface(contractABI); if(receipt?.logs) { for (const log of receipt.logs) { if (log.topics && log.data && log.address.toLowerCase() === contractAddress.toLowerCase()) { try { const pLog = eventInterface.parseLog({ topics: [...log.topics], data: log.data }); if (pLog?.name === "MintProposed") { proposalId = pLog.args.proposalId.toString(); console.log(`Parsed MintProposed event, ID: ${proposalId}`); break; } } catch (e) { console.warn("Log parse error:", e); } } } } showStatus(`Mint proposal #${proposalId} created! Executable after delay.`, 'success'); proposeMintForm.reset(); await checkPendingProposals(mtyldContract); await fetchPendingWorkOrders(false);
+             } catch (error) { console.error("Propose Mint tx failed:", error); let reason = error?.reason || error.message || "Unknown error"; if (error.info?.error?.message) { reason = error.info.error.message; } else if (error.error?.data?.message) { reason = error.error.data.message; } console.error("Revert Reason:", reason); showStatus(`Propose fail: ${reason}`, 'error');
              } finally { console.log("Propose Mint finished."); setLoading(button, false, originalText); }
         }
-
         async function handleExecuteMint() {
+             if (!mtyldContract || !signer) return showStatus('Connect wallet first.', 'error');
+            // ... (rest of the logic remains the same) ...
              if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
-             if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-             const proposalIdStr = executeMintIdInput.value;
-             const button = executeMintButton;
-             const originalText = 'Execute Mint (after delay)';
-             if (!proposalIdStr || parseInt(proposalIdStr) < 1) return showStatus('Valid Proposal ID required.', 'error');
-             const proposalId = BigInt(proposalIdStr);
-             try { // Client-side check
-                  const mintP = await mtyldContract.pendingMints(proposalId); if (!mintP.exists) return showStatus(`Proposal ${proposalId} not found or already executed.`, 'error');
-                  const delayS = Number(currentProposalDelay || 0n); const canExec = blockTimestamp ? blockTimestamp >= mintP.proposedAt + BigInt(delayS) : false; const canExecEst = (Date.now() / 1000) >= Number(mintP.proposedAt) + delayS;
-                  if (!(canExec || canExecEst)) return showStatus(`Proposal ${proposalId} not executable yet (delay not met).`, 'warning');
+             if (!contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
+             const proposalIdStr = executeMintIdInput.value; const button = executeMintButton; const originalText = 'Execute Mint (after delay)';
+             if (!proposalIdStr || parseInt(proposalIdStr) < 1) return showStatus('Valid Proposal ID required.', 'error'); const proposalId = BigInt(proposalIdStr);
+             try { const mintP = await mtyldContract.pendingMints(proposalId); if (!mintP.exists) return showStatus(`Proposal ${proposalId} not found or already executed.`, 'error'); const delayS = Number(currentProposalDelay || 0n); const canExec = blockTimestamp ? blockTimestamp >= mintP.proposedAt + BigInt(delayS) : false; const canExecEst = (Date.now() / 1000) >= Number(mintP.proposedAt) + delayS; if (!(canExec || canExecEst)) return showStatus(`Proposal ${proposalId} not executable yet (delay not met).`, 'warning');
              } catch (e) { console.error("Execute Mint pre-check error:", e); return showStatus('Failed to check proposal status.', 'error'); }
              setLoading(button, true, originalText); showStatus(`Executing mint proposal #${proposalId}...`);
-             try {
-                 const tx = await mtyldContract.executeMint(proposalId);
-                 showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Execute Mint Receipt:", receipt);
-                 showStatus(`Mint proposal #${proposalId} executed successfully! Tokens minted.`, 'success');
-                 executeMintIdInput.value = ''; // Clear input
-                 await checkPendingProposals(); // Update admin panel
-                 await fetchPendingWorkOrders(); // Update public pending list (added back)
-                 await updateProtocolInfo(); // Update available tokens, etc.
-                 // Consider adding fetchAndStoreAllWorkOrders() if needed immediately
+             try { const tx = await mtyldContract.executeMint(proposalId); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Execute Mint Receipt:", receipt); showStatus(`Mint proposal #${proposalId} executed successfully! Tokens minted.`, 'success'); executeMintIdInput.value = ''; await checkPendingProposals(mtyldContract); await fetchPendingWorkOrders(false); await updateProtocolInfo(false);
              } catch (error) { console.error("Execute Mint tx failed:", error); showStatus(`Execute fail: ${error?.reason || error.message || error}`, 'error'); }
-             finally { setLoading(button, false, originalText); await checkPendingMintDetails(); } // Re-check specific ID status
+             finally { setLoading(button, false, originalText); await checkPendingMintDetails(mtyldContract); }
         }
-        // --- End Restored Admin Mint Actions ---
-
-        // --- Added back fetchPendingWorkOrders and renderPendingProposalsTable ---
-         async function fetchPendingWorkOrders() {
-            console.log("Fetching pending work orders...");
-            if (!mtyldContract) { console.log("Contract not initialized."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet first.</td></tr>'; return; }
-            pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Fetching pending proposals...</td></tr>';
-            let localPendingProposals = [];
-            const MAX_PROPOSALS_TO_CHECK = 10;
-            try {
-                const nextIdBigInt = await mtyldContract.nextWorkOrderId(); // Use work order ID
-                const nextId = Number(nextIdBigInt);
-                console.log(`Next Work Order ID (used for proposals): ${nextId}`);
-                if (nextId <= 1) { console.log("No proposals (nextId <= 1)."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No proposals found.</td></tr>'; pendingWorkOrderProposals = []; return; }
-                let proposalsFoundCount = 0;
-                const startCheckId = nextId - 1;
-                const endCheckId = Math.max(1, startCheckId - MAX_PROPOSALS_TO_CHECK + 1);
-                console.log(`Checking proposal IDs from ${startCheckId} down to ${endCheckId}`);
-                for (let currentId = startCheckId; currentId >= endCheckId; currentId--) {
-                     console.log(`Checking ID ${currentId}...`); // Add log before await
-                     try {
-                        const proposal = await mtyldContract.pendingMints(BigInt(currentId));
-                        console.log(`Checked ID ${currentId}: Exists = ${proposal.exists}`);
-                        if (proposal.exists) {
-                            console.log(`   -> Found pending proposal:`, proposal);
-                            localPendingProposals.push({ id: BigInt(currentId), grossYield: proposal.grossYield, description: proposal.description, proposedAt: proposal.proposedAt });
-                            proposalsFoundCount++;
-                        }
-                     } catch (fetchError) { console.error(`Error fetching pending mint ${currentId}:`, fetchError); }
-                }
-                console.log(`Finished checking. Found ${proposalsFoundCount} pending proposals. Data:`, localPendingProposals);
-                pendingWorkOrderProposals = localPendingProposals;
-                console.log("Calling renderPendingProposalsTable...");
-                renderPendingProposalsTable();
-                if (proposalsFoundCount === 0 && pendingProposalsTableBody.innerHTML.includes('Fetching')) { pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found in range.</td></tr>'; }
-            } catch (error) { console.error("Fetch pending proposals failed globally:", error); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-400">Error fetching proposals.</td></tr>'; pendingWorkOrderProposals = []; }
-        }
-
-        function renderPendingProposalsTable() {
-             console.log("renderPendingProposalsTable called. Data:", pendingWorkOrderProposals);
-             pendingProposalsTableBody.innerHTML = '';
-            if (!pendingWorkOrderProposals || pendingWorkOrderProposals.length === 0) { console.log("No pending proposals to render."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>'; return; }
-            const delaySeconds = Number(currentProposalDelay || 0n);
-            const nowSeconds = Date.now() / 1000;
-            pendingWorkOrderProposals.sort((a, b) => Number(b.id - a.id)).forEach(proposal => {
-                const { dateStr } = formatDate(proposal.proposedAt);
-                const proposedAtSeconds = Number(proposal.proposedAt);
-                const canExec = blockTimestamp ? blockTimestamp >= proposal.proposedAt + BigInt(delaySeconds) : false;
-                const canExecEst = nowSeconds >= proposedAtSeconds + delaySeconds;
-                const executableStatus = (canExec || canExecEst) ? '<span class="text-green-400">Yes</span>' : '<span class="text-yellow-400">No (Waiting)</span>';
-                console.log(`Rendering proposal ID: ${proposal.id}`);
-                const row = pendingProposalsTableBody.insertRow();
-                row.innerHTML = ` <td>${proposal.id.toString()}</td> <td class="max-w-xs truncate" title="${proposal.description}">${proposal.description}</td> <td>${parseFloat(formatUnits(proposal.grossYield, usdcDecimals)).toFixed(2)}</td> <td>${dateStr}</td> <td>${executableStatus}</td> `;
-            });
-            console.log("Finished rendering pending proposals table.");
-        }
-        // --- End Added Back Functions ---
-
-
-        // --- Admin Pause/Withdraw Actions ---
-        // handleEmergencyWithdraw, handlePause, handleUnpause, updatePauseUI, updatePauseButtons remain the same
         async function handleEmergencyWithdraw(event) {
-             event.preventDefault();
-             if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning');
-             if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-             const tokenAddress = document.getElementById('emergency-token').value; const toAddress = document.getElementById('emergency-to').value; const amountStr = document.getElementById('emergency-amount').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Withdraw Other Token';
-             let amount; try { amount = BigInt(amountStr); if (amount <= 0n) throw new Error(); } catch { return showStatus('Valid amount.', 'error'); }
-             if (!ethers.isAddress(tokenAddress) || !ethers.isAddress(toAddress)) return showStatus('Valid addresses.', 'error');
-             if (tokenAddress.toLowerCase() === usdcAddress.toLowerCase()) return showStatus('Cannot withdraw USDC.', 'error');
-             setLoading(button, true, originalText); showStatus(`Withdrawing ${shortenAddress(tokenAddress)}...`);
-             try {
-                  const tx = await mtyldContract.emergencyWithdraw(tokenAddress, toAddress, amount); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Emergency Withdraw:", receipt);
-                  showStatus('Emergency withdraw success!', 'success'); emergencyWithdrawForm.reset();
-             } catch (error) { console.error("Emergency Withdraw fail:", error); showStatus(`Withdraw fail: ${error?.reason || error.message || error}`, 'error'); }
-             finally { setLoading(button, false, originalText); }
+             if (!mtyldContract || !signer) return showStatus('Connect wallet first.', 'error');
+            // ... (rest of the logic remains the same) ...
+             event.preventDefault(); if (await mtyldContract.paused()) return showStatus('Contract paused.', 'warning'); if (!contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error"); const tokenAddress = document.getElementById('emergency-token').value; const toAddress = document.getElementById('emergency-to').value; const amountStr = document.getElementById('emergency-amount').value; const button = event.target.querySelector('button[type="submit"]'); const originalText = 'Withdraw Other Token'; let amount; try { amount = BigInt(amountStr); if (amount <= 0n) throw new Error(); } catch { return showStatus('Valid amount.', 'error'); } if (!ethers.isAddress(tokenAddress) || !ethers.isAddress(toAddress)) return showStatus('Valid addresses.', 'error'); if (tokenAddress.toLowerCase() === usdcAddress.toLowerCase()) return showStatus('Cannot withdraw USDC.', 'error'); setLoading(button, true, originalText); showStatus(`Withdrawing ${shortenAddress(tokenAddress)}...`); try { const tx = await mtyldContract.emergencyWithdraw(tokenAddress, toAddress, amount); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Emergency Withdraw:", receipt); showStatus('Emergency withdraw success!', 'success'); emergencyWithdrawForm.reset(); } catch (error) { console.error("Emergency Withdraw fail:", error); showStatus(`Withdraw fail: ${error?.reason || error.message || error}`, 'error'); } finally { setLoading(button, false, originalText); }
          }
          async function handlePause() {
-             if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-             if (await mtyldContract.paused()) return showStatus('Already paused.', 'warning');
-             const button = pauseButton; const originalText = 'Pause Contract';
-             setLoading(button, true, originalText); showStatus('Sending pause...');
-             try {
-                  const tx = await mtyldContract.pause(); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Pause:", receipt);
-                  showStatus('Contract paused!', 'success'); updatePauseUI(true); updatePauseButtons(true);
-             } catch (error) { console.error("Pause fail:", error); showStatus(`Pause fail: ${error?.reason || error.message || error}`, 'error'); updatePauseButtons(false); }
-             finally { setLoading(button, false, originalText); }
+             if (!mtyldContract || !signer) return showStatus('Connect wallet first.', 'error');
+            // ... (rest of the logic remains the same) ...
+             if (!contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error"); if (await mtyldContract.paused()) return showStatus('Already paused.', 'warning'); const button = pauseButton; const originalText = 'Pause Contract'; setLoading(button, true, originalText); showStatus('Sending pause...'); try { const tx = await mtyldContract.pause(); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Pause:", receipt); showStatus('Contract paused!', 'success'); updatePauseUI(true); updatePauseButtons(true); } catch (error) { console.error("Pause fail:", error); showStatus(`Pause fail: ${error?.reason || error.message || error}`, 'error'); updatePauseButtons(false); } finally { setLoading(button, false, originalText); }
          }
         async function handleUnpause() {
-             if (!mtyldContract || !signer || !contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error");
-             if (!(await mtyldContract.paused())) return showStatus('Already unpaused.', 'warning');
-             const button = unpauseButton; const originalText = 'Unpause Contract';
-             setLoading(button, true, originalText); showStatus('Sending unpause...');
-             try {
-                  const tx = await mtyldContract.unpause(); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Unpause:", receipt);
-                  showStatus('Contract unpaused!', 'success'); updatePauseUI(false); updatePauseButtons(false);
-             } catch (error) { console.error("Unpause fail:", error); showStatus(`Unpause fail: ${error?.reason || error.message || error}`, 'error'); updatePauseButtons(true); }
-             finally { setLoading(button, false, originalText); }
+             if (!mtyldContract || !signer) return showStatus('Connect wallet first.', 'error');
+            // ... (rest of the logic remains the same) ...
+             if (!contractOwner || !userAddress || userAddress.toLowerCase() !== contractOwner.toLowerCase()) return showStatus("Admin only.", "error"); if (!(await mtyldContract.paused())) return showStatus('Already unpaused.', 'warning'); const button = unpauseButton; const originalText = 'Unpause Contract'; setLoading(button, true, originalText); showStatus('Sending unpause...'); try { const tx = await mtyldContract.unpause(); showStatus('Tx sent. Waiting...', 'info'); const receipt = await tx.wait(); console.log("Unpause:", receipt); showStatus('Contract unpaused!', 'success'); updatePauseUI(false); updatePauseButtons(false); } catch (error) { console.error("Unpause fail:", error); showStatus(`Unpause fail: ${error?.reason || error.message || error}`, 'error'); updatePauseButtons(true); } finally { setLoading(button, false, originalText); }
          }
         function updatePauseUI(isPaused) {
-             const isActive = !isPaused;
-             pausedOverlay.classList.toggle('hidden', isActive);
-             pauseStatusIndicator.textContent = isPaused ? 'PAUSED' : 'Active';
-             pauseStatusIndicator.classList.remove('hidden');
-             pauseStatusIndicator.classList.toggle('bg-yellow-400', isPaused);
-             pauseStatusIndicator.classList.toggle('text-yellow-900', isPaused);
-             pauseStatusIndicator.classList.toggle('bg-green-400', isActive);
-             pauseStatusIndicator.classList.toggle('text-green-900', isActive);
-             if(buyButton) buyButton.disabled = isPaused;
-             if(redeemButton) redeemButton.disabled = isPaused;
-             if(approveUsdcButton) approveUsdcButton.disabled = isPaused;
-             buyUsdcAmountInput.disabled = isPaused;
-             buySlippageSelect.disabled = isPaused;
-             redeemMtyldAmountInput.disabled = isPaused;
-             redeemSlippageSelect.disabled = isPaused;
-             if(proposeMintForm) proposeMintForm.querySelectorAll('input, button').forEach(el => el.disabled = isPaused);
-             if(executeMintIdInput) executeMintIdInput.disabled = isPaused;
-             if(executeMintButton) executeMintButton.disabled = isPaused || executeMintButton.textContent.includes('Processing');
-             if(emergencyWithdrawForm) { emergencyWithdrawForm.querySelectorAll('input, button').forEach(el => el.disabled = isPaused); }
-             updatePauseButtons(isPaused);
+             // updatePauseUI remains the same
+             const isActive = !isPaused; pausedOverlay.classList.toggle('hidden', isActive); pauseStatusIndicator.textContent = isPaused ? 'PAUSED' : 'Active'; pauseStatusIndicator.classList.remove('hidden'); pauseStatusIndicator.classList.toggle('bg-yellow-400', isPaused); pauseStatusIndicator.classList.toggle('text-yellow-900', isPaused); pauseStatusIndicator.classList.toggle('bg-green-400', isActive); pauseStatusIndicator.classList.toggle('text-green-900', isActive); if(buyButton) buyButton.disabled = isPaused; if(redeemButton) redeemButton.disabled = isPaused; if(approveUsdcButton) approveUsdcButton.disabled = isPaused; buyUsdcAmountInput.disabled = isPaused; buySlippageSelect.disabled = isPaused; redeemMtyldAmountInput.disabled = isPaused; redeemSlippageSelect.disabled = isPaused; if(proposeMintForm) proposeMintForm.querySelectorAll('input, button').forEach(el => el.disabled = isPaused); if(executeMintIdInput) executeMintIdInput.disabled = isPaused; if(executeMintButton) executeMintButton.disabled = isPaused || executeMintButton.textContent.includes('Processing'); if(emergencyWithdrawForm) { emergencyWithdrawForm.querySelectorAll('input, button').forEach(el => el.disabled = isPaused); } updatePauseButtons(isPaused);
          }
          function updatePauseButtons(isPaused) {
-              if (pauseButton) pauseButton.disabled = isPaused;
-              if (unpauseButton) unpauseButton.disabled = !isPaused;
+              // updatePauseButtons remains the same
+              if (pauseButton) pauseButton.disabled = isPaused; if (unpauseButton) unpauseButton.disabled = !isPaused;
          }
-        // --- End Admin Actions ---
+
+        // fetchPendingWorkOrders and renderPendingProposalsTable need to accept contract instance
+         async function fetchPendingWorkOrders(useReadOnly = false) {
+             const contractInstance = useReadOnly ? mtyldContractReadOnly : (mtyldContract || mtyldContractReadOnly);
+             if (!contractInstance) { console.log("Contract not ready for pending fetch."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet first.</td></tr>'; return; }
+             console.log(`Fetching pending work orders... (Using ${useReadOnly || !mtyldContract ? 'read-only':'signer'} contract)`);
+             pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Fetching...</td></tr>';
+             let localPendingProposals = []; const MAX_PROPOSALS_TO_CHECK = 10;
+             try {
+                 const nextIdBigInt = await contractInstance.nextWorkOrderId(); // Use correct instance
+                 const nextId = Number(nextIdBigInt); console.log(`Next Work Order ID: ${nextId}`);
+                 if (nextId <= 1) { console.log("No proposals (nextId <= 1)."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No proposals found.</td></tr>'; pendingWorkOrderProposals = []; return; }
+                 let proposalsFoundCount = 0; const startCheckId = nextId - 1; const endCheckId = Math.max(1, startCheckId - MAX_PROPOSALS_TO_CHECK + 1);
+                 console.log(`Checking IDs ${startCheckId} to ${endCheckId}`);
+                 for (let currentId = startCheckId; currentId >= endCheckId; currentId--) {
+                      console.log(`Checking ID ${currentId}...`);
+                      try {
+                         const proposal = await contractInstance.pendingMints(BigInt(currentId)); // Use correct instance
+                         console.log(`Checked ID ${currentId}: Exists = ${proposal.exists}`);
+                         if (proposal.exists) { console.log(`   -> Found:`, proposal); localPendingProposals.push({ id: BigInt(currentId), grossYield: proposal.grossYield, description: proposal.description, proposedAt: proposal.proposedAt }); proposalsFoundCount++; }
+                      } catch (fetchError) { console.error(`Error fetching mint ${currentId}:`, fetchError); }
+                 }
+                 console.log(`Found ${proposalsFoundCount} proposals.`, localPendingProposals);
+                 pendingWorkOrderProposals = localPendingProposals; renderPendingProposalsTable();
+                 if (proposalsFoundCount === 0 && pendingProposalsTableBody.innerHTML.includes('Fetching')) { pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>'; } // Updated message
+             } catch (error) { console.error("Fetch pending failed globally:", error); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-400">Error fetching proposals.</td></tr>'; pendingWorkOrderProposals = []; }
+         }
+
+        function renderPendingProposalsTable() {
+             // renderPendingProposalsTable remains the same
+             console.log("renderPendingProposalsTable called. Data:", pendingWorkOrderProposals); pendingProposalsTableBody.innerHTML = ''; if (!pendingWorkOrderProposals || pendingWorkOrderProposals.length === 0) { console.log("No pending proposals to render."); pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">No pending proposals found.</td></tr>'; return; } const delaySeconds = Number(currentProposalDelay || 0n); const nowSeconds = Date.now() / 1000; pendingWorkOrderProposals.sort((a, b) => Number(b.id - a.id)).forEach(proposal => { const { dateStr } = formatDate(proposal.proposedAt); const proposedAtSeconds = Number(proposal.proposedAt); const canExec = blockTimestamp ? blockTimestamp >= proposal.proposedAt + BigInt(delaySeconds) : false; const canExecEst = nowSeconds >= proposedAtSeconds + delaySeconds; const executableStatus = (canExec || canExecEst) ? '<span class="text-green-400">Yes</span>' : '<span class="text-yellow-400">No (Waiting)</span>'; console.log(`Rendering proposal ID: ${proposal.id}`); const row = pendingProposalsTableBody.insertRow(); row.innerHTML = ` <td>${proposal.id.toString()}</td> <td class="max-w-xs truncate" title="${proposal.description}">${proposal.description}</td> <td>${parseFloat(formatUnits(proposal.grossYield, usdcDecimals)).toFixed(2)}</td> <td>${dateStr}</td> <td>${executableStatus}</td> `; }); console.log("Finished rendering pending proposals table.");
+        }
 
 
         // --- Event Listeners Setup ---
          function setupEventListeners() {
+             // setupEventListeners remains the same
              if (window.eventListenersAttached) return;
-             // Buy Form
-             buyUsdcAmountInput.addEventListener('input', updateBuyEstimate);
-             buySlippageSelect.addEventListener('change', updateBuyEstimate);
-             approveUsdcButton.addEventListener('click', handleApproveUSDC);
-             buyForm.addEventListener('submit', handleBuyTokens);
-             // Redeem Form
-             redeemMtyldAmountInput.addEventListener('input', updateRedeemEstimate);
-             redeemSlippageSelect.addEventListener('change', updateRedeemEstimate);
+             buyUsdcAmountInput.addEventListener('input', updateBuyEstimate); buySlippageSelect.addEventListener('change', updateBuyEstimate);
+             approveUsdcButton.addEventListener('click', handleApproveUSDC); buyForm.addEventListener('submit', handleBuyTokens);
+             redeemMtyldAmountInput.addEventListener('input', updateRedeemEstimate); redeemSlippageSelect.addEventListener('change', updateRedeemEstimate);
              redeemForm.addEventListener('submit', handleRedeemTokens);
-             // Admin Listeners (Restored Mint + Pause + Emergency)
              if (proposeMintForm) proposeMintForm.addEventListener('submit', handleProposeMint);
              if (executeMintButton) executeMintButton.addEventListener('click', handleExecuteMint);
-             if (executeMintIdInput) executeMintIdInput.addEventListener('input', () => { clearTimeout(checkMintTimeout); checkMintTimeout = setTimeout(checkPendingMintDetails, 500); }); // Debounce check
+             if (executeMintIdInput) executeMintIdInput.addEventListener('input', () => { clearTimeout(checkMintTimeout); checkMintTimeout = setTimeout(() => checkPendingMintDetails(mtyldContract || mtyldContractReadOnly), 500); }); // Pass current contract instance
              if (emergencyWithdrawForm) emergencyWithdrawForm.addEventListener('submit', handleEmergencyWithdraw);
              if (pauseButton) pauseButton.addEventListener('click', handlePause);
              if (unpauseButton) unpauseButton.addEventListener('click', handleUnpause);
-             // connectButton listener added below
-             window.eventListenersAttached = true;
-             console.log("Event listeners attached.");
+             window.eventListenersAttached = true; console.log("Event listeners attached.");
          }
 
          function setupWalletListeners() {
               // setupWalletListeners remains the same
               if (window.ethereum?.on) {
-                   window.ethereum.on('accountsChanged', (accounts) => { console.log('Acc change:', accounts); if (accounts.length === 0) { showStatus('Wallet disconnected.', 'warning'); resetState(); } else if (!userAddress || accounts[0].toLowerCase() !== userAddress.toLowerCase()) { showStatus('Account switched. Reconnecting...', 'info'); resetState(); connectWallet(); } });
-                   window.ethereum.on('chainChanged', (chainId) => { console.log('Chain change:', chainId); if (chainId !== arbitrumChainId) { showStatus('Wrong network. Switch to Arbitrum One.', 'error'); resetState(); connectButton.textContent = 'Wrong Network'; connectButton.disabled = true; } else { if (userAddress) { showStatus('Network correct. Refreshing...', 'info'); connectWallet(); } else { showStatus('Arbitrum One detected. Connect wallet.', 'info'); resetState(); } } });
+                   window.ethereum.on('accountsChanged', (accounts) => { console.log('Acc change:', accounts); if (accounts.length === 0) { showStatus('Wallet disconnected.', 'warning'); resetState(false); } else if (!userAddress || accounts[0].toLowerCase() !== userAddress.toLowerCase()) { showStatus('Account switched. Reconnecting...', 'info'); resetState(false); connectWallet(); } }); // Use resetState(false)
+                   window.ethereum.on('chainChanged', (chainId) => { console.log('Chain change:', chainId); if (chainId !== arbitrumChainId) { showStatus('Wrong network. Switch to Arbitrum One.', 'error'); resetState(false); connectButton.textContent = 'Wrong Network'; connectButton.disabled = true; } else { if (userAddress) { showStatus('Network correct. Refreshing...', 'info'); connectWallet(); } else { showStatus('Arbitrum One detected. Connect wallet.', 'info'); resetState(false); } } }); // Use resetState(false)
              } else { console.warn("MetaMask listeners not available."); }
          }
 
 
         // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-             console.log("DOM Loaded. Adding connect button listener and setting up other listeners.");
+        document.addEventListener('DOMContentLoaded', async () => { // Made async
+             console.log("DOM Loaded.");
              connectButton.addEventListener('click', connectWallet);
              setupEventListeners();
-             // Ensure pending proposals table has initial message
-             pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Connect wallet first.</td></tr>';
-
+             pendingProposalsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-text-secondary">Initializing...</td></tr>';
+             // Initialize static provider and fetch initial data
+             if (initializeStaticProvider()) {
+                 await fetchInitialData();
+             }
         });
 
     </script>
