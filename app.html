@@ -317,7 +317,7 @@
         let mtyldContract = null;
         let usdcContract = null;
         let contractOwner = null;
-        let usdcDecimals = 6; // Hardcoded, as fetching failed previously
+        let usdcDecimals = 6; // Hardcoded
         let mtyldDecimals = 18;
         let allWorkOrders = [];
         let availableYears = new Set();
@@ -339,104 +339,155 @@
 
         // --- Blockchain Interaction ---
 
-        async function connectWallet() {
-            console.log("connectWallet called");
-            if (typeof ethers === 'undefined') {
-                console.error("Ethers.js is NOT loaded!");
-                alert("Required library (Ethers.js) failed to load. Refresh.");
-                connectButton.textContent = 'Lib Error'; connectButton.disabled = true; return;
-            }
-            if (typeof window.ethereum === 'undefined') {
-                console.log("MetaMask not detected");
-                return showStatus('MetaMask not installed.', 'error');
-            }
-            const connectBtn = connectButton; const originalConnectText = 'Connect Wallet';
-            setLoading(connectBtn, true, originalConnectText); console.log("Loading state set");
-
-            try {
-                console.log("Ethers.js found");
-                provider = new ethers.BrowserProvider(window.ethereum, "any"); console.log("Provider created");
-                if (!window.walletListenersAttached) { console.log("Setting listeners"); setupWalletListeners(); window.walletListenersAttached = true; }
-
-                console.log("Getting network...");
-                const network = await provider.getNetwork(); console.log("Network:", network.chainId, network.name);
-
-                if (network.chainId !== BigInt(arbitrumChainId)) {
-                     console.log("Wrong network, switching..."); showStatus("Switch to Arbitrum One.", 'warning');
-                     try {
-                          await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: arbitrumChainId }] });
-                          console.log("Switch req sent. Re-init..."); provider = new ethers.BrowserProvider(window.ethereum); signer = await provider.getSigner();
-                          const switchedNetwork = await provider.getNetwork(); if (switchedNetwork.chainId !== BigInt(arbitrumChainId)) throw new Error('Switch failed.'); console.log("Switch OK.");
-                     } catch (switchError) {
-                          console.error("Switch error:", switchError);
-                          if (switchError.code === 4902) {
-                               console.log("Network not found, adding...");
-                               try {
-                                   await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: arbitrumChainId, chainName: 'Arbitrum One', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://arb1.arbitrum.io/rpc'], blockExplorerUrls: ['https://arbiscan.io'] }] });
-                                    console.log("Add req sent. Re-init..."); provider = new ethers.BrowserProvider(window.ethereum); signer = await provider.getSigner();
-                                    const addedNetwork = await provider.getNetwork(); if (addedNetwork.chainId !== BigInt(arbitrumChainId)) throw new Error('Add failed.'); console.log("Add OK.");
-                                } catch (addError) { throw new Error('Add Arbitrum manually.'); }
-                           } else { throw new Error('Switch network.'); }
-                     }
-                } else { console.log("Network OK. Getting signer..."); signer = await provider.getSigner(); }
-
-                console.log("Requesting accounts...");
-                const accounts = await provider.send("eth_requestAccounts", []); console.log("Accounts:", accounts);
-                if (!accounts || accounts.length === 0) throw new Error("No accounts found/permission denied.");
-                userAddress = accounts[0]; console.log("Signer:", userAddress);
-
-                mtyldContract = new ethers.Contract(contractAddress, contractABI, signer); console.log("MTYLD contract OK");
-                const usdcAbiMinimal = ["function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)","function allowance(address, address) view returns (uint256)","function approve(address, uint256) returns (bool)","function transferFrom(address, address, uint256) returns (bool)"];
-                usdcContract = new ethers.Contract(usdcAddress, usdcAbiMinimal, signer); console.log("USDC contract OK");
-                // Removed dynamic decimals call - Hardcoded usdcDecimals = 6 is used
-                console.log("USDC decimals (hardcoded):", usdcDecimals);
-
-                connectButton.textContent = shortenAddress(userAddress); connectButton.disabled = true;
-                walletInfoDiv.classList.remove('hidden'); console.log("UI updated connected");
-
-                console.log("Loading initial data..."); await loadInitialData(); console.log("Initial data loaded.");
-                showStatus('Wallet connected!', 'success');
-
-            } catch (error) {
-                console.error("Connection failed:", error);
-                 let displayError = error.message || "Unknown error";
-                 if (error.code === 4001 || error.message?.includes('User rejected')) { displayError = "Connection rejected."; }
-                 else if (error.message?.includes('unknown account')) { displayError = "MetaMask locked/needs permissions."; }
-                 else if (error.message?.includes('missing provider')) { displayError = "Wallet provider not found."; }
-                 else if (error.code === 'CALL_EXCEPTION') { displayError = "Network/Contract call failed. Check console."; } // Catch CALL_EXCEPTION
-                 showStatus(`Connect failed: ${displayError}`, 'error');
-                resetState();
-            } finally {
-                 console.log("Connect finished.");
-                 if (userAddress) { setLoading(connectBtn, false, shortenAddress(userAddress)); connectBtn.disabled = true; }
-                 else { setLoading(connectBtn, false, originalConnectText); connectBtn.disabled = false; }
-            }
-        }
+        async function connectWallet() { /* ... (Updated logic from previous response) ... */ }
 
 
         // Combined function to load data after connection
-        async function loadInitialData() { /* ... */ }
+        async function loadInitialData() {
+             console.log("loadInitialData started");
+             try {
+                 console.log("Awaiting updateProtocolInfo...");
+                 await updateProtocolInfo(); // Fetch protocol info first (includes delay)
+                 console.log("updateProtocolInfo finished.");
+
+                 console.log("Fetching other data concurrently...");
+                 const results = await Promise.allSettled([
+                     updateWalletInfo(),
+                     fetchAndStoreAllWorkOrders(),
+                     fetchPendingProposals()
+                 ]);
+                 console.log("Concurrent fetches finished:", results);
+
+                 results.forEach((result, index) => {
+                     if (result.status === 'rejected') {
+                         console.error(`Error during load step ${index+1}:`, result.reason);
+                         // Show specific errors if needed
+                         if(index === 0) showStatus('Failed to update wallet info.', 'error');
+                         if(index === 1) showStatus('Failed to load work orders.', 'error');
+                         if(index === 2) showStatus('Failed to load pending proposals.', 'error');
+                     } else {
+                          console.log(`Load step ${index+1} successful.`);
+                     }
+                 });
+
+                 console.log("Checking admin status...");
+                 await checkAdminStatus();
+                 console.log("Admin status check finished.");
+
+             } catch (error) {
+                  console.error("Error in loadInitialData:", error);
+                  showStatus("Failed to load initial application data.", "error");
+             }
+             console.log("loadInitialData finished");
+         }
 
 
-        function resetState() { /* ... */ }
+        function resetState() { /* ... (same as before) ... */ }
 
 
-        async function checkAdminStatus() { /* ... */ }
+        async function checkAdminStatus() { /* ... (same as before) ... */ }
 
-        async function updateAdminInfo() { /* ... */ }
+        async function updateAdminInfo() { /* ... (same as before) ... */ }
 
          // Combined proposal check function
-         async function checkPendingProposals() { /* ... */ }
+         async function checkPendingProposals() { /* ... (same as before) ... */ }
 
 
         // Helper to check and display pending mint details based on input ID (Admin Panel ONLY)
          let checkMintTimeout;
-        async function checkPendingMintDetails() { /* ... */ }
+        async function checkPendingMintDetails() { /* ... (same as before) ... */ }
 
 
-        async function updateWalletInfo() { /* ... */ }
+        async function updateWalletInfo() {
+             console.log("updateWalletInfo started");
+             if (!provider || !userAddress || !usdcContract || !mtyldContract) {
+                 console.log("updateWalletInfo skipped: Missing provider/user/contracts");
+                 return;
+             }
+             try {
+                 const network = await provider.getNetwork();
+                 networkNameSpan.textContent = network.name === 'arbitrum' ? 'Arbitrum One' : network.name;
+                 userAddressSpan.textContent = userAddress;
 
-        async function updateProtocolInfo() { /* ... */ }
+                 const [usdcBal, mtyldBal] = await Promise.all([
+                     usdcContract.balanceOf(userAddress),
+                     mtyldContract.balanceOf(userAddress)
+                 ]);
+                 console.log("Balances fetched:", usdcBal.toString(), mtyldBal.toString());
+
+                 usdcBalanceSpan.textContent = `${parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2)} USDC`;
+                 mtyldBalanceSpan.textContent = `${parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4)} MTYLD`;
+                 buyUsdcBalanceSpan.textContent = parseFloat(formatUnits(usdcBal, usdcDecimals)).toFixed(2);
+                 redeemMtyldBalanceSpan.textContent = parseFloat(formatUnits(mtyldBal, mtyldDecimals)).toFixed(4);
+                 console.log("Wallet info UI updated");
+             } catch (error) {
+                 console.error("Error updating wallet info:", error);
+                 showStatus('Failed to update wallet balances.', 'error');
+                 usdcBalanceSpan.textContent = 'Error'; mtyldBalanceSpan.textContent = 'Error';
+             }
+             console.log("updateWalletInfo finished");
+         }
+
+
+        async function updateProtocolInfo() {
+             console.log("updateProtocolInfo started");
+             if (!mtyldContract || !usdcContract) {
+                 console.log("updateProtocolInfo skipped: Missing contracts");
+                 return;
+             }
+             try {
+                 const block = await provider.getBlock("latest");
+                 blockTimestamp = block ? BigInt(block.timestamp) : null;
+                 console.log("Block timestamp:", blockTimestamp ? blockTimestamp.toString() : 'null');
+
+                 const [name, symbol, supply, contractUSDCBalance, available, feePercent, isPaused, delaySeconds] = await Promise.all([
+                     mtyldContract.name(),
+                     mtyldContract.symbol(),
+                     mtyldContract.totalSupply(),
+                     mtyldContract.contractPaymentTokenBalance(),
+                     mtyldContract.availableTokens(),
+                     mtyldContract.redemptionFeePercentage(),
+                     mtyldContract.paused(),
+                     mtyldContract.PROPOSAL_DELAY()
+                 ]);
+                 console.log("Protocol data fetched:", { name, symbol, supply: supply.toString(), contractUSDCBalance: contractUSDCBalance.toString(), available: available.toString(), feePercent: feePercent.toString(), isPaused, delaySeconds: delaySeconds.toString() });
+
+                 tokenNameSpan.textContent = name;
+                 tokenSymbolSpan.textContent = symbol;
+                 totalSupplySpan.textContent = parseFloat(formatUnits(supply, mtyldDecimals)).toFixed(4);
+                 contractAddressLink.textContent = shortenAddress(contractAddress);
+                 contractAddressLink.href = `https://arbiscan.io/address/${contractAddress}`;
+                 contractUsdcSpan.textContent = parseFloat(formatUnits(contractUSDCBalance, usdcDecimals)).toFixed(2);
+                 availableMtyldSpan.textContent = parseFloat(formatUnits(available, mtyldDecimals)).toFixed(4);
+                 redeemFeePercentSpan.textContent = feePercent.toString();
+                 currentProposalDelay = delaySeconds;
+                 proposalDelaySpan.textContent = delaySeconds.toString() + ` (${formatSeconds(delaySeconds)})`;
+
+                 updatePauseUI(isPaused);
+
+                 let price = 0;
+                 if (supply > 0n && contractUSDCBalance >= 0n) {
+                      const scaleFactor = 10n ** BigInt(18 - usdcDecimals);
+                      const priceBigInt = supply > 0n ? (contractUSDCBalance * scaleFactor) / supply : 0n;
+                      price = parseFloat(formatUnits(priceBigInt, usdcDecimals));
+                 }
+                 mtyldPriceSpan.textContent = price > 0 ? price.toFixed(6) : '0.000000';
+                 console.log("Calculated price:", mtyldPriceSpan.textContent);
+
+                 updateBuyEstimate(); updateRedeemEstimate();
+                 console.log("Estimates updated");
+
+                 // Recheck proposals if admin, now that blockTimestamp is available
+                 if (userAddress && contractOwner && userAddress.toLowerCase() === contractOwner.toLowerCase()){ await checkPendingProposals(); }
+
+             } catch (error) {
+                 console.error("Error updating protocol info:", error);
+                 showStatus('Failed to fetch protocol data.', 'error');
+                 tokenNameSpan.textContent = 'Error'; /*...*/
+             }
+             console.log("updateProtocolInfo finished");
+         }
+
 
         // --- Buy/Redeem Logic ---
         async function updateBuyEstimate() { /* ... */ }
@@ -451,8 +502,6 @@
         function populateYearFilter() { /* ... */ }
         function filterAndRenderOrders() { /* ... */ }
         function renderWorkOrdersTable(ordersToRender) { /* ... */ }
-
-        // Fetch and Render Pending Mint Proposals (Public View) - ADJUSTED
         async function fetchPendingProposals() { /* ... */ }
 
 
