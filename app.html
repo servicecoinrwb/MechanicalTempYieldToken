@@ -674,17 +674,25 @@
         // --- Blockchain Interaction ---
 
         async function connectWallet() {
-            // ... (connectWallet function remains the same) ...
+            // --- FIX: Define Arbitrum network explicitly ---
              if (typeof window.ethereum === 'undefined') {
                 return showStatus('MetaMask is not installed.', 'error');
             }
+
+            // Define Arbitrum One network details
+            const arbitrumNetwork = {
+                chainId: 42161, // Chain ID for Arbitrum One
+                name: "arbitrum",
+            };
+
             const connectBtn = connectButton; // Use existing reference
             const originalConnectText = 'Connect Wallet';
             setLoading(connectBtn, true, originalConnectText);
 
             try {
                 if (typeof ethers === 'undefined') { throw new Error('Ethers.js library not loaded.'); }
-                provider = new ethers.BrowserProvider(window.ethereum, "any"); // Allow any network initially
+                // --- FIX: Use the defined network when creating the provider ---
+                provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
 
                 // Add listeners ONCE here, if not already attached
                 if (!window.walletListenersAttached) {
@@ -692,43 +700,64 @@
                      window.walletListenersAttached = true;
                 }
 
+                // Check current network in MetaMask *before* requesting accounts
+                const currentMetaMaskNetwork = await provider.getNetwork();
+                console.log("MetaMask Network:", currentMetaMaskNetwork);
 
-                const network = await provider.getNetwork();
-                if (network.chainId !== BigInt(arbitrumChainId)) {
+                if (currentMetaMaskNetwork.chainId !== BigInt(arbitrumChainId)) {
+                     console.log(`Requesting switch to Arbitrum One (Chain ID: ${arbitrumChainId})`);
                      try {
                           await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: arbitrumChainId }] });
-                          provider = new ethers.BrowserProvider(window.ethereum); // Re-init after switch
+                          // Re-initialize provider after successful switch to ensure it's connected correctly
+                          provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
+                          console.log("Switched to Arbitrum One successfully.");
                      } catch (switchError) {
-                          if (switchError.code === 4902) {
+                         console.error("Switch Network Error:", switchError);
+                          if (switchError.code === 4902) { // Network not added
+                               console.log("Arbitrum One not found in MetaMask, requesting add.");
                                try {
                                     await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: arbitrumChainId, chainName: 'Arbitrum One', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://arb1.arbitrum.io/rpc'], blockExplorerUrls: ['https://arbiscan.io'] }] });
-                                    provider = new ethers.BrowserProvider(window.ethereum); // Re-init after add
-                               } catch (addError) { throw new Error('Please add Arbitrum One network manually.'); }
-                           } else { throw new Error('Please switch to Arbitrum One network.'); }
+                                    // Re-initialize provider after adding
+                                    provider = new ethers.BrowserProvider(window.ethereum, arbitrumNetwork);
+                                    console.log("Added Arbitrum One successfully.");
+                               } catch (addError) {
+                                    console.error("Add Network Error:", addError);
+                                    throw new Error('Please add Arbitrum One network to MetaMask manually and reconnect.');
+                                }
+                           } else {
+                                throw new Error('Please switch MetaMask to the Arbitrum One network.');
+                            }
                      }
                 }
 
+                // Now request accounts
+                console.log("Requesting accounts...");
                 await provider.send("eth_requestAccounts", []);
                 signer = await provider.getSigner();
                 userAddress = await signer.getAddress();
+                console.log("Account connected:", userAddress);
 
                 mtyldContract = new ethers.Contract(contractAddress, contractABI, signer);
                 const usdcAbiMinimal = ["function decimals() view returns (uint8)","function balanceOf(address) view returns (uint256)","function allowance(address, address) view returns (uint256)","function approve(address, uint256) returns (bool)","function transferFrom(address, address, uint256) returns (bool)"];
                 usdcContract = new ethers.Contract(usdcAddress, usdcAbiMinimal, signer);
+                console.log("Contracts initialized.");
 
                 // Fetch decimals
+                console.log("Fetching decimals...");
                 const [mtyldDec, usdcDec] = await Promise.all([
                     mtyldContract.decimals(),
                     usdcContract.decimals()
                 ]);
                 mtyldDecimals = Number(mtyldDec);
                 usdcDecimals = Number(usdcDec);
+                console.log(`Decimals: MTYLD=${mtyldDecimals}, USDC=${usdcDecimals}`);
 
 
                 connectButton.textContent = shortenAddress(userAddress);
                 connectButton.disabled = true;
                 walletInfoDiv.classList.remove('hidden');
 
+                console.log("Updating UI elements...");
                 await updateWalletInfo();
                 await updateProtocolInfo(); // Includes pause status check now
                 await fetchAndStoreAllWorkOrders();
@@ -736,10 +765,18 @@
                 await checkAdminStatus(); // Includes proposal checks
 
                 showStatus('Wallet connected!', 'success');
+                console.log("Connection process complete.");
 
             } catch (error) {
                 console.error("Connection failed:", error);
-                showStatus(`Wallet connection failed: ${error.message}`, 'error');
+                 // Try to extract a more specific reason if available
+                 let reason = error.message;
+                 if (error.code === 'CALL_EXCEPTION' && error.reason) {
+                    reason = error.reason;
+                 } else if (error.info?.error?.message) {
+                    reason = error.info.error.message;
+                 }
+                 showStatus(`Wallet connection failed: ${reason}`, 'error');
                 resetState(); // Reset UI on connection failure
             } finally {
                  if (userAddress) {
@@ -1333,6 +1370,8 @@
                  let reason = error?.data?.message || error?.reason || error.message || "Unknown error";
                  if (error.info?.error?.message) { // Ethers v6 specific error details
                     reason = error.info.error.message;
+                 } else if (error.error?.data?.message) { // Check nested structure common in RPC errors
+                     reason = error.error.data.message;
                  }
                  console.error("Revert Reason:", reason);
                  showStatus(`Propose fail: ${reason}`, 'error');
@@ -1434,6 +1473,7 @@
                  console.error("Cancel transaction failed:", error);
                  let reason = error?.data?.message || error?.reason || error.message || "Unknown error";
                  if (error.info?.error?.message) { reason = error.info.error.message; }
+                 else if (error.error?.data?.message) { reason = error.error.data.message; }
                  console.error("Revert Reason:", reason);
                  showStatus(`Cancel fail: ${reason}`, 'error');
              } finally {
