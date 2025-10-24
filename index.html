@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MTYLD Mini dApp + Owner Panel (Fees & Guarded)</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <!-- Chart.js for NAV chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root{--bg:#0b0e14;--card:#141a24;--text:#e6edf3;--muted:#94a3b8;--acc:#f59e0b;--br:#223043}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,Segoe UI,Inter,Arial}
@@ -25,22 +27,20 @@
   </style>
 </head>
 <body>
-  <!-- Full-width Banner -->
-<!-- Compact Full-width Banner -->
-<div style="
-  width: 100%;
-  background: linear-gradient(180deg, #0b1120 0%, #111827 100%);
-  text-align: center;
-  padding: 20px 0;
-  border-bottom: 1px solid #1f2937;
-">
-  <img
-    src="https://imageview.replit.app/objects/uploads/018d86f6-c0d5-4bad-9a23-27761700c050"
-    alt="Mechanical Temp MTYLD Vault Banner"
-    style="max-width: 700px; width: 80%; height: auto; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.3);"
-  >
-</div>
-
+  <!-- Compact Full-width Banner -->
+  <div style="
+    width: 100%;
+    background: linear-gradient(180deg, #0b1120 0%, #111827 100%);
+    text-align: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #1f2937;
+  ">
+    <img
+      src="https://imageview.replit.app/objects/uploads/018d86f6-c0d5-4bad-9a23-27761700c050"
+      alt="Mechanical Temp MTYLD Vault Banner"
+      style="max-width: 700px; width: 80%; height: auto; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.3);"
+    >
+  </div>
 
   <div class="wrap">
     <h1>MTYLD Vault <span class="pill mono">Arbitrum</span></h1>
@@ -193,6 +193,27 @@
       </ul>
     </div>
 
+    <!-- PERFORMANCE / APY -->
+    <div class="card" style="margin-top:12px">
+      <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between">
+        <div>
+          <div class="muted">Performance</div>
+          <div class="mono" id="apyLine">APY (30d annualized): —</div>
+          <div class="mono" id="changeLine">Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —</div>
+        </div>
+        <div class="row-tight">
+          <button id="btnExportCSV" class="btn">Export NAV CSV</button>
+          <button id="btnResetHistory" class="btn">Reset History</button>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <canvas id="navChart" height="120"></canvas>
+      </div>
+      <div class="muted" style="margin-top:8px">
+        Notes: APY is computed from the last 30 days of NAV (pricePerToken). If fewer than 30 days of data exist, it uses the longest window available. Data is sampled locally and persisted to your browser (localStorage).
+      </div>
+    </div>
+
     <div class="card" style="margin-top:12px">
       <div class="muted">USDC</div>
       <div class="mono">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</div>
@@ -260,6 +281,93 @@
   const mintFee = el("mintFee"), redeemFee = el("redeemFee"), feeRecipient = el("feeRecipient"), feeRoundUp = el("feeRoundUp"), btnSetFees = el("btnSetFees"), feesLine = el("feesLine");
   const btnGuardOn = el("btnGuardOn"), btnGuardOff = el("btnGuardOff"), guardedLine = el("guardedLine");
   const wlAddr = el("wlAddr"), btnWhitelistOn = el("btnWhitelistOn"), btnWhitelistOff = el("btnWhitelistOff"), wlMsg = el("wlMsg");
+
+  // ===== NAV history (local) =====
+  const NAV_HISTORY_KEY = "mtyld_nav_history_" + VAULT;
+  let navHistory = []; // [{t: unixSec, p: price1e18}]
+  let navChart;        // Chart.js instance
+
+  function loadHistory() {
+    try { navHistory = JSON.parse(localStorage.getItem(NAV_HISTORY_KEY) || "[]"); }
+    catch { navHistory = []; }
+  }
+  function saveHistory() {
+    try { localStorage.setItem(NAV_HISTORY_KEY, JSON.stringify(navHistory)); } catch {}
+  }
+  function pruneHistory() {
+    const cutoff = Math.floor(Date.now()/1000) - 370*24*3600; // ~1y + buffer
+    navHistory = navHistory.filter(pt => pt.t >= cutoff);
+  }
+  function recordNavSample(price1e18) {
+    const now = Math.floor(Date.now()/1000);
+    const last = navHistory[navHistory.length-1];
+    if (!last || now - last.t >= 300 || last.p !== Number(price1e18)) { // every 5 min or price change
+      navHistory.push({ t: now, p: Number(price1e18) });
+      pruneHistory(); saveHistory(); drawNavChart();
+    }
+  }
+  function lookupPriceAgo(secondsBack) {
+    const target = Math.floor(Date.now()/1000) - secondsBack;
+    if (navHistory.length === 0) return null;
+    for (let i=navHistory.length-1;i>=0;i--) {
+      if (navHistory[i].t <= target) return navHistory[i].p/1e18;
+    }
+    return navHistory[0]?.p ? navHistory[0].p/1e18 : null;
+  }
+  function pctChange(curr, prev) {
+    if (!curr || !prev || prev === 0) return null;
+    return ((curr - prev) / prev) * 100;
+  }
+  function annualizedFromWindow(curr, past, seconds) {
+    if (!curr || !past || past === 0) return null;
+    const ratio = curr / past;
+    const years = seconds / (365*24*3600);
+    return (Math.pow(ratio, 1/years) - 1) * 100;
+  }
+  function drawNavChart() {
+    const c = document.getElementById("navChart");
+    if (!c) return;
+    const ctx = c.getContext("2d");
+    const labels = navHistory.map(p => new Date(p.t*1000).toLocaleString());
+    const data = navHistory.map(p => p.p / 1e18);
+    if (!navChart) {
+      navChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [{ label: "NAV ($ per MTYLD)", data, tension: 0.2, fill: false, pointRadius: 0, borderWidth: 2 }]},
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false }},
+          scales: { x: { ticks: { maxRotation: 0, autoSkip: true } }, y: { beginAtZero: false } }
+        }
+      });
+    } else {
+      navChart.data.labels = labels;
+      navChart.data.datasets[0].data = data;
+      navChart.update();
+    }
+  }
+  function updatePerformanceLines(currentPrice1e18) {
+    const curr = Number(currentPrice1e18) / 1e18;
+    const p24h = lookupPriceAgo(24*3600);
+    const p7d  = lookupPriceAgo(7*24*3600);
+    const p30d = lookupPriceAgo(30*24*3600);
+    const line = (v) => (v===null ? "—" : (v>=0? "+" : "") + v.toFixed(2) + "%");
+
+    const c24 = p24h ? pctChange(curr, p24h) : null;
+    const c7  = p7d  ? pctChange(curr, p7d)  : null;
+    const c30 = p30d ? pctChange(curr, p30d) : null;
+
+    const changeEl = document.getElementById("changeLine");
+    if (changeEl) changeEl.textContent = `Δ 24h: ${line(c24)}  •  Δ 7d: ${line(c7)}  •  Δ 30d: ${line(c30)}`;
+
+    let apy = null;
+    if (p30d) apy = annualizedFromWindow(curr, p30d, 30*24*3600);
+    else if (p7d) apy = annualizedFromWindow(curr, p7d, 7*24*3600);
+    else if (p24h) apy = annualizedFromWindow(curr, p24h, 24*3600);
+
+    const apyEl = document.getElementById("apyLine");
+    if (apyEl) apyEl.textContent = "APY (30d annualized): " + (apy===null ? "—" : apy.toFixed(2) + "%");
+  }
 
   // ===== Ethers =====
   let provider, signer, acct, vault, usdc, vaultOwner;
@@ -341,11 +449,16 @@
       pendEl.textContent = fmtUsd(fmt6(pending));
       const now = Math.floor(Date.now()/1000);
       const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
-      cdEl.textContent = secs ? humanize(secs) : (Number(pending)>0 ? "Queued (awaiting apply)" : "—");
+      cdEl.textContent = secs ? humanize(secs) : (Number(pending)>0 ? "Queued (awaiting apply)" : "—";
 
       if (vault && vaultOwner && vaultOwner.toLowerCase() === (await (signer?.getAddress()??"")).toLowerCase()) {
         await loadOwnerState();
       }
+
+      // Record + update chart/apy
+      recordNavSample(price);
+      updatePerformanceLines(price);
+
     } catch (e) {
       console.error(e);
       alert("Refresh failed (check network/contract).");
@@ -463,9 +576,33 @@
     catch (e) { console.error(e); wlMsg.textContent = shortErr(e); }
   };
 
+  // Performance buttons
+  document.getElementById("btnExportCSV").onclick = () => {
+    const rows = [["timestamp","iso","nav_usd"]];
+    for (const p of navHistory) rows.push([p.t, new Date(p.t*1000).toISOString(), (p.p/1e18).toFixed(8)]);
+    const csv = rows.map(r => r.join(",")).join("\n");
+    const blob = new Blob([csv], {type:"text/csv"});
+    const url  = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "mtyld_nav_history.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+  document.getElementById("btnResetHistory").onclick = () => {
+    if (!confirm("Reset locally stored NAV history?")) return;
+    navHistory = []; saveHistory(); drawNavChart();
+    // also clear performance lines
+    const apyEl = document.getElementById("apyLine");
+    const chgEl = document.getElementById("changeLine");
+    if (apyEl) apyEl.textContent = "APY (30d annualized): —";
+    if (chgEl) chgEl.textContent = "Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —";
+  };
+
   // Connect & Refresh
   el("btnConnect").onclick = async () => { try { await ensureProvider(); await refresh(); await loadOwnerState(); } catch(e){ console.error(e); } };
   el("btnRefresh").onclick = async () => { await refresh(); if (vaultOwner && signer) await loadOwnerState(); };
+
+  // Init local history + chart
+  loadHistory(); drawNavChart();
 
   // Auto-refresh every 10s
   setInterval(() => { refresh().catch(()=>{}); }, 10000);
