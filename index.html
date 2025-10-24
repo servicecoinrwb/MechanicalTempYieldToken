@@ -3,617 +3,639 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MTYLD Mini dApp + Owner Panel (Fees & Guarded)</title>
-  <!-- Silence favicon 404 in local/dev -->
+  <title>MTYLD Vault • Mechanical Temp</title>
+
+  <!-- No trackers. Just UI + libs we need -->
   <link rel="icon" href="data:,">
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
-  <!-- Chart.js for NAV chart -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
   <style>
-    :root{--bg:#0b0e14;--card:#141a24;--text:#e6edf3;--muted:#94a3b8;--acc:#f59e0b;--br:#223043}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,Segoe UI,Inter,Arial}
-    .wrap{max-width:980px;margin:24px auto;padding:0 16px}
-    h1{font-size:20px;margin:0 0 12px} .row{display:flex;gap:12px;flex-wrap:wrap}
-    .card{background:var(--card);border:1px solid var(--br);border-radius:12px;padding:14px;flex:1 1 300px;min-width:280px}
-    .muted{color:var(--muted)} .btn{cursor:pointer;padding:10px 14px;border-radius:10px;border:1px solid var(--br);background:#111826;color:var(--text)}
-    .btn:disabled{opacity:.6;cursor:not-allowed} .btn-primary{background:var(--acc);color:#111;border-color:#000}
-    input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--br);background:#0f1622;color:var(--text)}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
-    a{color:var(--acc);text-decoration:none}
-    .pill{display:inline-block;padding:2px 8px;border:1px solid var(--br);border-radius:999px;margin-left:8px;color:var(--muted)}
-    .row-tight{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .hidden{display:none}
-    .sep{height:1px;background:#223043;margin:10px 0}
-    label{font-size:12px;color:var(--muted)}
+    /* Chart.js line thickness tweak for dark theme */
+    canvas { background: transparent; }
   </style>
 </head>
-<body>
-  <!-- Compact Full-width Banner -->
-  <div style="
-    width: 100%;
-    background: linear-gradient(180deg, #0b1120 0%, #111827 100%);
-    text-align: center;
-    padding: 20px 0;
-    border-bottom: 1px solid #1f2937;
-  ">
-    <img
-      src="https://imageview.replit.app/objects/uploads/018d86f6-c0d5-4bad-9a23-27761700c050"
-      alt="Mechanical Temp MTYLD Vault Banner"
-      style="max-width: 700px; width: 80%; height: auto; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.3);"
-    >
-  </div>
+<body class="bg-slate-950 text-slate-100">
 
-  <div class="wrap">
-    <h1>MTYLD Vault <span class="pill mono">Arbitrum</span></h1>
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
+        <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-10 w-auto">
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">Mechanical Temp</span>
+      </a>
+      <nav class="flex items-center gap-2">
+        <a href="https://www.mechanicaltemp.com" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Main Site</a>
+        <a href="https://vault.mechanicaltemp.com" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Vault Home</a>
+      </nav>
+    </div>
+  </header>
 
-    <div class="row">
-      <div class="card" style="flex:0 0 280px">
-        <div class="row-tight" style="margin-bottom:8px">
-          <button id="btnConnect" class="btn">Connect Wallet</button>
-          <button id="btnRefresh" class="btn">↻</button>
-        </div>
-        <div class="muted" id="addr">Not connected</div>
-        <div class="muted mono" style="margin-top:6px">Vault: 0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880</div>
-        <div class="muted mono" id="ownerLine" style="margin-top:6px">Owner: —</div>
-      </div>
+  <!-- Banner -->
+  <section class="bg-gradient-to-b from-sky-900 to-slate-900 border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 py-8 sm:py-10 text-center">
+      <img
+        src="https://imageview.replit.app/objects/uploads/018d86f6-c0d5-4bad-9a23-27761700c050"
+        alt="MTYLD Vault Banner"
+        class="mx-auto w-full max-w-3xl rounded-xl shadow-xl ring-1 ring-black/20"
+      >
+      <h1 class="mt-6 text-3xl sm:text-4xl font-black tracking-tight">
+        MTYLD Vault <span class="ml-2 align-middle text-xs font-semibold px-2 py-1 rounded-full bg-slate-800 text-slate-300">Arbitrum</span>
+      </h1>
+      <p class="mt-2 text-slate-300">Mint and redeem MTYLD against USDC at NAV with owner controls.</p>
+    </div>
+  </section>
 
-      <div class="card">
-        <div class="grid">
-          <div>
-            <div class="muted">Price (NAV)</div>
-            <div class="mono" id="price">$–</div>
+  <!-- App -->
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <div class="grid md:grid-cols-3 gap-4">
+      <!-- Wallet / Address -->
+      <div class="md:col-span-1">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-full">
+          <div class="flex items-center gap-2 mb-3">
+            <button id="btnConnect" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Connect Wallet</button>
+            <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
           </div>
-          <div>
-            <div class="muted">Active Treasury</div>
-            <div class="mono" id="treasuryActive">$–</div>
-          </div>
-          <div>
-            <div class="muted">Pending Revenue</div>
-            <div class="mono" id="pending">$–</div>
-          </div>
-          <div>
-            <div class="muted">Pending Release In</div>
-            <div class="mono" id="countdown">–</div>
-          </div>
+          <div class="text-slate-400" id="addr">Not connected</div>
+          <div class="text-xs text-slate-500 mt-3">Vault:</div>
+          <div class="mt-0.5 font-mono text-slate-300">0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880</div>
+          <div class="text-xs text-slate-500 mt-3">Owner:</div>
+          <div class="mt-0.5 font-mono text-slate-300" id="ownerLine">—</div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="muted">USDC → MTYLD (Mint)</div>
-        <div style="margin-top:6px"><input id="mintAmount" placeholder="Amount (USDC)" inputmode="decimal" /></div>
-        <div class="grid" style="margin-top:8px">
-          <div><input id="mintSlippage" placeholder="Slippage % (e.g. 0.5)" value="0.5" /></div>
-          <div><button id="btnPreviewMint" class="btn">Preview</button></div>
+      <!-- Stats -->
+      <div class="md:col-span-2">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+          <div class="grid sm:grid-cols-4 gap-4">
+            <div>
+              <div class="text-slate-400 text-sm">Price (NAV)</div>
+              <div class="font-mono text-xl" id="price">$–</div>
+            </div>
+            <div>
+              <div class="text-slate-400 text-sm">Active Treasury</div>
+              <div class="font-mono text-xl" id="treasuryActive">$–</div>
+            </div>
+            <div>
+              <div class="text-slate-400 text-sm">Pending Revenue</div>
+              <div class="font-mono text-xl" id="pending">$–</div>
+            </div>
+            <div>
+              <div class="text-slate-400 text-sm">Pending Release In</div>
+              <div class="font-mono text-xl" id="countdown">–</div>
+            </div>
+          </div>
         </div>
-        <div class="mono" id="mintPreview" style="margin-top:6px;min-height:20px"></div>
-        <div style="margin-top:8px"><button id="btnMint" class="btn btn-primary" disabled>Mint</button></div>
-      </div>
-
-      <div class="card">
-        <div class="muted">MTYLD → USDC (Redeem)</div>
-        <div style="margin-top:6px"><input id="redeemAmount" placeholder="Amount (MTYLD)" inputmode="decimal" /></div>
-        <div class="grid" style="margin-top:8px">
-          <div><input id="redeemSlippage" placeholder="Slippage % (e.g. 0.5)" value="0.5" /></div>
-          <div><button id="btnPreviewRedeem" class="btn">Preview</button></div>
-        </div>
-        <div class="mono" id="redeemPreview" style="margin-top:6px;min-height:20px"></div>
-        <div style="margin-top:8px"><button id="btnRedeem" class="btn btn-primary" disabled>Redeem</button></div>
       </div>
     </div>
 
-    <!-- OWNER PANEL -->
-    <div id="ownerPanel" class="card hidden" style="margin-top:12px">
-      <div class="row-tight" style="justify-content:space-between">
-        <div><b>Owner Panel</b> <span class="pill mono" id="ownerBadge">You are owner</span></div>
-        <div class="muted mono" id="epochState">Epoch: —</div>
-      </div>
-      <div class="sep"></div>
-
-      <div class="grid">
-        <div>
-          <div class="muted">Queue Revenue (USDC)</div>
-          <div style="margin-top:6px"><input id="revAmount" placeholder="Amount (USDC)" inputmode="decimal" /></div>
-          <div class="row-tight" style="margin-top:8px">
-            <button id="btnQueueRev" class="btn btn-primary">Approve & Queue</button>
-            <div class="mono" id="revMsg"></div>
-          </div>
+    <!-- Actions -->
+    <div class="grid md:grid-cols-2 gap-4 mt-4">
+      <!-- Mint -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <div class="text-slate-300 font-semibold">USDC → MTYLD (Mint)</div>
+        <input id="mintAmount" inputmode="decimal" placeholder="Amount (USDC)"
+               class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <input id="mintSlippage" value="0.5" placeholder="Slippage % (e.g. 0.5)"
+                 class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <button id="btnPreviewMint" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Preview</button>
         </div>
-
-        <div>
-          <div class="muted">Pending Controls</div>
-          <div class="row-tight" style="margin-top:6px">
-            <button id="btnApply" class="btn">Apply Pending</button>
-            <button id="btnBeginClose" class="btn">Begin Epoch Close</button>
-            <button id="btnEndClose" class="btn">End Epoch Close</button>
-          </div>
-          <div class="muted mono" id="pendingHint" style="margin-top:6px">—</div>
-        </div>
+        <div class="font-mono text-slate-300 mt-2 min-h-6" id="mintPreview"></div>
+        <button id="btnMint" disabled
+                class="mt-2 w-full px-4 py-2 rounded-lg bg-sky-500 disabled:bg-slate-700 hover:bg-sky-600 text-white font-semibold">
+          Mint
+        </button>
       </div>
 
-      <div class="sep"></div>
-      <div class="grid">
-        <div>
-          <div class="muted">NAV Delay (seconds)</div>
-          <div class="row-tight" style="margin-top:6px">
-            <input id="navDelay" placeholder="e.g. 3600" />
-            <button id="btnSetDelay" class="btn">Set</button>
-          </div>
-          <div class="muted mono" id="delayLine" style="margin-top:6px">Current: —</div>
+      <!-- Redeem -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <div class="text-slate-300 font-semibold">MTYLD → USDC (Redeem)</div>
+        <input id="redeemAmount" inputmode="decimal" placeholder="Amount (MTYLD)"
+               class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <input id="redeemSlippage" value="0.5" placeholder="Slippage % (e.g. 0.5)"
+                 class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <button id="btnPreviewRedeem" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Preview</button>
         </div>
-
-        <!-- FEES -->
-        <div>
-          <div class="muted">Fees & Recipient</div>
-          <div class="grid" style="margin-top:6px">
-            <div><input id="mintFee" placeholder="Mint Fee (bps 0-500)" /></div>
-            <div><input id="redeemFee" placeholder="Redeem Fee (bps 0-500)" /></div>
-          </div>
-          <div class="row-tight" style="margin-top:6px">
-            <input id="feeRecipient" placeholder="Fee Recipient (0x…)" style="flex:1" />
-          </div>
-          <div class="row-tight" style="margin-top:6px">
-            <label><input type="checkbox" id="feeRoundUp" /> Round fees up</label>
-            <button id="btnSetFees" class="btn">Set Fees</button>
-          </div>
-            <div class="muted mono" id="feesLine" style="margin-top:6px">Mint: — bps | Redeem: — bps | RoundUp: — | Recipient: —</div>
-        </div>
+        <div class="font-mono text-slate-300 mt-2 min-h-6" id="redeemPreview"></div>
+        <button id="btnRedeem" disabled
+                class="mt-2 w-full px-4 py-2 rounded-lg bg-sky-500 disabled:bg-slate-700 hover:bg-sky-600 text-white font-semibold">
+          Redeem
+        </button>
       </div>
-
-      <div class="sep"></div>
-      <!-- GUARDED -->
-      <div class="grid">
-        <div>
-          <div class="muted">Guarded Launch</div>
-          <div class="row-tight" style="margin-top:6px">
-            <button id="btnGuardOn" class="btn">Enable Guarded</button>
-            <button id="btnGuardOff" class="btn">Disable Guarded</button>
-          </div>
-          <div class="muted mono" id="guardedLine" style="margin-top:6px">Guarded: —</div>
-        </div>
-        <div>
-          <div class="muted">Whitelist Minter</div>
-          <div class="row-tight" style="margin-top:6px">
-            <input id="wlAddr" placeholder="Wallet (0x…)" style="flex:1" />
-          </div>
-          <div class="row-tight" style="margin-top:6px">
-            <button id="btnWhitelistOn" class="btn">Allow</button>
-            <button id="btnWhitelistOff" class="btn">Remove</button>
-          </div>
-          <div class="muted mono" id="wlMsg" style="margin-top:6px">—</div>
-        </div>
-      </div>
-
-      <div class="sep"></div>
-      <div class="muted">Quick Notes</div>
-      <ul style="margin:6px 0 0 18px">
-        <li>Queue: transfers USDC in, <i>excluded</i> from NAV until applied</li>
-        <li>Apply: moves pending into active NAV after delay</li>
-        <li>Epoch Close: pauses user mint/redeem during sensitive windows</li>
-        <li>Fees are in <b>bps</b> (100 bps = 1%). Round-up charges users the ceiling cent.</li>
-        <li>Guarded launch only allows whitelisted wallets to mint.</li>
-      </ul>
     </div>
 
-    <!-- PERFORMANCE / APY -->
-    <div class="card" style="margin-top:12px">
-      <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between">
-        <div>
-          <div class="muted">Performance</div>
-          <div class="mono" id="apyLine">APY (30d annualized): —</div>
-          <div class="mono" id="changeLine">Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —</div>
+    <!-- Owner Panel -->
+    <div id="ownerPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 mt-4">
+      <div class="flex items-center justify-between gap-3">
+        <div class="font-semibold">Owner Panel
+          <span class="ml-2 text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300">You are owner</span>
         </div>
-        <div class="row-tight">
-          <button id="btnExportCSV" class="btn">Export NAV CSV</button>
-          <button id="btnResetHistory" class="btn">Reset History</button>
+        <div class="font-mono text-slate-300" id="epochState">Epoch: —</div>
+      </div>
+      <div class="h-px bg-slate-800 my-3"></div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <!-- Queue Rev -->
+        <div>
+          <div class="text-slate-300">Queue Revenue (USDC)</div>
+          <input id="revAmount" placeholder="Amount (USDC)" inputmode="decimal"
+                 class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <div class="mt-2 flex items-center gap-2">
+            <button id="btnQueueRev" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Approve & Queue</button>
+            <div class="font-mono text-slate-300" id="revMsg"></div>
+          </div>
+        </div>
+
+        <!-- Pending controls -->
+        <div>
+          <div class="text-slate-300">Pending Controls</div>
+          <div class="mt-2 flex flex-wrap items-center gap-2">
+            <button id="btnApply" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Apply Pending</button>
+            <button id="btnBeginClose" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Begin Epoch Close</button>
+            <button id="btnEndClose" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">End Epoch Close</button>
+          </div>
+          <div id="pendingHint" class="font-mono text-slate-300 mt-2">—</div>
         </div>
       </div>
-      <div style="margin-top:10px">
+
+      <div class="h-px bg-slate-800 my-3"></div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <!-- NAV delay -->
+        <div>
+          <div class="text-slate-300">NAV Delay (seconds)</div>
+          <div class="mt-2 flex items-center gap-2">
+            <input id="navDelay" placeholder="e.g. 3600"
+                   class="flex-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+            <button id="btnSetDelay" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Set</button>
+          </div>
+          <div id="delayLine" class="text-slate-400 font-mono mt-2">Current: —</div>
+        </div>
+
+        <!-- Fees -->
+        <div>
+          <div class="text-slate-300">Fees & Recipient</div>
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <input id="mintFee" placeholder="Mint Fee (bps 0-500)"
+                   class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+            <input id="redeemFee" placeholder="Redeem Fee (bps 0-500)"
+                   class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          </div>
+          <input id="feeRecipient" placeholder="Fee Recipient (0x…)"
+                 class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <div class="mt-2 flex items-center gap-3">
+            <label class="inline-flex items-center gap-2 text-slate-300 text-sm">
+              <input type="checkbox" id="feeRoundUp" class="h-4 w-4 rounded border-slate-600 bg-slate-800">
+              Round fees up
+            </label>
+            <button id="btnSetFees" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Set Fees</button>
+          </div>
+          <div id="feesLine" class="text-slate-400 font-mono mt-2">
+            Mint: — bps | Redeem: — bps | RoundUp: — | Recipient: —
+          </div>
+        </div>
+      </div>
+
+      <div class="h-px bg-slate-800 my-3"></div>
+
+      <!-- Guarded + WL -->
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <div class="text-slate-300">Guarded Launch</div>
+          <div class="mt-2 flex items-center gap-2">
+            <button id="btnGuardOn" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Enable Guarded</button>
+            <button id="btnGuardOff" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Disable Guarded</button>
+          </div>
+          <div id="guardedLine" class="text-slate-400 font-mono mt-2">Guarded: —</div>
+        </div>
+
+        <div>
+          <div class="text-slate-300">Whitelist Minter</div>
+          <input id="wlAddr" placeholder="Wallet (0x…)"
+                 class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <div class="mt-2 flex items-center gap-2">
+            <button id="btnWhitelistOn" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Allow</button>
+            <button id="btnWhitelistOff" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Remove</button>
+          </div>
+          <div id="wlMsg" class="text-slate-400 font-mono mt-2">—</div>
+        </div>
+      </div>
+
+      <div class="mt-3 text-sm text-slate-400">
+        <ul class="list-disc pl-5 space-y-1">
+          <li><b>Queue</b>: transfers USDC in; excluded from NAV until applied.</li>
+          <li><b>Apply</b>: moves pending into active NAV after delay.</li>
+          <li><b>Epoch Close</b>: pauses mint/redeem during sensitive windows.</li>
+          <li><b>Fees</b> are in bps (100 bps = 1%). “Round up” charges the ceiling cent.</li>
+          <li><b>Guarded</b> launch only allows whitelisted wallets to mint.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Performance / APY -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mt-4">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div class="text-slate-300">Performance</div>
+          <div id="apyLine" class="font-mono text-slate-200">APY (30d annualized): —</div>
+          <div id="changeLine" class="font-mono text-slate-400">Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —</div>
+        </div>
+        <div class="flex gap-2">
+          <button id="btnExportCSV" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Export NAV CSV</button>
+          <button id="btnResetHistory" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Reset History</button>
+        </div>
+      </div>
+      <div class="mt-4">
         <canvas id="navChart" height="120"></canvas>
       </div>
-      <div class="muted" style="margin-top:8px">
-        Notes: APY is computed from the last 30 days of NAV (pricePerToken). If fewer than 30 days of data exist, it uses the longest window available. Data is sampled locally and persisted to your browser (localStorage).
-      </div>
+      <p class="mt-3 text-sm text-slate-400">
+        APY is computed from the last 30 days of NAV (pricePerToken). If fewer than 30 days exist, the longest window is used.
+        Data is sampled locally and stored in your browser (localStorage).
+      </p>
     </div>
 
-    <div class="card" style="margin-top:12px">
-      <div class="muted">USDC</div>
-      <div class="mono">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</div>
+    <!-- USDC address -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mt-4">
+      <div class="text-slate-300">USDC (Arbitrum)</div>
+      <div class="font-mono text-slate-200">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</div>
     </div>
-  </div>
+  </main>
 
-<script>
-(async () => {
-  // ===== Config =====
-  const VAULT = "0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880";
-  const USDC  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"; // Arbitrum USDC
-  const CHAIN_ID_ARBITRUM = 42161;
+  <!-- Footer -->
+  <footer class="mt-10 border-t border-slate-800 bg-slate-900">
+    <div class="max-w-6xl mx-auto px-4 py-8 text-center">
+      <p class="text-slate-300">
+        Powered by <a href="https://www.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300 font-semibold">Mechanical Temp</a>
+        <span class="text-slate-500">•</span> Southfield, MI
+      </p>
+      <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
+    </div>
+  </footer>
 
-  // Minimal ABIs (read/write used here)
-  const VAULT_ABI = [
-    // reads
-    "function owner() view returns (address)",
-    "function pricePerToken() view returns (uint256)",
-    "function treasuryActiveUSDC() view returns (uint256)",
-    "function pendingRevenueUSDC() view returns (uint256)",
-    "function pendingReleaseAt() view returns (uint64)",
-    "function pendingReleaseReady() view returns (bool)",
-    "function navDelaySec() view returns (uint256)",
-    "function epochClosing() view returns (bool)",
-    "function mintFeeBps() view returns (uint16)",
-    "function redeemFeeBps() view returns (uint16)",
-    "function feeRecipient() view returns (address)",
-    "function feeRoundUp() view returns (bool)",
-    "function guardedLaunch() view returns (bool)",
+  <script>
+  // Footer year
+  document.getElementById('yr').textContent = new Date().getFullYear();
 
-    // user
-    "function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)",
-    "function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)",
-    "function mint(uint256 usdcAmount, uint256 minMtyldOut)",
-    "function redeem(uint256 mtyldAmount, uint256 minUsdcOut)",
+  (async () => {
+    // ===== Config =====
+    const VAULT = "0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880";
+    const USDC  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"; // Arbitrum USDC
+    const CHAIN_ID_ARBITRUM = 42161;
 
-    // owner ops
-    "function injectRevenue(uint256 usdcAmount)",
-    "function applyPendingRevenue()",
-    "function beginEpochClose()",
-    "function endEpochClose()",
-    "function setNavDelay(uint256 seconds_)",
-    "function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)",
-    "function setGuardedLaunch(bool on)",
-    "function setWhitelist(address user, bool allowed)"
-  ];
-  const ERC20_ABI = [
-    "function allowance(address,address) view returns (uint256)",
-    "function approve(address,uint256) returns (bool)"
-  ];
+    // ABIs (read/write used here)
+    const VAULT_ABI = [
+      // reads
+      "function owner() view returns (address)",
+      "function pricePerToken() view returns (uint256)",
+      "function treasuryActiveUSDC() view returns (uint256)",
+      "function pendingRevenueUSDC() view returns (uint256)",
+      "function pendingReleaseAt() view returns (uint64)",
+      "function pendingReleaseReady() view returns (bool)",
+      "function navDelaySec() view returns (uint256)",
+      "function epochClosing() view returns (bool)",
+      "function mintFeeBps() view returns (uint16)",
+      "function redeemFeeBps() view returns (uint16)",
+      "function feeRecipient() view returns (address)",
+      "function feeRoundUp() view returns (bool)",
+      "function guardedLaunch() view returns (bool)",
 
-  // ===== DOM =====
-  const el = (id) => document.getElementById(id);
-  const addrEl = el("addr"), priceEl = el("price"), actEl = el("treasuryActive"), pendEl = el("pending"), cdEl = el("countdown");
-  const connectBtn = el("btnConnect"), refreshBtn = el("btnRefresh");
-  const mintAmt = el("mintAmount"), mintSlip = el("mintSlippage"), prevMintBtn = el("btnPreviewMint"), mintPrev = el("mintPreview"), mintBtn = el("btnMint");
-  const redAmt = el("redeemAmount"), redSlip = el("redeemSlippage"), prevRedBtn = el("btnPreviewRedeem"), redPrev = el("redeemPreview"), redBtn = el("btnRedeem");
+      // user
+      "function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)",
+      "function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)",
+      "function mint(uint256 usdcAmount, uint256 minMtyldOut)",
+      "function redeem(uint256 mtyldAmount, uint256 minUsdcOut)",
 
-  const ownerPanel = el("ownerPanel"), ownerLine = el("ownerLine");
-  const revAmount = el("revAmount"), btnQueueRev = el("btnQueueRev"), revMsg = el("revMsg");
-  const btnApply = el("btnApply"), btnBeginClose = el("btnBeginClose"), btnEndClose = el("btnEndClose"), epochState = el("epochState"), pendingHint = el("pendingHint");
-  const navDelay = el("navDelay"), btnSetDelay = el("btnSetDelay"), delayLine = el("delayLine");
+      // owner ops
+      "function injectRevenue(uint256 usdcAmount)",
+      "function applyPendingRevenue()",
+      "function beginEpochClose()",
+      "function endEpochClose()",
+      "function setNavDelay(uint256 seconds_)",
+      "function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)",
+      "function setGuardedLaunch(bool on)",
+      "function setWhitelist(address user, bool allowed)"
+    ];
+    const ERC20_ABI = [
+      "function allowance(address,address) view returns (uint256)",
+      "function approve(address,uint256) returns (bool)"
+    ];
 
-  // Fees & guarded
-  const mintFee = el("mintFee"), redeemFee = el("redeemFee"), feeRecipient = el("feeRecipient"), feeRoundUp = el("feeRoundUp"), btnSetFees = el("btnSetFees"), feesLine = el("feesLine");
-  const btnGuardOn = el("btnGuardOn"), btnGuardOff = el("btnGuardOff"), guardedLine = el("guardedLine");
-  const wlAddr = el("wlAddr"), btnWhitelistOn = el("btnWhitelistOn"), btnWhitelistOff = el("btnWhitelistOff"), wlMsg = el("wlMsg");
+    // ===== DOM =====
+    const el = (id) => document.getElementById(id);
+    const addrEl = el("addr"), priceEl = el("price"), actEl = el("treasuryActive"), pendEl = el("pending"), cdEl = el("countdown");
+    const mintAmt = el("mintAmount"), mintSlip = el("mintSlippage"), mintPrev = el("mintPreview"), mintBtn = el("btnMint");
+    const redAmt = el("redeemAmount"), redSlip = el("redeemSlippage"), redPrev = el("redeemPreview"), redBtn = el("btnRedeem");
+    const ownerPanel = el("ownerPanel"), ownerLine = el("ownerLine");
+    const revAmount = el("revAmount"), revMsg = el("revMsg");
+    const btnApply = el("btnApply"), btnBeginClose = el("btnBeginClose"), btnEndClose = el("btnEndClose"), epochState = el("epochState"), pendingHint = el("pendingHint");
+    const navDelay = el("navDelay"), delayLine = el("delayLine");
+    const mintFee = el("mintFee"), redeemFee = el("redeemFee"), feeRecipient = el("feeRecipient"), feeRoundUp = el("feeRoundUp"), feesLine = el("feesLine");
+    const wlAddr = el("wlAddr"), wlMsg = el("wlMsg");
+    const btnGuardOn = el("btnGuardOn"), btnGuardOff = el("btnGuardOff");
 
-  // ===== NAV history (local) =====
-  const NAV_HISTORY_KEY = "mtyld_nav_history_" + VAULT;
-  let navHistory = []; // [{t: unixSec, p: price1e18}]
-  let navChart;        // Chart.js instance
+    // ===== NAV history (local) =====
+    const NAV_HISTORY_KEY = "mtyld_nav_history_" + "0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880";
+    let navHistory = []; // [{t, p}]
+    let navChart;
 
-  function loadHistory() {
-    try { navHistory = JSON.parse(localStorage.getItem(NAV_HISTORY_KEY) || "[]"); }
-    catch { navHistory = []; }
-  }
-  function saveHistory() {
-    try { localStorage.setItem(NAV_HISTORY_KEY, JSON.stringify(navHistory)); } catch {}
-  }
-  function pruneHistory() {
-    const cutoff = Math.floor(Date.now()/1000) - 370*24*3600; // ~1y + buffer
-    navHistory = navHistory.filter(pt => pt.t >= cutoff);
-  }
-  function recordNavSample(price1e18) {
-    const now = Math.floor(Date.now()/1000);
-    const last = navHistory[navHistory.length-1];
-    if (!last || now - last.t >= 300 || last.p !== Number(price1e18)) { // every 5 min or price change
-      navHistory.push({ t: now, p: Number(price1e18) });
-      pruneHistory(); saveHistory(); drawNavChart();
-    }
-  }
-  function lookupPriceAgo(secondsBack) {
-    const target = Math.floor(Date.now()/1000) - secondsBack;
-    if (navHistory.length === 0) return null;
-    for (let i=navHistory.length-1;i>=0;i--) {
-      if (navHistory[i].t <= target) return navHistory[i].p/1e18;
-    }
-    return navHistory[0]?.p ? navHistory[0].p/1e18 : null;
-  }
-  function pctChange(curr, prev) {
-    if (!curr || !prev || prev === 0) return null;
-    return ((curr - prev) / prev) * 100;
-  }
-  function annualizedFromWindow(curr, past, seconds) {
-    if (!curr || !past || past === 0) return null;
-    const ratio = curr / past;
-    const years = seconds / (365*24*3600);
-    return (Math.pow(ratio, 1/years) - 1) * 100;
-  }
-  function drawNavChart() {
-    const c = document.getElementById("navChart");
-    if (!c) return;
-    const ctx = c.getContext("2d");
-    const labels = navHistory.map(p => new Date(p.t*1000).toLocaleString());
-    const data = navHistory.map(p => p.p / 1e18);
-    if (!navChart) {
-      navChart = new Chart(ctx, {
-        type: 'line',
-        data: { labels, datasets: [{ label: "NAV ($ per MTYLD)", data, tension: 0.2, fill: false, pointRadius: 0, borderWidth: 2 }]},
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false }},
-          scales: { x: { ticks: { maxRotation: 0, autoSkip: true } }, y: { beginAtZero: false } }
-        }
-      });
-    } else {
-      navChart.data.labels = labels;
-      navChart.data.datasets[0].data = data;
-      navChart.update();
-    }
-  }
-  function updatePerformanceLines(currentPrice1e18) {
-    const curr = Number(currentPrice1e18) / 1e18;
-    const p24h = lookupPriceAgo(24*3600);
-    const p7d  = lookupPriceAgo(7*24*3600);
-    const p30d = lookupPriceAgo(30*24*3600);
-    const line = (v) => (v===null ? "—" : (v>=0? "+" : "") + v.toFixed(2) + "%");
-
-    const c24 = p24h ? pctChange(curr, p24h) : null;
-    const c7  = p7d  ? pctChange(curr, p7d)  : null;
-    const c30 = p30d ? pctChange(curr, p30d) : null;
-
-    const changeEl = document.getElementById("changeLine");
-    if (changeEl) changeEl.textContent = `Δ 24h: ${line(c24)}  •  Δ 7d: ${line(c7)}  •  Δ 30d: ${line(c30)}`;
-
-    let apy = null;
-    if (p30d) apy = annualizedFromWindow(curr, p30d, 30*24*3600);
-    else if (p7d) apy = annualizedFromWindow(curr, p7d, 7*24*3600);
-    else if (p24h) apy = annualizedFromWindow(curr, p24h, 24*3600);
-
-    const apyEl = document.getElementById("apyLine");
-    if (apyEl) apyEl.textContent = "APY (30d annualized): " + (apy===null ? "—" : apy.toFixed(2) + "%");
-  }
-
-  // ===== Ethers =====
-  let provider, signer, acct, vault, usdc, vaultOwner;
-
-  function fmtUsd(x) { return `$${Number(x).toLocaleString(undefined,{maximumFractionDigits:2})}`; }
-  function fmt6(bi)  { return Number(bi) / 1e6; }
-  function fmt18(bi) { return Number(bi) / 1e18; }
-  function to6(str)  { const v = Number(str || "0"); return BigInt(Math.round(v * 1e6)); }
-  function to18(str) { const v = Number(str || "0"); return BigInt(Math.round(v * 1e18)); }
-  const trunc = (a)=> a ? a.slice(0,6)+"…"+a.slice(-4) : "—";
-
-  function shortErr(e){
-    const s = (e && (e.info?.error?.message || e.shortMessage || e.message)) || String(e);
-    return "Error: " + s.replace(/execution reverted: /i,'').slice(0,180);
-  }
-  function humanize(s) {
-    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-    const parts = [];
-    if (h) parts.push(`${h}h`);
-    if (m) parts.push(`${m}m`);
-    parts.push(`${sec}s`);
-    return parts.join(" ");
-  }
-
-  async function ensureProvider() {
-    if (!window.ethereum) {
-      alert("No wallet found.\nInstall MetaMask (or turn it on) and reload this page.");
-      throw new Error("no wallet");
-    }
-    provider = new ethers.BrowserProvider(window.ethereum);
-    const net = await provider.getNetwork();
-    if (Number(net.chainId) !== CHAIN_ID_ARBITRUM) {
-      try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xa4b1' }] }); }
-      catch (e) { alert("Please switch to Arbitrum One."); throw e; }
-    }
-    signer = await provider.getSigner();
-    acct = await signer.getAddress();
-    vault = new ethers.Contract(VAULT, VAULT_ABI, signer);
-    usdc  = new ethers.Contract(USDC, ERC20_ABI, signer);
-    addrEl.textContent = trunc(acct);
-
-    // Owner check
-    vaultOwner = await vault.owner();
-    ownerLine.textContent = "Owner: " + trunc(vaultOwner);
-    ownerPanel.classList.toggle("hidden", vaultOwner.toLowerCase() !== acct.toLowerCase());
-  }
-
-  async function loadOwnerState() {
-    if (!vault) return;
-    const [mf, rf, fr, fru, gl, delay, closing, pending, relAt] = await Promise.all([
-      vault.mintFeeBps(), vault.redeemFeeBps(), vault.feeRecipient(), vault.feeRoundUp(),
-      vault.guardedLaunch(), vault.navDelaySec(), vault.epochClosing(),
-      vault.pendingRevenueUSDC(), vault.pendingReleaseAt()
-    ]);
-    feesLine.textContent = `Mint: ${Number(mf)} bps | Redeem: ${Number(rf)} bps | RoundUp: ${fru ? "Yes":"No"} | Recipient: ${trunc(fr)}`;
-    mintFee.value = Number(mf);
-    redeemFee.value = Number(rf);
-    feeRecipient.value = fr;
-    feeRoundUp.checked = Boolean(fru);
-    guardedLine.textContent = "Guarded: " + (gl ? "Enabled" : "Disabled");
-    delayLine.textContent = "Current: " + Number(delay) + "s";
-    epochState.textContent = "Epoch: " + (closing ? "Closing (paused)" : "Open");
-
-    const now = Math.floor(Date.now()/1000);
-    const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
-    const ready = secs === 0 && Number(pending) > 0;
-    pendingHint.textContent = ready ? "Ready to apply ✅" : (Number(pending)>0 ? "Waiting for release…" : "No pending revenue");
-  }
-
-  async function refresh() {
-    try {
-      if (!provider) {
-        // read-only first paint
-        provider = window.ethereum ? new ethers.BrowserProvider(window.ethereum) : new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
+    function loadHistory(){ try{ navHistory = JSON.parse(localStorage.getItem(NAV_HISTORY_KEY) || "[]"); }catch{ navHistory = []; } }
+    function saveHistory(){ try{ localStorage.setItem(NAV_HISTORY_KEY, JSON.stringify(navHistory)); }catch{} }
+    function pruneHistory(){ const cutoff = Math.floor(Date.now()/1000) - 370*24*3600; navHistory = navHistory.filter(pt => pt.t >= cutoff); }
+    function recordNavSample(price1e18){
+      const now = Math.floor(Date.now()/1000);
+      const last = navHistory[navHistory.length-1];
+      if (!last || now - last.t >= 300 || last.p !== Number(price1e18)) {
+        navHistory.push({ t: now, p: Number(price1e18) });
+        pruneHistory(); saveHistory(); drawNavChart();
       }
-      const readVault = new ethers.Contract(VAULT, VAULT_ABI, provider);
-      const [price, active, pending, relAt] = await Promise.all([
-        readVault.pricePerToken(), readVault.treasuryActiveUSDC(), readVault.pendingRevenueUSDC(), readVault.pendingReleaseAt()
+    }
+    function lookupPriceAgo(secondsBack){
+      const target = Math.floor(Date.now()/1000) - secondsBack;
+      if (!navHistory.length) return null;
+      for (let i=navHistory.length-1;i>=0;i--) if (navHistory[i].t <= target) return navHistory[i].p/1e18;
+      return navHistory[0]?.p ? navHistory[0].p/1e18 : null;
+    }
+    function pctChange(curr, prev){ if (!curr || !prev || prev===0) return null; return ((curr - prev)/prev)*100; }
+    function annualizedFromWindow(curr, past, seconds){
+      if (!curr || !past || past===0) return null;
+      const ratio = curr/past, years = seconds / (365*24*3600);
+      return (Math.pow(ratio, 1/years) - 1) * 100;
+    }
+    function drawNavChart(){
+      const c = document.getElementById("navChart"); if (!c) return;
+      const labels = navHistory.map(p => new Date(p.t*1000).toLocaleString());
+      const data = navHistory.map(p => p.p/1e18);
+      if (!navChart){
+        navChart = new Chart(c.getContext("2d"), {
+          type: 'line',
+          data: { labels, datasets: [{ label: "NAV ($ per MTYLD)", data, tension: 0.25, fill: false, pointRadius: 0, borderWidth: 2 }]},
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false }},
+            scales: {
+              x: { ticks: { maxRotation: 0, autoSkip: true }, grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { color: '#94a3b8' } },
+              y: { beginAtZero: false, grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { color: '#94a3b8' } }
+            }
+          }
+        });
+      } else {
+        navChart.data.labels = labels;
+        navChart.data.datasets[0].data = data;
+        navChart.update();
+      }
+    }
+    function updatePerformanceLines(currentPrice1e18){
+      const curr = Number(currentPrice1e18)/1e18;
+      const p24h = lookupPriceAgo(24*3600);
+      const p7d  = lookupPriceAgo(7*24*3600);
+      const p30d = lookupPriceAgo(30*24*3600);
+      const fmt = v => (v===null ? "—" : ((v>=0?"+":"") + v.toFixed(2) + "%"));
+      const c24 = p24h ? pctChange(curr, p24h) : null;
+      const c7  = p7d  ? pctChange(curr, p7d)  : null;
+      const c30 = p30d ? pctChange(curr, p30d) : null;
+      el("changeLine").textContent = `Δ 24h: ${fmt(c24)}  •  Δ 7d: ${fmt(c7)}  •  Δ 30d: ${fmt(c30)}`;
+      let apy = null;
+      if (p30d) apy = annualizedFromWindow(curr, p30d, 30*24*3600);
+      else if (p7d) apy = annualizedFromWindow(curr, p7d, 7*24*3600);
+      else if (p24h) apy = annualizedFromWindow(curr, p24h, 24*3600);
+      el("apyLine").textContent = "APY (30d annualized): " + (apy===null ? "—" : apy.toFixed(2) + "%");
+    }
+
+    // ===== Ethers =====
+    let provider, signer, acct, vault, usdc, vaultOwner;
+
+    const fmtUsd = (x) => `$${Number(x).toLocaleString(undefined,{maximumFractionDigits:2})}`;
+    const fmt6  = (bi) => Number(bi)/1e6;
+    const fmt18 = (bi) => Number(bi)/1e18;
+    const to6   = (str) => { const v = Number(str||"0"); return BigInt(Math.round(v*1e6)); };
+    const to18  = (str) => { const v = Number(str||"0"); return BigInt(Math.round(v*1e18)); };
+    const trunc = (a) => a ? a.slice(0,6)+"…"+a.slice(-4) : "—";
+    const shortErr = (e) => {
+      const s = (e && (e.info?.error?.message || e.shortMessage || e.message)) || String(e);
+      return "Error: " + s.replace(/execution reverted: /i,'').slice(0,180);
+    };
+    function humanize(s){
+      const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+      return (h?`${h}h `:"") + (m?`${m}m `:"") + `${sec}s`;
+    }
+
+    async function ensureProvider(){
+      if (!window.ethereum) { alert("No wallet found. Please install/enable MetaMask."); throw new Error("no wallet"); }
+      provider = new ethers.BrowserProvider(window.ethereum);
+      const net = await provider.getNetwork();
+      if (Number(net.chainId) !== CHAIN_ID_ARBITRUM) {
+        try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xa4b1' }] }); }
+        catch (e) { alert("Please switch to Arbitrum One."); throw e; }
+      }
+      signer = await provider.getSigner();
+      acct = await signer.getAddress();
+      vault = new ethers.Contract(VAULT, VAULT_ABI, signer);
+      usdc  = new ethers.Contract(USDC, ERC20_ABI, signer);
+      addrEl.textContent = trunc(acct);
+
+      // Owner check
+      vaultOwner = await vault.owner();
+      ownerLine.textContent = trunc(vaultOwner);
+      ownerPanel.classList.toggle("hidden", vaultOwner.toLowerCase() !== acct.toLowerCase());
+    }
+
+    async function loadOwnerState(){
+      if (!vault) return;
+      const [mf, rf, fr, fru, gl, delay, closing, pending, relAt] = await Promise.all([
+        vault.mintFeeBps(), vault.redeemFeeBps(), vault.feeRecipient(), vault.feeRoundUp(),
+        vault.guardedLaunch(), vault.navDelaySec(), vault.epochClosing(),
+        vault.pendingRevenueUSDC(), vault.pendingReleaseAt()
       ]);
-      priceEl.textContent = `$${fmt18(price).toFixed(6)}`;
-      actEl.textContent = fmtUsd(fmt6(active));
-      pendEl.textContent = fmtUsd(fmt6(pending));
+      el("feesLine").textContent = `Mint: ${Number(mf)} bps | Redeem: ${Number(rf)} bps | RoundUp: ${fru?"Yes":"No"} | Recipient: ${trunc(fr)}`;
+      mintFee.value = Number(mf); redeemFee.value = Number(rf); feeRecipient.value = fr; feeRoundUp.checked = Boolean(fru);
+      el("guardedLine").textContent = "Guarded: " + (gl ? "Enabled" : "Disabled");
+      delayLine.textContent = "Current: " + Number(delay) + "s";
+      epochState.textContent = "Epoch: " + (closing ? "Closing (paused)" : "Open");
+
       const now = Math.floor(Date.now()/1000);
       const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
-      cdEl.textContent = secs ? humanize(secs) : (Number(pending)>0 ? "Queued (awaiting apply)" : "—");
-
-      if (vault && vaultOwner && vaultOwner.toLowerCase() === (await (signer?.getAddress()??"")).toLowerCase()) {
-        await loadOwnerState();
-      }
-
-      // Record + update chart/apy
-      recordNavSample(price);
-      updatePerformanceLines(price);
-
-    } catch (e) {
-      console.error(e);
-      alert("Refresh failed (check network/contract).");
+      const ready = secs === 0 && Number(pending) > 0;
+      pendingHint.textContent = ready ? "Ready to apply ✅" : (Number(pending)>0 ? "Waiting for release…" : "No pending revenue");
     }
-  }
 
-  // ===== User previews & actions =====
-  el("btnPreviewMint").onclick = async () => {
-    try {
-      if (!provider) await ensureProvider();
-      const usdcAmt = to6(mintAmt.value);
-      if (usdcAmt <= 0n) { mintPrev.textContent = "Enter amount"; return; }
-      const [mtyldOut, price] = await vault.previewMint(usdcAmt);
-      mintPrev.textContent = `Est. MTYLD: ${fmt18(mtyldOut).toFixed(6)} @ $${fmt18(price).toFixed(6)}`;
-      mintBtn.disabled = false;
-    } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
-  };
-  el("btnMint").onclick = async () => {
-    try {
-      mintBtn.disabled = true;
-      if (!provider) await ensureProvider();
-      const usdcAmt = to6(mintAmt.value);
-      const slipPct = Number(mintSlip.value || "0.5");
-      const [mtyldOut] = await vault.previewMint(usdcAmt);
-      const minOut = BigInt(Math.floor(Number(mtyldOut) * (1 - slipPct/100)));
-      const allowance = await usdc.allowance(acct, VAULT);
-      if (allowance < usdcAmt) { const txa = await usdc.approve(VAULT, usdcAmt); await txa.wait(); }
-      const tx = await vault.mint(usdcAmt, minOut); await tx.wait();
-      mintPrev.textContent = "Minted ✅"; await refresh();
-    } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
-    finally { mintBtn.disabled = false; }
-  };
+    async function refresh(){
+      try{
+        if (!provider){
+          provider = window.ethereum ? new ethers.BrowserProvider(window.ethereum)
+                                     : new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
+        }
+        const readVault = new ethers.Contract(VAULT, VAULT_ABI, provider);
+        const [price, active, pending, relAt] = await Promise.all([
+          readVault.pricePerToken(), readVault.treasuryActiveUSDC(), readVault.pendingRevenueUSDC(), readVault.pendingReleaseAt()
+        ]);
+        priceEl.textContent = `$${fmt18(price).toFixed(6)}`;
+        actEl.textContent = fmtUsd(fmt6(active));
+        pendEl.textContent = fmtUsd(fmt6(pending));
+        const now = Math.floor(Date.now()/1000);
+        const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
+        cdEl.textContent = secs ? humanize(secs) : (Number(pending)>0 ? "Queued (awaiting apply)" : "—");
 
-  el("btnPreviewRedeem").onclick = async () => {
-    try {
-      if (!provider) await ensureProvider();
-      const mtyldAmt = to18(redAmt.value);
-      if (mtyldAmt <= 0n) { redPrev.textContent = "Enter amount"; return; }
-      const [usdcOut, price] = await vault.previewRedeem(mtyldAmt);
-      redPrev.textContent = `Est. USDC: ${fmt6(usdcOut).toFixed(6)} @ $${fmt18(price).toFixed(6)}`;
-      redBtn.disabled = false;
-    } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
-  };
-  el("btnRedeem").onclick = async () => {
-    try {
-      redBtn.disabled = true;
-      if (!provider) await ensureProvider();
-      const mtyldAmt = to18(redAmt.value);
-      const slipPct = Number(redSlip.value || "0.5");
-      const [usdcOut] = await vault.previewRedeem(mtyldAmt);
-      const minOut = BigInt(Math.floor(Number(usdcOut) * (1 - slipPct/100)));
-      const tx = await vault.redeem(mtyldAmt, minOut); await tx.wait();
-      redPrev.textContent = "Redeemed ✅"; await refresh();
-    } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
-    finally { redBtn.disabled = false; }
-  };
+        if (vault && vaultOwner && signer && vaultOwner.toLowerCase() === (await signer.getAddress()).toLowerCase()) {
+          await loadOwnerState();
+        }
 
-  // ===== Owner actions =====
-  el("btnQueueRev").onclick = async () => {
-    try {
-      revMsg.textContent = "";
-      if (!provider) await ensureProvider();
-      if (vaultOwner.toLowerCase() !== acct.toLowerCase()) { revMsg.textContent = "Not owner"; return; }
-      const amt = to6(revAmount.value);
-      if (amt <= 0n) { revMsg.textContent = "Enter amount"; return; }
-      const allowance = await usdc.allowance(acct, VAULT);
-      if (allowance < amt) { const txa = await usdc.approve(VAULT, amt); await txa.wait(); }
-      const tx = await vault.injectRevenue(amt); await tx.wait();
-      revMsg.textContent = "Queued ✅"; await refresh();
-    } catch (e) { console.error(e); revMsg.textContent = shortErr(e); }
-  };
+        // Record + update chart/apy
+        recordNavSample(price);
+        updatePerformanceLines(price);
 
-  el("btnApply").onclick = async () => {
-    try { if (!provider) await ensureProvider(); const tx = await vault.applyPendingRevenue(); await tx.wait(); pendingHint.textContent="Applied ✅"; await refresh(); }
-    catch (e) { console.error(e); pendingHint.textContent = shortErr(e); }
-  };
-  el("btnBeginClose").onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.beginEpochClose(); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-  el("btnEndClose").onclick   = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.endEpochClose();   await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+      }catch(e){
+        console.error(e);
+        alert("Refresh failed (check network/contract).");
+      }
+    }
 
-  el("btnSetDelay").onclick = async () => {
-    try {
-      if (!provider) await ensureProvider();
-      const secs = Number(navDelay.value || "0");
-      if (!(secs > 0)) { alert("Enter seconds > 0"); return; }
-      const tx = await vault.setNavDelay(secs); await tx.wait();
-      await refresh();
-    } catch (e) { console.error(e); alert(shortErr(e)); }
-  };
+    // ===== User previews & actions =====
+    document.getElementById("btnPreviewMint").onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        const usdcAmt = to6(mintAmt.value);
+        if (usdcAmt <= 0n) { mintPrev.textContent = "Enter amount"; return; }
+        const [mtyldOut, price] = await vault.previewMint(usdcAmt);
+        mintPrev.textContent = `Est. MTYLD: ${fmt18(mtyldOut).toFixed(6)} @ $${fmt18(price).toFixed(6)}`;
+        mintBtn.disabled = false;
+      } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
+    };
 
-  el("btnSetFees").onclick = async () => {
-    try {
-      if (!provider) await ensureProvider();
-      const mf = Number(mintFee.value || "0");
-      const rf = Number(redeemFee.value || "0");
-      const fr = String(feeRecipient.value || "").trim();
-      const ru = !!feeRoundUp.checked;
-      if (isNaN(mf) || isNaN(rf) || mf < 0 || rf < 0 || mf > 500 || rf > 500) { alert("Fees must be 0–500 bps"); return; }
-      if (!/^0x[a-fA-F0-9]{40}$/.test(fr)) { alert("Enter a valid recipient address"); return; }
-      const tx = await vault.setFees(mf, rf, fr, ru); await tx.wait();
-      await refresh();
-    } catch (e) { console.error(e); alert(shortErr(e)); }
-  };
+    document.getElementById("btnMint").onclick = async () => {
+      try {
+        mintBtn.disabled = true;
+        if (!provider) await ensureProvider();
+        const usdcAmt = to6(mintAmt.value);
+        const slipPct = Number(mintSlip.value || "0.5");
+        const [mtyldOut] = await vault.previewMint(usdcAmt);
+        const minOut = BigInt(Math.floor(Number(mtyldOut) * (1 - slipPct/100)));
+        const allowance = await usdc.allowance(acct, VAULT);
+        if (allowance < usdcAmt) { const txa = await usdc.approve(VAULT, usdcAmt); await txa.wait(); }
+        const tx = await vault.mint(usdcAmt, minOut); await tx.wait();
+        mintPrev.textContent = "Minted ✅"; await refresh();
+      } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
+      finally { mintBtn.disabled = false; }
+    };
 
-  el("btnGuardOn").onclick  = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(true);  await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-  el("btnGuardOff").onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(false); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+    document.getElementById("btnPreviewRedeem").onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        const mtyldAmt = to18(redAmt.value);
+        if (mtyldAmt <= 0n) { redPrev.textContent = "Enter amount"; return; }
+        const [usdcOut, price] = await vault.previewRedeem(mtyldAmt);
+        redPrev.textContent = `Est. USDC: ${fmt6(usdcOut).toFixed(6)} @ $${fmt18(price).toFixed(6)}`;
+        redBtn.disabled = false;
+      } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
+    };
 
-  el("btnWhitelistOn").onclick = async () => {
-    try { if (!provider) await ensureProvider(); const a = String(wlAddr.value||"").trim(); if (!/^0x[a-fA-F0-9]{40}$/.test(a)) { wlMsg.textContent="Enter valid address"; return; }
-      const tx = await vault.setWhitelist(a, true); await tx.wait(); wlMsg.textContent = "Whitelisted ✅"; }
-    catch (e) { console.error(e); wlMsg.textContent = shortErr(e); }
-  };
-  el("btnWhitelistOff").onclick = async () => {
-    try { if (!provider) await ensureProvider(); const a = String(wlAddr.value||"").trim(); if (!/^0x[a-fA-F0-9]{40}$/.test(a)) { wlMsg.textContent="Enter valid address"; return; }
-      const tx = await vault.setWhitelist(a, false); await tx.wait(); wlMsg.textContent = "Removed ✅"; }
-    catch (e) { console.error(e); wlMsg.textContent = shortErr(e); }
-  };
+    document.getElementById("btnRedeem").onclick = async () => {
+      try {
+        redBtn.disabled = true;
+        if (!provider) await ensureProvider();
+        const mtyldAmt = to18(redAmt.value);
+        const slipPct = Number(redSlip.value || "0.5");
+        const [usdcOut] = await vault.previewRedeem(mtyldAmt);
+        const minOut = BigInt(Math.floor(Number(usdcOut) * (1 - slipPct/100)));
+        const tx = await vault.redeem(mtyldAmt, minOut); await tx.wait();
+        redPrev.textContent = "Redeemed ✅"; await refresh();
+      } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
+      finally { redBtn.disabled = false; }
+    };
 
-  // Performance buttons
-  document.getElementById("btnExportCSV").onclick = () => {
-    const rows = [["timestamp","iso","nav_usd"]];
-    for (const p of navHistory) rows.push([p.t, new Date(p.t*1000).toISOString(), (p.p/1e18).toFixed(8)]);
-    const csv = rows.map(r => r.join(",")).join("\n");
-    const blob = new Blob([csv], {type:"text/csv"});
-    const url  = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "mtyld_nav_history.csv"; a.click();
-    URL.revokeObjectURL(url);
-  };
-  document.getElementById("btnResetHistory").onclick = () => {
-    if (!confirm("Reset locally stored NAV history?")) return;
-    navHistory = []; saveHistory(); drawNavChart();
-    const apyEl = document.getElementById("apyLine");
-    const chgEl = document.getElementById("changeLine");
-    if (apyEl) apyEl.textContent = "APY (30d annualized): —";
-    if (chgEl) chgEl.textContent = "Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —";
-  };
+    // ===== Owner actions =====
+    document.getElementById("btnQueueRev").onclick = async () => {
+      try {
+        revMsg.textContent = "";
+        if (!provider) await ensureProvider();
+        if (vaultOwner.toLowerCase() !== acct.toLowerCase()) { revMsg.textContent = "Not owner"; return; }
+        const amt = to6(revAmount.value);
+        if (amt <= 0n) { revMsg.textContent = "Enter amount"; return; }
+        const allowance = await usdc.allowance(acct, VAULT);
+        if (allowance < amt) { const txa = await usdc.approve(VAULT, amt); await txa.wait(); }
+        const tx = await vault.injectRevenue(amt); await tx.wait();
+        revMsg.textContent = "Queued ✅"; await refresh();
+      } catch (e) { console.error(e); revMsg.textContent = shortErr(e); }
+    };
 
-  // Connect & Refresh
-  el("btnConnect").onclick = async () => { try { await ensureProvider(); await refresh(); await loadOwnerState(); } catch(e){ console.error(e); } };
-  el("btnRefresh").onclick = async () => { await refresh(); if (vaultOwner && signer) await loadOwnerState(); };
+    btnApply.onclick = async () => {
+      try { if (!provider) await ensureProvider(); const tx = await vault.applyPendingRevenue(); await tx.wait(); pendingHint.textContent="Applied ✅"; await refresh(); }
+      catch (e) { console.error(e); pendingHint.textContent = shortErr(e); }
+    };
+    btnBeginClose.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.beginEpochClose(); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+    btnEndClose.onclick   = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.endEpochClose();   await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
 
-  // Init local history + chart
-  loadHistory(); drawNavChart();
+    document.getElementById("btnSetDelay").onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        const secs = Number(navDelay.value || "0");
+        if (!(secs > 0)) { alert("Enter seconds > 0"); return; }
+        const tx = await vault.setNavDelay(secs); await tx.wait();
+        await refresh();
+      } catch (e) { console.error(e); alert(shortErr(e)); }
+    };
 
-  // Auto-refresh every 10s
-  setInterval(() => { refresh().catch(()=>{}); }, 10000);
+    document.getElementById("btnSetFees").onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        const mf = Number(mintFee.value || "0");
+        const rf = Number(redeemFee.value || "0");
+        const fr = String(feeRecipient.value || "").trim();
+        const ru = !!feeRoundUp.checked;
+        if (isNaN(mf) || isNaN(rf) || mf < 0 || rf < 0 || mf > 500 || rf > 500) { alert("Fees must be 0–500 bps"); return; }
+        if (!/^0x[a-fA-F0-9]{40}$/.test(fr)) { alert("Enter a valid recipient address"); return; }
+        const tx = await vault.setFees(mf, rf, fr, ru); await tx.wait();
+        await refresh();
+      } catch (e) { console.error(e); alert(shortErr(e)); }
+    };
 
-  // First paint
-  refresh().catch(()=>{});
-})();
-</script>
+    btnGuardOn.onclick  = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(true);  await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+    btnGuardOff.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(false); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+
+    document.getElementById("btnWhitelistOn").onclick = async () => {
+      try { if (!provider) await ensureProvider(); const a = String(wlAddr.value||"").trim(); if (!/^0x[a-fA-F0-9]{40}$/.test(a)) { wlMsg.textContent="Enter valid address"; return; }
+        const tx = await vault.setWhitelist(a, true); await tx.wait(); wlMsg.textContent = "Whitelisted ✅"; }
+      catch (e) { console.error(e); wlMsg.textContent = shortErr(e); }
+    };
+    document.getElementById("btnWhitelistOff").onclick = async () => {
+      try { if (!provider) await ensureProvider(); const a = String(wlAddr.value||"").trim(); if (!/^0x[a-fA-F0-9]{40}$/.test(a)) { wlMsg.textContent="Enter valid address"; return; }
+        const tx = await vault.setWhitelist(a, false); await tx.wait(); wlMsg.textContent = "Removed ✅"; }
+      catch (e) { console.error(e); wlMsg.textContent = shortErr(e); }
+    };
+
+    // Perf buttons
+    document.getElementById("btnExportCSV").onclick = () => {
+      const rows = [["timestamp","iso","nav_usd"]];
+      for (const p of navHistory) rows.push([p.t, new Date(p.t*1000).toISOString(), (p.p/1e18).toFixed(8)]);
+      const csv = rows.map(r => r.join(",")).join("\n");
+      const blob = new Blob([csv], {type:"text/csv"});
+      const url  = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "mtyld_nav_history.csv"; a.click();
+      URL.revokeObjectURL(url);
+    };
+    document.getElementById("btnResetHistory").onclick = () => {
+      if (!confirm("Reset locally stored NAV history?")) return;
+      navHistory = []; saveHistory(); drawNavChart();
+      el("apyLine").textContent = "APY (30d annualized): —";
+      el("changeLine").textContent = "Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —";
+    };
+
+    // Connect & Refresh
+    document.getElementById("btnConnect").onclick = async () => { try { await ensureProvider(); await refresh(); await loadOwnerState(); } catch(e){ console.error(e); } };
+    document.getElementById("btnRefresh").onclick = async () => { await refresh(); if (vaultOwner && signer) await loadOwnerState(); };
+
+    // Init local history + chart
+    loadHistory(); drawNavChart();
+
+    // Auto-refresh every 10s
+    setInterval(() => { refresh().catch(()=>{}); }, 10000);
+
+    // First paint
+    refresh().catch(()=>{});
+  })();
+  </script>
 </body>
 </html>
