@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MTYLD Mini dApp + Owner Panel (Fees & Guarded)</title>
+  <!-- Silence favicon 404 in local/dev -->
+  <link rel="icon" href="data:,">
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
   <!-- Chart.js for NAV chart -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -154,7 +156,7 @@
             <label><input type="checkbox" id="feeRoundUp" /> Round fees up</label>
             <button id="btnSetFees" class="btn">Set Fees</button>
           </div>
-          <div class="muted mono" id="feesLine" style="margin-top:6px">Mint: — bps | Redeem: — bps | RoundUp: — | Recipient: —</div>
+            <div class="muted mono" id="feesLine" style="margin-top:6px">Mint: — bps | Redeem: — bps | RoundUp: — | Recipient: —</div>
         </div>
       </div>
 
@@ -393,7 +395,10 @@
   }
 
   async function ensureProvider() {
-    if (!window.ethereum) { alert("No wallet found. Install MetaMask."); throw new Error("no wallet"); }
+    if (!window.ethereum) {
+      alert("No wallet found.\nInstall MetaMask (or turn it on) and reload this page.");
+      throw new Error("no wallet");
+    }
     provider = new ethers.BrowserProvider(window.ethereum);
     const net = await provider.getNetwork();
     if (Number(net.chainId) !== CHAIN_ID_ARBITRUM) {
@@ -449,7 +454,7 @@
       pendEl.textContent = fmtUsd(fmt6(pending));
       const now = Math.floor(Date.now()/1000);
       const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
-      cdEl.textContent = secs ? humanize(secs) : (Number(pending)>0 ? "Queued (awaiting apply)" : "—";
+      cdEl.textContent = secs ? humanize(secs) : (Number(pending)>0 ? "Queued (awaiting apply)" : "—");
 
       if (vault && vaultOwner && vaultOwner.toLowerCase() === (await (signer?.getAddress()??"")).toLowerCase()) {
         await loadOwnerState();
@@ -590,7 +595,6 @@
   document.getElementById("btnResetHistory").onclick = () => {
     if (!confirm("Reset locally stored NAV history?")) return;
     navHistory = []; saveHistory(); drawNavChart();
-    // also clear performance lines
     const apyEl = document.getElementById("apyLine");
     const chgEl = document.getElementById("changeLine");
     if (apyEl) apyEl.textContent = "APY (30d annualized): —";
