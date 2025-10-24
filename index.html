@@ -47,7 +47,7 @@
   <!-- App -->
   <main class="max-w-7xl mx-auto px-4 py-8 space-y-4">
 
-    <!-- Wallet + Stats -->
+    <!-- Wallet + Vault Stats -->
     <div class="grid md:grid-cols-3 gap-4 items-start">
       <!-- Wallet -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-full">
@@ -62,7 +62,7 @@
         <div class="font-mono text-slate-300 truncate text-sm" id="ownerLine">—</div>
       </div>
 
-      <!-- Stats -->
+      <!-- Vault Stats -->
       <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center sm:text-left">
           <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
@@ -85,6 +85,25 @@
       </div>
     </div>
 
+    <!-- Your Position (user stats) -->
+    <div id="userPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="text-slate-300 font-semibold mb-2">Your Position</div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center sm:text-left">
+        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs">MTYLD Balance</div>
+          <div class="font-mono text-lg text-slate-100" id="userBal">—</div>
+        </div>
+        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs">Value (USDC)</div>
+          <div class="font-mono text-lg text-slate-100" id="userVal">$—</div>
+        </div>
+        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs">Share of Vault</div>
+          <div class="font-mono text-lg text-slate-100" id="userShare">—</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Divider -->
     <div class="border-t border-slate-800"></div>
 
@@ -93,7 +112,10 @@
       <!-- Mint -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <div class="text-slate-300 font-semibold">USDC → MTYLD (Mint)</div>
-        <input id="mintAmount" inputmode="decimal" placeholder="Amount (USDC)" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+        <div class="mt-2 flex gap-2">
+          <input id="mintAmount" inputmode="decimal" placeholder="Amount (USDC)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <button id="btnMintMax" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Max</button>
+        </div>
         <div class="grid grid-cols-2 gap-2 mt-2">
           <input id="mintSlippage" value="0.5" placeholder="Slippage %" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
           <button id="btnPreviewMint" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Preview</button>
@@ -105,7 +127,10 @@
       <!-- Redeem -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <div class="text-slate-300 font-semibold">MTYLD → USDC (Redeem)</div>
-        <input id="redeemAmount" inputmode="decimal" placeholder="Amount (MTYLD)" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+        <div class="mt-2 flex gap-2">
+          <input id="redeemAmount" inputmode="decimal" placeholder="Amount (MTYLD)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <button id="btnRedeemMax" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Max</button>
+        </div>
         <div class="grid grid-cols-2 gap-2 mt-2">
           <input id="redeemSlippage" value="0.5" placeholder="Slippage %" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
           <button id="btnPreviewRedeem" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Preview</button>
@@ -433,7 +458,10 @@
 
     // ABIs
     const VAULT_ABI = [
-      // reads
+      // ERC20 views
+      "function totalSupply() view returns (uint256)",
+      "function balanceOf(address) view returns (uint256)",
+      // vault reads
       "function owner() view returns (address)",
       "function pricePerToken() view returns (uint256)",
       "function treasuryActiveUSDC() view returns (uint256)",
@@ -447,7 +475,7 @@
       "function feeRecipient() view returns (address)",
       "function feeRoundUp() view returns (bool)",
       "function guardedLaunch() view returns (bool)",
-      // user
+      // user actions
       "function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)",
       "function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)",
       "function mint(uint256 usdcAmount, uint256 minMtyldOut)",
@@ -464,12 +492,14 @@
     ];
     const ERC20_ABI = [
       "function allowance(address,address) view returns (uint256)",
-      "function approve(address,uint256) returns (bool)"
+      "function approve(address,uint256) returns (bool)",
+      "function balanceOf(address) view returns (uint256)"
     ];
 
     // ===== DOM =====
     const el = (id) => document.getElementById(id);
     const addrEl = el("addr"), priceEl = el("price"), actEl = el("treasuryActive"), pendEl = el("pending"), cdEl = el("countdown");
+    const userPanel = el("userPanel"), userBalEl = el("userBal"), userValEl = el("userVal"), userShareEl = el("userShare");
     const mintAmt = el("mintAmount"), mintSlip = el("mintSlippage"), mintPrev = el("mintPreview"), mintBtn = el("btnMint");
     const redAmt = el("redeemAmount"), redSlip = el("redeemSlippage"), redPrev = el("redeemPreview"), redBtn = el("btnRedeem");
     const ownerPanel = el("ownerPanel"), ownerLine = el("ownerLine");
@@ -479,6 +509,7 @@
     const mintFee = el("mintFee"), redeemFee = el("redeemFee"), feeRecipient = el("feeRecipient"), feeRoundUp = el("feeRoundUp"), feesLine = el("feesLine");
     const wlAddr = el("wlAddr"), wlMsg = el("wlMsg");
     const btnGuardOn = el("btnGuardOn"), btnGuardOff = el("btnGuardOff");
+    const btnMintMax = el("btnMintMax"), btnRedeemMax = el("btnRedeemMax");
 
     // ===== NAV history (local) =====
     const NAV_HISTORY_KEY = "mtyld_nav_history_" + "0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880";
@@ -565,6 +596,10 @@
       const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
       return (h?`${h}h `:"") + (m?`${m}m `:"") + `${sec}s`;
     }
+    function niceAmt(num, decimals=6){
+      // display helper without trailing zeros
+      return Number(num).toLocaleString(undefined,{ maximumFractionDigits: decimals });
+    }
 
     async function ensureProvider(){
       if (!window.ethereum) { alert("No wallet found. Please install/enable MetaMask."); throw new Error("no wallet"); }
@@ -584,6 +619,7 @@
       vaultOwner = await vault.owner();
       ownerLine.textContent = trunc(vaultOwner);
       ownerPanel.classList.toggle("hidden", vaultOwner.toLowerCase() !== acct.toLowerCase());
+      userPanel.classList.remove("hidden");
     }
 
     async function loadOwnerState(){
@@ -605,6 +641,29 @@
       pendingHint.textContent = ready ? "Ready to apply ✅" : (Number(pending)>0 ? "Waiting for release…" : "No pending revenue");
     }
 
+    async function loadUserPanel(price){
+      if (!vault || !acct) return;
+      try{
+        const [bal, ts] = await Promise.all([
+          vault.balanceOf(acct),
+          vault.totalSupply()
+        ]);
+        // Display MTYLD balance
+        const bal18 = fmt18(bal);
+        userBalEl.textContent = niceAmt(bal18, 6) + " MTYLD";
+
+        // Value in USDC (price is 1e18-scaled USD/token)
+        const navUsd = fmt18(price);
+        const valUsd = bal18 * navUsd;
+        userValEl.textContent = fmtUsd(valUsd);
+
+        // Share %
+        const supply = Number(fmt18(ts));
+        const share = supply > 0 ? (bal18 / supply) * 100 : 0;
+        userShareEl.textContent = (isFinite(share) ? share.toFixed(4) : "0.0000") + "%";
+      } catch(e){ console.error(e); /* keep panel silent on read errors */ }
+    }
+
     async function refresh(){
       try{
         if (!provider){
@@ -622,6 +681,7 @@
         const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
         cdEl.textContent = secs ? humanize(secs) : (Number(pending)>0 ? "Queued (awaiting apply)" : "—");
 
+        if (vault && signer && acct) { await loadUserPanel(price); }
         if (vault && vaultOwner && signer && vaultOwner.toLowerCase() === (await signer.getAddress()).toLowerCase()) {
           await loadOwnerState();
         }
@@ -687,6 +747,22 @@
         redPrev.textContent = "Redeemed ✅"; await refresh();
       } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
       finally { redBtn.disabled = false; }
+    };
+
+    // ===== Max buttons =====
+    btnMintMax.onclick = async () => {
+      try{
+        if (!provider) await ensureProvider();
+        const bal = await usdc.balanceOf(acct); // USDC 6d
+        mintAmt.value = (Number(bal)/1e6).toString();
+      }catch(e){ console.error(e); }
+    };
+    btnRedeemMax.onclick = async () => {
+      try{
+        if (!provider) await ensureProvider();
+        const bal = await vault.balanceOf(acct); // MTYLD 18d
+        redAmt.value = (Number(bal)/1e18).toString();
+      }catch(e){ console.error(e); }
     };
 
     // ===== Owner actions =====
