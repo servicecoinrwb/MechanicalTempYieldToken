@@ -401,19 +401,33 @@ async function loadParams() {
   const readProv = new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
   const read = new ethers.Contract(LENDING_ADDR, LENDING_ABI, readProv);
 
-  const [
-    apr, maxLTV, liqTh, liqBo, sevTh, sevBo, sevPub, late, paused, liqPaused
-  ] = await Promise.all([
+  // helper to safely call optional functions
+  const safeCall = async (fnName) => {
+    try {
+      const fn = read[fnName];
+      if (typeof fn !== "function") return null;   // method not on this deployment
+      return await fn();
+    } catch { return null; }                       // revert or not implemented
+  };
+
+  // required params (exist on all versions)
+  const [apr, maxLTV, liqTh, liqBo, late, paused, liqPaused] = await Promise.all([
     read.aprBps(), read.maxLtvBps(), read.liqThresholdBps(), read.liqBonusBps(),
-    read.severeLiqThresholdBps(), read.severeLiqBonusBps(), read.severePublic(), read.lateFeeBpsFlat(),
-    read.paused(), read.liquidationPaused()
+    read.lateFeeBpsFlat(), read.paused(), read.liquidationPaused()
   ]);
 
+  // optional “severe” params — tolerate missing
+  const sevTh  = await safeCall("severeLiqThresholdBps");
+  const sevBo  = await safeCall("severeLiqBonusBps");
+  const sevPub = await safeCall("severePublic");
+
+  // roles (read-only)
   const roles = await fetchRolesRead();
   _owner = roles.owner; _rateG = roles.rateG; _riskG = roles.riskG; _treasury = roles.treas;
 
+  // Readouts
   readParams.textContent = `Params: APR ${apr} • MaxLTV ${maxLTV} • LiqThresh ${liqTh} • LiqBonus ${liqBo}`;
-  readSevere.textContent = `Severe: Thresh ${sevTh} • Bonus ${sevBo} • Public ${sevPub ? "Yes" : "No"}`;
+  readSevere.textContent = `Severe: Thresh ${sevTh ?? "—"} • Bonus ${sevBo ?? "—"} • Public ${(sevPub===null)? "—" : (sevPub ? "Yes" : "No")}`;
   readLate.textContent   = `Late Fee: ${late} bps`;
   readRoles.textContent  = `Roles → owner: ${_owner} • treasury: ${_treasury} • rate: ${_rateG} • risk: ${_riskG}`;
 
