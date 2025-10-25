@@ -3,67 +3,40 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MTYLD Credit Line • Mechanical Temp</title>
-
+  <title>Mechanical Temp • LendingVaultGatedV3</title>
   <link rel="icon" href="data:,">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
-  <style>
-    html { scroll-behavior: smooth; }
-  </style>
 </head>
 <body class="bg-slate-950 text-slate-100">
-
-  <!-- Header (match Vault aesthetics) -->
   <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
-        <img src="https://i.imgur.com/YJvJw7V.png" class="h-10 w-auto" alt="Mechanical Temp">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MTYLD • Credit Line</span>
-      </a>
-      <nav class="flex items-center gap-2">
-        <a href="https://vault.mechanicaltemp.com" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Vault Home</a>
-        <a href="lend.html" class="px-3 py-2 rounded-lg bg-sky-600/20 text-sky-200 border border-sky-700/30">Credit Line</a>
-        <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="https://i.imgur.com/YJvJw7V.png" class="h-9 w-auto" alt="Mechanical Temp">
+        <div class="text-slate-300 font-semibold hidden sm:block">MTYLD • Credit Line</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="roleBadge" class="hidden px-2 py-1 rounded-md bg-amber-500/20 text-amber-300 text-xs font-semibold">ADMIN</span>
         <button id="btnConnect" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Connect</button>
-      </nav>
+        <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
+      </div>
     </div>
   </header>
 
-  <!-- Banner -->
-  <section class="bg-gradient-to-b from-slate-900 to-sky-900 border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 py-10 text-center">
-      <h1 class="text-4xl sm:text-5xl font-black tracking-tight text-white">MTYLD Credit Line</h1>
-      <p class="mt-3 text-sky-200">Borrow USDC against MTYLD collateral on Arbitrum One</p>
-    </div>
-  </section>
-
-  <main class="max-w-7xl mx-auto px-4 py-8 space-y-4">
-
-    <!-- WL banner -->
-    <div id="wlBanner" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200">
-      This wallet isn’t whitelisted yet. Ask the owner <span class="font-mono text-amber-300">0xcfe0…557a</span> (or guardians) to allow it.
-    </div>
-
-    <!-- Connected + Contracts -->
+  <main class="max-w-6xl mx-auto px-4 py-6 space-y-4">
     <div class="grid md:grid-cols-3 gap-4 items-start">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-full">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <div class="text-xs text-slate-500">Connected</div>
         <div id="addr" class="font-mono text-slate-300 truncate">Not connected</div>
-
         <div class="mt-2 text-xs text-slate-500">Credit Contract</div>
         <div class="font-mono text-slate-300 truncate">0x8fC8b61882e4792c1fB4Ea128b55c90c3069f027</div>
-
         <div class="mt-2 text-xs text-slate-500">USDC / MTYLD / MTYLD Vault</div>
         <div id="tokenTriplet" class="font-mono text-slate-300 text-xs break-all">—</div>
-
-        <div class="mt-3 text-xs text-slate-500">Your role</div>
-        <div id="roleLine" class="font-mono text-slate-300 text-xs">—</div>
       </div>
 
-      <!-- Tiles -->
+      <!-- Top tiles -->
       <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
           <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
             <div class="text-slate-400 text-xs">MTYLD Price (USD)</div>
             <div id="mtyldPrice" class="font-mono text-lg">$–</div>
@@ -81,14 +54,28 @@
             <div id="ltvLine" class="font-mono text-lg">–</div>
           </div>
           <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-            <div class="text-slate-400 text-xs">Pool/Treasury USDC</div>
-            <div id="poolUsdc" class="font-mono text-lg">$–</div>
+            <div class="text-slate-400 text-xs">Treasury (Vault) USDC</div>
+            <div id="vaultUsdc" class="font-mono text-lg">–</div>
+          </div>
+          <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
+            <div class="text-slate-400 text-xs">Available to Borrow</div>
+            <div id="availBorrow" class="font-mono text-lg">–</div>
+          </div>
+        </div>
+
+        <!-- LTV progress vs liq threshold -->
+        <div class="mt-4">
+          <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+            <div id="ltvBarFill" class="h-2 bg-sky-500" style="width:0%"></div>
+          </div>
+          <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+            <span id="ltvPctSmall">LTV —</span>
+            <span id="liqThreshSmall">Liq @ —</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- User Stats -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
@@ -116,7 +103,40 @@
       </div>
     </div>
 
-    <!-- Actions -->
+    <!-- Protocol & User Stats -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="text-slate-300 font-semibold mb-2">Protocol &amp; User Stats</div>
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs">Borrow Limit (USDC)</div>
+          <div id="borrowLimit" class="font-mono text-lg">–</div>
+        </div>
+        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs">Liq Threshold (LTV)</div>
+          <div id="liqThreshPct" class="font-mono text-lg">–</div>
+        </div>
+        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs">Debt @ Liq Threshold (USD)</div>
+          <div id="debtAtLiq" class="font-mono text-lg">–</div>
+        </div>
+        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs">Days to Maturity</div>
+          <div id="daysToMat" class="font-mono text-lg">–</div>
+        </div>
+        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs">APR</div>
+          <div id="aprBpsLine" class="font-mono text-lg">–</div>
+        </div>
+      </div>
+      <div class="text-[11px] text-slate-500 mt-2">Note: “Available to Borrow” is min(Borrow Limit − Current Debt, Vault USDC). Assumes 1 USDC ≈ $1.</div>
+    </div>
+
+    <!-- ROLES (DEBUG) — always visible -->
+    <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-4">
+      <div class="text-slate-300 font-semibold mb-2">Roles (debug)</div>
+      <div id="debugRoles" class="text-xs text-slate-400 break-all">—</div>
+    </div>
+
     <div class="grid md:grid-cols-2 gap-4">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <div class="text-slate-300 font-semibold">Collateral: MTYLD</div>
@@ -169,57 +189,424 @@
       </div>
     </div>
 
-    <!-- Admin panel (owner / guardians) -->
-    <div id="adminPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
-      <div class="flex items-center justify-between gap-3">
-        <div class="font-semibold">Admin Panel</div>
-        <div id="adminRolePill" class="text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300">—</div>
-      </div>
-      <div class="h-px bg-slate-800 my-3"></div>
-
-      <div class="grid md:grid-cols-2 gap-4">
-        <div>
-          <div class="text-slate-300">Whitelist Address</div>
-          <input id="wlAddr" placeholder="0x…" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-          <div class="mt-2 flex items-center gap-2">
-            <button id="btnWhitelistOn"  class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Allow</button>
-            <button id="btnWhitelistOff" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Remove</button>
-          </div>
-          <div id="wlMsg" class="text-slate-400 font-mono mt-2">—</div>
-        </div>
-
-        <div>
-          <div class="text-slate-300">Liquidation Toggle</div>
-          <div class="mt-2 flex items-center gap-2">
-            <button id="btnPauseLiq"  class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Pause</button>
-            <button id="btnUnpauseLiq" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Unpause</button>
-          </div>
-          <div id="liqState" class="text-slate-400 font-mono mt-2">—</div>
-        </div>
+    <!-- ADMIN PANEL (auto-gated) -->
+    <div id="adminCard" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="text-slate-300 font-semibold">Admin Panel</div>
+        <div id="adminRoleLine" class="text-xs text-slate-400">Role: —</div>
       </div>
 
-      <p class="mt-3 text-sm text-slate-400">
-        Admin = owner or designated guardians. If users see “Not whitelisted”, add them here.
-      </p>
+      <!-- System -->
+      <div class="mt-4 grid md:grid-cols-3 gap-4">
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">System Status</div>
+          <div class="text-sm" id="pausedLine">Paused: —</div>
+          <div class="text-sm" id="liqPausedLine">Liquidations Paused: —</div>
+          <div class="mt-3 flex gap-2">
+            <button id="btnPause"   class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Pause</button>
+            <button id="btnUnpause" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Unpause</button>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <input id="chkLiqPaused" type="checkbox" class="h-4 w-4">
+            <label for="chkLiqPaused" class="text-sm text-slate-300">Set Liquidations Paused</label>
+            <button id="btnSetLiqPaused" class="ml-auto px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Apply</button>
+          </div>
+          <div id="sysMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">Parameters (bps)</div>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="inApr"          inputmode="numeric" placeholder="APR bps"         class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+            <input id="inMaxLtv"       inputmode="numeric" placeholder="Max LTV bps"     class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+            <input id="inLiqThresh"    inputmode="numeric" placeholder="Liq Thresh bps"  class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+            <input id="inLiqBonus"     inputmode="numeric" placeholder="Liq Bonus bps"   class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+          </div>
+          <button id="btnSetParams" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Update Params</button>
+
+          <div class="mt-4 text-slate-400 text-xs">Late Fee (bps, flat)</div>
+          <div class="flex gap-2 mt-1">
+            <input id="inLateBps" inputmode="numeric" placeholder="Late Fee bps" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700">
+            <button id="btnSetLate" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set</button>
+          </div>
+
+          <div id="paramMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">Severe Liquidation</div>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="inSevThresh" inputmode="numeric" placeholder="Severe Thresh bps" class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+            <input id="inSevBonus"  inputmode="numeric" placeholder="Severe Bonus bps"  class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+          </div>
+          <div class="mt-2 flex items-center gap-2">
+            <input id="chkSevPublic" type="checkbox" class="h-4 w-4">
+            <label for="chkSevPublic" class="text-sm text-slate-300">Severe Public</label>
+          </div>
+          <button id="btnSetSevere" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Update Severe</button>
+          <div id="sevMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+      </div>
+
+      <!-- Roles / Whitelist / Credit -->
+      <div class="mt-4 grid md:grid-cols-3 gap-4">
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">Roles</div>
+          <input id="inTreasury" placeholder="Treasury address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <input id="inRate"     placeholder="Rate Guardian address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <input id="inRisk"     placeholder="Risk Guardian address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <button id="btnSetRoles" class="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set Roles</button>
+          <div id="rolesMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">Whitelist</div>
+          <input id="inWLUser" placeholder="User address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <div class="flex items-center gap-2 mb-2">
+            <input id="chkWL" type="checkbox" class="h-4 w-4">
+            <label for="chkWL" class="text-sm text-slate-300">Allowed</label>
+          </div>
+          <button id="btnSetWL" class="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set Whitelist</button>
+          <div id="wlMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">Credit Score</div>
+          <input id="inUserCredit" placeholder="User address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <input id="inCredit" inputmode="numeric" placeholder="Score (uint32)" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <button id="btnSetCredit" class="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set Credit</button>
+          <div id="creditMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+      </div>
+
+      <div class="mt-4 p-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-sm grid sm:grid-cols-2 gap-2">
+        <div id="readParams">Params: —</div>
+        <div id="readSevere">Severe: —</div>
+        <div id="readLate">Late Fee: —</div>
+        <div id="readRoles">Roles: —</div>
+      </div>
     </div>
 
     <p class="text-xs text-slate-500">Arbitrum One • MTYLD Credit Line UI</p>
   </main>
 
-  <!-- Footer -->
-  <footer class="mt-10 border-t border-slate-800 bg-slate-900">
-    <div class="max-w-7xl mx-auto px-4 py-8 text-center">
-      <p class="text-slate-300">
-        Powered by <a href="https://www.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300 font-semibold">Mechanical Temp</a>
-        <span class="text-slate-500">•</span> Southfield, MI
-      </p>
-      <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
-    </div>
-  </footer>
-
 <script>
 const CHAIN_ID_ARBITRUM = 42161;
-const LENDING_ADDR       = "0x8fC8b61882e4792c1fB4Ea128b55c90c3069f027";
+const LENDING_ADDR = "0x8fC8b61882e4792c1fB4Ea128b55c90c3069f027";
 
-// ===== ABI (from your contract) =====
-const LENDING_ABI = [{"inputs":[{"internalType":"address","name":"usdc","type":"address"},{"internalType":"address","name":"mtyld","type":"address"},{"internalType":"address","name":"mtyldVault","type":"address"},{"internalType":"address","name":"_treasury","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BadAddress","type":"error"},{"inputs":[],"name":"BadAmount","type":"error"},{"inputs":[],"name":"Healthy","type":"error"},{"inputs":[],"name":"NotActive","type":"error"},{"inputs":[],"name":"NotOwnerGuardian","type":"error"},{"inputs":[],"name":"NotSevere","type":"error"},{"inputs":[],"name":"NotWhitelisted","type":"error"},{"inputs":[],"name":"OverLTV","type":"error"},{"inputs":[],"name":"Slippage","type":"error"},{"inputs":[],"name":"TooEarly","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"interestAccrued_6","type":"uint256"},{"indexed":false,"internalType":"bool","name":"lateFeeApplied","type":"bool"}],"name":"Accrued","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"usdcAmount_6","type":"uint256"},{"indexed":false,"internalType":"uint64","name":"start","type":"uint64"},{"indexed":false,"internalType":"uint64","name":"maturity","type":"uint64"}],"name":"Borrowed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount_18","type":"uint256"}],"name":"CollateralDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount_18","type":"uint256"}],"name":"CollateralWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"lateFeeBpsFlat","type":"uint16"}],"name":"LateFeeUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"liquidator","type":"address"},{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"repayUSDC_6","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"seizeMTYLD_18","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"price18","type":"uint256"},{"indexed":false,"internalType":"uint16","name":"bonusBps","type":"uint16"},{"indexed":false,"internalType":"bool","name":"severe","type":"bool"}],"name":"Liquidated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bool","name":"on","type":"bool"}],"name":"LiquidationPaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"prev","type":"address"},{"indexed":true,"internalType":"address","name":"next","type
+// Allow your admin wallet as an override (you can remove later)
+const OWNER_OVERRIDE = "0xcfe077e6f7554b1724546e02624a0832d1f4557a";
+// Optional: add ?admin=1 to URL to force-show admin for testing
+const FORCE_ADMIN = /(?:\\?|&)admin=1(?:&|$)/i.test(location.search);
+
+// ===== ABI =====
+const LENDING_ABI = [{"inputs":[{"internalType":"address","name":"usdc","type":"address"},{"internalType":"address","name":"mtyld","type":"address"},{"internalType":"address","name":"mtyldVault","type":"address"},{"internalType":"address","name":"_treasury","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BadAddress","type":"error"},{"inputs":[],"name":"BadAmount","type":"error"},{"inputs":[],"name":"Healthy","type":"error"},{"inputs":[],"name":"NotActive","type":"error"},{"inputs":[],"name":"NotOwnerGuardian","type":"error"},{"inputs":[],"name":"NotSevere","type":"error"},{"inputs":[],"name":"NotWhitelisted","type":"error"},{"inputs":[],"name":"OverLTV","type":"error"},{"inputs":[],"name":"Slippage","type":"error"},{"inputs":[],"name":"TooEarly","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"interestAccrued_6","type":"uint256"},{"indexed":false,"internalType":"bool","name":"lateFeeApplied","type":"bool"}],"name":"Accrued","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"usdcAmount_6","type":"uint256"},{"indexed":false,"internalType":"uint64","name":"start","type":"uint64"},{"indexed":false,"internalType":"uint64","name":"maturity","type":"uint64"}],"name":"Borrowed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount_18","type":"uint256"}],"name":"CollateralDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount_18","type":"uint256"}],"name":"CollateralWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"lateFeeBpsFlat","type":"uint16"}],"name":"LateFeeUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"liquidator","type":"address"},{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"repayUSDC_6","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"seizeMTYLD_18","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"price18","type":"uint256"},{"indexed":false,"internalType":"uint16","name":"bonusBps","type":"uint16"},{"indexed":false,"internalType":"bool","name":"severe","type":"bool"}],"name":"Liquidated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bool","name":"on","type":"bool"}],"name":"LiquidationPaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"prev","type":"address"},{"indexed":true,"internalType":"address","name":"next","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"aprBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"maxLtvBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"liqThresholdBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"liqBonusBps","type":"uint16"}],"name":"ParamsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"repaidUSDC_6","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"principalLeft_6","type":"uint256"}],"name":"Repaid","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"treasury","type":"address"},{"indexed":false,"internalType":"address","name":"rateGuardian","type":"address"},{"indexed":false,"internalType":"address","name":"riskGuardian","type":"address"}],"name":"RolesUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"severeLiqThresholdBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"severeLiqBonusBps","type":"uint16"},{"indexed":false,"internalType":"bool","name":"severePublic","type":"bool"}],"name":"SevereParamsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"residualMTYLD_18","type":"uint256"}],"name":"SevereResidualSent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"bool","name":"allowed","type":"bool"}],"name":"WhitelistSet","type":"event"},{"inputs":[],"name":"APR_MAX_BPS","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"BPS_DENOMINATOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_BPS_U16","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MTYLD","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MTYLD_VAULT","outputs":[{"internalType":"contract IMTYLDVault","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SECONDS_PER_YEAR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USDC","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USDC_6","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USD_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint32","name":"score","type":"uint32"}],"name":"adminSetCredit","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"aprBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount_6","type":"uint256"},{"internalType":"uint64","name":"maturity","type":"uint64"}],"name":"borrow","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"canBeLiquidated","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"canBeSeverelyLiquidated","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"collateralMTYLD_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"collateralUsd_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"creditScore","outputs":[{"internalType":"uint32","name":"score","type":"uint32"},{"internalType":"uint32","name":"lastUpdated","type":"uint32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"debtUsd_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountMTYLD_18","type":"uint256"}],"name":"depositCollateral","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isWhitelisted","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lateFeeBpsFlat","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liqBonusBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liqThresholdBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"repayUSDC_6","type":"uint256"},{"internalType":"uint256","name":"minSeizeMTYLD_18","type":"uint256"}],"name":"liquidate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"liquidationAmountUSDC_6","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liquidationPaused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"loans","outputs":[{"internalType":"uint256","name":"principalUSDC_6","type":"uint256"},{"internalType":"uint256","name":"interestUSDC_6","type":"uint256"},{"internalType":"uint256","name":"lateFeesUSDC_6","type":"uint256"},{"internalType":"uint64","name":"start","type":"uint64"},{"internalType":"uint64","name":"maturity","type":"uint64"},{"internalType":"bool","name":"lateFeeApplied","type":"bool"},{"internalType":"bool","name":"active","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"ltvBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maxLtvBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mtyldUsdPrice_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"rateGuardian","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount_6","type":"uint256"}],"name":"repay","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"riskGuardian","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint16","name":"_lateFeeBpsFlat","type":"uint16"}],"name":"setLateFeeBps","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bool","name":"on","type":"bool"}],"name":"setLiquidationPaused","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"_aprBps","type":"uint16"},{"internalType":"uint16","name":"_maxLtvBps","type":"uint16"},{"internalType":"uint16","name":"_liqThresholdBps","type":"uint16"},{"internalType":"uint16","name":"_liqBonusBps","type":"uint16"}],"name":"setParams","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_rate","type":"address"},{"internalType":"address","name":"_risk","type":"address"}],"name":"setRoles","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"_sevThreshBps","type":"uint16"},{"internalType":"uint16","name":"_sevBonusBps","type":"uint16"},{"internalType":"bool","name":"_public","type":"bool"}],"name":"setSevereParams","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"minSeizeMTYLD_18","type":"uint256"}],"name":"severeLiquidate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"severePublic","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"n","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"treasury","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"userView","outputs":[{"components":[{"internalType":"uint256","name":"collateralMTYLD_18","type":"uint256"},{"internalType":"uint256","name":"collateralUSD_18","type":"uint256"},{"internalType":"uint256","name":"principalUSDC_6","type":"uint256"},{"internalType":"uint256","name":"interestUSDC_6","type":"uint256"},{"internalType":"uint256","name":"lateFeesUSDC_6","type":"uint256"},{"internalType":"uint256","name":"debtUSD_18","type":"uint256"},{"internalType":"uint16","name":"ltvBps","type":"uint16"},{"internalType":"uint32","name":"creditScore","type":"uint32"},{"internalType":"uint64","name":"maturity","type":"uint64"},{"internalType":"bool","name":"active","type":"bool"}],"internalType":"struct LendingVaultGatedV3.UserView","name":"V","type":"tuple"}],"stateMutability":"view","type":"function"}];
+
+// ===== Simple ERC20 ABI =====
+const ERC20_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function allowance(address,address) view returns (uint256)",
+  "function approve(address,uint256) returns (bool)",
+  "function decimals() view returns (uint8)"
+];
+
+// ---------- DOM ----------
+const $ = (id) => document.getElementById(id);
+const addrEl = $("addr"), tripletEl = $("tokenTriplet");
+const mtyldPriceEl = $("mtyldPrice"), balMtyldEl = $("balMtyld"), balUsdcEl = $("balUsdc"), ltvLine = $("ltvLine");
+const vaultUsdcEl = $("vaultUsdc"), availBorrowEl = $("availBorrow");
+const ltvBarFill = $("ltvBarFill"), ltvPctSmall = $("ltvPctSmall"), liqThreshSmall = $("liqThreshSmall");
+const userColMtyld = $("userColMtyld"), userColUsd = $("userColUsd"), userDebtUsdc = $("userDebtUsdc"), userDebtUsd = $("userDebtUsd");
+const userInterestLate = $("userInterestLate"), userScore = $("userScore"), userMaturity = $("userMaturity");
+const borrowLimitEl = $("borrowLimit"), liqThreshPctEl = $("liqThreshPct"), debtAtLiqEl = $("debtAtLiq"), daysToMatEl = $("daysToMat"), aprBpsLine = $("aprBpsLine");
+const depAmt = $("depAmt"), depMax = $("depMax"), depMsg = $("depMsg"), btnDeposit = $("btnDeposit");
+const wdAmt = $("wdAmt"), wdMax = $("wdMax"), wdMsg = $("wdMsg"), btnWithdraw = $("btnWithdraw");
+const brAmt = $("brAmt"), brDays = $("brDays"), brMsg = $("brMsg"), btnBorrow = $("btnBorrow");
+const rpAmt = $("rpAmt"), rpMax = $("rpMax"), rpMsg = $("rpMsg"), btnRepay = $("btnRepay");
+const adminCard = $("adminCard"), roleBadge = $("roleBadge"), adminRoleLine = $("adminRoleLine");
+const pausedLine = $("pausedLine"), liqPausedLine = $("liqPausedLine"), btnPause = $("btnPause"), btnUnpause = $("btnUnpause");
+const chkLiqPaused = $("chkLiqPaused"), btnSetLiqPaused = $("btnSetLiqPaused"), sysMsg = $("sysMsg");
+const inApr = $("inApr"), inMaxLtv = $("inMaxLtv"), inLiqThresh = $("inLiqThresh"), inLiqBonus = $("inLiqBonus"), btnSetParams = $("btnSetParams");
+const inLateBps = $("inLateBps"), btnSetLate = $("btnSetLate"), paramMsg = $("paramMsg");
+const inSevThresh = $("inSevThresh"), inSevBonus  = $("inSevBonus"), chkSevPublic= $("chkSevPublic"), btnSetSevere= $("btnSetSevere"), sevMsg = $("sevMsg");
+const inTreasury = $("inTreasury"), inRate = $("inRate"), inRisk = $("inRisk"), btnSetRoles= $("btnSetRoles"), rolesMsg = $("rolesMsg");
+const inWLUser = $("inWLUser"), chkWL = $("chkWL"), btnSetWL = $("btnSetWL"), wlMsg = $("wlMsg");
+const inUserCredit = $("inUserCredit"), inCredit = $("inCredit"), btnSetCredit = $("btnSetCredit"), creditMsg = $("creditMsg");
+const readParams = $("readParams"), readSevere = $("readSevere"), readLate = $("readLate"), readRoles = $("readRoles");
+const debugRoles = $("debugRoles");
+
+// ---------- State / helpers ----------
+let provider, signer, acct, lending, USDC, MTYLD;
+let _owner, _rateG, _riskG, _treasury;
+
+const fmt6  = (x) => Number(x)/1e6;
+const fmt18 = (x) => Number(x)/1e18;
+const to6   = (v) => BigInt(Math.round(Number(v||"0")*1e6));
+const to18  = (v) => BigInt(Math.round(Number(v||"0")*1e18));
+const trunc = (a) => a ? a.slice(0,6)+"…"+a.slice(-4) : "—";
+const usd   = (n,d=2)=>"$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:d});
+const shortErr = (e)=> (e && (e.info?.error?.message || e.shortMessage || e.message))?.replace(/execution reverted: /i,'').slice(0,200) || "Error";
+const toU16 = (x) => { const n = Math.floor(Number(x||"0")); if (n<0||n>65535) throw new Error("bps out of range"); return n; };
+
+// Read-only roles fetch (works without signer)
+async function fetchRolesRead() {
+  const readProv = new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
+  const read = new ethers.Contract(LENDING_ADDR, LENDING_ABI, readProv);
+  const [owner, rateG, riskG, treas] = await Promise.all([
+    read.owner(), read.rateGuardian(), read.riskGuardian(), read.treasury()
+  ]);
+  return { owner, rateG, riskG, treas };
+}
+
+function setDebug(isAdmin) {
+  debugRoles.textContent =
+    `You: ${acct||"—"} | owner: ${_owner||"—"} | rate: ${_rateG||"—"} | risk: ${_riskG||"—"} | treasury: ${_treasury||"—"} | admin? ${isAdmin}`;
+}
+
+function isAdminAddress(a) {
+  if (!a) return false;
+  const x = a.toLowerCase();
+  return (
+    x === (_owner||"").toLowerCase() ||
+    x === (_rateG||"").toLowerCase() ||
+    x === (_riskG||"").toLowerCase() ||
+    x === (_treasury||"").toLowerCase() ||
+    x === (OWNER_OVERRIDE||"").toLowerCase()
+  );
+}
+
+async function ensure(){
+  if (!window.ethereum) { alert("Please install/enable MetaMask."); throw new Error("no wallet"); }
+  provider = new ethers.BrowserProvider(window.ethereum);
+  const net = await provider.getNetwork();
+  if (Number(net.chainId) !== CHAIN_ID_ARBITRUM) {
+    await window.ethereum.request({ method: "wallet_switchEthereumChain", params:[{ chainId:"0xa4b1" }]});
+  }
+  signer = await provider.getSigner();
+  acct = await signer.getAddress();
+  addrEl.textContent = trunc(acct);
+
+  lending = new ethers.Contract(LENDING_ADDR, LENDING_ABI, signer);
+  const [usdcAddr, mtyldAddr, vaultAddr] = await Promise.all([lending.USDC(), lending.MTYLD(), lending.MTYLD_VAULT()]);
+  tripletEl.textContent = `${usdcAddr} / ${mtyldAddr} / ${vaultAddr}`;
+  USDC  = new ethers.Contract(usdcAddr, ERC20_ABI, signer);
+  MTYLD = new ethers.Contract(mtyldAddr, ERC20_ABI, signer);
+
+  await loadParams();     // works even w/o signer, but we call for freshness
+  gateAdmin();
+}
+
+async function loadParams() {
+  // robust: read from public RPC whether or not we have a signer
+  const readProv = new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
+  const read = new ethers.Contract(LENDING_ADDR, LENDING_ABI, readProv);
+
+  // helper to safely call optional functions
+  const safeCall = async (fnName) => {
+    try {
+      const fn = read[fnName];
+      if (typeof fn !== "function") return null;   // method not on this deployment
+      return await fn();
+    } catch { return null; }                       // revert or not implemented
+  };
+
+  // required params (exist on all versions)
+  const [apr, maxLTV, liqTh, liqBo, late, paused, liqPaused] = await Promise.all([
+    read.aprBps(), read.maxLtvBps(), read.liqThresholdBps(), read.liqBonusBps(),
+    read.lateFeeBpsFlat(), read.paused(), read.liquidationPaused()
+  ]);
+
+  // optional “severe” params — tolerate missing
+  const sevTh  = await safeCall("severeLiqThresholdBps");
+  const sevBo  = await safeCall("severeLiqBonusBps");
+  const sevPub = await safeCall("severePublic");
+
+  // roles (read-only)
+  const roles = await fetchRolesRead();
+  _owner = roles.owner; _rateG = roles.rateG; _riskG = roles.riskG; _treasury = roles.treas;
+
+  // Readouts
+  readParams.textContent = `Params: APR ${apr} • MaxLTV ${maxLTV} • LiqThresh ${liqTh} • LiqBonus ${liqBo}`;
+  readSevere.textContent = `Severe: Thresh ${sevTh ?? "—"} • Bonus ${sevBo ?? "—"} • Public ${(sevPub===null)? "—" : (sevPub ? "Yes" : "No")}`;
+  readLate.textContent   = `Late Fee: ${late} bps`;
+  readRoles.textContent  = `Roles → owner: ${_owner} • treasury: ${_treasury} • rate: ${_rateG} • risk: ${_riskG}`;
+
+  pausedLine.textContent = `Paused: ${paused ? "Yes" : "No"}`;
+  liqPausedLine.textContent = `Liquidations Paused: ${liqPaused ? "Yes" : "No"}`;
+  chkLiqPaused.checked = Boolean(liqPaused);
+}
+
+function gateAdmin() {
+  const isAdmin = FORCE_ADMIN || isAdminAddress(acct);
+  setDebug(isAdmin);
+  if (isAdmin) {
+    adminCard.classList.remove("hidden");
+    roleBadge?.classList.remove("hidden");
+    const role =
+      acct?.toLowerCase() === (_owner||"").toLowerCase() ? "Owner" :
+      acct?.toLowerCase() === (_rateG||"").toLowerCase() ? "Rate Guardian" :
+      acct?.toLowerCase() === (_riskG||"").toLowerCase() ? "Risk Guardian" :
+      acct?.toLowerCase() === (_treasury||"").toLowerCase() ? "Treasury" :
+      acct?.toLowerCase() === (OWNER_OVERRIDE||"") ? "Owner (override)" : "Admin";
+    adminRoleLine.textContent = `Role: ${role}`;
+  } else {
+    adminCard.classList.add("hidden");
+    roleBadge?.classList.add("hidden");
+    adminRoleLine.textContent = "Role: —";
+  }
+}
+
+async function refresh(){
+  try{
+    const readProv = new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
+    const read = new ethers.Contract(LENDING_ADDR, LENDING_ABI, readProv);
+    const [usdcAddr, mtyldAddr, vaultAddr] = await Promise.all([ read.USDC(), read.MTYLD(), read.MTYLD_VAULT() ]);
+    tripletEl.textContent = `${usdcAddr} / ${mtyldAddr} / ${vaultAddr}`;
+
+    // Price
+    const readVault = new ethers.Contract(vaultAddr, ["function pricePerToken() view returns (uint256)"], readProv);
+    const price18 = await readVault.pricePerToken();
+    mtyldPriceEl.textContent = "$" + (Number(price18)/1e18).toFixed(6);
+
+    // Params for stats
+    const [aprBpsVal, maxLtvBpsVal, liqThreshBpsVal] = await Promise.all([
+      read.aprBps(), read.maxLtvBps(), read.liqThresholdBps()
+    ]);
+
+    // Vault USDC
+    const USDC_r = new ethers.Contract(usdcAddr, ERC20_ABI, readProv);
+    const vaultBal6 = await USDC_r.balanceOf(LENDING_ADDR);
+    vaultUsdcEl.textContent = fmt6(vaultBal6).toLocaleString(undefined,{maximumFractionDigits:2}) + " USDC";
+
+    if (signer && acct) {
+      const MTYLD_r= new ethers.Contract(mtyldAddr, ERC20_ABI, readProv);
+      const [bu,bm] = await Promise.all([USDC_r.balanceOf(acct), MTYLD_r.balanceOf(acct)]);
+      balUsdcEl.textContent  = fmt6(bu).toFixed(2) + " USDC";
+      balMtyldEl.textContent = fmt18(bm).toFixed(4) + " MTYLD";
+
+      const V = await read.userView(acct);
+      const colUSD   = Number(V.collateralUSD_18)/1e18;
+      const debtUSD  = Number(V.debtUSD_18)/1e18;
+      const debtUSDC = (Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6;
+
+      userColMtyld.textContent = (Number(V.collateralMTYLD_18)/1e18).toFixed(4) + " MTYLD";
+      userColUsd.textContent    = usd(colUSD);
+      userDebtUsdc.textContent  = debtUSDC.toFixed(2) + " USDC";
+      userDebtUsd.textContent   = usd(debtUSD);
+      userInterestLate.textContent = (Number(V.interestUSDC_6)/1e6 + Number(V.lateFeesUSDC_6)/1e6).toFixed(2) + " USDC";
+      userScore.textContent     = String(V.creditScore || 0);
+      userMaturity.textContent  = V.maturity ? new Date(Number(V.maturity)*1000).toLocaleString() : "—";
+      ltvLine.textContent       = (Number(V.ltvBps)/100).toFixed(2) + "%";
+
+      const borrowLimitUSD = colUSD * Number(maxLtvBpsVal) / 10000;
+      const availUSD = Math.max(0, Math.min(borrowLimitUSD - debtUSD, fmt6(vaultBal6)));
+      const liqThreshPct = Number(liqThreshBpsVal)/100;
+      const debtAtLiqUSD = colUSD * Number(liqThreshBpsVal) / 10000;
+
+      borrowLimitEl.textContent = usd(borrowLimitUSD);
+      availBorrowEl.textContent = usd(availUSD);
+      liqThreshPctEl.textContent = liqThreshPct.toFixed(2) + "%";
+      debtAtLiqEl.textContent = usd(debtAtLiqUSD);
+      aprBpsLine.textContent = (Number(aprBpsVal)/100).toFixed(2) + "% APR";
+
+      const nowMs = Date.now();
+      const matMs = Number(V.maturity)*1000;
+      daysToMatEl.textContent = V.maturity ? Math.max(0, Math.ceil((matMs - nowMs)/86400000)).toString() : "—";
+
+      const ltvPct = Number(V.ltvBps)/100;
+      ltvBarFill.style.width = liqThreshPct > 0 ? Math.min(100, (ltvPct/liqThreshPct)*100) + "%" : "0%";
+      ltvPctSmall.textContent = `LTV ${(ltvPct).toFixed(2)}%`;
+      liqThreshSmall.textContent = `Liq @ ${liqThreshPct.toFixed(2)}%`;
+    } else {
+      availBorrowEl.textContent = "—";
+      borrowLimitEl.textContent = "—";
+      liqThreshPctEl.textContent = (Number(await read.liqThresholdBps())/100).toFixed(2) + "%";
+      aprBpsLine.textContent = (Number(await read.aprBps())/100).toFixed(2) + "% APR";
+      ltvBarFill.style.width = "0%";
+      ltvPctSmall.textContent = "LTV —";
+      liqThreshSmall.textContent = `Liq @ ${liqThreshPctEl.textContent}`;
+    }
+
+    // Always keep roles/gating fresh even before connect
+    await loadParams();
+    gateAdmin();
+
+  }catch(e){ console.error(e); alert("Refresh failed: "+shortErr(e)); }
+}
+
+// ===== Max helpers =====
+depMax.onclick = async () => { try{ if (!signer || !MTYLD) return; const bal = await MTYLD.balanceOf(acct); depAmt.value = (Number(bal)/1e18).toFixed(4);}catch{} };
+wdMax.onclick = async () => { try{ if (!provider) await ensure(); const V = await lending.userView(acct); wdAmt.value = (Number(V.collateralMTYLD_18)/1e18).toFixed(4);}catch{} };
+rpMax.onclick = async () => { try{ if (!provider) await ensure(); const V = await lending.userView(acct); const debt = (Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6; rpAmt.value = debt.toFixed(2);}catch{} };
+
+// ===== Actions =====
+btnDeposit.onclick = async () => {
+  try{
+    depMsg.textContent = "";
+    if (!provider) await ensure();
+    const a = to18(depAmt.value);
+    if (a <= 0n) { depMsg.textContent = "Enter amount"; return; }
+    const allowance = await MTYLD.allowance(acct, LENDING_ADDR);
+    if (allowance < a) { const txa = await MTYLD.approve(LENDING_ADDR, a); await txa.wait(); }
+    const tx = await lending.depositCollateral(a); await tx.wait();
+    depMsg.textContent = "Deposited ✅"; await refresh();
+  }catch(e){ console.error(e); depMsg.textContent = shortErr(e); }
+};
+
+btnWithdraw.onclick = async () => {
+  try{
+    wdMsg.textContent = "";
+    if (!provider) await ensure();
+    const a = to18(wdAmt.value);
+    if (a <= 0n) { wdMsg.textContent = "Enter amount"; return; }
+    const tx = await lending.withdrawCollateral(a); await tx.wait();
+    wdMsg.textContent = "Withdrawn ✅"; await refresh();
+  }catch(e){ console.error(e); wdMsg.textContent = shortErr(e); }
+};
+
+btnBorrow.onclick = async () => {
+  try{
+    brMsg.textContent = "";
+    if (!provider) await ensure();
+    const amt = to6(brAmt.value);
+    const days = Math.floor(Number(brDays.value || "0"));
+    if (amt <= 0n || !(days>0)) { brMsg.textContent = "Enter amount & days"; return; }
+    const maturity = BigInt(Math.floor(Date.now()/1000) + days*24*3600);
+    const tx = await lending.borrow(amt, maturity); await tx.wait();
+    brMsg.textContent = "Borrowed ✅"; await refresh();
+  }catch(e){ console.error(e); brMsg.textContent = shortErr(e); }
+};
+
+btnRepay.onclick = async () => {
+  try{
+    rpMsg.textContent = "";
+    if (!provider) await ensure();
+    const amt = to6(rpAmt.value);
+    if (amt <= 0n) { rpMsg.textContent = "Enter amount"; return; }
+    const allowance = await USDC.allowance(acct, LENDING_ADDR);
+    if (allowance < amt) { const txa = await USDC.approve(LENDING_ADDR, amt); await txa.wait(); }
+    const tx = await lending.repay(amt); await tx.wait();
+    rpMsg.textContent = "Repaid ✅"; await refresh();
+  }catch(e){ console.error(e); rpMsg.textContent = shortErr(e); }
+};
+
+// Connect + refresh
+document.getElementById("btnConnect").onclick = async () => { try { await ensure(); await refresh(); } catch(e){ console.error(e);} };
+document.getElementById("btnRefresh").onclick = async () => { await refresh(); };
+
+// Admin buttons
+btnPause?.addEventListener("click", async () => { try { sysMsg.textContent = ""; const tx = await lending.pause(); await tx.wait(); sysMsg.textContent = "Paused ✅"; await refresh(); } catch(e){ sysMsg.textContent = shortErr(e); }});
+btnUnpause?.addEventListener("click", async () => { try { sysMsg.textContent = ""; const tx = await lending.unpause(); await tx.wait(); sysMsg.textContent = "Unpaused ✅"; await refresh(); } catch(e){ sysMsg.textContent = shortErr(e); }});
+btnSetLiqPaused?.addEventListener("click", async () => { try { sysMsg.textContent = ""; const tx = await lending.setLiquidationPaused(Boolean(chkLiqPaused.checked)); await tx.wait(); sysMsg.textContent = "Updated ✅"; await refresh(); } catch(e){ sysMsg.textContent = shortErr(e); }});
+btnSetParams?.addEventListener("click", async () => { try { paramMsg.textContent = ""; const tx = await lending.setParams(toU16(inApr.value), toU16(inMaxLtv.value), toU16(inLiqThresh.value), toU16(inLiqBonus.value)); await tx.wait(); paramMsg.textContent = "Params updated ✅"; await refresh(); } catch(e){ paramMsg.textContent = shortErr(e); }});
+btnSetLate?.addEventListener("click", async () => { try { paramMsg.textContent = ""; const tx = await lending.setLateFeeBps(toU16(inLateBps.value)); await tx.wait(); paramMsg.textContent = "Late fee updated ✅"; await refresh(); } catch(e){ paramMsg.textContent = shortErr(e); }});
+btnSetSevere?.addEventListener("click", async () => { try { sevMsg.textContent = ""; const tx = await lending.setSevereParams(toU16(inSevThresh.value), toU16(inSevBonus.value), Boolean(chkSevPublic.checked)); await tx.wait(); sevMsg.textContent = "Severe params updated ✅"; await refresh(); } catch(e){ sevMsg.textContent = shortErr(e); }});
+btnSetRoles?.addEventListener("click", async () => { try { rolesMsg.textContent = ""; const tx = await lending.setRoles(inTreasury.value, inRate.value, inRisk.value); await tx.wait(); rolesMsg.textContent = "Roles updated ✅"; await refresh(); } catch(e){ rolesMsg.textContent = shortErr(e); }});
+btnSetWL?.addEventListener("click", async () => { try { wlMsg.textContent = ""; const tx = await lending.setWhitelist(inWLUser.value, Boolean(chkWL.checked)); await tx.wait(); wlMsg.textContent = "Whitelist set ✅"; await refresh(); } catch(e){ wlMsg.textContent = shortErr(e); }});
+btnSetCredit?.addEventListener("click", async () => { try { creditMsg.textContent = ""; const n = Math.floor(Number(inCredit.value||"0")); if (n < 0 || n > 0xFFFFFFFF) throw new Error("score out of range"); const tx = await lending.adminSetCredit(inUserCredit.value, n); await tx.wait(); creditMsg.textContent = "Credit set ✅"; await refresh(); } catch(e){ creditMsg.textContent = shortErr(e); }});
+
+// First paint (works before connect)
+refresh();
+</script>
+</body>
+</html>
