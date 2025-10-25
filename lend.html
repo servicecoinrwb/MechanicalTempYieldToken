@@ -16,7 +16,6 @@
         <div class="text-slate-300 font-semibold hidden sm:block">MTYLD • Credit Line</div>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Admin role badge -->
         <span id="roleBadge" class="hidden px-2 py-1 rounded-md bg-amber-500/20 text-amber-300 text-xs font-semibold">ADMIN</span>
         <button id="btnConnect" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Connect</button>
         <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
@@ -35,7 +34,6 @@
         <div id="tokenTriplet" class="font-mono text-slate-300 text-xs break-all">—</div>
       </div>
 
-      <!-- Top tiles: now 6 tiles including Treasury & Available -->
       <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
           <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
@@ -64,7 +62,6 @@
           </div>
         </div>
 
-        <!-- LTV progress against liquidation threshold -->
         <div class="mt-4">
           <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
             <div id="ltvBarFill" class="h-2 bg-sky-500" style="width:0%"></div>
@@ -130,6 +127,12 @@
         </div>
       </div>
       <div class="text-[11px] text-slate-500 mt-2">Note: “Available to Borrow” is min(Borrow Limit − Current Debt, Vault USDC). Assumes 1 USDC ≈ $1.</div>
+    </div>
+
+    <!-- ROLES (DEBUG) — always visible -->
+    <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-4">
+      <div class="text-slate-300 font-semibold mb-2">Roles (debug)</div>
+      <div id="debugRoles" class="text-xs text-slate-400 break-all">—</div>
     </div>
 
     <div class="grid md:grid-cols-2 gap-4">
@@ -274,7 +277,6 @@
         </div>
       </div>
 
-      <!-- Readouts -->
       <div class="mt-4 p-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-sm grid sm:grid-cols-2 gap-2">
         <div id="readParams">Params: —</div>
         <div id="readSevere">Severe: —</div>
@@ -290,8 +292,16 @@
 const CHAIN_ID_ARBITRUM = 42161;
 const LENDING_ADDR = "0x8fC8b61882e4792c1fB4Ea128b55c90c3069f027";
 
+// === Force-allow (owner override) — YOUR address ===
+const OWNER_OVERRIDE = "0xcfe077e6f7554b1724546e02624a0832d1f4557a";
+
+// Query param: ?admin=1 will force-show admin (useful for local testing)
+const FORCE_ADMIN = /(?:\\?|&)admin=1(?:&|$)/i.test(location.search);
+
+// ===== ABI (exactly what you supplied) =====
 const LENDING_ABI = [{"inputs":[{"internalType":"address","name":"usdc","type":"address"},{"internalType":"address","name":"mtyld","type":"address"},{"internalType":"address","name":"mtyldVault","type":"address"},{"internalType":"address","name":"_treasury","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BadAddress","type":"error"},{"inputs":[],"name":"BadAmount","type":"error"},{"inputs":[],"name":"Healthy","type":"error"},{"inputs":[],"name":"NotActive","type":"error"},{"inputs":[],"name":"NotOwnerGuardian","type":"error"},{"inputs":[],"name":"NotSevere","type":"error"},{"inputs":[],"name":"NotWhitelisted","type":"error"},{"inputs":[],"name":"OverLTV","type":"error"},{"inputs":[],"name":"Slippage","type":"error"},{"inputs":[],"name":"TooEarly","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"interestAccrued_6","type":"uint256"},{"indexed":false,"internalType":"bool","name":"lateFeeApplied","type":"bool"}],"name":"Accrued","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"usdcAmount_6","type":"uint256"},{"indexed":false,"internalType":"uint64","name":"start","type":"uint64"},{"indexed":false,"internalType":"uint64","name":"maturity","type":"uint64"}],"name":"Borrowed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount_18","type":"uint256"}],"name":"CollateralDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount_18","type":"uint256"}],"name":"CollateralWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"lateFeeBpsFlat","type":"uint16"}],"name":"LateFeeUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"liquidator","type":"address"},{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"repayUSDC_6","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"seizeMTYLD_18","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"price18","type":"uint256"},{"indexed":false,"internalType":"uint16","name":"bonusBps","type":"uint16"},{"indexed":false,"internalType":"bool","name":"severe","type":"bool"}],"name":"Liquidated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bool","name":"on","type":"bool"}],"name":"LiquidationPaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"prev","type":"address"},{"indexed":true,"internalType":"address","name":"next","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"aprBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"maxLtvBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"liqThresholdBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"liqBonusBps","type":"uint16"}],"name":"ParamsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"repaidUSDC_6","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"principalLeft_6","type":"uint256"}],"name":"Repaid","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"treasury","type":"address"},{"indexed":false,"internalType":"address","name":"rateGuardian","type":"address"},{"indexed":false,"internalType":"address","name":"riskGuardian","type":"address"}],"name":"RolesUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"severeLiqThresholdBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"severeLiqBonusBps","type":"uint16"},{"indexed":false,"internalType":"bool","name":"severePublic","type":"bool"}],"name":"SevereParamsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"residualMTYLD_18","type":"uint256"}],"name":"SevereResidualSent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"bool","name":"allowed","type":"bool"}],"name":"WhitelistSet","type":"event"},{"inputs":[],"name":"APR_MAX_BPS","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"BPS_DENOMINATOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_BPS_U16","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MTYLD","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MTYLD_VAULT","outputs":[{"internalType":"contract IMTYLDVault","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SECONDS_PER_YEAR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USDC","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USDC_6","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USD_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint32","name":"score","type":"uint32"}],"name":"adminSetCredit","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"aprBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount_6","type":"uint256"},{"internalType":"uint64","name":"maturity","type":"uint64"}],"name":"borrow","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"canBeLiquidated","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"canBeSeverelyLiquidated","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"collateralMTYLD_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"collateralUsd_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"creditScore","outputs":[{"internalType":"uint32","name":"score","type":"uint32"},{"internalType":"uint32","name":"lastUpdated","type":"uint32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"debtUsd_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountMTYLD_18","type":"uint256"}],"name":"depositCollateral","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isWhitelisted","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lateFeeBpsFlat","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liqBonusBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liqThresholdBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"repayUSDC_6","type":"uint256"},{"internalType":"uint256","name":"minSeizeMTYLD_18","type":"uint256"}],"name":"liquidate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"liquidationAmountUSDC_6","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liquidationPaused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"loans","outputs":[{"internalType":"uint256","name":"principalUSDC_6","type":"uint256"},{"internalType":"uint256","name":"interestUSDC_6","type":"uint256"},{"internalType":"uint256","name":"lateFeesUSDC_6","type":"uint256"},{"internalType":"uint64","name":"start","type":"uint64"},{"internalType":"uint64","name":"maturity","type":"uint64"},{"internalType":"bool","name":"lateFeeApplied","type":"bool"},{"internalType":"bool","name":"active","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"ltvBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maxLtvBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mtyldUsdPrice_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"rateGuardian","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount_6","type":"uint256"}],"name":"repay","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"riskGuardian","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint16","name":"_lateFeeBpsFlat","type":"uint16"}],"name":"setLateFeeBps","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bool","name":"on","type":"bool"}],"name":"setLiquidationPaused","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"_aprBps","type":"uint16"},{"internalType":"uint16","name":"_maxLtvBps","type":"uint16"},{"internalType":"uint16","name":"_liqThresholdBps","type":"uint16"},{"internalType":"uint16","name":"_liqBonusBps","type":"uint16"}],"name":"setParams","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_rate","type":"address"},{"internalType":"address","name":"_risk","type":"address"}],"name":"setRoles","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"_sevThreshBps","type":"uint16"},{"internalType":"uint16","name":"_sevBonusBps","type":"uint16"},{"internalType":"bool","name":"_public","type":"bool"}],"name":"setSevereParams","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"minSeizeMTYLD_18","type":"uint256"}],"name":"severeLiquidate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"severePublic","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"n","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"treasury","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"userView","outputs":[{"components":[{"internalType":"uint256","name":"collateralMTYLD_18","type":"uint256"},{"internalType":"uint256","name":"collateralUSD_18","type":"uint256"},{"internalType":"uint256","name":"principalUSDC_6","type":"uint256"},{"internalType":"uint256","name":"interestUSDC_6","type":"uint256"},{"internalType":"uint256","name":"lateFeesUSDC_6","type":"uint256"},{"internalType":"uint256","name":"debtUSD_18","type":"uint256"},{"internalType":"uint16","name":"ltvBps","type":"uint16"},{"internalType":"uint32","name":"creditScore","type":"uint32"},{"internalType":"uint64","name":"maturity","type":"uint64"},{"internalType":"bool","name":"active","type":"bool"}],"internalType":"struct LendingVaultGatedV3.UserView","name":"V","type":"tuple"}],"stateMutability":"view","type":"function"}];
 
+// ===== Simple ERC20 ABI =====
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
   "function allowance(address,address) view returns (uint256)",
@@ -300,24 +310,32 @@ const ERC20_ABI = [
 ];
 
 (async () => {
-  // DOM helpers
   const $ = (id) => document.getElementById(id);
   const addrEl = $("addr"), tripletEl = $("tokenTriplet");
   const mtyldPriceEl = $("mtyldPrice"), balMtyldEl = $("balMtyld"), balUsdcEl = $("balUsdc"), ltvLine = $("ltvLine");
   const vaultUsdcEl = $("vaultUsdc"), availBorrowEl = $("availBorrow");
   const ltvBarFill = $("ltvBarFill"), ltvPctSmall = $("ltvPctSmall"), liqThreshSmall = $("liqThreshSmall");
-
   const userColMtyld = $("userColMtyld"), userColUsd = $("userColUsd"), userDebtUsdc = $("userDebtUsdc"), userDebtUsd = $("userDebtUsd");
   const userInterestLate = $("userInterestLate"), userScore = $("userScore"), userMaturity = $("userMaturity");
-
   const borrowLimitEl = $("borrowLimit"), liqThreshPctEl = $("liqThreshPct"), debtAtLiqEl = $("debtAtLiq"), daysToMatEl = $("daysToMat"), aprBpsLine = $("aprBpsLine");
-
   const depAmt = $("depAmt"), depMax = $("depMax"), depMsg = $("depMsg"), btnDeposit = $("btnDeposit");
   const wdAmt = $("wdAmt"), wdMax = $("wdMax"), wdMsg = $("wdMsg"), btnWithdraw = $("btnWithdraw");
   const brAmt = $("brAmt"), brDays = $("brDays"), brMsg = $("brMsg"), btnBorrow = $("btnBorrow");
   const rpAmt = $("rpAmt"), rpMax = $("rpMax"), rpMsg = $("rpMsg"), btnRepay = $("btnRepay");
+  const adminCard = $("adminCard"), roleBadge = $("roleBadge"), adminRoleLine = $("adminRoleLine");
+  const pausedLine = $("pausedLine"), liqPausedLine = $("liqPausedLine"), btnPause = $("btnPause"), btnUnpause = $("btnUnpause");
+  const chkLiqPaused = $("chkLiqPaused"), btnSetLiqPaused = $("btnSetLiqPaused"), sysMsg = $("sysMsg");
+  const inApr = $("inApr"), inMaxLtv = $("inMaxLtv"), inLiqThresh = $("inLiqThresh"), inLiqBonus = $("inLiqBonus"), btnSetParams = $("btnSetParams");
+  const inLateBps = $("inLateBps"), btnSetLate = $("btnSetLate"), paramMsg = $("paramMsg");
+  const inSevThresh = $("inSevThresh"), inSevBonus  = $("inSevBonus"), chkSevPublic= $("chkSevPublic"), btnSetSevere= $("btnSetSevere"), sevMsg = $("sevMsg");
+  const inTreasury = $("inTreasury"), inRate = $("inRate"), inRisk = $("inRisk"), btnSetRoles= $("btnSetRoles"), rolesMsg = $("rolesMsg");
+  const inWLUser = $("inWLUser"), chkWL = $("chkWL"), btnSetWL = $("btnSetWL"), wlMsg = $("wlMsg");
+  const inUserCredit = $("inUserCredit"), inCredit = $("inCredit"), btnSetCredit = $("btnSetCredit"), creditMsg = $("creditMsg");
+  const readParams = $("readParams"), readSevere = $("readSevere"), readLate = $("readLate"), readRoles = $("readRoles");
+  const debugRoles = $("debugRoles");
 
   let provider, signer, acct, lending, USDC, MTYLD;
+  let _owner, _rateG, _riskG, _treasury;
 
   const fmt6  = (x) => Number(x)/1e6;
   const fmt18 = (x) => Number(x)/1e18;
@@ -326,6 +344,24 @@ const ERC20_ABI = [
   const trunc = (a) => a ? a.slice(0,6)+"…"+a.slice(-4) : "—";
   const usd   = (n,d=2)=>"$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:d});
   const shortErr = (e)=> (e && (e.info?.error?.message || e.shortMessage || e.message))?.replace(/execution reverted: /i,'').slice(0,200) || "Error";
+  const toU16 = (x) => { const n = Math.floor(Number(x||"0")); if (n<0||n>65535) throw new Error("bps out of range"); return n; };
+
+  function setDebug(isAdmin) {
+    debugRoles.textContent =
+      `You: ${acct||"—"} | owner: ${_owner||"—"} | rate: ${_rateG||"—"} | risk: ${_riskG||"—"} | treasury: ${_treasury||"—"} | admin? ${isAdmin}`;
+  }
+
+  function isAdminAddress(a) {
+    if (!a) return false;
+    const x = a.toLowerCase();
+    return (
+      x === (_owner||"").toLowerCase() ||
+      x === (_rateG||"").toLowerCase() ||
+      x === (_riskG||"").toLowerCase() ||
+      x === (_treasury||"").toLowerCase() ||   // allow treasury too
+      x === (OWNER_OVERRIDE||"").toLowerCase()
+    );
+  }
 
   async function ensure(){
     if (!window.ethereum) { alert("Please install/enable MetaMask."); throw new Error("no wallet"); }
@@ -343,6 +379,48 @@ const ERC20_ABI = [
     tripletEl.textContent = `${usdcAddr} / ${mtyldAddr} / ${vaultAddr}`;
     USDC  = new ethers.Contract(usdcAddr, ERC20_ABI, signer);
     MTYLD = new ethers.Contract(mtyldAddr, ERC20_ABI, signer);
+    await loadParams(); // make sure roles are loaded before gating
+    gateAdmin();
+  }
+
+  async function loadParams() {
+    if (!lending) return;
+    const [apr, maxLTV, liqTh, liqBo, sevTh, sevBo, sevPub, late, paused, liqPaused, owner, rateG, riskG, treas] =
+      await Promise.all([
+        lending.aprBps(), lending.maxLtvBps(), lending.liqThresholdBps(), lending.liqBonusBps(),
+        lending.severeLiqThresholdBps(), lending.severeLiqBonusBps(), lending.severePublic(), lending.lateFeeBpsFlat(),
+        lending.paused(), lending.liquidationPaused(), lending.owner(), lending.rateGuardian(), lending.riskGuardian(), lending.treasury(),
+      ]);
+
+    readParams.textContent = `Params: APR ${apr} • MaxLTV ${maxLTV} • LiqThresh ${liqTh} • LiqBonus ${liqBo}`;
+    readSevere.textContent = `Severe: Thresh ${sevTh} • Bonus ${sevBo} • Public ${sevPub ? "Yes" : "No"}`;
+    readLate.textContent   = `Late Fee: ${late} bps`;
+    readRoles.textContent  = `Roles → owner: ${owner} • treasury: ${treas} • rate: ${rateG} • risk: ${riskG}`;
+    pausedLine.textContent = `Paused: ${paused ? "Yes" : "No"}`;
+    liqPausedLine.textContent = `Liquidations Paused: ${liqPaused ? "Yes" : "No"}`;
+    chkLiqPaused.checked = Boolean(liqPaused);
+
+    _owner = owner; _rateG = rateG; _riskG = riskG; _treasury = treas;
+  }
+
+  function gateAdmin() {
+    const isAdmin = FORCE_ADMIN || isAdminAddress(acct);
+    setDebug(isAdmin);
+    if (isAdmin) {
+      adminCard.classList.remove("hidden");
+      roleBadge?.classList.remove("hidden");
+      const role =
+        acct?.toLowerCase() === (_owner||"").toLowerCase() ? "Owner" :
+        acct?.toLowerCase() === (_rateG||"").toLowerCase() ? "Rate Guardian" :
+        acct?.toLowerCase() === (_riskG||"").toLowerCase() ? "Risk Guardian" :
+        acct?.toLowerCase() === (_treasury||"").toLowerCase() ? "Treasury" :
+        acct?.toLowerCase() === (OWNER_OVERRIDE||"") ? "Owner (override)" : "Admin";
+      adminRoleLine.textContent = `Role: ${role}`;
+    } else {
+      adminCard.classList.add("hidden");
+      roleBadge?.classList.add("hidden");
+      adminRoleLine.textContent = "Role: —";
+    }
   }
 
   async function refresh(){
@@ -352,37 +430,31 @@ const ERC20_ABI = [
       const [usdcAddr, mtyldAddr, vaultAddr] = await Promise.all([ read.USDC(), read.MTYLD(), read.MTYLD_VAULT() ]);
       tripletEl.textContent = `${usdcAddr} / ${mtyldAddr} / ${vaultAddr}`;
 
-      // NAV / price
       const readVault = new ethers.Contract(vaultAddr, ["function pricePerToken() view returns (uint256)"], readProv);
       const price18 = await readVault.pricePerToken();
       mtyldPriceEl.textContent = "$" + (Number(price18)/1e18).toFixed(6);
 
-      // Protocol params (needed for user stats even if not admin)
       const [aprBpsVal, maxLtvBpsVal, liqThreshBpsVal] = await Promise.all([
         read.aprBps(), read.maxLtvBps(), read.liqThresholdBps()
       ]);
 
-      // Vault USDC liquidity
       const USDC_r = new ethers.Contract(usdcAddr, ERC20_ABI, readProv);
       const vaultBal6 = await USDC_r.balanceOf(LENDING_ADDR);
       vaultUsdcEl.textContent = fmt6(vaultBal6).toLocaleString(undefined,{maximumFractionDigits:2}) + " USDC";
 
       if (signer) {
         const a = acct || await signer.getAddress();
-        // token balances
         const MTYLD_r= new ethers.Contract(mtyldAddr, ERC20_ABI, readProv);
         const [bu,bm] = await Promise.all([USDC_r.balanceOf(a), MTYLD_r.balanceOf(a)]);
         balUsdcEl.textContent  = fmt6(bu).toFixed(2) + " USDC";
         balMtyldEl.textContent = fmt18(bm).toFixed(4) + " MTYLD";
 
-        // user view
         const V = await read.userView(a);
-        const colMTYLD = Number(V.collateralMTYLD_18)/1e18;
         const colUSD   = Number(V.collateralUSD_18)/1e18;
         const debtUSD  = Number(V.debtUSD_18)/1e18;
         const debtUSDC = (Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6;
 
-        userColMtyld.textContent = colMTYLD.toFixed(4) + " MTYLD";
+        userColMtyld.textContent = (Number(V.collateralMTYLD_18)/1e18).toFixed(4) + " MTYLD";
         userColUsd.textContent    = usd(colUSD);
         userDebtUsdc.textContent  = debtUSDC.toFixed(2) + " USDC";
         userDebtUsd.textContent   = usd(debtUSD);
@@ -391,7 +463,6 @@ const ERC20_ABI = [
         userMaturity.textContent  = V.maturity ? new Date(Number(V.maturity)*1000).toLocaleString() : "—";
         ltvLine.textContent       = (Number(V.ltvBps)/100).toFixed(2) + "%";
 
-        // Stats: limits & availability
         const borrowLimitUSD = colUSD * Number(maxLtvBpsVal) / 10000;
         const availUSD = Math.max(0, Math.min(borrowLimitUSD - debtUSD, fmt6(vaultBal6)));
         const liqThreshPct = Number(liqThreshBpsVal)/100;
@@ -403,18 +474,15 @@ const ERC20_ABI = [
         debtAtLiqEl.textContent = usd(debtAtLiqUSD);
         aprBpsLine.textContent = (Number(aprBpsVal)/100).toFixed(2) + "% APR";
 
-        // Days to maturity
         const nowMs = Date.now();
         const matMs = Number(V.maturity)*1000;
         daysToMatEl.textContent = V.maturity ? Math.max(0, Math.ceil((matMs - nowMs)/86400000)).toString() : "—";
 
-        // LTV progress bar vs liq threshold
         const ltvPct = Number(V.ltvBps)/100;
         ltvBarFill.style.width = liqThreshPct > 0 ? Math.min(100, (ltvPct/liqThreshPct)*100) + "%" : "0%";
         ltvPctSmall.textContent = `LTV ${(ltvPct).toFixed(2)}%`;
         liqThreshSmall.textContent = `Liq @ ${liqThreshPct.toFixed(2)}%`;
       } else {
-        // Not connected: zero out user-dependent stats
         availBorrowEl.textContent = "—";
         borrowLimitEl.textContent = "—";
         liqThreshPctEl.textContent = (Number(await read.liqThresholdBps())/100).toFixed(2) + "%";
@@ -423,32 +491,17 @@ const ERC20_ABI = [
         ltvPctSmall.textContent = "LTV —";
         liqThreshSmall.textContent = `Liq @ ${liqThreshPctEl.textContent}`;
       }
+
+      // keep gating updated on refresh (in case roles changed)
+      if (lending) { await loadParams(); gateAdmin(); }
+
     }catch(e){ console.error(e); alert("Refresh failed: "+shortErr(e)); }
   }
 
   // ===== Max helpers =====
-  depMax.onclick = async () => {
-    try{
-      if (!signer || !MTYLD) return;
-      const bal = await MTYLD.balanceOf(acct);
-      depAmt.value = (Number(bal)/1e18).toFixed(4);
-    }catch{}
-  };
-  wdMax.onclick = async () => {
-    try{
-      if (!provider) await ensure();
-      const V = await lending.userView(acct);
-      wdAmt.value = (Number(V.collateralMTYLD_18)/1e18).toFixed(4);
-    }catch{}
-  };
-  rpMax.onclick = async () => {
-    try{
-      if (!provider) await ensure();
-      const V = await lending.userView(acct);
-      const debt = (Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6;
-      rpAmt.value = debt.toFixed(2);
-    }catch{}
-  };
+  depMax.onclick = async () => { try{ if (!signer || !MTYLD) return; const bal = await MTYLD.balanceOf(acct); depAmt.value = (Number(bal)/1e18).toFixed(4);}catch{} };
+  wdMax.onclick = async () => { try{ if (!provider) await ensure(); const V = await lending.userView(acct); wdAmt.value = (Number(V.collateralMTYLD_18)/1e18).toFixed(4);}catch{} };
+  rpMax.onclick = async () => { try{ if (!provider) await ensure(); const V = await lending.userView(acct); const debt = (Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6; rpAmt.value = debt.toFixed(2);}catch{} };
 
   // ===== Actions =====
   btnDeposit.onclick = async () => {
@@ -505,212 +558,18 @@ const ERC20_ABI = [
   document.getElementById("btnConnect").onclick = async () => { try { await ensure(); await refresh(); } catch(e){ console.error(e);} };
   document.getElementById("btnRefresh").onclick = async () => { await refresh(); };
 
-  // === ADMIN ELEMENTS ===
-  const adminCard = document.getElementById("adminCard");
-  const roleBadge = document.getElementById("roleBadge");
-  const adminRoleLine = document.getElementById("adminRoleLine");
-  const pausedLine = document.getElementById("pausedLine");
-  const liqPausedLine = document.getElementById("liqPausedLine");
-  const btnPause = document.getElementById("btnPause");
-  const btnUnpause = document.getElementById("btnUnpause");
-  const chkLiqPaused = document.getElementById("chkLiqPaused");
-  const btnSetLiqPaused = document.getElementById("btnSetLiqPaused");
-  const sysMsg = document.getElementById("sysMsg");
+  // Admin buttons
+  btnPause?.addEventListener("click", async () => { try { sysMsg.textContent = ""; const tx = await lending.pause(); await tx.wait(); sysMsg.textContent = "Paused ✅"; await refresh(); } catch(e){ sysMsg.textContent = shortErr(e); }});
+  btnUnpause?.addEventListener("click", async () => { try { sysMsg.textContent = ""; const tx = await lending.unpause(); await tx.wait(); sysMsg.textContent = "Unpaused ✅"; await refresh(); } catch(e){ sysMsg.textContent = shortErr(e); }});
+  btnSetLiqPaused?.addEventListener("click", async () => { try { sysMsg.textContent = ""; const tx = await lending.setLiquidationPaused(Boolean(chkLiqPaused.checked)); await tx.wait(); sysMsg.textContent = "Updated ✅"; await refresh(); } catch(e){ sysMsg.textContent = shortErr(e); }});
+  btnSetParams?.addEventListener("click", async () => { try { paramMsg.textContent = ""; const tx = await lending.setParams(toU16(inApr.value), toU16(inMaxLtv.value), toU16(inLiqThresh.value), toU16(inLiqBonus.value)); await tx.wait(); paramMsg.textContent = "Params updated ✅"; await refresh(); } catch(e){ paramMsg.textContent = shortErr(e); }});
+  btnSetLate?.addEventListener("click", async () => { try { paramMsg.textContent = ""; const tx = await lending.setLateFeeBps(toU16(inLateBps.value)); await tx.wait(); paramMsg.textContent = "Late fee updated ✅"; await refresh(); } catch(e){ paramMsg.textContent = shortErr(e); }});
+  btnSetSevere?.addEventListener("click", async () => { try { sevMsg.textContent = ""; const tx = await lending.setSevereParams(toU16(inSevThresh.value), toU16(inSevBonus.value), Boolean(chkSevPublic.checked)); await tx.wait(); sevMsg.textContent = "Severe params updated ✅"; await refresh(); } catch(e){ sevMsg.textContent = shortErr(e); }});
+  btnSetRoles?.addEventListener("click", async () => { try { rolesMsg.textContent = ""; const tx = await lending.setRoles(inTreasury.value, inRate.value, inRisk.value); await tx.wait(); rolesMsg.textContent = "Roles updated ✅"; await refresh(); } catch(e){ rolesMsg.textContent = shortErr(e); }});
+  btnSetWL?.addEventListener("click", async () => { try { wlMsg.textContent = ""; const tx = await lending.setWhitelist(inWLUser.value, Boolean(chkWL.checked)); await tx.wait(); wlMsg.textContent = "Whitelist set ✅"; await refresh(); } catch(e){ wlMsg.textContent = shortErr(e); }});
+  btnSetCredit?.addEventListener("click", async () => { try { creditMsg.textContent = ""; const n = Math.floor(Number(inCredit.value||"0")); if (n < 0 || n > 0xFFFFFFFF) throw new Error("score out of range"); const tx = await lending.adminSetCredit(inUserCredit.value, n); await tx.wait(); creditMsg.textContent = "Credit set ✅"; await refresh(); } catch(e){ creditMsg.textContent = shortErr(e); }});
 
-  const inApr = document.getElementById("inApr");
-  const inMaxLtv = document.getElementById("inMaxLtv");
-  const inLiqThresh = document.getElementById("inLiqThresh");
-  const inLiqBonus = document.getElementById("inLiqBonus");
-  const btnSetParams = document.getElementById("btnSetParams");
-  const inLateBps = document.getElementById("inLateBps");
-  const btnSetLate = document.getElementById("btnSetLate");
-  const paramMsg = document.getElementById("paramMsg");
-
-  const inSevThresh = document.getElementById("inSevThresh");
-  const inSevBonus  = document.getElementById("inSevBonus");
-  const chkSevPublic= document.getElementById("chkSevPublic");
-  const btnSetSevere= document.getElementById("btnSetSevere");
-  const sevMsg      = document.getElementById("sevMsg");
-
-  const inTreasury = document.getElementById("inTreasury");
-  const inRate     = document.getElementById("inRate");
-  const inRisk     = document.getElementById("inRisk");
-  const btnSetRoles= document.getElementById("btnSetRoles");
-  const rolesMsg   = document.getElementById("rolesMsg");
-
-  const inWLUser = document.getElementById("inWLUser");
-  const chkWL    = document.getElementById("chkWL");
-  const btnSetWL = document.getElementById("btnSetWL");
-  const wlMsg    = document.getElementById("wlMsg");
-
-  const inUserCredit = document.getElementById("inUserCredit");
-  const inCredit     = document.getElementById("inCredit");
-  const btnSetCredit = document.getElementById("btnSetCredit");
-  const creditMsg    = document.getElementById("creditMsg");
-
-  const readParams = document.getElementById("readParams");
-  const readSevere = document.getElementById("readSevere");
-  const readLate   = document.getElementById("readLate");
-  const readRoles  = document.getElementById("readRoles");
-
-  const toU16 = (x) => {
-    const n = Math.floor(Number(x||"0"));
-    if (n < 0 || n > 65535) throw new Error("bps out of range");
-    return n;
-  };
-
-  let _owner, _rateG, _riskG, _treasury;
-
-  async function loadParams() {
-    if (!lending) return;
-    const [apr, maxLTV, liqTh, liqBo, sevTh, sevBo, sevPub, late, paused, liqPaused, owner, rateG, riskG, treas] =
-      await Promise.all([
-        lending.aprBps(),
-        lending.maxLtvBps(),
-        lending.liqThresholdBps(),
-        lending.liqBonusBps(),
-        lending.severeLiqThresholdBps(),
-        lending.severeLiqBonusBps(),
-        lending.severePublic(),
-        lending.lateFeeBpsFlat(),
-        lending.paused(),
-        lending.liquidationPaused(),
-        lending.owner(),
-        lending.rateGuardian(),
-        lending.riskGuardian(),
-        lending.treasury(),
-      ]);
-
-    // Readouts
-    readParams.textContent = `Params: APR ${apr} • MaxLTV ${maxLTV} • LiqThresh ${liqTh} • LiqBonus ${liqBo}`;
-    readSevere.textContent = `Severe: Thresh ${sevTh} • Bonus ${sevBo} • Public ${sevPub ? "Yes" : "No"}`;
-    readLate.textContent   = `Late Fee: ${late} bps`;
-    readRoles.textContent  = `Roles → owner: ${owner} • treasury: ${treas} • rate: ${rateG} • risk: ${riskG}`;
-
-    pausedLine.textContent = `Paused: ${paused ? "Yes" : "No"}`;
-    liqPausedLine.textContent = `Liquidations Paused: ${liqPaused ? "Yes" : "No"}`;
-    chkLiqPaused.checked = Boolean(liqPaused);
-
-    _owner = owner; _rateG = rateG; _riskG = riskG; _treasury = treas;
-  }
-
-  function isAdminAddress(a) {
-    if (!a) return false;
-    const x = a.toLowerCase();
-    return x === _owner?.toLowerCase() || x === _rateG?.toLowerCase() || x === _riskG?.toLowerCase();
-  }
-
-  async function checkRolesAndGate() {
-    try {
-      await loadParams();
-      const role =
-        acct?.toLowerCase() === _owner?.toLowerCase() ? "Owner" :
-        acct?.toLowerCase() === _rateG?.toLowerCase() ? "Rate Guardian" :
-        acct?.toLowerCase() === _riskG?.toLowerCase() ? "Risk Guardian" : null;
-
-      if (role) {
-        adminCard.classList.remove("hidden");
-        roleBadge?.classList.remove("hidden");
-        adminRoleLine.textContent = `Role: ${role}`;
-      } else {
-        adminCard.classList.add("hidden");
-        roleBadge?.classList.add("hidden");
-        adminRoleLine.textContent = "Role: —";
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  // Wrap ensure() and refresh() to include admin checks
-  const _ensureOriginal = ensure;
-  ensure = async function() {
-    await _ensureOriginal();
-    await checkRolesAndGate();
-  };
-
-  const _refreshOriginal = refresh;
-  refresh = async function() {
-    await _refreshOriginal();
-    if (lending) await loadParams();
-  };
-
-  // === Admin actions ===
-  btnPause?.addEventListener("click", async () => {
-    try { sysMsg.textContent = ""; const tx = await lending.pause(); await tx.wait(); sysMsg.textContent = "Paused ✅"; await refresh(); }
-    catch(e){ sysMsg.textContent = shortErr(e); }
-  });
-
-  btnUnpause?.addEventListener("click", async () => {
-    try { sysMsg.textContent = ""; const tx = await lending.unpause(); await tx.wait(); sysMsg.textContent = "Unpaused ✅"; await refresh(); }
-    catch(e){ sysMsg.textContent = shortErr(e); }
-  });
-
-  btnSetLiqPaused?.addEventListener("click", async () => {
-    try { sysMsg.textContent = ""; const tx = await lending.setLiquidationPaused(Boolean(chkLiqPaused.checked)); await tx.wait(); sysMsg.textContent = "Updated ✅"; await refresh(); }
-    catch(e){ sysMsg.textContent = shortErr(e); }
-  });
-
-  btnSetParams?.addEventListener("click", async () => {
-    try {
-      paramMsg.textContent = "";
-      const tx = await lending.setParams(
-        toU16(inApr.value),
-        toU16(inMaxLtv.value),
-        toU16(inLiqThresh.value),
-        toU16(inLiqBonus.value)
-      );
-      await tx.wait(); paramMsg.textContent = "Params updated ✅"; await refresh();
-    } catch(e){ paramMsg.textContent = shortErr(e); }
-  });
-
-  btnSetLate?.addEventListener("click", async () => {
-    try {
-      paramMsg.textContent = "";
-      const tx = await lending.setLateFeeBps(toU16(inLateBps.value));
-      await tx.wait(); paramMsg.textContent = "Late fee updated ✅"; await refresh();
-    } catch(e){ paramMsg.textContent = shortErr(e); }
-  });
-
-  btnSetSevere?.addEventListener("click", async () => {
-    try {
-      sevMsg.textContent = "";
-      const tx = await lending.setSevereParams(
-        toU16(inSevThresh.value),
-        toU16(inSevBonus.value),
-        Boolean(chkSevPublic.checked)
-      );
-      await tx.wait(); sevMsg.textContent = "Severe params updated ✅"; await refresh();
-    } catch(e){ sevMsg.textContent = shortErr(e); }
-  });
-
-  btnSetRoles?.addEventListener("click", async () => {
-    try {
-      rolesMsg.textContent = "";
-      const tx = await lending.setRoles(inTreasury.value, inRate.value, inRisk.value);
-      await tx.wait(); rolesMsg.textContent = "Roles updated ✅"; await refresh();
-    } catch(e){ rolesMsg.textContent = shortErr(e); }
-  });
-
-  btnSetWL?.addEventListener("click", async () => {
-    try {
-      wlMsg.textContent = "";
-      const tx = await lending.setWhitelist(inWLUser.value, Boolean(chkWL.checked));
-      await tx.wait(); wlMsg.textContent = "Whitelist set ✅"; await refresh();
-    } catch(e){ wlMsg.textContent = shortErr(e); }
-  });
-
-  btnSetCredit?.addEventListener("click", async () => {
-    try {
-      creditMsg.textContent = "";
-      const n = Math.floor(Number(inCredit.value||"0"));
-      if (n < 0 || n > 0xFFFFFFFF) throw new Error("score out of range");
-      const tx = await lending.adminSetCredit(inUserCredit.value, n);
-      await tx.wait(); creditMsg.textContent = "Credit set ✅"; await refresh();
-    } catch(e){ creditMsg.textContent = shortErr(e); }
-  });
-
-  // First paint (read-only)
+  // First paint
   await refresh();
 })();
 </script>
