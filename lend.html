@@ -16,6 +16,8 @@
         <div class="text-slate-300 font-semibold hidden sm:block">MTYLD • Credit Line</div>
       </div>
       <div class="flex items-center gap-2">
+        <!-- Admin role badge -->
+        <span id="roleBadge" class="hidden px-2 py-1 rounded-md bg-amber-500/20 text-amber-300 text-xs font-semibold">ADMIN</span>
         <button id="btnConnect" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Connect</button>
         <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
       </div>
@@ -131,6 +133,105 @@
             <div id="rpMsg" class="text-sm text-slate-400 mt-1">—</div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL (auto-gated) -->
+    <div id="adminCard" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="text-slate-300 font-semibold">Admin Panel</div>
+        <div id="adminRoleLine" class="text-xs text-slate-400">Role: —</div>
+      </div>
+
+      <!-- System -->
+      <div class="mt-4 grid md:grid-cols-3 gap-4">
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">System Status</div>
+          <div class="text-sm" id="pausedLine">Paused: —</div>
+          <div class="text-sm" id="liqPausedLine">Liquidations Paused: —</div>
+          <div class="mt-3 flex gap-2">
+            <button id="btnPause"   class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Pause</button>
+            <button id="btnUnpause" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Unpause</button>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <input id="chkLiqPaused" type="checkbox" class="h-4 w-4">
+            <label for="chkLiqPaused" class="text-sm text-slate-300">Set Liquidations Paused</label>
+            <button id="btnSetLiqPaused" class="ml-auto px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Apply</button>
+          </div>
+          <div id="sysMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">Parameters (bps)</div>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="inApr"          inputmode="numeric" placeholder="APR bps"         class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+            <input id="inMaxLtv"       inputmode="numeric" placeholder="Max LTV bps"     class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+            <input id="inLiqThresh"    inputmode="numeric" placeholder="Liq Thresh bps"  class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+            <input id="inLiqBonus"     inputmode="numeric" placeholder="Liq Bonus bps"   class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+          </div>
+          <button id="btnSetParams" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Update Params</button>
+
+          <div class="mt-4 text-slate-400 text-xs">Late Fee (bps, flat)</div>
+          <div class="flex gap-2 mt-1">
+            <input id="inLateBps" inputmode="numeric" placeholder="Late Fee bps" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700">
+            <button id="btnSetLate" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set</button>
+          </div>
+
+          <div id="paramMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">Severe Liquidation</div>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="inSevThresh" inputmode="numeric" placeholder="Severe Thresh bps" class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+            <input id="inSevBonus"  inputmode="numeric" placeholder="Severe Bonus bps"  class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
+          </div>
+          <div class="mt-2 flex items-center gap-2">
+            <input id="chkSevPublic" type="checkbox" class="h-4 w-4">
+            <label for="chkSevPublic" class="text-sm text-slate-300">Severe Public</label>
+          </div>
+          <button id="btnSetSevere" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Update Severe</button>
+          <div id="sevMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+      </div>
+
+      <!-- Roles / Whitelist / Credit -->
+      <div class="mt-4 grid md:grid-cols-3 gap-4">
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">Roles</div>
+          <input id="inTreasury" placeholder="Treasury address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <input id="inRate"     placeholder="Rate Guardian address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <input id="inRisk"     placeholder="Risk Guardian address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <button id="btnSetRoles" class="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set Roles</button>
+          <div id="rolesMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">Whitelist</div>
+          <input id="inWLUser" placeholder="User address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <div class="flex items-center gap-2 mb-2">
+            <input id="chkWL" type="checkbox" class="h-4 w-4">
+            <label for="chkWL" class="text-sm text-slate-300">Allowed</label>
+          </div>
+          <button id="btnSetWL" class="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set Whitelist</button>
+          <div id="wlMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <div class="text-slate-400 text-xs mb-2">Credit Score</div>
+          <input id="inUserCredit" placeholder="User address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <input id="inCredit" inputmode="numeric" placeholder="Score (uint32)" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
+          <button id="btnSetCredit" class="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set Credit</button>
+          <div id="creditMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+      </div>
+
+      <!-- Readouts -->
+      <div class="mt-4 p-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-sm grid sm:grid-cols-2 gap-2">
+        <div id="readParams">Params: —</div>
+        <div id="readSevere">Severe: —</div>
+        <div id="readLate">Late Fee: —</div>
+        <div id="readRoles">Roles: —</div>
       </div>
     </div>
 
@@ -306,6 +407,218 @@ const ERC20_ABI = [
   // Connect + refresh
   document.getElementById("btnConnect").onclick = async () => { try { await ensure(); await refresh(); } catch(e){ console.error(e);} };
   document.getElementById("btnRefresh").onclick = async () => { await refresh(); };
+
+  // === ADMIN ELEMENTS ===
+  const adminCard = document.getElementById("adminCard");
+  const roleBadge = document.getElementById("roleBadge");
+  const adminRoleLine = document.getElementById("adminRoleLine");
+  const pausedLine = document.getElementById("pausedLine");
+  const liqPausedLine = document.getElementById("liqPausedLine");
+  const btnPause = document.getElementById("btnPause");
+  const btnUnpause = document.getElementById("btnUnpause");
+  const chkLiqPaused = document.getElementById("chkLiqPaused");
+  const btnSetLiqPaused = document.getElementById("btnSetLiqPaused");
+  const sysMsg = document.getElementById("sysMsg");
+
+  const inApr = document.getElementById("inApr");
+  const inMaxLtv = document.getElementById("inMaxLtv");
+  const inLiqThresh = document.getElementById("inLiqThresh");
+  const inLiqBonus = document.getElementById("inLiqBonus");
+  const btnSetParams = document.getElementById("btnSetParams");
+  const inLateBps = document.getElementById("inLateBps");
+  const btnSetLate = document.getElementById("btnSetLate");
+  const paramMsg = document.getElementById("paramMsg");
+
+  const inSevThresh = document.getElementById("inSevThresh");
+  const inSevBonus  = document.getElementById("inSevBonus");
+  const chkSevPublic= document.getElementById("chkSevPublic");
+  const btnSetSevere= document.getElementById("btnSetSevere");
+  const sevMsg      = document.getElementById("sevMsg");
+
+  const inTreasury = document.getElementById("inTreasury");
+  const inRate     = document.getElementById("inRate");
+  const inRisk     = document.getElementById("inRisk");
+  const btnSetRoles= document.getElementById("btnSetRoles");
+  const rolesMsg   = document.getElementById("rolesMsg");
+
+  const inWLUser = document.getElementById("inWLUser");
+  const chkWL    = document.getElementById("chkWL");
+  const btnSetWL = document.getElementById("btnSetWL");
+  const wlMsg    = document.getElementById("wlMsg");
+
+  const inUserCredit = document.getElementById("inUserCredit");
+  const inCredit     = document.getElementById("inCredit");
+  const btnSetCredit = document.getElementById("btnSetCredit");
+  const creditMsg    = document.getElementById("creditMsg");
+
+  const readParams = document.getElementById("readParams");
+  const readSevere = document.getElementById("readSevere");
+  const readLate   = document.getElementById("readLate");
+  const readRoles  = document.getElementById("readRoles");
+
+  const toU16 = (x) => {
+    const n = Math.floor(Number(x||"0"));
+    if (n < 0 || n > 65535) throw new Error("bps out of range");
+    return n;
+  };
+
+  let _owner, _rateG, _riskG, _treasury;
+
+  async function loadParams() {
+    if (!lending) return;
+    const [apr, maxLTV, liqTh, liqBo, sevTh, sevBo, sevPub, late, paused, liqPaused, owner, rateG, riskG, treas] =
+      await Promise.all([
+        lending.aprBps(),
+        lending.maxLtvBps(),
+        lending.liqThresholdBps(),
+        lending.liqBonusBps(),
+        lending.severeLiqThresholdBps(),
+        lending.severeLiqBonusBps(),
+        lending.severePublic(),
+        lending.lateFeeBpsFlat(),
+        lending.paused(),
+        lending.liquidationPaused(),
+        lending.owner(),
+        lending.rateGuardian(),
+        lending.riskGuardian(),
+        lending.treasury(),
+      ]);
+
+    // Readouts
+    readParams.textContent = `Params: APR ${apr} • MaxLTV ${maxLTV} • LiqThresh ${liqTh} • LiqBonus ${liqBo}`;
+    readSevere.textContent = `Severe: Thresh ${sevTh} • Bonus ${sevBo} • Public ${sevPub ? "Yes" : "No"}`;
+    readLate.textContent   = `Late Fee: ${late} bps`;
+    readRoles.textContent  = `Roles → owner: ${owner} • treasury: ${treas} • rate: ${rateG} • risk: ${riskG}`;
+
+    // Prefill inputs
+    inApr.value = Number(apr); inMaxLtv.value = Number(maxLTV);
+    inLiqThresh.value = Number(liqTh); inLiqBonus.value = Number(liqBo);
+    inSevThresh.value = Number(sevTh); inSevBonus.value = Number(sevBo);
+    chkSevPublic.checked = Boolean(sevPub);
+    inLateBps.value = Number(late);
+
+    pausedLine.textContent = `Paused: ${paused ? "Yes" : "No"}`;
+    liqPausedLine.textContent = `Liquidations Paused: ${liqPaused ? "Yes" : "No"}`;
+    chkLiqPaused.checked = Boolean(liqPaused);
+
+    _owner = owner; _rateG = rateG; _riskG = riskG; _treasury = treas;
+  }
+
+  function isAdminAddress(a) {
+    if (!a) return false;
+    const x = a.toLowerCase();
+    return x === _owner?.toLowerCase() || x === _rateG?.toLowerCase() || x === _riskG?.toLowerCase();
+  }
+
+  async function checkRolesAndGate() {
+    try {
+      await loadParams();
+      const role =
+        acct?.toLowerCase() === _owner?.toLowerCase() ? "Owner" :
+        acct?.toLowerCase() === _rateG?.toLowerCase() ? "Rate Guardian" :
+        acct?.toLowerCase() === _riskG?.toLowerCase() ? "Risk Guardian" : null;
+
+      if (role) {
+        adminCard.classList.remove("hidden");
+        roleBadge?.classList.remove("hidden");
+        adminRoleLine.textContent = `Role: ${role}`;
+      } else {
+        adminCard.classList.add("hidden");
+        roleBadge?.classList.add("hidden");
+        adminRoleLine.textContent = "Role: —";
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  // Wrap ensure() and refresh() to include admin checks
+  const _ensureOriginal = ensure;
+  ensure = async function() {
+    await _ensureOriginal();
+    await checkRolesAndGate();
+  };
+
+  const _refreshOriginal = refresh;
+  refresh = async function() {
+    await _refreshOriginal();
+    if (lending) await loadParams();
+  };
+
+  // === Admin actions ===
+  btnPause?.addEventListener("click", async () => {
+    try { sysMsg.textContent = ""; const tx = await lending.pause(); await tx.wait(); sysMsg.textContent = "Paused ✅"; await refresh(); }
+    catch(e){ sysMsg.textContent = shortErr(e); }
+  });
+
+  btnUnpause?.addEventListener("click", async () => {
+    try { sysMsg.textContent = ""; const tx = await lending.unpause(); await tx.wait(); sysMsg.textContent = "Unpaused ✅"; await refresh(); }
+    catch(e){ sysMsg.textContent = shortErr(e); }
+  });
+
+  btnSetLiqPaused?.addEventListener("click", async () => {
+    try { sysMsg.textContent = ""; const tx = await lending.setLiquidationPaused(Boolean(chkLiqPaused.checked)); await tx.wait(); sysMsg.textContent = "Updated ✅"; await refresh(); }
+    catch(e){ sysMsg.textContent = shortErr(e); }
+  });
+
+  btnSetParams?.addEventListener("click", async () => {
+    try {
+      paramMsg.textContent = "";
+      const tx = await lending.setParams(
+        toU16(inApr.value),
+        toU16(inMaxLtv.value),
+        toU16(inLiqThresh.value),
+        toU16(inLiqBonus.value)
+      );
+      await tx.wait(); paramMsg.textContent = "Params updated ✅"; await refresh();
+    } catch(e){ paramMsg.textContent = shortErr(e); }
+  });
+
+  btnSetLate?.addEventListener("click", async () => {
+    try {
+      paramMsg.textContent = "";
+      const tx = await lending.setLateFeeBps(toU16(inLateBps.value));
+      await tx.wait(); paramMsg.textContent = "Late fee updated ✅"; await refresh();
+    } catch(e){ paramMsg.textContent = shortErr(e); }
+  });
+
+  btnSetSevere?.addEventListener("click", async () => {
+    try {
+      sevMsg.textContent = "";
+      const tx = await lending.setSevereParams(
+        toU16(inSevThresh.value),
+        toU16(inSevBonus.value),
+        Boolean(chkSevPublic.checked)
+      );
+      await tx.wait(); sevMsg.textContent = "Severe params updated ✅"; await refresh();
+    } catch(e){ sevMsg.textContent = shortErr(e); }
+  });
+
+  btnSetRoles?.addEventListener("click", async () => {
+    try {
+      rolesMsg.textContent = "";
+      const tx = await lending.setRoles(inTreasury.value, inRate.value, inRisk.value);
+      await tx.wait(); rolesMsg.textContent = "Roles updated ✅"; await refresh();
+    } catch(e){ rolesMsg.textContent = shortErr(e); }
+  });
+
+  btnSetWL?.addEventListener("click", async () => {
+    try {
+      wlMsg.textContent = "";
+      const tx = await lending.setWhitelist(inWLUser.value, Boolean(chkWL.checked));
+      await tx.wait(); wlMsg.textContent = "Whitelist set ✅"; await refresh();
+    } catch(e){ wlMsg.textContent = shortErr(e); }
+  });
+
+  btnSetCredit?.addEventListener("click", async () => {
+    try {
+      creditMsg.textContent = "";
+      const n = Math.floor(Number(inCredit.value||"0"));
+      if (n < 0 || n > 0xFFFFFFFF) throw new Error("score out of range");
+      const tx = await lending.adminSetCredit(inUserCredit.value, n);
+      await tx.wait(); creditMsg.textContent = "Credit set ✅"; await refresh();
+    } catch(e){ creditMsg.textContent = shortErr(e); }
+  });
 
   // First paint (read-only)
   await refresh();
