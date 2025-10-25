@@ -3,626 +3,859 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mechanical Temp • LendingVaultGatedV3</title>
+  <title>MTYLD Vault • Mechanical Temp</title>
+
   <link rel="icon" href="data:,">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    canvas { background: transparent; }
+    html { scroll-behavior: smooth; }
+  </style>
 </head>
 <body class="bg-slate-950 text-slate-100">
+
+  <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <img src="https://i.imgur.com/YJvJw7V.png" class="h-9 w-auto" alt="Mechanical Temp">
-        <div class="text-slate-300 font-semibold hidden sm:block">MTYLD • Credit Line</div>
-      </div>
-      <div class="flex items-center gap-2">
-        <!-- Admin role badge -->
-        <span id="roleBadge" class="hidden px-2 py-1 rounded-md bg-amber-500/20 text-amber-300 text-xs font-semibold">ADMIN</span>
-        <button id="btnConnect" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Connect</button>
-        <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
-      </div>
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
+        <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-10 w-auto">
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline"></span>
+      </a>
+      <nav class="flex items-center gap-2">
+        <a href="lend.html" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Credit Line</a>
+        <a href="https://vault.mechanicaltemp.com" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Vault Home</a>
+        <button id="btnAbout" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">About</button>
+      </nav>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-6 space-y-4">
+  <!-- Banner -->
+  <section class="bg-gradient-to-b from-slate-900 to-sky-900 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-12 sm:py-16 text-center">
+      <h1 class="mt-1 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white">
+        MTYLD Vault
+      </h1>
+      <p class="mt-3 md:mt-4 text-base md:text-lg text-sky-200">
+        Yield backed by <span class="font-semibold text-sky-100">Mechanical Temp</span> revenue
+      </p>
+    </div>
+  </section>
+
+  <!-- App -->
+  <main class="max-w-7xl mx-auto px-4 py-8 space-y-4">
+
+    <!-- Wallet + Vault Stats -->
     <div class="grid md:grid-cols-3 gap-4 items-start">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="text-xs text-slate-500">Connected</div>
-        <div id="addr" class="font-mono text-slate-300 truncate">Not connected</div>
-        <div class="mt-2 text-xs text-slate-500">Credit Contract</div>
-        <div class="font-mono text-slate-300 truncate">0x8fC8b61882e4792c1fB4Ea128b55c90c3069f027</div>
-        <div class="mt-2 text-xs text-slate-500">USDC / MTYLD / MTYLD Vault</div>
-        <div id="tokenTriplet" class="font-mono text-slate-300 text-xs break-all">—</div>
+      <!-- Wallet -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-full">
+        <div class="flex items-center gap-2 mb-3">
+          <button id="btnConnect" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Connect Wallet</button>
+          <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
+        </div>
+        <div class="text-slate-400 font-mono text-sm truncate" id="addr">Not connected</div>
+        <div class="mt-2 text-xs text-slate-500">Vault:</div>
+        <div class="font-mono text-slate-300 truncate text-sm">0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880</div>
+        <div class="mt-2 text-xs text-slate-500">Owner:</div>
+        <div class="font-mono text-slate-300 truncate text-sm" id="ownerLine">—</div>
       </div>
 
+      <!-- Vault Stats -->
       <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center sm:text-left">
           <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-            <div class="text-slate-400 text-xs">MTYLD Price (USD)</div>
-            <div id="mtyldPrice" class="font-mono text-lg">$–</div>
+            <div class="text-slate-400 text-xs">Price (NAV)</div>
+            <div class="font-mono text-lg text-slate-100" id="price">$–</div>
           </div>
           <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-            <div class="text-slate-400 text-xs">Your MTYLD</div>
-            <div id="balMtyld" class="font-mono text-lg">–</div>
+            <div class="text-slate-400 text-xs">Active Treasury</div>
+            <div class="font-mono text-lg text-slate-100" id="treasuryActive">$–</div>
           </div>
           <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-            <div class="text-slate-400 text-xs">Your USDC</div>
-            <div id="balUsdc" class="font-mono text-lg">–</div>
+            <div class="text-slate-400 text-xs">Pending Revenue</div>
+            <div class="font-mono text-lg text-slate-100" id="pending">$–</div>
           </div>
           <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-            <div class="text-slate-400 text-xs">Health (LTV)</div>
-            <div id="ltvLine" class="font-mono text-lg">–</div>
+            <div class="text-slate-400 text-xs">Pending Release In</div>
+            <div class="font-mono text-lg text-slate-100" id="countdown">–</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+    <!-- Your Position (user stats) -->
+    <div id="userPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="text-slate-300 font-semibold mb-2">Your Position</div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center sm:text-left">
         <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs">Collateral (MTYLD)</div>
-          <div class="font-mono text-lg" id="userColMtyld">–</div>
-          <div class="text-slate-400 text-xs" id="userColUsd">USD –</div>
+          <div class="text-slate-400 text-xs">MTYLD Balance</div>
+          <div class="font-mono text-lg text-slate-100" id="userBal">—</div>
         </div>
         <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs">Debt (USDC)</div>
-          <div class="font-mono text-lg" id="userDebtUsdc">–</div>
-          <div class="text-slate-400 text-xs" id="userDebtUsd">USD –</div>
+          <div class="text-slate-400 text-xs">Value (USDC)</div>
+          <div class="font-mono text-lg text-slate-100" id="userVal">$—</div>
         </div>
         <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs">Interest + Late</div>
-          <div class="font-mono text-lg" id="userInterestLate">–</div>
-        </div>
-        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs">Credit Score</div>
-          <div class="font-mono text-lg" id="userScore">–</div>
-        </div>
-        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs">Maturity</div>
-          <div class="font-mono text-lg" id="userMaturity">–</div>
+          <div class="text-slate-400 text-xs">Share of Vault</div>
+          <div class="font-mono text-lg text-slate-100" id="userShare">—</div>
         </div>
       </div>
     </div>
 
+    <!-- Divider -->
+    <div class="border-t border-slate-800"></div>
+
+    <!-- Mint / Redeem Section -->
     <div class="grid md:grid-cols-2 gap-4">
+      <!-- Mint -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="text-slate-300 font-semibold">Collateral: MTYLD</div>
-        <div class="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <div class="text-slate-400 text-xs mb-1">Deposit MTYLD</div>
-            <div class="flex gap-2">
-              <input id="depAmt" inputmode="decimal" placeholder="Amount (MTYLD)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-              <button id="depMax" class="px-3 rounded-lg bg-slate-800 border border-slate-700">Max</button>
-            </div>
-            <button id="btnDeposit" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Approve & Deposit</button>
-            <div id="depMsg" class="text-sm text-slate-400 mt-1">—</div>
-          </div>
-
-          <div>
-            <div class="text-slate-400 text-xs mb-1">Withdraw MTYLD</div>
-            <div class="flex gap-2">
-              <input id="wdAmt" inputmode="decimal" placeholder="Amount (MTYLD)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-              <button id="wdMax" class="px-3 rounded-lg bg-slate-800 border border-slate-700">Max</button>
-            </div>
-            <button id="btnWithdraw" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Withdraw</button>
-            <div id="wdMsg" class="text-sm text-slate-400 mt-1">—</div>
-          </div>
+        <div class="text-slate-300 font-semibold">USDC → MTYLD (Mint)</div>
+        <div class="mt-2 flex gap-2">
+          <input id="mintAmount" inputmode="decimal" placeholder="Amount (USDC)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <button id="btnMintMax" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Max</button>
         </div>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <input id="mintSlippage" value="0.5" placeholder="Slippage %" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <button id="btnPreviewMint" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Preview</button>
+        </div>
+        <div class="font-mono text-slate-300 mt-2" id="mintPreview"></div>
+        <button id="btnMint" disabled class="mt-2 w-full px-4 py-2 rounded-lg bg-sky-500 disabled:bg-slate-700 hover:bg-sky-600 text-white font-semibold">Mint</button>
       </div>
 
+      <!-- Redeem -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="text-slate-300 font-semibold">Borrow / Repay (USDC)</div>
-        <div class="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <div class="text-slate-400 text-xs mb-1">Borrow USDC</div>
-            <input id="brAmt" inputmode="decimal" placeholder="Amount (USDC)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-            <div class="flex gap-2 mt-2">
-              <input id="brDays" inputmode="numeric" placeholder="Maturity (days)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-              <button id="btnBorrow" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Borrow</button>
-            </div>
-            <div id="brMsg" class="text-sm text-slate-400 mt-1">—</div>
-          </div>
-
-          <div>
-            <div class="text-slate-400 text-xs mb-1">Repay USDC</div>
-            <div class="flex gap-2">
-              <input id="rpAmt" inputmode="decimal" placeholder="Amount (USDC)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-              <button id="rpMax" class="px-3 rounded-lg bg-slate-800 border border-slate-700">Max</button>
-            </div>
-            <button id="btnRepay" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Approve & Repay</button>
-            <div id="rpMsg" class="text-sm text-slate-400 mt-1">—</div>
-          </div>
+        <div class="text-slate-300 font-semibold">MTYLD → USDC (Redeem)</div>
+        <div class="mt-2 flex gap-2">
+          <input id="redeemAmount" inputmode="decimal" placeholder="Amount (MTYLD)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <button id="btnRedeemMax" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Max</button>
         </div>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <input id="redeemSlippage" value="0.5" placeholder="Slippage %" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <button id="btnPreviewRedeem" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Preview</button>
+        </div>
+        <div class="font-mono text-slate-300 mt-2" id="redeemPreview"></div>
+        <button id="btnRedeem" disabled class="mt-2 w-full px-4 py-2 rounded-lg bg-sky-500 disabled:bg-slate-700 hover:bg-sky-600 text-white font-semibold">Redeem</button>
       </div>
     </div>
 
-    <!-- ADMIN PANEL (auto-gated) -->
-    <div id="adminCard" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
-      <div class="flex items-center justify-between flex-wrap gap-3">
-        <div class="text-slate-300 font-semibold">Admin Panel</div>
-        <div id="adminRoleLine" class="text-xs text-slate-400">Role: —</div>
+    <!-- Owner Panel -->
+    <div id="ownerPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="flex items-center justify-between gap-3">
+        <div class="font-semibold">
+          Owner Panel
+          <span class="ml-2 text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300">You are owner</span>
+        </div>
+        <div class="font-mono text-slate-300" id="epochState">Epoch: —</div>
       </div>
+      <div class="h-px bg-slate-800 my-3"></div>
 
-      <!-- System -->
-      <div class="mt-4 grid md:grid-cols-3 gap-4">
-        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs mb-2">System Status</div>
-          <div class="text-sm" id="pausedLine">Paused: —</div>
-          <div class="text-sm" id="liqPausedLine">Liquidations Paused: —</div>
-          <div class="mt-3 flex gap-2">
-            <button id="btnPause"   class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Pause</button>
-            <button id="btnUnpause" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Unpause</button>
-          </div>
-          <div class="mt-3 flex items-center gap-2">
-            <input id="chkLiqPaused" type="checkbox" class="h-4 w-4">
-            <label for="chkLiqPaused" class="text-sm text-slate-300">Set Liquidations Paused</label>
-            <button id="btnSetLiqPaused" class="ml-auto px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Apply</button>
-          </div>
-          <div id="sysMsg" class="text-xs text-slate-400 mt-2">—</div>
-        </div>
-
-        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs mb-2">Parameters (bps)</div>
-          <div class="grid grid-cols-2 gap-2">
-            <input id="inApr"          inputmode="numeric" placeholder="APR bps"         class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
-            <input id="inMaxLtv"       inputmode="numeric" placeholder="Max LTV bps"     class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
-            <input id="inLiqThresh"    inputmode="numeric" placeholder="Liq Thresh bps"  class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
-            <input id="inLiqBonus"     inputmode="numeric" placeholder="Liq Bonus bps"   class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
-          </div>
-          <button id="btnSetParams" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Update Params</button>
-
-          <div class="mt-4 text-slate-400 text-xs">Late Fee (bps, flat)</div>
-          <div class="flex gap-2 mt-1">
-            <input id="inLateBps" inputmode="numeric" placeholder="Late Fee bps" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700">
-            <button id="btnSetLate" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set</button>
-          </div>
-
-          <div id="paramMsg" class="text-xs text-slate-400 mt-2">—</div>
-        </div>
-
-        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs mb-2">Severe Liquidation</div>
-          <div class="grid grid-cols-2 gap-2">
-            <input id="inSevThresh" inputmode="numeric" placeholder="Severe Thresh bps" class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
-            <input id="inSevBonus"  inputmode="numeric" placeholder="Severe Bonus bps"  class="px-2 py-2 rounded bg-slate-900 border border-slate-700">
-          </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <!-- Queue Rev -->
+        <div>
+          <div class="text-slate-300">Queue Revenue (USDC)</div>
+          <input id="revAmount" placeholder="Amount (USDC)" inputmode="decimal" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
           <div class="mt-2 flex items-center gap-2">
-            <input id="chkSevPublic" type="checkbox" class="h-4 w-4">
-            <label for="chkSevPublic" class="text-sm text-slate-300">Severe Public</label>
+            <button id="btnQueueRev" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Approve & Queue</button>
+            <div class="font-mono text-slate-300" id="revMsg"></div>
           </div>
-          <button id="btnSetSevere" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Update Severe</button>
-          <div id="sevMsg" class="text-xs text-slate-400 mt-2">—</div>
+        </div>
+
+        <!-- Pending controls -->
+        <div>
+          <div class="text-slate-300">Pending Controls</div>
+          <div class="mt-2 flex flex-wrap items-center gap-2">
+            <button id="btnApply" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Apply Pending</button>
+            <button id="btnBeginClose" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Begin Epoch Close</button>
+            <button id="btnEndClose" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">End Epoch Close</button>
+          </div>
+          <div id="pendingHint" class="font-mono text-slate-300 mt-2">—</div>
         </div>
       </div>
 
-      <!-- Roles / Whitelist / Credit -->
-      <div class="mt-4 grid md:grid-cols-3 gap-4">
-        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs mb-2">Roles</div>
-          <input id="inTreasury" placeholder="Treasury address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
-          <input id="inRate"     placeholder="Rate Guardian address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
-          <input id="inRisk"     placeholder="Risk Guardian address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
-          <button id="btnSetRoles" class="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set Roles</button>
-          <div id="rolesMsg" class="text-xs text-slate-400 mt-2">—</div>
-        </div>
+      <div class="h-px bg-slate-800 my-3"></div>
 
-        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs mb-2">Whitelist</div>
-          <input id="inWLUser" placeholder="User address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
-          <div class="flex items-center gap-2 mb-2">
-            <input id="chkWL" type="checkbox" class="h-4 w-4">
-            <label for="chkWL" class="text-sm text-slate-300">Allowed</label>
+      <div class="grid md:grid-cols-2 gap-4">
+        <!-- NAV delay -->
+        <div>
+          <div class="text-slate-300">NAV Delay (seconds)</div>
+          <div class="mt-2 flex items-center gap-2">
+            <input id="navDelay" placeholder="e.g. 3600" class="flex-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+            <button id="btnSetDelay" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Set</button>
           </div>
-          <button id="btnSetWL" class="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set Whitelist</button>
-          <div id="wlMsg" class="text-xs text-slate-400 mt-2">—</div>
+          <div id="delayLine" class="text-slate-400 font-mono mt-2">Current: —</div>
         </div>
 
-        <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs mb-2">Credit Score</div>
-          <input id="inUserCredit" placeholder="User address" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
-          <input id="inCredit" inputmode="numeric" placeholder="Score (uint32)" class="w-full px-2 py-2 rounded bg-slate-900 border border-slate-700 mb-2">
-          <button id="btnSetCredit" class="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Set Credit</button>
-          <div id="creditMsg" class="text-xs text-slate-400 mt-2">—</div>
+        <!-- Fees -->
+        <div>
+          <div class="text-slate-300">Fees & Recipient</div>
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <input id="mintFee" placeholder="Mint Fee (bps 0-500)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+            <input id="redeemFee" placeholder="Redeem Fee (bps 0-500)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          </div>
+          <input id="feeRecipient" placeholder="Fee Recipient (0x…)" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <div class="mt-2 flex items-center gap-3">
+            <label class="inline-flex items-center gap-2 text-slate-300 text-sm">
+              <input type="checkbox" id="feeRoundUp" class="h-4 w-4 rounded border-slate-600 bg-slate-800">
+              Round fees up
+            </label>
+            <button id="btnSetFees" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Set Fees</button>
+          </div>
+          <div id="feesLine" class="text-slate-400 font-mono mt-2">Mint: — bps | Redeem: — bps | RoundUp: — | Recipient: —</div>
         </div>
       </div>
 
-      <!-- Readouts -->
-      <div class="mt-4 p-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-sm grid sm:grid-cols-2 gap-2">
-        <div id="readParams">Params: —</div>
-        <div id="readSevere">Severe: —</div>
-        <div id="readLate">Late Fee: —</div>
-        <div id="readRoles">Roles: —</div>
+      <div class="h-px bg-slate-800 my-3"></div>
+
+      <!-- Guarded + WL -->
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <div class="text-slate-300">Guarded Launch</div>
+          <div class="mt-2 flex items-center gap-2">
+            <button id="btnGuardOn" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Enable Guarded</button>
+            <button id="btnGuardOff" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Disable Guarded</button>
+          </div>
+          <div id="guardedLine" class="text-slate-400 font-mono mt-2">Guarded: —</div>
+        </div>
+
+        <div>
+          <div class="text-slate-300">Whitelist Minter</div>
+          <input id="wlAddr" placeholder="Wallet (0x…)" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+          <div class="mt-2 flex items-center gap-2">
+            <button id="btnWhitelistOn" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Allow</button>
+            <button id="btnWhitelistOff" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Remove</button>
+          </div>
+          <div id="wlMsg" class="text-slate-400 font-mono mt-2">—</div>
+        </div>
+      </div>
+
+      <div class="mt-3 text-sm text-slate-400">
+        <ul class="list-disc pl-5 space-y-1">
+          <li><b>Queue</b>: transfers USDC in; excluded from NAV until applied.</li>
+          <li><b>Apply</b>: moves pending into active NAV after delay.</li>
+          <li><b>Epoch Close</b>: pauses mint/redeem during sensitive windows.</li>
+          <li><b>Fees</b> are in bps (100 bps = 1%). “Round up” charges the ceiling cent.</li>
+          <li><b>Guarded</b> launch only allows whitelisted wallets to mint.</li>
+        </ul>
       </div>
     </div>
 
-    <p class="text-xs text-slate-500">Arbitrum One • MTYLD Credit Line UI</p>
+    <!-- Performance / APY -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div class="text-slate-300">Performance</div>
+          <div id="apyLine" class="font-mono text-slate-200">APY (30d annualized): —</div>
+          <div id="changeLine" class="font-mono text-slate-400">Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —</div>
+        </div>
+        <div class="flex gap-2">
+          <button id="btnExportCSV" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Export NAV CSV</button>
+          <button id="btnResetHistory" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Reset History</button>
+        </div>
+      </div>
+      <div class="mt-4">
+        <canvas id="navChart" height="120"></canvas>
+      </div>
+      <p class="mt-3 text-sm text-slate-400">
+        APY is computed from the last 30 days of NAV (pricePerToken). If fewer than 30 days exist, the longest window is used.
+        Data is sampled locally and stored in your browser (localStorage).
+      </p>
+    </div>
+
+    <!-- USDC address -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="text-slate-300">USDC (Arbitrum)</div>
+      <div class="font-mono text-slate-200">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</div>
+    </div>
+
   </main>
 
-<script>
-const CHAIN_ID_ARBITRUM = 42161;
-const LENDING_ADDR = "0x8fC8b61882e4792c1fB4Ea128b55c90c3069f027";
+  <!-- About MTYLD (Collapsible) -->
+  <section id="aboutMTYLD" class="bg-slate-950 border-t border-slate-800 py-12 px-4">
+    <div class="max-w-7xl mx-auto">
 
-// ===== ABI (exactly what you supplied) =====
-const LENDING_ABI = [{"inputs":[{"internalType":"address","name":"usdc","type":"address"},{"internalType":"address","name":"mtyld","type":"address"},{"internalType":"address","name":"mtyldVault","type":"address"},{"internalType":"address","name":"_treasury","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BadAddress","type":"error"},{"inputs":[],"name":"BadAmount","type":"error"},{"inputs":[],"name":"Healthy","type":"error"},{"inputs":[],"name":"NotActive","type":"error"},{"inputs":[],"name":"NotOwnerGuardian","type":"error"},{"inputs":[],"name":"NotSevere","type":"error"},{"inputs":[],"name":"NotWhitelisted","type":"error"},{"inputs":[],"name":"OverLTV","type":"error"},{"inputs":[],"name":"Slippage","type":"error"},{"inputs":[],"name":"TooEarly","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"interestAccrued_6","type":"uint256"},{"indexed":false,"internalType":"bool","name":"lateFeeApplied","type":"bool"}],"name":"Accrued","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"usdcAmount_6","type":"uint256"},{"indexed":false,"internalType":"uint64","name":"start","type":"uint64"},{"indexed":false,"internalType":"uint64","name":"maturity","type":"uint64"}],"name":"Borrowed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount_18","type":"uint256"}],"name":"CollateralDeposited","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount_18","type":"uint256"}],"name":"CollateralWithdrawn","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"lateFeeBpsFlat","type":"uint16"}],"name":"LateFeeUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"liquidator","type":"address"},{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"repayUSDC_6","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"seizeMTYLD_18","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"price18","type":"uint256"},{"indexed":false,"internalType":"uint16","name":"bonusBps","type":"uint16"},{"indexed":false,"internalType":"bool","name":"severe","type":"bool"}],"name":"Liquidated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bool","name":"on","type":"bool"}],"name":"LiquidationPaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"prev","type":"address"},{"indexed":true,"internalType":"address","name":"next","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"aprBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"maxLtvBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"liqThresholdBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"liqBonusBps","type":"uint16"}],"name":"ParamsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"repaidUSDC_6","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"principalLeft_6","type":"uint256"}],"name":"Repaid","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"treasury","type":"address"},{"indexed":false,"internalType":"address","name":"rateGuardian","type":"address"},{"indexed":false,"internalType":"address","name":"riskGuardian","type":"address"}],"name":"RolesUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"severeLiqThresholdBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"severeLiqBonusBps","type":"uint16"},{"indexed":false,"internalType":"bool","name":"severePublic","type":"bool"}],"name":"SevereParamsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"residualMTYLD_18","type":"uint256"}],"name":"SevereResidualSent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"bool","name":"allowed","type":"bool"}],"name":"WhitelistSet","type":"event"},{"inputs":[],"name":"APR_MAX_BPS","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"BPS_DENOMINATOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_BPS_U16","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MTYLD","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MTYLD_VAULT","outputs":[{"internalType":"contract IMTYLDVault","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SECONDS_PER_YEAR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USDC","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USDC_6","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"USD_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint32","name":"score","type":"uint32"}],"name":"adminSetCredit","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"aprBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount_6","type":"uint256"},{"internalType":"uint64","name":"maturity","type":"uint64"}],"name":"borrow","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"canBeLiquidated","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"canBeSeverelyLiquidated","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"collateralMTYLD_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"collateralUsd_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"creditScore","outputs":[{"internalType":"uint32","name":"score","type":"uint32"},{"internalType":"uint32","name":"lastUpdated","type":"uint32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"debtUsd_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountMTYLD_18","type":"uint256"}],"name":"depositCollateral","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isWhitelisted","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lateFeeBpsFlat","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liqBonusBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liqThresholdBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"repayUSDC_6","type":"uint256"},{"internalType":"uint256","name":"minSeizeMTYLD_18","type":"uint256"}],"name":"liquidate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"liquidationAmountUSDC_6","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liquidationPaused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"loans","outputs":[{"internalType":"uint256","name":"principalUSDC_6","type":"uint256"},{"internalType":"uint256","name":"interestUSDC_6","type":"uint256"},{"internalType":"uint256","name":"lateFeesUSDC_6","type":"uint256"},{"internalType":"uint64","name":"start","type":"uint64"},{"internalType":"uint64","name":"maturity","type":"uint64"},{"internalType":"bool","name":"lateFeeApplied","type":"bool"},{"internalType":"bool","name":"active","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"ltvBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maxLtvBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mtyldUsdPrice_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"rateGuardian","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount_6","type":"uint256"}],"name":"repay","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"riskGuardian","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint16","name":"_lateFeeBpsFlat","type":"uint16"}],"name":"setLateFeeBps","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bool","name":"on","type":"bool"}],"name":"setLiquidationPaused","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"_aprBps","type":"uint16"},{"internalType":"uint16","name":"_maxLtvBps","type":"uint16"},{"internalType":"uint16","name":"_liqThresholdBps","type":"uint16"},{"internalType":"uint16","name":"_liqBonusBps","type":"uint16"}],"name":"setParams","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_rate","type":"address"},{"internalType":"address","name":"_risk","type":"address"}],"name":"setRoles","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"_sevThreshBps","type":"uint16"},{"internalType":"uint16","name":"_sevBonusBps","type":"uint16"},{"internalType":"bool","name":"_public","type":"bool"}],"name":"setSevereParams","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"bool","name":"allowed","type":"bool"}],"name":"setWhitelist","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"severeLiqBonusBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"severeLiqThresholdBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"minSeizeMTYLD_18","type":"uint256"}],"name":"severeLiquidate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"severePublic","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"n","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"treasury","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"userView","outputs":[{"components":[{"internalType":"uint256","name":"collateralMTYLD_18","type":"uint256"},{"internalType":"uint256","name":"collateralUSD_18","type":"uint256"},{"internalType":"uint256","name":"principalUSDC_6","type":"uint256"},{"internalType":"uint256","name":"interestUSDC_6","type":"uint256"},{"internalType":"uint256","name":"lateFeesUSDC_6","type":"uint256"},{"internalType":"uint256","name":"debtUSD_18","type":"uint256"},{"internalType":"uint16","name":"ltvBps","type":"uint16"},{"internalType":"uint32","name":"creditScore","type":"uint32"},{"internalType":"uint64","name":"maturity","type":"uint64"},{"internalType":"bool","name":"active","type":"bool"}],"internalType":"struct LendingVaultGatedV3.UserView","name":"V","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountMTYLD_18","type":"uint256"}],"name":"withdrawCollateral","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+      <!-- Title -->
+      <div class="text-center mb-8">
+        <h2 class="text-3xl sm:text-4xl font-black text-white">About the MTYLD Vault</h2>
+        <p class="mt-2 text-sky-300 text-lg">Real yield, powered by Mechanical Temp HVAC revenue</p>
+      </div>
 
-// ===== Simple ERC20 ABI =====
-const ERC20_ABI = [
-  "function balanceOf(address) view returns (uint256)",
-  "function allowance(address,address) view returns (uint256)",
-  "function approve(address,uint256) returns (bool)",
-  "function decimals() view returns (uint8)"
-];
+      <!-- Accordion -->
+      <div class="space-y-3">
 
-(async () => {
-  // DOM helpers
-  const $ = (id) => document.getElementById(id);
-  const addrEl = $("addr"), tripletEl = $("tokenTriplet");
-  const mtyldPriceEl = $("mtyldPrice"), balMtyldEl = $("balMtyld"), balUsdcEl = $("balUsdc"), ltvLine = $("ltvLine");
-  const userColMtyld = $("userColMtyld"), userColUsd = $("userColUsd"), userDebtUsdc = $("userDebtUsdc"), userDebtUsd = $("userDebtUsd");
-  const userInterestLate = $("userInterestLate"), userScore = $("userScore"), userMaturity = $("userMaturity");
-  const depAmt = $("depAmt"), depMax = $("depMax"), depMsg = $("depMsg"), btnDeposit = $("btnDeposit");
-  const wdAmt = $("wdAmt"), wdMax = $("wdMax"), wdMsg = $("wdMsg"), btnWithdraw = $("btnWithdraw");
-  const brAmt = $("brAmt"), brDays = $("brDays"), brMsg = $("brMsg"), btnBorrow = $("btnBorrow");
-  const rpAmt = $("rpAmt"), rpMax = $("rpMax"), rpMsg = $("rpMsg"), btnRepay = $("btnRepay");
+        <!-- What is MTYLD -->
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">🏦 What Is MTYLD</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+            </svg>
+          </summary>
+          <div class="px-5 pb-5 text-slate-300 leading-relaxed">
+            <p><strong>MTYLD (Mechanical Temp Yield Token)</strong> represents a fractional claim on USDC revenue generated by
+            <span class="text-sky-200 font-medium">Mechanical Temp</span>. Each MTYLD token is backed by the active USDC treasury in the vault.</p>
+            <p class="mt-3 text-slate-400">When new revenue is applied, the vault’s <strong>NAV</strong> rises, increasing value per token automatically.</p>
+          </div>
+        </details>
 
-  let provider, signer, acct, lending, USDC, MTYLD;
+        <!-- Mint & Redeem -->
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">💰 How Mint & Redeem Work</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+            </svg>
+          </summary>
+          <div class="px-5 pb-5 text-slate-300">
+            <ul class="list-disc pl-5 space-y-2">
+              <li><strong>Mint:</strong> Deposit USDC → receive MTYLD at current NAV (USDC ÷ NAV).</li>
+              <li><strong>Redeem:</strong> Burn MTYLD → receive USDC at current NAV.</li>
+              <li><strong>Fair value:</strong> 1 MTYLD equals the current NAV in USDC.</li>
+            </ul>
+            <p class="mt-3 text-slate-400 text-sm">
+              Example: NAV = $1.05 → deposit 1,050 USDC → receive 1,000 MTYLD.  
+              Later NAV = $1.10 → redeem 1,000 MTYLD → receive 1,100 USDC.
+            </p>
+          </div>
+        </details>
 
-  const fmt6  = (x) => Number(x)/1e6;
-  const fmt18 = (x) => Number(x)/1e18;
-  const to6   = (v) => BigInt(Math.round(Number(v||"0")*1e6));
-  const to18  = (v) => BigInt(Math.round(Number(v||"0")*1e18));
-  const trunc = (a) => a ? a.slice(0,6)+"…"+a.slice(-4) : "—";
-  const usd   = (n,d=2)=>"$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:d});
-  const shortErr = (e)=> (e && (e.info?.error?.message || e.shortMessage || e.message))?.replace(/execution reverted: /i,'').slice(0,200) || "Error";
+        <!-- Revenue Flow -->
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">📈 How Revenue Flows</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+            </svg>
+          </summary>
+          <div class="px-5 pb-5 text-slate-300">
+            <ol class="list-decimal pl-5 space-y-2">
+              <li>Mechanical Temp converts a share of real-world revenue to USDC.</li>
+              <li>Owner queues it via <code class="text-sky-300">injectRevenue</code> / “Queue Revenue.”</li>
+              <li>After <code class="text-sky-300">navDelaySec</code>, revenue is applied → NAV increases.</li>
+              <li>All holders benefit automatically; no claiming needed.</li>
+            </ol>
+          </div>
+        </details>
 
-  async function ensure(){
-    if (!window.ethereum) { alert("Please install/enable MetaMask."); throw new Error("no wallet"); }
-    provider = new ethers.BrowserProvider(window.ethereum);
-    const net = await provider.getNetwork();
-    if (Number(net.chainId) !== CHAIN_ID_ARBITRUM) {
-      await window.ethereum.request({ method: "wallet_switchEthereumChain", params:[{ chainId:"0xa4b1" }]});
-    }
-    signer = await provider.getSigner();
-    acct = await signer.getAddress();
-    addrEl.textContent = trunc(acct);
+        <!-- Fees -->
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">⚙️ Fees</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+            </svg>
+          </summary>
+          <div class="px-5 pb-5 text-slate-300">
+            <table class="w-full text-slate-300 text-sm">
+              <tr class="border-b border-slate-800">
+                <td class="py-1.5">Mint</td>
+                <td class="py-1.5 text-right">0–0.25% (configurable)</td>
+              </tr>
+              <tr class="border-b border-slate-800">
+                <td class="py-1.5">Redeem</td>
+                <td class="py-1.5 text-right">0–0.25% (configurable)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5">Fee Recipient</td>
+                <td class="py-1.5 text-right text-sky-300">DAO Treasury wallet</td>
+              </tr>
+            </table>
+            <p class="mt-3 text-slate-400 text-sm">Fees are transparent and on-chain; adjustable only by the DAO operator (multisig).</p>
+          </div>
+        </details>
 
-    lending = new ethers.Contract(LENDING_ADDR, LENDING_ABI, signer);
-    const [usdcAddr, mtyldAddr, vaultAddr] = await Promise.all([lending.USDC(), lending.MTYLD(), lending.MTYLD_VAULT()]);
-    tripletEl.textContent = `${usdcAddr} / ${mtyldAddr} / ${vaultAddr}`;
-    USDC  = new ethers.Contract(usdcAddr, ERC20_ABI, signer);
-    MTYLD = new ethers.Contract(mtyldAddr, ERC20_ABI, signer);
+        <!-- Guarded Launch -->
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">🔒 Guarded Launch</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+            </svg>
+          </summary>
+          <div class="px-5 pb-5 text-slate-300">
+            <ul class="list-disc pl-5 space-y-2">
+              <li><strong>Guarded = ON:</strong> Only whitelisted wallets can mint.</li>
+              <li><strong>Guarded = OFF:</strong> Public mint open to anyone.</li>
+              <li><strong>Redeeming stays open</strong> in both modes.</li>
+            </ul>
+            <p class="mt-3 text-slate-400 text-sm">Guarded mode enables controlled pilots before public access.</p>
+          </div>
+        </details>
+
+        <!-- Risks -->
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">⚠️ Risks & Disclosures</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+            </svg>
+          </summary>
+          <div class="px-5 pb-5 text-slate-300">
+            <ul class="list-disc pl-5 space-y-2">
+              <li>NAV growth depends on real revenue deposits.</li>
+              <li>MTYLD isn’t a stablecoin; value tracks treasury-per-token.</li>
+              <li>Smart contract and operator risks exist.</li>
+              <li>Always verify official contract addresses.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- Transparency -->
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">📊 Transparency</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+            </svg>
+          </summary>
+          <div class="px-5 pb-5">
+            <ul class="text-slate-300 space-y-2 font-mono text-sm">
+              <li>Vault: <a href="https://arbiscan.io/address/0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880" class="text-sky-400 hover:text-sky-300">0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880</a></li>
+              <li>USDC (Arbitrum): <a href="https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831" class="text-sky-400 hover:text-sky-300">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</a></li>
+              <li>Owner (DAO Treasury): <span class="text-sky-300">0xcfe077e6f7554B1724546E02624a0832D1f4557a</span></li>
+            </ul>
+            <p class="mt-3 text-slate-400 text-sm">
+              View live data on <a href="https://vault.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300">vault.mechanicaltemp.com</a>.
+            </p>
+          </div>
+        </details>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mt-10 border-t border-slate-800 bg-slate-900">
+    <div class="max-w-7xl mx-auto px-4 py-8 text-center">
+      <p class="text-slate-300">
+        Powered by <a href="https://www.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300 font-semibold">Mechanical Temp</a>
+        <span class="text-slate-500">•</span> Southfield, MI
+      </p>
+      <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
+    </div>
+  </footer>
+
+  <script>
+  // Footer year
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Smooth scroll + auto-expand About
+  const aboutBtn = document.getElementById("btnAbout");
+  const aboutSection = document.querySelector("#aboutMTYLD");
+  if (aboutBtn && aboutSection) {
+    aboutBtn.addEventListener("click", () => {
+      aboutSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      aboutSection.querySelectorAll("details").forEach(d => d.open = true);
+    });
   }
 
-  async function refresh(){
-    try{
-      const readProv = provider || new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
-      const read = new ethers.Contract(LENDING_ADDR, LENDING_ABI, readProv);
-      const [usdcAddr, mtyldAddr, vaultAddr] = await Promise.all([ read.USDC(), read.MTYLD(), read.MTYLD_VAULT() ]);
-      tripletEl.textContent = `${usdcAddr} / ${mtyldAddr} / ${vaultAddr}`;
+  (async () => {
+    // ===== Config =====
+    const VAULT = "0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880";
+    const USDC  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"; // Arbitrum USDC
+    const CHAIN_ID_ARBITRUM = 42161;
 
-      // NAV / price
-      const readVault = new ethers.Contract(vaultAddr, ["function pricePerToken() view returns (uint256)"], readProv);
-      const price18 = await readVault.pricePerToken();
-      mtyldPriceEl.textContent = "$" + (Number(price18)/1e18).toFixed(6);
+    // ABIs
+    const VAULT_ABI = [
+      // ERC20 views
+      "function totalSupply() view returns (uint256)",
+      "function balanceOf(address) view returns (uint256)",
+      // vault reads
+      "function owner() view returns (address)",
+      "function pricePerToken() view returns (uint256)",
+      "function treasuryActiveUSDC() view returns (uint256)",
+      "function pendingRevenueUSDC() view returns (uint256)",
+      "function pendingReleaseAt() view returns (uint64)",
+      "function pendingReleaseReady() view returns (bool)",
+      "function navDelaySec() view returns (uint256)",
+      "function epochClosing() view returns (bool)",
+      "function mintFeeBps() view returns (uint16)",
+      "function redeemFeeBps() view returns (uint16)",
+      "function feeRecipient() view returns (address)",
+      "function feeRoundUp() view returns (bool)",
+      "function guardedLaunch() view returns (bool)",
+      // user actions
+      "function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)",
+      "function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)",
+      "function mint(uint256 usdcAmount, uint256 minMtyldOut)",
+      "function redeem(uint256 mtyldAmount, uint256 minUsdcOut)",
+      // owner ops
+      "function injectRevenue(uint256 usdcAmount)",
+      "function applyPendingRevenue()",
+      "function beginEpochClose()",
+      "function endEpochClose()",
+      "function setNavDelay(uint256 seconds_)",
+      "function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)",
+      "function setGuardedLaunch(bool on)",
+      "function setWhitelist(address user, bool allowed)"
+    ];
+    const ERC20_ABI = [
+      "function allowance(address,address) view returns (uint256)",
+      "function approve(address,uint256) returns (bool)",
+      "function balanceOf(address) view returns (uint256)"
+    ];
 
-      if (signer) {
-        const a = acct || await signer.getAddress();
-        // token balances
-        const USDC_r = new ethers.Contract(usdcAddr, ERC20_ABI, readProv);
-        const MTYLD_r= new ethers.Contract(mtyldAddr, ERC20_ABI, readProv);
-        const [bu,bm] = await Promise.all([USDC_r.balanceOf(a), MTYLD_r.balanceOf(a)]);
-        balUsdcEl.textContent  = fmt6(bu).toFixed(2) + " USDC";
-        balMtyldEl.textContent = fmt18(bm).toFixed(4) + " MTYLD";
+    // ===== DOM =====
+    const el = (id) => document.getElementById(id);
+    const addrEl = el("addr"), priceEl = el("price"), actEl = el("treasuryActive"), pendEl = el("pending"), cdEl = el("countdown");
+    const userPanel = el("userPanel"), userBalEl = el("userBal"), userValEl = el("userVal"), userShareEl = el("userShare");
+    const mintAmt = el("mintAmount"), mintSlip = el("mintSlippage"), mintPrev = el("mintPreview"), mintBtn = el("btnMint");
+    const redAmt = el("redeemAmount"), redSlip = el("redeemSlippage"), redPrev = el("redeemPreview"), redBtn = el("btnRedeem");
+    const ownerPanel = el("ownerPanel"), ownerLine = el("ownerLine");
+    const revAmount = el("revAmount"), revMsg = el("revMsg");
+    const btnApply = el("btnApply"), btnBeginClose = el("btnBeginClose"), btnEndClose = el("btnEndClose"), epochState = el("epochState"), pendingHint = el("pendingHint");
+    const navDelay = el("navDelay"), delayLine = el("delayLine");
+    const mintFee = el("mintFee"), redeemFee = el("redeemFee"), feeRecipient = el("feeRecipient"), feeRoundUp = el("feeRoundUp"), feesLine = el("feesLine");
+    const wlAddr = el("wlAddr"), wlMsg = el("wlMsg");
+    const btnGuardOn = el("btnGuardOn"), btnGuardOff = el("btnGuardOff");
+    const btnMintMax = el("btnMintMax"), btnRedeemMax = el("btnRedeemMax");
 
-        // user view
-        const V = await read.userView(a);
-        userColMtyld.textContent = (Number(V.collateralMTYLD_18)/1e18).toFixed(4) + " MTYLD";
-        userColUsd.textContent    = usd(Number(V.collateralUSD_18)/1e18);
-        const debtUSDC = (Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6;
-        userDebtUsdc.textContent  = debtUSDC.toFixed(2) + " USDC";
-        userDebtUsd.textContent   = usd(Number(V.debtUSD_18)/1e18);
-        userInterestLate.textContent = (Number(V.interestUSDC_6)/1e6 + Number(V.lateFeesUSDC_6)/1e6).toFixed(2) + " USDC";
-        userScore.textContent     = String(V.creditScore || 0);
-        userMaturity.textContent  = V.maturity ? new Date(Number(V.maturity)*1000).toLocaleString() : "—";
-        ltvLine.textContent       = (Number(V.ltvBps)/100).toFixed(2) + "%";
+    // ===== NAV history (local) =====
+    const NAV_HISTORY_KEY = "mtyld_nav_history_" + "0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880";
+    let navHistory = []; // [{t, p}]
+    let navChart;
+
+    function loadHistory(){ try{ navHistory = JSON.parse(localStorage.getItem(NAV_HISTORY_KEY) || "[]"); }catch{ navHistory = []; } }
+    function saveHistory(){ try{ localStorage.setItem(NAV_HISTORY_KEY, JSON.stringify(navHistory)); }catch{} }
+    function pruneHistory(){ const cutoff = Math.floor(Date.now()/1000) - 370*24*3600; navHistory = navHistory.filter(pt => pt.t >= cutoff); }
+    function recordNavSample(price1e18){
+      const now = Math.floor(Date.now()/1000);
+      const last = navHistory[navHistory.length-1];
+      if (!last || now - last.t >= 300 || last.p !== Number(price1e18)) {
+        navHistory.push({ t: now, p: Number(price1e18) });
+        pruneHistory(); saveHistory(); drawNavChart();
       }
-    }catch(e){ console.error(e); alert("Refresh failed: "+shortErr(e)); }
-  }
-
-  // ===== Max helpers =====
-  depMax.onclick = async () => {
-    try{
-      if (!signer || !MTYLD) return;
-      const bal = await MTYLD.balanceOf(acct);
-      depAmt.value = (Number(bal)/1e18).toFixed(4);
-    }catch{}
-  };
-  wdMax.onclick = async () => {
-    try{
-      if (!provider) await ensure();
-      const V = await lending.userView(acct);
-      wdAmt.value = (Number(V.collateralMTYLD_18)/1e18).toFixed(4);
-    }catch{}
-  };
-  rpMax.onclick = async () => {
-    try{
-      if (!provider) await ensure();
-      const V = await lending.userView(acct);
-      const debt = (Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6;
-      rpAmt.value = debt.toFixed(2);
-    }catch{}
-  };
-
-  // ===== Actions =====
-  btnDeposit.onclick = async () => {
-    try{
-      depMsg.textContent = "";
-      if (!provider) await ensure();
-      const a = to18(depAmt.value);
-      if (a <= 0n) { depMsg.textContent = "Enter amount"; return; }
-      const allowance = await MTYLD.allowance(acct, LENDING_ADDR);
-      if (allowance < a) { const txa = await MTYLD.approve(LENDING_ADDR, a); await txa.wait(); }
-      const tx = await lending.depositCollateral(a); await tx.wait();
-      depMsg.textContent = "Deposited ✅"; await refresh();
-    }catch(e){ console.error(e); depMsg.textContent = shortErr(e); }
-  };
-
-  btnWithdraw.onclick = async () => {
-    try{
-      wdMsg.textContent = "";
-      if (!provider) await ensure();
-      const a = to18(wdAmt.value);
-      if (a <= 0n) { wdMsg.textContent = "Enter amount"; return; }
-      const tx = await lending.withdrawCollateral(a); await tx.wait();
-      wdMsg.textContent = "Withdrawn ✅"; await refresh();
-    }catch(e){ console.error(e); wdMsg.textContent = shortErr(e); }
-  };
-
-  btnBorrow.onclick = async () => {
-    try{
-      brMsg.textContent = "";
-      if (!provider) await ensure();
-      const amt = to6(brAmt.value);
-      const days = Math.floor(Number(brDays.value || "0"));
-      if (amt <= 0n || !(days>0)) { brMsg.textContent = "Enter amount & days"; return; }
-      const maturity = BigInt(Math.floor(Date.now()/1000) + days*24*3600);
-      const tx = await lending.borrow(amt, maturity); await tx.wait();
-      brMsg.textContent = "Borrowed ✅"; await refresh();
-    }catch(e){ console.error(e); brMsg.textContent = shortErr(e); }
-  };
-
-  btnRepay.onclick = async () => {
-    try{
-      rpMsg.textContent = "";
-      if (!provider) await ensure();
-      const amt = to6(rpAmt.value);
-      if (amt <= 0n) { rpMsg.textContent = "Enter amount"; return; }
-      const allowance = await USDC.allowance(acct, LENDING_ADDR);
-      if (allowance < amt) { const txa = await USDC.approve(LENDING_ADDR, amt); await txa.wait(); }
-      const tx = await lending.repay(amt); await tx.wait();
-      rpMsg.textContent = "Repaid ✅"; await refresh();
-    }catch(e){ console.error(e); rpMsg.textContent = shortErr(e); }
-  };
-
-  // Connect + refresh
-  document.getElementById("btnConnect").onclick = async () => { try { await ensure(); await refresh(); } catch(e){ console.error(e);} };
-  document.getElementById("btnRefresh").onclick = async () => { await refresh(); };
-
-  // === ADMIN ELEMENTS ===
-  const adminCard = document.getElementById("adminCard");
-  const roleBadge = document.getElementById("roleBadge");
-  const adminRoleLine = document.getElementById("adminRoleLine");
-  const pausedLine = document.getElementById("pausedLine");
-  const liqPausedLine = document.getElementById("liqPausedLine");
-  const btnPause = document.getElementById("btnPause");
-  const btnUnpause = document.getElementById("btnUnpause");
-  const chkLiqPaused = document.getElementById("chkLiqPaused");
-  const btnSetLiqPaused = document.getElementById("btnSetLiqPaused");
-  const sysMsg = document.getElementById("sysMsg");
-
-  const inApr = document.getElementById("inApr");
-  const inMaxLtv = document.getElementById("inMaxLtv");
-  const inLiqThresh = document.getElementById("inLiqThresh");
-  const inLiqBonus = document.getElementById("inLiqBonus");
-  const btnSetParams = document.getElementById("btnSetParams");
-  const inLateBps = document.getElementById("inLateBps");
-  const btnSetLate = document.getElementById("btnSetLate");
-  const paramMsg = document.getElementById("paramMsg");
-
-  const inSevThresh = document.getElementById("inSevThresh");
-  const inSevBonus  = document.getElementById("inSevBonus");
-  const chkSevPublic= document.getElementById("chkSevPublic");
-  const btnSetSevere= document.getElementById("btnSetSevere");
-  const sevMsg      = document.getElementById("sevMsg");
-
-  const inTreasury = document.getElementById("inTreasury");
-  const inRate     = document.getElementById("inRate");
-  const inRisk     = document.getElementById("inRisk");
-  const btnSetRoles= document.getElementById("btnSetRoles");
-  const rolesMsg   = document.getElementById("rolesMsg");
-
-  const inWLUser = document.getElementById("inWLUser");
-  const chkWL    = document.getElementById("chkWL");
-  const btnSetWL = document.getElementById("btnSetWL");
-  const wlMsg    = document.getElementById("wlMsg");
-
-  const inUserCredit = document.getElementById("inUserCredit");
-  const inCredit     = document.getElementById("inCredit");
-  const btnSetCredit = document.getElementById("btnSetCredit");
-  const creditMsg    = document.getElementById("creditMsg");
-
-  const readParams = document.getElementById("readParams");
-  const readSevere = document.getElementById("readSevere");
-  const readLate   = document.getElementById("readLate");
-  const readRoles  = document.getElementById("readRoles");
-
-  const toU16 = (x) => {
-    const n = Math.floor(Number(x||"0"));
-    if (n < 0 || n > 65535) throw new Error("bps out of range");
-    return n;
-  };
-
-  let _owner, _rateG, _riskG, _treasury;
-
-  async function loadParams() {
-    if (!lending) return;
-    const [apr, maxLTV, liqTh, liqBo, sevTh, sevBo, sevPub, late, paused, liqPaused, owner, rateG, riskG, treas] =
-      await Promise.all([
-        lending.aprBps(),
-        lending.maxLtvBps(),
-        lending.liqThresholdBps(),
-        lending.liqBonusBps(),
-        lending.severeLiqThresholdBps(),
-        lending.severeLiqBonusBps(),
-        lending.severePublic(),
-        lending.lateFeeBpsFlat(),
-        lending.paused(),
-        lending.liquidationPaused(),
-        lending.owner(),
-        lending.rateGuardian(),
-        lending.riskGuardian(),
-        lending.treasury(),
-      ]);
-
-    // Readouts
-    readParams.textContent = `Params: APR ${apr} • MaxLTV ${maxLTV} • LiqThresh ${liqTh} • LiqBonus ${liqBo}`;
-    readSevere.textContent = `Severe: Thresh ${sevTh} • Bonus ${sevBo} • Public ${sevPub ? "Yes" : "No"}`;
-    readLate.textContent   = `Late Fee: ${late} bps`;
-    readRoles.textContent  = `Roles → owner: ${owner} • treasury: ${treas} • rate: ${rateG} • risk: ${riskG}`;
-
-    // Prefill inputs
-    inApr.value = Number(apr); inMaxLtv.value = Number(maxLTV);
-    inLiqThresh.value = Number(liqTh); inLiqBonus.value = Number(liqBo);
-    inSevThresh.value = Number(sevTh); inSevBonus.value = Number(sevBo);
-    chkSevPublic.checked = Boolean(sevPub);
-    inLateBps.value = Number(late);
-
-    pausedLine.textContent = `Paused: ${paused ? "Yes" : "No"}`;
-    liqPausedLine.textContent = `Liquidations Paused: ${liqPaused ? "Yes" : "No"}`;
-    chkLiqPaused.checked = Boolean(liqPaused);
-
-    _owner = owner; _rateG = rateG; _riskG = riskG; _treasury = treas;
-  }
-
-  function isAdminAddress(a) {
-    if (!a) return false;
-    const x = a.toLowerCase();
-    return x === _owner?.toLowerCase() || x === _rateG?.toLowerCase() || x === _riskG?.toLowerCase();
-  }
-
-  async function checkRolesAndGate() {
-    try {
-      await loadParams();
-      const role =
-        acct?.toLowerCase() === _owner?.toLowerCase() ? "Owner" :
-        acct?.toLowerCase() === _rateG?.toLowerCase() ? "Rate Guardian" :
-        acct?.toLowerCase() === _riskG?.toLowerCase() ? "Risk Guardian" : null;
-
-      if (role) {
-        adminCard.classList.remove("hidden");
-        roleBadge?.classList.remove("hidden");
-        adminRoleLine.textContent = `Role: ${role}`;
+    }
+    function lookupPriceAgo(secondsBack){
+      const target = Math.floor(Date.now()/1000) - secondsBack;
+      if (!navHistory.length) return null;
+      for (let i=navHistory.length-1;i>=0;i--) if (navHistory[i].t <= target) return navHistory[i].p/1e18;
+      return navHistory[0]?.p ? navHistory[0].p/1e18 : null;
+    }
+    function pctChange(curr, prev){ if (!curr || !prev || prev===0) return null; return ((curr - prev)/prev)*100; }
+    function annualizedFromWindow(curr, past, seconds){
+      if (!curr || !past || past===0) return null;
+      const ratio = curr/past, years = seconds / (365*24*3600);
+      return (Math.pow(ratio, 1/years) - 1) * 100;
+    }
+    function drawNavChart(){
+      const c = document.getElementById("navChart"); if (!c) return;
+      const labels = navHistory.map(p => new Date(p.t*1000).toLocaleString());
+      const data = navHistory.map(p => p.p/1e18);
+      if (!navChart){
+        navChart = new Chart(c.getContext("2d"), {
+          type: 'line',
+          data: { labels, datasets: [{ label: "NAV ($ per MTYLD)", data, tension: 0.25, fill: false, pointRadius: 0, borderWidth: 2 }]},
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false }},
+            scales: {
+              x: { grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { color: '#94a3b8' } },
+              y: { beginAtZero: false, grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { color: '#94a3b8' } }
+            }
+          }
+        });
       } else {
-        adminCard.classList.add("hidden");
-        roleBadge?.classList.add("hidden");
-        adminRoleLine.textContent = "Role: —";
+        navChart.data.labels = labels;
+        navChart.data.datasets[0].data = data;
+        navChart.update();
       }
-    } catch (e) {
-      console.error(e);
     }
-  }
+    function updatePerformanceLines(currentPrice1e18){
+      const curr = Number(currentPrice1e18)/1e18;
+      const p24h = lookupPriceAgo(24*3600);
+      const p7d  = lookupPriceAgo(7*24*3600);
+      const p30d = lookupPriceAgo(30*24*3600);
+      const fmt = v => (v===null ? "—" : ((v>=0?"+":"") + v.toFixed(2) + "%"));
+      const c24 = p24h ? pctChange(curr, p24h) : null;
+      const c7  = p7d  ? pctChange(curr, p7d)  : null;
+      const c30 = p30d ? pctChange(curr, p30d) : null;
+      el("changeLine").textContent = `Δ 24h: ${fmt(c24)}  •  Δ 7d: ${fmt(c7)}  •  Δ 30d: ${fmt(c30)}`;
+      let apy = null;
+      if (p30d) apy = annualizedFromWindow(curr, p30d, 30*24*3600);
+      else if (p7d) apy = annualizedFromWindow(curr, p7d, 7*24*3600);
+      else if (p24h) apy = annualizedFromWindow(curr, p24h, 24*3600);
+      el("apyLine").textContent = "APY (30d annualized): " + (apy===null ? "—" : apy.toFixed(2) + "%");
+    }
 
-  // Wrap ensure() and refresh() to include admin checks
-  const _ensureOriginal = ensure;
-  ensure = async function() {
-    await _ensureOriginal();
-    await checkRolesAndGate();
-  };
+    // ===== Ethers =====
+    let provider, signer, acct, vault, usdc, vaultOwner;
 
-  const _refreshOriginal = refresh;
-  refresh = async function() {
-    await _refreshOriginal();
-    if (lending) await loadParams();
-  };
+    const fmtUsd = (x) => `$${Number(x).toLocaleString(undefined,{maximumFractionDigits:2})}`;
+    const fmt6  = (bi) => Number(bi)/1e6;
+    const fmt18 = (bi) => Number(bi)/1e18;
+    const to6   = (str) => { const v = Number(str||"0"); return BigInt(Math.round(v*1e6)); };
+    const to18  = (str) => { const v = Number(str||"0"); return BigInt(Math.round(v*1e18)); };
+    const trunc = (a) => a ? a.slice(0,6)+"…"+a.slice(-4) : "—";
+    const shortErr = (e) => {
+      const s = (e && (e.info?.error?.message || e.shortMessage || e.message)) || String(e);
+      return "Error: " + s.replace(/execution reverted: /i,'').slice(0,180);
+    };
+    function humanize(s){
+      const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+      return (h?`${h}h `:"") + (m?`${m}m `:"") + `${sec}s`;
+    }
+    function niceAmt(num, decimals=6){
+      // display helper without trailing zeros
+      return Number(num).toLocaleString(undefined,{ maximumFractionDigits: decimals });
+    }
 
-  // === Admin actions ===
-  btnPause?.addEventListener("click", async () => {
-    try { sysMsg.textContent = ""; const tx = await lending.pause(); await tx.wait(); sysMsg.textContent = "Paused ✅"; await refresh(); }
-    catch(e){ sysMsg.textContent = shortErr(e); }
-  });
+    async function ensureProvider(){
+      if (!window.ethereum) { alert("No wallet found. Please install/enable MetaMask."); throw new Error("no wallet"); }
+      provider = new ethers.BrowserProvider(window.ethereum);
+      const net = await provider.getNetwork();
+      if (Number(net.chainId) !== CHAIN_ID_ARBITRUM) {
+        try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xa4b1' }] }); }
+        catch (e) { alert("Please switch to Arbitrum One."); throw e; }
+      }
+      signer = await provider.getSigner();
+      acct = await signer.getAddress();
+      vault = new ethers.Contract(VAULT, VAULT_ABI, signer);
+      usdc  = new ethers.Contract(USDC, ERC20_ABI, signer);
+      addrEl.textContent = trunc(acct);
 
-  btnUnpause?.addEventListener("click", async () => {
-    try { sysMsg.textContent = ""; const tx = await lending.unpause(); await tx.wait(); sysMsg.textContent = "Unpaused ✅"; await refresh(); }
-    catch(e){ sysMsg.textContent = shortErr(e); }
-  });
+      // Owner check
+      vaultOwner = await vault.owner();
+      ownerLine.textContent = trunc(vaultOwner);
+      ownerPanel.classList.toggle("hidden", vaultOwner.toLowerCase() !== acct.toLowerCase());
+      userPanel.classList.remove("hidden");
+    }
 
-  btnSetLiqPaused?.addEventListener("click", async () => {
-    try { sysMsg.textContent = ""; const tx = await lending.setLiquidationPaused(Boolean(chkLiqPaused.checked)); await tx.wait(); sysMsg.textContent = "Updated ✅"; await refresh(); }
-    catch(e){ sysMsg.textContent = shortErr(e); }
-  });
+    async function loadOwnerState(){
+      if (!vault) return;
+      const [mf, rf, fr, fru, gl, delay, closing, pending, relAt] = await Promise.all([
+        vault.mintFeeBps(), vault.redeemFeeBps(), vault.feeRecipient(), vault.feeRoundUp(),
+        vault.guardedLaunch(), vault.navDelaySec(), vault.epochClosing(),
+        vault.pendingRevenueUSDC(), vault.pendingReleaseAt()
+      ]);
+      el("feesLine").textContent = `Mint: ${Number(mf)} bps | Redeem: ${Number(rf)} bps | RoundUp: ${fru?"Yes":"No"} | Recipient: ${trunc(fr)}`;
+      mintFee.value = Number(mf); redeemFee.value = Number(rf); feeRecipient.value = fr; feeRoundUp.checked = Boolean(fru);
+      el("guardedLine").textContent = "Guarded: " + (gl ? "Enabled" : "Disabled");
+      delayLine.textContent = "Current: " + Number(delay) + "s";
+      epochState.textContent = "Epoch: " + (closing ? "Closing (paused)" : "Open");
 
-  btnSetParams?.addEventListener("click", async () => {
-    try {
-      paramMsg.textContent = "";
-      const tx = await lending.setParams(
-        toU16(inApr.value),
-        toU16(inMaxLtv.value),
-        toU16(inLiqThresh.value),
-        toU16(inLiqBonus.value)
-      );
-      await tx.wait(); paramMsg.textContent = "Params updated ✅"; await refresh();
-    } catch(e){ paramMsg.textContent = shortErr(e); }
-  });
+      const now = Math.floor(Date.now()/1000);
+      const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
+      const ready = secs === 0 && Number(pending) > 0;
+      pendingHint.textContent = ready ? "Ready to apply ✅" : (Number(pending)>0 ? "Waiting for release…" : "No pending revenue");
+    }
 
-  btnSetLate?.addEventListener("click", async () => {
-    try {
-      paramMsg.textContent = "";
-      const tx = await lending.setLateFeeBps(toU16(inLateBps.value));
-      await tx.wait(); paramMsg.textContent = "Late fee updated ✅"; await refresh();
-    } catch(e){ paramMsg.textContent = shortErr(e); }
-  });
+    async function loadUserPanel(price){
+      if (!vault || !acct) return;
+      try{
+        const [bal, ts] = await Promise.all([
+          vault.balanceOf(acct),
+          vault.totalSupply()
+        ]);
+        // Display MTYLD balance
+        const bal18 = fmt18(bal);
+        userBalEl.textContent = niceAmt(bal18, 6) + " MTYLD";
 
-  btnSetSevere?.addEventListener("click", async () => {
-    try {
-      sevMsg.textContent = "";
-      const tx = await lending.setSevereParams(
-        toU16(inSevThresh.value),
-        toU16(inSevBonus.value),
-        Boolean(chkSevPublic.checked)
-      );
-      await tx.wait(); sevMsg.textContent = "Severe params updated ✅"; await refresh();
-    } catch(e){ sevMsg.textContent = shortErr(e); }
-  });
+        // Value in USDC (price is 1e18-scaled USD/token)
+        const navUsd = fmt18(price);
+        const valUsd = bal18 * navUsd;
+        userValEl.textContent = fmtUsd(valUsd);
 
-  btnSetRoles?.addEventListener("click", async () => {
-    try {
-      rolesMsg.textContent = "";
-      const tx = await lending.setRoles(inTreasury.value, inRate.value, inRisk.value);
-      await tx.wait(); rolesMsg.textContent = "Roles updated ✅"; await refresh();
-    } catch(e){ rolesMsg.textContent = shortErr(e); }
-  });
+        // Share %
+        const supply = Number(fmt18(ts));
+        const share = supply > 0 ? (bal18 / supply) * 100 : 0;
+        userShareEl.textContent = (isFinite(share) ? share.toFixed(4) : "0.0000") + "%";
+      } catch(e){ console.error(e); /* keep panel silent on read errors */ }
+    }
 
-  btnSetWL?.addEventListener("click", async () => {
-    try {
-      wlMsg.textContent = "";
-      const tx = await lending.setWhitelist(inWLUser.value, Boolean(chkWL.checked));
-      await tx.wait(); wlMsg.textContent = "Whitelist set ✅"; await refresh();
-    } catch(e){ wlMsg.textContent = shortErr(e); }
-  });
+    async function refresh(){
+      try{
+        if (!provider){
+          provider = window.ethereum ? new ethers.BrowserProvider(window.ethereum)
+                                     : new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
+        }
+        const readVault = new ethers.Contract(VAULT, VAULT_ABI, provider);
+        const [price, active, pending, relAt] = await Promise.all([
+          readVault.pricePerToken(), readVault.treasuryActiveUSDC(), readVault.pendingRevenueUSDC(), readVault.pendingReleaseAt()
+        ]);
+        priceEl.textContent = `$${fmt18(price).toFixed(6)}`;
+        actEl.textContent = fmtUsd(fmt6(active));
+        pendEl.textContent = fmtUsd(fmt6(pending));
+        const now = Math.floor(Date.now()/1000);
+        const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
+        cdEl.textContent = secs ? humanize(secs) : (Number(pending)>0 ? "Queued (awaiting apply)" : "—");
 
-  btnSetCredit?.addEventListener("click", async () => {
-    try {
-      creditMsg.textContent = "";
-      const n = Math.floor(Number(inCredit.value||"0"));
-      if (n < 0 || n > 0xFFFFFFFF) throw new Error("score out of range");
-      const tx = await lending.adminSetCredit(inUserCredit.value, n);
-      await tx.wait(); creditMsg.textContent = "Credit set ✅"; await refresh();
-    } catch(e){ creditMsg.textContent = shortErr(e); }
-  });
+        if (vault && signer && acct) { await loadUserPanel(price); }
+        if (vault && vaultOwner && signer && vaultOwner.toLowerCase() === (await signer.getAddress()).toLowerCase()) {
+          await loadOwnerState();
+        }
 
-  // First paint (read-only)
-  await refresh();
-})();
-</script>
+        // Record + update chart/apy
+        recordNavSample(price);
+        updatePerformanceLines(price);
+
+      }catch(e){
+        console.error(e);
+        alert("Refresh failed (check network/contract).");
+      }
+    }
+
+    // ===== User previews & actions =====
+    document.getElementById("btnPreviewMint").onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        const usdcAmt = to6(mintAmt.value);
+        if (usdcAmt <= 0n) { mintPrev.textContent = "Enter amount"; return; }
+        const [mtyldOut, price] = await vault.previewMint(usdcAmt);
+        mintPrev.textContent = `Est. MTYLD: ${fmt18(mtyldOut).toFixed(6)} @ $${fmt18(price).toFixed(6)}`;
+        mintBtn.disabled = false;
+      } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
+    };
+
+    document.getElementById("btnMint").onclick = async () => {
+      try {
+        mintBtn.disabled = true;
+        if (!provider) await ensureProvider();
+        const usdcAmt = to6(mintAmt.value);
+        const slipPct = Number(mintSlip.value || "0.5");
+        const [mtyldOut] = await vault.previewMint(usdcAmt);
+        const minOut = BigInt(Math.floor(Number(mtyldOut) * (1 - slipPct/100)));
+        const allowance = await usdc.allowance(acct, VAULT);
+        if (allowance < usdcAmt) { const txa = await usdc.approve(VAULT, usdcAmt); await txa.wait(); }
+        const tx = await vault.mint(usdcAmt, minOut); await tx.wait();
+        mintPrev.textContent = "Minted ✅"; await refresh();
+      } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
+      finally { mintBtn.disabled = false; }
+    };
+
+    document.getElementById("btnPreviewRedeem").onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        const mtyldAmt = to18(redAmt.value);
+        if (mtyldAmt <= 0n) { redPrev.textContent = "Enter amount"; return; }
+        const [usdcOut, price] = await vault.previewRedeem(mtyldAmt);
+        redPrev.textContent = `Est. USDC: ${fmt6(usdcOut).toFixed(6)} @ $${fmt18(price).toFixed(6)}`;
+        redBtn.disabled = false;
+      } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
+    };
+
+    document.getElementById("btnRedeem").onclick = async () => {
+      try {
+        redBtn.disabled = true;
+        if (!provider) await ensureProvider();
+        const mtyldAmt = to18(redAmt.value);
+        const slipPct = Number(redSlip.value || "0.5");
+        const [usdcOut] = await vault.previewRedeem(mtyldAmt);
+        const minOut = BigInt(Math.floor(Number(usdcOut) * (1 - slipPct/100)));
+        const tx = await vault.redeem(mtyldAmt, minOut); await tx.wait();
+        redPrev.textContent = "Redeemed ✅"; await refresh();
+      } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
+      finally { redBtn.disabled = false; }
+    };
+
+    // ===== Max buttons =====
+    btnMintMax.onclick = async () => {
+      try{
+        if (!provider) await ensureProvider();
+        const bal = await usdc.balanceOf(acct); // USDC 6d
+        mintAmt.value = (Number(bal)/1e6).toString();
+      }catch(e){ console.error(e); }
+    };
+    btnRedeemMax.onclick = async () => {
+      try{
+        if (!provider) await ensureProvider();
+        const bal = await vault.balanceOf(acct); // MTYLD 18d
+        redAmt.value = (Number(bal)/1e18).toString();
+      }catch(e){ console.error(e); }
+    };
+
+    // ===== Owner actions =====
+    document.getElementById("btnQueueRev").onclick = async () => {
+      try {
+        revMsg.textContent = "";
+        if (!provider) await ensureProvider();
+        if (vaultOwner.toLowerCase() !== acct.toLowerCase()) { revMsg.textContent = "Not owner"; return; }
+        const amt = to6(revAmount.value);
+        if (amt <= 0n) { revMsg.textContent = "Enter amount"; return; }
+        const allowance = await usdc.allowance(acct, VAULT);
+        if (allowance < amt) { const txa = await usdc.approve(VAULT, amt); await txa.wait(); }
+        const tx = await vault.injectRevenue(amt); await tx.wait();
+        revMsg.textContent = "Queued ✅"; await refresh();
+      } catch (e) { console.error(e); revMsg.textContent = shortErr(e); }
+    };
+
+    btnApply.onclick = async () => {
+      try { if (!provider) await ensureProvider(); const tx = await vault.applyPendingRevenue(); await tx.wait(); pendingHint.textContent="Applied ✅"; await refresh(); }
+      catch (e) { console.error(e); pendingHint.textContent = shortErr(e); }
+    };
+    btnBeginClose.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.beginEpochClose(); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+    btnEndClose.onclick   = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.endEpochClose();   await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+
+    document.getElementById("btnSetDelay").onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        const secs = Number(navDelay.value || "0");
+        if (!(secs > 0)) { alert("Enter seconds > 0"); return; }
+        const tx = await vault.setNavDelay(secs); await tx.wait();
+        await refresh();
+      } catch (e) { console.error(e); alert(shortErr(e)); }
+    };
+
+    document.getElementById("btnSetFees").onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        const mf = Number(mintFee.value || "0");
+        const rf = Number(redeemFee.value || "0");
+        const fr = String(feeRecipient.value || "").trim();
+        const ru = !!feeRoundUp.checked;
+        if (isNaN(mf) || isNaN(rf) || mf < 0 || rf < 0 || mf > 500 || rf > 500) { alert("Fees must be 0–500 bps"); return; }
+        if (!/^0x[a-fA-F0-9]{40}$/.test(fr)) { alert("Enter a valid recipient address"); return; }
+        const tx = await vault.setFees(mf, rf, fr, ru); await tx.wait();
+        await refresh();
+      } catch (e) { console.error(e); alert(shortErr(e)); }
+    };
+
+    btnGuardOn.onclick  = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(true);  await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+    btnGuardOff.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(false); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+
+    document.getElementById("btnWhitelistOn").onclick = async () => {
+      try { if (!provider) await ensureProvider(); const a = String(wlAddr.value||"").trim(); if (!/^0x[a-fA-F0-9]{40}$/.test(a)) { wlMsg.textContent="Enter valid address"; return; }
+        const tx = await vault.setWhitelist(a, true); await tx.wait(); wlMsg.textContent = "Whitelisted ✅"; }
+      catch (e) { console.error(e); wlMsg.textContent = shortErr(e); }
+    };
+    document.getElementById("btnWhitelistOff").onclick = async () => {
+      try { if (!provider) await ensureProvider(); const a = String(wlAddr.value||"").trim(); if (!/^0x[a-fA-F0-9]{40}$/.test(a)) { wlMsg.textContent="Enter valid address"; return; }
+        const tx = await vault.setWhitelist(a, false); await tx.wait(); wlMsg.textContent = "Removed ✅"; }
+      catch (e) { console.error(e); wlMsg.textContent = shortErr(e); }
+    };
+
+    // Perf buttons
+    document.getElementById("btnExportCSV").onclick = () => {
+      const rows = [["timestamp","iso","nav_usd"]];
+      for (const p of navHistory) rows.push([p.t, new Date(p.t*1000).toISOString(), (p.p/1e18).toFixed(8)]);
+      const csv = rows.map(r => r.join(",")).join("\n");
+      const blob = new Blob([csv], {type:"text/csv"});
+      const url  = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "mtyld_nav_history.csv"; a.click();
+      URL.revokeObjectURL(url);
+    };
+    document.getElementById("btnResetHistory").onclick = () => {
+      if (!confirm("Reset locally stored NAV history?")) return;
+      navHistory = []; saveHistory(); drawNavChart();
+      el("apyLine").textContent = "APY (30d annualized): —";
+      el("changeLine").textContent = "Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —";
+    };
+
+    // Connect & Refresh
+    document.getElementById("btnConnect").onclick = async () => { try { await ensureProvider(); await refresh(); await loadOwnerState(); } catch(e){ console.error(e); } };
+    document.getElementById("btnRefresh").onclick = async () => { await refresh(); if (vaultOwner && signer) await loadOwnerState(); };
+
+    // Init local history + chart
+    loadHistory(); drawNavChart();
+
+    // Auto-refresh every 10s
+    setInterval(() => { refresh().catch(()=>{}); }, 10000);
+
+    // First paint
+    refresh().catch(()=>{});
+  })();
+  </script>
 </body>
 </html>
