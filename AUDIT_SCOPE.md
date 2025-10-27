@@ -13,11 +13,11 @@
 
 The **MTYLD Ecosystem** bridges real-world HVAC business revenue into decentralized finance via three core on-chain components:
 
-1. **MTYLD Token** — the DAO’s primary revenue-backed asset.  
+1. **MTYLD Token** — the primary revenue-backed asset.  
 2. **MTYLD Vault** — NAV-based yield vault providing a live price feed (`pricePerToken()`), representing the treasury’s on-chain balance of USDC and RWA yield.  
 3. **LendingVaultGatedV3** — a collateralized credit line that allows whitelisted users to borrow USDC against MTYLD collateral.
 
-The ecosystem is designed for real-world businesses (Mechanical Temp) to tokenize earnings, provide on-chain transparency, and enable credit flow within the DAO framework.
+The ecosystem is designed for real-world businesses (Mechanical Temp) to tokenize earnings, provide on-chain transparency, and enable credit flow within the framework.
 
 ---
 
@@ -69,24 +69,24 @@ The ecosystem is designed for real-world businesses (Mechanical Temp) to tokeniz
 
 | Role | Description |
 |------|--------------|
-| **Owner (Treasury)** | DAO-controlled Gnosis Safe that can adjust key parameters. |
+| **Owner (Treasury)** | Multi-controlled Gnosis Safe that can adjust key parameters. |
 | **Rate Guardian** | Adjusts interest and LTV configuration parameters. |
 | **Risk Guardian** | Oversees liquidation settings, pause controls, and severe-liq parameters. |
 | **Whitelisted Borrowers** | Trusted entities (e.g., Mechanical Temp ops wallets). |
-| **Vault Operator** | DAO multisig controlling deposits, USDC sweeps, and price updates in the MTYLD Vault. |
+| **Vault Operator** | Multisig controlling deposits, USDC sweeps, and price updates in the MTYLD Vault. |
 
 ---
 
 ## 🧩 Components and Relationships
 
 ### 1️⃣ MTYLD Token  
-- ERC-20 token representing a claim on Mechanical Temp DAO revenue.  
+- ERC-20 token representing a claim on Mechanical Temp revenue.  
 - Used as collateral in LendingVaultGatedV3.  
 - May be staked or held in the MTYLD Vault for yield.  
 - Security Focus:
   - Validate total supply, mint/burn permissions, and transfer restrictions.
   - Verify no hidden mint functions.
-  - Confirm ownership is DAO-controlled.
+  - Confirm ownership is controlled.
 
 ### 2️⃣ MTYLD Vault  
 - Accepts MTYLD deposits; holds USDC reserves.  
@@ -132,7 +132,7 @@ The ecosystem is designed for real-world businesses (Mechanical Temp) to tokeniz
 ## 🛡️ Known Considerations
 - **Oracle Trust:** Vault’s NAV logic should be reviewed for manipulation resistance.  
 - **Math Precision:** Collateral/debt conversions use 18↔6 decimals — must be reviewed for rounding safety.  
-- **Centralization Risk:** Guardian and treasury roles must remain DAO-controlled.  
+- **Centralization Risk:** Guardian and treasury roles must remain controlled.  
 - **Collateral Locking:** Verify withdraw safety under high-debt scenarios.  
 - **Late Fee Logic:** Flat penalty per maturity miss; ensure consistent application.  
 
