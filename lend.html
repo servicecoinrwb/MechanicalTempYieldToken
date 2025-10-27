@@ -47,7 +47,7 @@
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-full">
         <div class="text-slate-400 font-mono text-sm truncate" id="addr">Not connected</div>
         <div class="mt-2 text-xs text-slate-500">Credit Contract</div>
-        <div class="font-mono text-slate-300 truncate text-sm" id="lendingAddr">0x8fC8b61882e4792c1fB4Ea128b55c90c3069f027</div>
+        <div class="font-mono text-slate-300 truncate text-sm" id="lendingAddr">—</div>
 
         <div class="mt-2 text-xs text-slate-500">USDC / MTYLD / MTYLD Vault</div>
         <div class="font-mono text-slate-300 text-xs break-all" id="tokenTriplet">—</div>
@@ -315,10 +315,89 @@
 
 <script>
 const CHAIN_ID_ARBITRUM = 42161;
-const LENDING_ADDR = "0x8fC8b61882e4792c1fB4Ea128b55c90c3069f027";
+const LENDING_ADDR = "0x1B563D1763CA148D8bb23B0e490E3570DEa5e4b7";
 
-/* ===== Contract ABIs ===== */
-const LENDING_ABI = [{"inputs":[{"internalType":"address","name":"usdc","type":"address"},{"internalType":"address","name":"mtyld","type":"address"},{"internalType":"address","name":"mtyldVault","type":"address"},{"internalType":"address","name":"_treasury","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BadAddress","type":"error"},{"inputs":[],"name":"BadAmount","type":"error"},{"inputs":[],"name":"Healthy","type":"error"},{"inputs":[],"name":"NotActive","type":"error"},{"inputs":[],"name":"NotOwnerGuardian","type":"error"},{"inputs":[],"name":"NotSevere","type":"error"},{"inputs":[],"name":"NotWhitelisted","type":"error"},{"inputs":[],"name":"OverLTV","type":"error"},{"inputs":[],"name":"Slippage","type":"error"},{"inputs":[],"name":"TooEarly","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"treasury","type":"address"},{"indexed":false,"internalType":"address","name":"rateGuardian","type":"address"},{"indexed":false,"internalType":"address","name":"riskGuardian","type":"address"}],"name":"RolesUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"aprBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"maxLtvBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"liqThresholdBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"liqBonusBps","type":"uint16"}],"name":"ParamsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"severeLiqThresholdBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"severeLiqBonusBps","type":"uint16"},{"indexed":false,"internalType":"bool","name":"severePublic","type":"bool"}],"name":"SevereParamsUpdated","type":"event"},{"inputs":[],"name":"USDC","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MTYLD","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MTYLD_VAULT","outputs":[{"internalType":"contract IMTYLDVault","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"treasury","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"rateGuardian","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"riskGuardian","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"aprBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maxLtvBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liqThresholdBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"liqBonusBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mtyldUsdPrice_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"userView","outputs":[{"components":[{"internalType":"uint256","name":"collateralMTYLD_18","type":"uint256"},{"internalType":"uint256","name":"collateralUSD_18","type":"uint256"},{"internalType":"uint256","name":"principalUSDC_6","type":"uint256"},{"internalType":"uint256","name":"interestUSDC_6","type":"uint256"},{"internalType":"uint256","name":"lateFeesUSDC_6","type":"uint256"},{"internalType":"uint256","name":"debtUSD_18","type":"uint256"},{"internalType":"uint16","name":"ltvBps","type":"uint16"},{"internalType":"uint32","name":"creditScore","type":"uint32"},{"internalType":"uint64","name":"maturity","type":"uint64"},{"internalType":"bool","name":"active","type":"bool"}],"internalType":"struct LendingVaultGatedV3.UserView","name":"V","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountMTYLD_18","type":"uint256"}],"name":"depositCollateral","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountMTYLD_18","type":"uint256"}],"name":"withdrawCollateral","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount_6","type":"uint256"},{"internalType":"uint64","name":"maturity","type":"uint64"}],"name":"borrow","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"usdcAmount_6","type":"uint256"}],"name":"repay","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_rate","type":"address"},{"internalType":"address","name":"_risk","type":"address"}],"name":"setRoles","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"_aprBps","type":"uint16"},{"internalType":"uint16","name":"_maxLtvBps","type":"uint16"},{"internalType":"uint16","name":"_liqThresholdBps","type":"uint16"},{"internalType":"uint16","name":"_liqBonusBps","type":"uint16"}],"name":"setParams","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"_sevThreshBps","type":"uint16"},{"internalType":"uint16","name":"_sevBonusBps","type":"uint16"},{"internalType":"bool","name":"_public","type":"bool"}],"name":"setSevereParams","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bool","name":"on","type":"bool"}],"name":"setLiquidationPaused","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"bool","name":"allowed","type":"bool"}],"name":"setWhitelist","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint32","name":"score","type":"uint32"}],"name":"adminSetCredit","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+/* ===== Contract ABIs (cleaned from your paste) ===== */
+const LENDING_ABI = [
+  {"inputs":[{"internalType":"address","name":"usdc","type":"address"},{"internalType":"address","name":"mtyld","type":"address"},{"internalType":"address","name":"mtyldVault","type":"address"},{"internalType":"address","name":"_treasury","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
+  {"inputs":[],"name":"BadAddress","type":"error"},
+  {"inputs":[],"name":"BadAmount","type":"error"},
+  {"inputs":[],"name":"Healthy","type":"error"},
+  {"inputs":[],"name":"NotActive","type":"error"},
+  {"inputs":[],"name":"NotOwnerGuardian","type":"error"},
+  {"inputs":[],"name":"NotSevere","type":"error"},
+  {"inputs":[],"name":"NotWhitelisted","type":"error"},
+  {"inputs":[],"name":"OverLTV","type":"error"},
+  {"inputs":[],"name":"Slippage","type":"error"},
+  {"inputs":[],"name":"TooEarly","type":"error"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"interestAccrued_6","type":"uint256"},{"indexed":false,"internalType":"bool","name":"lateFeeApplied","type":"bool"}],"name":"Accrued","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"usdcAmount_6","type":"uint256"},{"indexed":false,"internalType":"uint64","name":"start","type":"uint64"},{"indexed":false,"internalType":"uint64","name":"maturity","type":"uint64"}],"name":"Borrowed","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount_18","type":"uint256"}],"name":"CollateralDeposited","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"mtyldAmount_18","type":"uint256"}],"name":"CollateralWithdrawn","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"lateFeeBpsFlat","type":"uint16"}],"name":"LateFeeUpdated","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"liquidator","type":"address"},{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"repayUSDC_6","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"seizeMTYLD_18","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"price18","type":"uint256"},{"indexed":false,"internalType":"uint16","name":"bonusBps","type":"uint16"},{"indexed":false,"internalType":"bool","name":"severe","type":"bool"}],"name":"Liquidated","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"bool","name":"on","type":"bool"}],"name":"LiquidationPaused","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"prev","type":"address"},{"indexed":true,"internalType":"address","name":"next","type":"address"}],"name":"OwnershipTransferred","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"aprBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"maxLtvBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"liqThresholdBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"liqBonusBps","type":"uint16"}],"name":"ParamsUpdated","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"Paused","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"repaidUSDC_6","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"principalLeft_6","type":"uint256"}],"name":"Repaid","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"treasury","type":"address"},{"indexed":false,"internalType":"address","name":"rateGuardian","type":"address"},{"indexed":false,"internalType":"address","name":"riskGuardian","type":"address"}],"name":"RolesUpdated","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"severeLiqThresholdBps","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"severeLiqBonusBps","type":"uint16"},{"indexed":false,"internalType":"bool","name":"severePublic","type":"bool"}],"name":"SevereParamsUpdated","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"residualMTYLD_18","type":"uint256"}],"name":"SevereResidualSent","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"Unpaused","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"bool","name":"allowed","type":"bool"}],"name":"WhitelistSet","type":"event"},
+  {"inputs":[],"name":"APR_MAX_BPS","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"BPS_DENOMINATOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"MAX_BPS_U16","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"MTYLD","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"MTYLD_VAULT","outputs":[{"internalType":"contract IMTYLDVault","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"SECONDS_PER_YEAR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"USDC","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"USDC_6","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"USD_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint32","name":"score","type":"uint32"}],"name":"adminSetCredit","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[],"name":"aprBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"usdcAmount_6","type":"uint256"},{"internalType":"uint64","name":"maturity","type":"uint64"}],"name":"borrow","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"canBeLiquidated","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"canBeSeverelyLiquidated","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"collateralMTYLD_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"collateralUsd_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"creditScore","outputs":[{"internalType":"uint32","name":"score","type":"uint32"},{"internalType":"uint32","name":"lastUpdated","type":"uint32"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"debtUsd_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"amountMTYLD_18","type":"uint256"}],"name":"depositCollateral","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isWhitelisted","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"lateFeeBpsFlat","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"liqBonusBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"liqThresholdBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"repayUSDC_6","type":"uint256"},{"internalType":"uint256","name":"minSeizeMTYLD_18","type":"uint256"}],"name":"liquidate","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"liquidationAmountUSDC_6","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"liquidationPaused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"loans","outputs":[{"internalType":"uint256","name":"principalUSDC_6","type":"uint256"},{"internalType":"uint256","name":"interestUSDC_6","type":"uint256"},{"internalType":"uint256","name":"lateFeesUSDC_6","type":"uint256"},{"internalType":"uint64","name":"start","type":"uint64"},{"internalType":"uint64","name":"maturity","type":"uint64"},{"internalType":"bool","name":"lateFeeApplied","type":"bool"},{"internalType":"bool","name":"active","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"ltvBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"maxLtvBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"mtyldUsdPrice_18","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"rateGuardian","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"usdcAmount_6","type":"uint256"}],"name":"repay","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[],"name":"riskGuardian","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint16","name":"_lateFeeBpsFlat","type":"uint16"}],"name":"setLateFeeBps","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"bool","name":"on","type":"bool"}],"name":"setLiquidationPaused","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"uint16","name":"_aprBps","type":"uint16"},{"internalType":"uint16","name":"_maxLtvBps","type":"uint16"},{"internalType":"uint16","name":"_liqThresholdBps","type":"uint16"},{"internalType":"uint16","name":"_liqBonusBps","type":"uint16"}],"name":"setParams","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_rate","type":"address"},{"internalType":"address","name":"_risk","type":"address"}],"name":"setRoles","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"uint16","name":"_sevThreshBps","type":"uint16"},{"internalType":"uint16","name":"_sevBonusBps","type":"uint16"},{"internalType":"bool","name":"_public","type":"bool"}],"name":"setSevereParams","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"bool","name":"allowed","type":"bool"}],"name":"setWhitelist","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[],"name":"severeLiqBonusBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"severeLiqThresholdBps","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"minSeizeMTYLD_18","type":"uint256"}],"name":"severeLiquidate","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[],"name":"severePublic","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"address","name":"n","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[],"name":"treasury","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"userView","outputs":[{"components":[{"internalType":"uint256","name":"collateralMTYLD_18","type":"uint256"},{"internalType":"uint256","name":"collateralUSD_18","type":"uint256"},{"internalType":"uint256","name":"principalUSDC_6","type":"uint256"},{"internalType":"uint256","name":"interestUSDC_6","type":"uint256"},{"internalType":"uint256","name":"lateFeesUSDC_6","type":"uint256"},{"internalType":"uint256","name":"debtUSD_18","type":"uint256"},{"internalType":"uint16","name":"ltvBps","type":"uint16"},{"internalType":"uint32","name":"creditScore","type":"uint32"},{"internalType":"uint64","name":"maturity","type":"uint64"},{"internalType":"bool","name":"active","type":"bool"}],"internalType":"struct LendingVaultGatedV3.UserView","name":"V","type":"tuple"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"amountMTYLD_18","type":"uint256"}],"name":"withdrawCollateral","outputs":[],"stateMutability":"nonpayable","type":"function"}
+];
 
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -328,6 +407,9 @@ const ERC20_ABI = [
 
 (async () => {
   const $ = id => document.getElementById(id);
+
+  // fill contract address in the UI from the constant
+  $("lendingAddr").textContent = LENDING_ADDR;
 
   // DOM refs
   const addrEl=$("addr"), tokenTriplet=$("tokenTriplet"), treasuryAddrEl=$("treasuryAddr");
@@ -342,10 +424,10 @@ const ERC20_ABI = [
   const inSevThresh=$("inSevThresh"), inSevBonus=$("inSevBonus"), inSevPublic=$("inSevPublic"), severeMsg=$("severeMsg");
   const opsMsg=$("opsMsg"), inWL=$("inWL"), inScore=$("inScore"), wlMsg=$("wlMsg");
 
-  const depAmt=$("depAmt"), depMax=$("depMax"), depMsg=$("depMsg"), btnDeposit=$("btnDeposit");
-  const wdAmt=$("wdAmt"), wdMax=$("wdMax"), wdMsg=$("wdMsg"), btnWithdraw=$("btnWithdraw");
-  const brAmt=$("brAmt"), brDays=$("brDays"), brMsg=$("brMsg"), btnBorrow=$("btnBorrow");
-  const rpAmt=$("rpAmt"), rpMax=$("rpMax"), rpMsg=$("rpMsg"), btnRepay=$("btnRepay");
+  const depAmt=$("depAmt"), depMax=$("depMax"), depMsg=$("depMsg");
+  const wdAmt=$("wdAmt"), wdMax=$("wdMax"), wdMsg=$("wdMsg");
+  const brAmt=$("brAmt"), brDays=$("brDays"), brMsg=$("brMsg");
+  const rpAmt=$("rpAmt"), rpMax=$("rpMax"), rpMsg=$("rpMsg");
 
   let provider, signer, acct, lending, USDC, MTYLD, VAULT_ADDR, TREASURY;
 
@@ -454,8 +536,9 @@ const ERC20_ABI = [
   depMax.onclick = async () => { try { if(!MTYLD) return; const b=await MTYLD.balanceOf(acct); depAmt.value=(Number(b)/1e18).toFixed(4);}catch{} };
   wdMax.onclick = async () => { try { if(!lending) return; const V=await lending.userView(acct); wdAmt.value=(Number(V.collateralMTYLD_18)/1e18).toFixed(4);}catch{} };
 
-  $("btnDeposit").onclick = async () => {
+  document.getElementById("btnDeposit").onclick = async () => {
     try{
+      const depMsg = document.getElementById("depMsg");
       depMsg.textContent="";
       if(!provider) await ensure();
       const a=to18(depAmt.value); if(a<=0n){depMsg.textContent="Enter amount";return;}
@@ -466,8 +549,9 @@ const ERC20_ABI = [
     }catch(e){ console.error(e); depMsg.textContent=shortErr(e); }
   };
 
-  $("btnWithdraw").onclick = async () => {
+  document.getElementById("btnWithdraw").onclick = async () => {
     try{
+      const wdMsg = document.getElementById("wdMsg");
       wdMsg.textContent="";
       if(!provider) await ensure();
       const a=to18(wdAmt.value); if(a<=0n){wdMsg.textContent="Enter amount";return;}
@@ -477,8 +561,9 @@ const ERC20_ABI = [
   };
 
   // ===== Borrow / Repay =====
-  $("btnBorrow").onclick = async () => {
+  document.getElementById("btnBorrow").onclick = async () => {
     try{
+      const brMsg = document.getElementById("brMsg");
       brMsg.textContent="";
       if(!provider) await ensure();
       const amt=to6(brAmt.value), days=Math.floor(Number(brDays.value||"0"));
@@ -499,8 +584,9 @@ const ERC20_ABI = [
 
   rpMax.onclick = async () => { try { if(!lending) return; const V=await lending.userView(acct); const d=(Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6; rpAmt.value=d.toFixed(2);}catch{} };
 
-  $("btnRepay").onclick = async () => {
+  document.getElementById("btnRepay").onclick = async () => {
     try{
+      const rpMsg = document.getElementById("rpMsg");
       rpMsg.textContent="";
       if(!provider) await ensure();
       const amt=to6(rpAmt.value); if(amt<=0n){rpMsg.textContent="Enter amount";return;}
@@ -514,7 +600,7 @@ const ERC20_ABI = [
   // ===== Admin handlers =====
   const isAddr = a => /^0x[a-fA-F0-9]{40}$/.test(String(a||"").trim());
 
-  $("btnSetRoles").onclick = async () => {
+  document.getElementById("btnSetRoles").onclick = async () => {
     try{
       rolesMsg.textContent="";
       if(!provider) await ensure();
@@ -525,7 +611,7 @@ const ERC20_ABI = [
     }catch(e){ console.error(e); rolesMsg.textContent=shortErr(e); }
   };
 
-  $("btnSetParams").onclick = async () => {
+  document.getElementById("btnSetParams").onclick = async () => {
     try{
       paramsMsg.textContent="";
       if(!provider) await ensure();
@@ -535,7 +621,7 @@ const ERC20_ABI = [
     }catch(e){ console.error(e); paramsMsg.textContent=shortErr(e); }
   };
 
-  $("btnSetSevere").onclick = async () => {
+  document.getElementById("btnSetSevere").onclick = async () => {
     try{
       severeMsg.textContent="";
       if(!provider) await ensure();
@@ -545,14 +631,14 @@ const ERC20_ABI = [
     }catch(e){ console.error(e); severeMsg.textContent=shortErr(e); }
   };
 
-  $("btnPause").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.pause(); await tx.wait(); opsMsg.textContent="Paused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
-  $("btnUnpause").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.unpause(); await tx.wait(); opsMsg.textContent="Unpaused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
-  $("btnPauseLiq").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.setLiquidationPaused(true); await tx.wait(); opsMsg.textContent="Liquidations paused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
-  $("btnUnpauseLiq").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.setLiquidationPaused(false); await tx.wait(); opsMsg.textContent="Liquidations unpaused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
+  document.getElementById("btnPause").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.pause(); await tx.wait(); opsMsg.textContent="Paused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
+  document.getElementById("btnUnpause").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.unpause(); await tx.wait(); opsMsg.textContent="Unpaused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
+  document.getElementById("btnPauseLiq").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.setLiquidationPaused(true); await tx.wait(); opsMsg.textContent="Liquidations paused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
+  document.getElementById("btnUnpauseLiq").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.setLiquidationPaused(false); await tx.wait(); opsMsg.textContent="Liquidations unpaused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
 
-  $("btnWLOn").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.setWhitelist(a,true); await tx.wait(); wlMsg.textContent="Whitelisted ✅"; }catch(e){ wlMsg.textContent=shortErr(e);} };
-  $("btnWLOff").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.setWhitelist(a,false); await tx.wait(); wlMsg.textContent="Removed ✅"; }catch(e){ wlMsg.textContent=shortErr(e);} };
-  $("btnSetCredit").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); const s=Math.max(0,Number(inScore.value||"0"))|0; if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.adminSetCredit(a,s); await tx.wait(); wlMsg.textContent="Credit score set ✅"; await refresh(); }catch(e){ wlMsg.textContent=shortErr(e);} };
+  document.getElementById("btnWLOn").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.setWhitelist(a,true); await tx.wait(); wlMsg.textContent="Whitelisted ✅"; }catch(e){ wlMsg.textContent=shortErr(e);} };
+  document.getElementById("btnWLOff").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.setWhitelist(a,false); await tx.wait(); wlMsg.textContent="Removed ✅"; }catch(e){ wlMsg.textContent=shortErr(e);} };
+  document.getElementById("btnSetCredit").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); const s=Math.max(0,Number(inScore.value||"0"))|0; if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.adminSetCredit(a,s); await tx.wait(); wlMsg.textContent="Credit score set ✅"; await refresh(); }catch(e){ wlMsg.textContent=shortErr(e);} };
 
   // Connect + refresh + about + footer
   document.getElementById("btnConnect").onclick = async () => { try{ await ensure(); await refresh(); }catch(e){ console.error(e);} };
