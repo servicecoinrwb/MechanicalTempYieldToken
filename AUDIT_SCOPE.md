@@ -5,7 +5,7 @@
 **Date:** October 2025  
 **Contact:** Brian Estes — Mechanical Temp  
 **Telegram:** [@TR0UBL35H00T3R](https://t.me/TR0UBL35H00T3R)  
-**Website:** [https://mechanicaltemp.com](https://mechanicaltemp.com)  
+**Website:** [(https://vault.mechanicaltemp.com/)](https://vault.mechanicaltemp.com/) 
 
 ---
 
