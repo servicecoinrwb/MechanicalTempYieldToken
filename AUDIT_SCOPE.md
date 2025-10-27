@@ -2,7 +2,7 @@
 **Project:** Mechanical Temp (MTYLD)  
 **Network:** Arbitrum One (chainId 42161)  
 **Date:** October 2025  
-**Contact:** Brian Estes — Mechanical Temp DAO  
+**Contact:** Brian Estes — Mechanical Temp
 **Email / Telegram:** @TR0UBL35H00T3R  
 
 ---
