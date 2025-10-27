@@ -56,9 +56,9 @@ The audit focuses on validating the correctness, security, and trust assumptions
 |------------|----------|-------|
 | **LendingVaultGatedV3** | `0x1B563D1763CA148D8bb23B0e490E3570DEa5e4b7` | Main audited contract |
 | **USDC (Arbitrum)** | `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` | Stablecoin used for borrowing |
-| **Treasury (Gnosis Safe)** | `0xcfe077e6f7554B1724546E02624a0832D1f4557a` | DAO multisig providing liquidity and receiving repayments |
-| **MTYLD Token** | [insert address] | ERC20 collateral token |
-| **MTYLD Vault** | [insert address] | Price feed for USD value of MTYLD (via `pricePerToken()`) |
+| **Treasury (Gnosis Safe)** | `0x441468A2de612CDec993f69407E481D30Ca5E203` | DAO multisig providing liquidity and receiving repayments |
+| **MTYLD Token** | `0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880` | ERC20 collateral token |
+| **MTYLD Vault** | `0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880` | Price feed for USD value of MTYLD (via `pricePerToken()`) |
 
 ---
 
@@ -130,7 +130,8 @@ Admin functions:
 
 ## 🧩 References
 
-- [Vault dApp](https://vault.mechanicaltemp.com/vault.html)  
+- [Vault dApp](https://vault.mechanicaltemp.com/vault.html)
+- [Arbiscan link for MechanicalTempYield (MTYLD)](https://arbiscan.io/address/0xed33364f71275e8ea06a85a363ec5c5a6c9ab880)  
 - [Arbiscan link for LendingVaultGatedV3](https://arbiscan.io/address/0x1B563D1763CA148D8bb23B0e490E3570DEa5e4b7)  
 - [USDC (Arbitrum)](https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831)  
 - [Mechanical Temp](https://mechanicaltemp.com)
