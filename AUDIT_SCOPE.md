@@ -50,7 +50,7 @@ The ecosystem is designed for real-world businesses (Mechanical Temp) to tokeniz
 | **Arbitrum One** | Network | Layer-2 mainnet deployment. |
 | **USDC** (`0xaf88d065e77c8cC2239327C5EDb3A432268e5831`) | ERC-20 stablecoin used for lending and repayment. |
 | **MetaMask / Ethers.js v6** | Wallet + JS library | Used in the frontend for user interaction. |
-| **Gnosis Safe** | DAO Treasury | Multi-sig for owner and guardian roles. |
+| **Gnosis Safe** | Treasury | Multi-sig for owner and guardian roles. |
 
 ---
 
@@ -61,7 +61,7 @@ The ecosystem is designed for real-world businesses (Mechanical Temp) to tokeniz
 | **LendingVaultGatedV3** | `0x1B563D1763CA148D8bb23B0e490E3570DEa5e4b7` | Credit line contract (core logic). |
 | **MTYLD Vault** | `0xed33364f71275e8ea06a85a363ec5c5a6c9ab880` | Vault providing NAV-based MTYLD pricing feed. |
 | **USDC** | `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` | Loan and repayment token. |
-| **MTYLD Token** | *(add final ERC-20 address once confirmed)* | Collateral token (used by vault + lending system). |
+| **MTYLD Token** | `0xed33364f71275e8ea06a85a363ec5c5a6c9ab880` | Collateral token (used by vault + lending system). |
 
 ---
 
@@ -121,7 +121,7 @@ The ecosystem is designed for real-world businesses (Mechanical Temp) to tokeniz
 | Feature | Detail |
 |----------|--------|
 | **Non-upgradeable** | All contracts are immutable once deployed. |
-| **Whitelisted Lending** | Borrowing is restricted to approved DAO participants. |
+| **Whitelisted Lending** | Borrowing is restricted to approved whitelist participants. |
 | **DAO Governance** | Parameter changes (APR, LTV, etc.) controlled via multi-sig. |
 | **On-chain Valuation** | NAV from Vault determines collateral value (no off-chain oracles). |
 | **No Flash Loans** | No dependency on manipulable DEX oracles. |
