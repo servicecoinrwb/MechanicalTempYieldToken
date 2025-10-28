@@ -112,7 +112,7 @@ Vault USDC decreases, feeRecipient receives USDC.
 setFees(mintFeeBps, redeemFeeBps, address(this), feeRoundUp);
 ```
 
-👉 To direct fees to DAO Treasury:
+👉 To direct fees to Treasury:
 
 ```solidity
 setFees(mintFeeBps, redeemFeeBps, 0xcfe077e6f7554B1724546E02624a0832D1f4557a, feeRoundUp);
@@ -147,7 +147,7 @@ setFees(mintFeeBps, redeemFeeBps, 0xcfe077e6f7554B1724546E02624a0832D1f4557a, fe
 
 ## 🧠 Summary
 
-- **Fees → feeRecipient** (currently your DAO/treasury wallet).  
+- **Fees → feeRecipient** (currently treasury wallet).  
 - **Pending Revenue → NAV Boost** (after delay).  
 - **Redeem / Mint** fully transparent on-chain.  
 - **NAV = USDC backing ÷ MTYLD supply.**
