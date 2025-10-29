@@ -134,7 +134,7 @@ No dependencies, no build tools — simply open or host the HTML file.
 
 - 💻 **Website:** [https://mechanicaltemp.com/](https://mechanicaltemp.com/)  
 - 🧱 **Service Coin DAO GitHub:** [https://github.com/servicecoinrwb](https://github.com/servicecoinrwb)  
-- 🌍 **Docs & Brand Ecosystem:** *Coming soon on [https://vault.mechanicaltemp.com/]([https://vault.mechanicaltemp.com/)  
+- 🌍 **Docs & Brand Ecosystem:** *Coming soon on [https://vault.mechanicaltemp.com]([https://vault.mechanicaltemp.com) 
 
 ---
 
