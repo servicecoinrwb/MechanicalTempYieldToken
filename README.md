@@ -134,7 +134,7 @@ No dependencies, no build tools — simply open or host the HTML file.
 
 - 💻 **Website:** [https://mechanicaltemp.com/](https://mechanicaltemp.com/)  
 - 🧱 **Service Coin DAO GitHub:** [https://github.com/servicecoinrwb](https://github.com/servicecoinrwb)  
-- 🌍 **Docs & Brand Ecosystem:** *Coming soon on [service.money](https://service.money)*  
+- 🌍 **Docs & Brand Ecosystem:** *Coming soon on [https://vault.mechanicaltemp.com/]([https://vault.mechanicaltemp.com/])  
 
 ---
 
@@ -150,4 +150,4 @@ MIT License © 2025 Mechanical Temp LLC
 ### 💬 Support
 
 For help integrating or verifying, contact:  
-**info@mechanicaltemp.com** or open an issue in the repo.
+**admin@mechanicaltemp.com** or open an issue in the repo.
