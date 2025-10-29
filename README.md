@@ -143,7 +143,7 @@ No dependencies, no build tools — simply open or host the HTML file.
 MIT License © 2025 Mechanical Temp LLC  
 
 > This vault represents real-world HVAC revenue tokenization.  
-> Use at your own risk — always test with small amounts before production use.
+> Use at your own risk, always test with small amounts before production use.
 
 ---
 
