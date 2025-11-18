@@ -28,7 +28,7 @@ This mini dApp allows users to **mint and redeem MTYLD tokens**, while the busin
 
 | Type | Address | Description |
 |------|----------|-------------|
-| **Vault (MTYLD)** | [`0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880`](https://arbiscan.io/address/0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880) | Core yield vault |
+| **Vault (MTYLD)** | [`0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482`](https://arbiscan.io/address/0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482) | Core yield vault |
 | **Stablecoin (USDC)** | [`0xaf88d065e77c8cC2239327C5EDb3A432268e5831`](https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831) | Backing asset (6 decimals) |
 
 ---
