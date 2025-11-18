@@ -408,12 +408,6 @@ const LENDING_VAULT_GATED_V3_ABI = [
   "event WhitelistSet(address indexed user, bool allowed)"
 ];
 
-const ERC20_ABI = [
-  "function balanceOf(address) view returns (uint256)",
-  "function allowance(address,address) view returns (uint256)",
-  "function approve(address,uint256) returns (bool)"
-];
-
 (async () => {
   const $ = id => document.getElementById(id);
 
