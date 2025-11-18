@@ -57,7 +57,7 @@
         </div>
         <div class="text-slate-400 font-mono text-sm truncate" id="addr">Not connected</div>
         <div class="mt-2 text-xs text-slate-500">Vault:</div>
-        <div class="font-mono text-slate-300 truncate text-sm">0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880</div>
+        <div class="font-mono text-slate-300 truncate text-sm">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</div>
         <div class="mt-2 text-xs text-slate-500">Owner:</div>
         <div class="font-mono text-slate-300 truncate text-sm" id="ownerLine">—</div>
       </div>
@@ -304,45 +304,104 @@
 
   (async () => {
     // ===== Config =====
-    const VAULT = "0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880";
+    const VAULT = "0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482";
     const USDC  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
     const CHAIN_ID_ARBITRUM = 42161;
 
-    // ABIs (same as before)
-    const VAULT_ABI = [
-      "function totalSupply() view returns (uint256)",
-      "function balanceOf(address) view returns (uint256)",
-      "function owner() view returns (address)",
-      "function pricePerToken() view returns (uint256)",
-      "function treasuryActiveUSDC() view returns (uint256)",
-      "function pendingRevenueUSDC() view returns (uint256)",
-      "function pendingReleaseAt() view returns (uint64)",
-      "function pendingReleaseReady() view returns (bool)",
-      "function navDelaySec() view returns (uint256)",
-      "function epochClosing() view returns (bool)",
-      "function mintFeeBps() view returns (uint16)",
-      "function redeemFeeBps() view returns (uint16)",
-      "function feeRecipient() view returns (address)",
-      "function feeRoundUp() view returns (bool)",
-      "function guardedLaunch() view returns (bool)",
-      "function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)",
-      "function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)",
-      "function mint(uint256 usdcAmount, uint256 minMtyldOut)",
-      "function redeem(uint256 mtyldAmount, uint256 minUsdcOut)",
-      "function injectRevenue(uint256 usdcAmount)",
-      "function applyPendingRevenue()",
-      "function beginEpochClose()",
-      "function endEpochClose()",
-      "function setNavDelay(uint256 seconds_)",
-      "function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)",
-      "function setGuardedLaunch(bool on)",
-      "function setWhitelist(address user, bool allowed)"
-    ];
-    const ERC20_ABI = [
-      "function allowance(address,address) view returns (uint256)",
-      "function approve(address,uint256) returns (bool)",
-      "function balanceOf(address) view returns (uint256)"
-    ];
+    // ABIs
+// The main vault/token contract ABI, including all core logic and owner functions.
+const VAULT_ABI = [
+  // --- View Functions (Read-Only) ---
+  "function MAX_FEE_BPS() view returns (uint16)",
+  "function RESCUE_DELAY() view returns (uint256)",
+  "function allowance(address,address) view returns (uint256)",
+  "function balanceOf(address) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+  "function epochClosing() view returns (bool)",
+  "function feeRecipient() view returns (address)",
+  "function feeRoundUp() view returns (bool)",
+  "function guardedLaunch() view returns (bool)",
+  "function isWhitelistedMinter(address) view returns (bool)",
+  "function maxSupply() view returns (uint256)",
+  "function mintFeeBps() view returns (uint16)",
+  "function name() view returns (string)",
+  "function navDelaySec() view returns (uint256)",
+  "function owner() view returns (address)",
+  "function paused() view returns (bool)",
+  "function pendingReleaseAt() view returns (uint64)",
+  "function pendingReleaseReady() view returns (bool)",
+  "function pendingRevenueUSDC() view returns (uint256)",
+  "function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)",
+  "function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)",
+  "function pricePerToken() view returns (uint256)",
+  "function redeemFeeBps() view returns (uint16)",
+  "function rescuable(address) view returns (bool)",
+  "function rescueReq() view returns (address token, uint256 amount, address to, uint64 eta)",
+  "function stable() view returns (address)",
+  "function stableDecimals() view returns (uint8)",
+  "function symbol() view returns (string)",
+  "function totalSupply() view returns (uint256)",
+  "function treasury18() view returns (uint256)",
+  "function treasuryActiveUSDC() view returns (uint256)",
+  "function treasuryUSDC() view returns (uint256)",
+
+  // --- Write Functions (State-Changing) ---
+  "function approve(address s, uint256 a) returns (bool)",
+  "function announceRescue(address token, uint256 amount, address to)",
+  "function applyPendingRevenue()",
+  "function beginEpochClose()",
+  "function endEpochClose()",
+  "function executeRescue()",
+  "function injectRevenue(uint256 usdcAmount)",
+  "function mint(uint256 usdcAmount, uint256 minMtyldOut)",
+  "function pause()",
+  "function redeem(uint256 mtyldAmount, uint256 minUsdcOut)",
+  "function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)",
+  "function setGuardedLaunch(bool on)",
+  "function setMaxSupply(uint256 cap)",
+  "function setNavDelay(uint256 seconds_)",
+  "function setWhitelist(address user, bool allowed)",
+  "function transfer(address to, uint256 a) returns (bool)",
+  "function transferFrom(address f, address t, uint256 a) returns (bool)",
+  "function transferOwnership(address n)",
+  "function unpause()",
+  "function whitelistRescuable(address token, bool allowed)",
+
+  // --- Constructor (Needed for deployment tools) ---
+  "constructor(address usdc)",
+
+  // --- Events (For listening to blockchain logs) ---
+  "event Approval(address indexed owner, address indexed spender, uint256 amount)",
+  "event EpochCloseSet(bool closing)",
+  "event FeesUpdated(uint16 mintFeeBps, uint16 redeemFeeBps, address feeRecipient, bool feeRoundUp)",
+  "event Minted(address indexed user, uint256 usdcIn, uint256 mtyldOut, uint256 price)",
+  "event OwnershipTransferred(address indexed prev, address indexed next)",
+  "event Paused(address indexed by)",
+  "event Redeemed(address indexed user, uint256 mtyldIn, uint256 usdcOut, uint256 price)",
+  "event RevenueQueued(address indexed from, uint256 usdcAmount, uint64 releaseAt)",
+  "event Transfer(address indexed from, address indexed to, uint256 amount)",
+  "event Unpaused(address indexed by)",
+
+  // --- Custom Errors (For decoding reverts) ---
+  "error BadDecimals()",
+  "error EpochClosing()",
+  "error Guarded()",
+  "error InsufficientTreasury()",
+  "error InvalidAddress()",
+  "error InvalidFee()",
+  "error NotRescuable()",
+  "error TooEarly()",
+  "error ZeroAmount()"
+];
+
+// ABI for the underlying stablecoin (e.g., USDC), used for approvals and balance checks.
+const ERC20_ABI = [
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function balanceOf(address account) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+  "function symbol() view returns (string)"
+];
 
     // ===== DOM =====
     const el = (id) => document.getElementById(id);
@@ -367,7 +426,7 @@
     const p18 = (s) => ethers.parseUnits(String(s||"0"), 18);
 
     // ===== NAV history (now stored as floats) =====
-    const NAV_HISTORY_KEY = "mtyld_nav_history_" + "0xed33364f71275E8EA06a85a363Ec5C5a6c9AB880";
+    const NAV_HISTORY_KEY = "mtyld_nav_history_" + "0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482";
     let navHistory = []; // [{t, p}] p = float USD
     let navChart;
 
