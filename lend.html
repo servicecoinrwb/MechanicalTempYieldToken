@@ -1,317 +1,302 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MTYLD • Credit Line — Mechanical Temp</title>
-  <link rel="icon" href="data:,">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
-  <style>
-    html { scroll-behavior: smooth; }
-    .tile { padding:.5rem; border-radius:.5rem; background:rgba(30,41,59,.4); border:1px solid rgba(51,65,85,.5); }
-    input[type="text"], input[type="number"] { outline:none }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MTYLD • Credit Line — Mechanical Temp</title>
+  <link rel="icon" href="data:,">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .tile { padding:.5rem; border-radius:.5rem; background:rgba(30,41,59,.4); border:1px solid rgba(51,65,85,.5); }
+    input[type="text"], input[type="number"] { outline:none }
+  </style>
 </head>
 
 <body class="bg-slate-950 text-slate-100">
-  <!-- Header -->
-  <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
-        <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-10 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline"></span>
-      </a>
-      <nav class="flex items-center gap-2">
-        <a href="https://vault.mechanicaltemp.com" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Home</a>
-        <a href="vault.html" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Vault</a>
-        <button id="btnAbout" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">About</button>
-        <button id="btnConnect" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Connect</button>
-        <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
-      </nav>
-    </div>
-  </header>
+    <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
+        <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-10 w-auto">
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline"></span>
+      </a>
+      <nav class="flex items-center gap-2">
+        <a href="https://vault.mechanicaltemp.com" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Home</a>
+        <a href="vault.html" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Vault</a>
+        <button id="btnAbout" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">About</button>
+        <button id="btnConnect" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Connect</button>
+        <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
+      </nav>
+    </div>
+  </header>
 
-  <!-- Banner -->
-  <section class="bg-gradient-to-b from-slate-900 to-sky-900 border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 py-12 sm:py-16 text-center">
-      <h1 class="mt-1 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white">MTYLD Credit Line</h1>
-      <p class="mt-3 md:mt-4 text-base md:text-lg text-sky-200">Borrow USDC against <span class="font-semibold text-sky-100">MTYLD</span> collateral</p>
-    </div>
-  </section>
+    <section class="bg-gradient-to-b from-slate-900 to-sky-900 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-12 sm:py-16 text-center">
+      <h1 class="mt-1 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white">MTYLD Credit Line</h1>
+      <p class="mt-3 md:mt-4 text-base md:text-lg text-sky-200">Borrow USDC against <span class="font-semibold text-sky-100">MTYLD</span> collateral</p>
+    </div>
+  </section>
 
-  <!-- App -->
-  <main class="max-w-7xl mx-auto px-4 py-8 space-y-4">
-    <!-- Wallet + Top stats -->
-    <div class="grid md:grid-cols-3 gap-4 items-start">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-full">
-        <div class="text-slate-400 font-mono text-sm truncate" id="addr">Not connected</div>
-        <div class="mt-2 text-xs text-slate-500">Credit Contract</div>
-        <div class="font-mono text-slate-300 truncate text-sm" id="lendingAddr">—</div>
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-4">
+        <div class="grid md:grid-cols-3 gap-4 items-start">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-full">
+        <div class="text-slate-400 font-mono text-sm truncate" id="addr">Not connected</div>
+        <div class="mt-2 text-xs text-slate-500">Credit Contract</div>
+        <div class="font-mono text-slate-300 truncate text-sm" id="lendingAddr">—</div>
 
-        <div class="mt-2 text-xs text-slate-500">USDC / MTYLD / MTYLD Vault</div>
-        <div class="font-mono text-slate-300 text-xs break-all" id="tokenTriplet">—</div>
+        <div class="mt-2 text-xs text-slate-500">USDC / MTYLD / MTYLD Vault</div>
+        <div class="font-mono text-slate-300 text-xs break-all" id="tokenTriplet">—</div>
 
-        <div class="mt-2 text-xs text-slate-500">Treasury (funds borrows / receives repays)</div>
-        <div class="font-mono text-slate-300 text-xs break-all" id="treasuryAddr">—</div>
-      </div>
+        <div class="mt-2 text-xs text-slate-500">Treasury (funds borrows / receives repays)</div>
+        <div class="font-mono text-slate-300 text-xs break-all" id="treasuryAddr">—</div>
+      </div>
 
-      <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
-          <div class="tile"><div class="text-slate-400 text-xs">MTYLD Price (USD)</div><div id="mtyldPrice" class="font-mono text-lg">$–</div></div>
-          <div class="tile"><div class="text-slate-400 text-xs">Your MTYLD</div><div id="balMtyld" class="font-mono text-lg">–</div></div>
-          <div class="tile"><div class="text-slate-400 text-xs">Your USDC</div><div id="balUsdc" class="font-mono text-lg">–</div></div>
-          <div class="tile"><div class="text-slate-400 text-xs">Health (LTV)</div><div id="ltvLine" class="font-mono text-lg">–</div></div>
-          <div class="tile"><div class="text-slate-400 text-xs">Treasury USDC</div><div id="treasuryBal" class="font-mono text-lg">–</div></div>
-          <div class="tile"><div class="text-slate-400 text-xs">Available to Borrow</div><div id="availBorrow" class="font-mono text-lg">$–</div></div>
-        </div>
-        <div id="warnBar" class="mt-2 text-xs text-amber-300"></div>
-      </div>
-    </div>
+      <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
+          <div class="tile"><div class="text-slate-400 text-xs">MTYLD Price (USD)</div><div id="mtyldPrice" class="font-mono text-lg">$–</div></div>
+          <div class="tile"><div class="text-slate-400 text-xs">Your MTYLD</div><div id="balMtyld" class="font-mono text-lg">–</div></div>
+          <div class="tile"><div class="text-slate-400 text-xs">Your USDC</div><div id="balUsdc" class="font-mono text-lg">–</div></div>
+          <div class="tile"><div class="text-slate-400 text-xs">Health (LTV)</div><div id="ltvLine" class="font-mono text-lg">–</div></div>
+          <div class="tile"><div class="text-slate-400 text-xs">Treasury USDC</div><div id="treasuryBal" class="font-mono text-lg">–</div></div>
+          <div class="tile"><div class="text-slate-400 text-xs">Available to Borrow</div><div id="availBorrow" class="font-mono text-lg">$–</div></div>
+        </div>
+        <div id="warnBar" class="mt-2 text-xs text-amber-300"></div>
+      </div>
+    </div>
 
-    <!-- User position -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div class="tile"><div class="text-slate-400 text-xs">Collateral (MTYLD)</div><div class="font-mono text-lg" id="userColMtyld">–</div><div class="text-slate-400 text-xs" id="userColUsd">USD –</div></div>
-        <div class="tile"><div class="text-slate-400 text-xs">Debt (USDC)</div><div class="font-mono text-lg" id="userDebtUsdc">–</div><div class="text-slate-400 text-xs" id="userDebtUsd">USD –</div></div>
-        <div class="tile"><div class="text-slate-400 text-xs">Interest + Late</div><div class="font-mono text-lg" id="userInterestLate">–</div></div>
-        <div class="tile"><div class="text-slate-400 text-xs">Credit Score</div><div class="font-mono text-lg" id="userScore">–</div></div>
-        <div class="tile"><div class="text-slate-400 text-xs">Maturity</div><div class="font-mono text-lg" id="userMaturity">–</div></div>
-      </div>
-    </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="tile"><div class="text-slate-400 text-xs">Collateral (MTYLD)</div><div class="font-mono text-lg" id="userColMtyld">–</div><div class="text-slate-400 text-xs" id="userColUsd">USD –</div></div>
+        <div class="tile"><div class="text-slate-400 text-xs">Debt (USDC)</div><div class="font-mono text-lg" id="userDebtUsdc">–</div><div class="text-slate-400 text-xs" id="userDebtUsd">USD –</div></div>
+        <div class="tile"><div class="text-slate-400 text-xs">Interest + Late</div><div class="font-mono text-lg" id="userInterestLate">–</div></div>
+        <div class="tile"><div class="text-slate-400 text-xs">Credit Score</div><div class="font-mono text-lg" id="userScore">–</div></div>
+        <div class="tile"><div class="text-slate-400 text-xs">Maturity</div><div class="font-mono text-lg" id="userMaturity">–</div></div>
+      </div>
+      </div>
 
-    <!-- Protocol & User stats -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-      <div class="text-slate-300 font-semibold mb-2">Protocol & User Stats</div>
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div class="tile"><div class="text-slate-400 text-xs">Borrow Limit (USDC)</div><div id="borrowLimit" class="font-mono text-lg">$–</div></div>
-        <div class="tile"><div class="text-slate-400 text-xs">Liq Threshold (LTV)</div><div id="liqThreshold" class="font-mono text-lg">–</div></div>
-        <div class="tile"><div class="text-slate-400 text-xs">Debt @ Liq Threshold (USD)</div><div id="debtAtLiq" class="font-mono text-lg">$–</div></div>
-        <div class="tile"><div class="text-slate-400 text-xs">Days to Maturity</div><div id="daysToMat" class="font-mono text-lg">—</div></div>
-        <div class="tile"><div class="text-slate-400 text-xs">APR</div><div id="aprLine" class="font-mono text-lg">—</div></div>
-      </div>
-      <div class="text-xs text-slate-500 mt-2">“Available to Borrow” = min(Borrow Limit − Current Debt, Treasury USDC, Treasury Allowance). Assumes 1 USDC ≈ $1.</div>
-    </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="text-slate-300 font-semibold mb-2">Protocol & User Stats</div>
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="tile"><div class="text-slate-400 text-xs">Borrow Limit (USDC)</div><div id="borrowLimit" class="font-mono text-lg">$–</div></div>
+        <div class="tile"><div class="text-slate-400 text-xs">Liq Threshold (LTV)</div><div id="liqThreshold" class="font-mono text-lg">–</div></div>
+        <div class="tile"><div class="text-slate-400 text-xs">Debt @ Liq Threshold (USD)</div><div id="debtAtLiq" class="font-mono text-lg">$–</div></div>
+        <div class="tile"><div class="text-slate-400 text-xs">Days to Maturity</div><div id="daysToMat" class="font-mono text-lg">—</div></div>
+        <div class="tile"><div class="text-slate-400 text-xs">APR</div><div id="aprLine" class="font-mono text-lg">—</div></div>
+      </div>
+      <div class="text-xs text-slate-500 mt-2">“Available to Borrow” = min(Borrow Limit − Current Debt, Treasury USDC, Treasury Allowance). Assumes 1 USDC ≈ $1.</div>
+    </div>
 
-    <!-- ADMIN PANEL (owner only) -->
-    <div id="adminPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
-      <div class="flex items-center justify-between gap-3 mb-2">
-        <div class="font-semibold">Admin Panel <span class="ml-2 text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300">Owner</span></div>
-        <div class="text-xs text-slate-400">Contract: <span id="ownerOf" class="font-mono">—</span></div>
-      </div>
-      <div class="h-px bg-slate-800 my-3"></div>
+        <div id="adminPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <div class="flex items-center justify-between gap-3 mb-2">
+        <div class="font-semibold">Admin Panel <span class="ml-2 text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300">Owner</span></div>
+        <div class="text-xs text-slate-400">Contract: <span id="ownerOf" class="font-mono">—</span></div>
+        </div>
+      <div class="h-px bg-slate-800 my-3"></div>
 
-      <!-- Roles -->
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="tile">
-          <div class="text-slate-300 font-semibold mb-2">Current Roles</div>
-          <div class="space-y-1 font-mono text-sm">
-            <div>Owner: <span id="ownerAddr">—</span></div>
-            <div>Treasury: <span id="roleTreasury">—</span></div>
-            <div>Rate Guardian: <span id="rateGuardian">—</span></div>
-            <div>Risk Guardian: <span id="riskGuardian">—</span></div>
-          </div>
-        </div>
-        <div class="tile">
-          <div class="text-slate-300 font-semibold mb-2">Set Roles</div>
-          <input id="inTreasury" placeholder="Treasury 0x…" class="w-full mb-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-          <input id="inRateG" placeholder="Rate Guardian 0x…" class="w-full mb-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-          <input id="inRiskG" placeholder="Risk Guardian 0x…" class="w-full mb-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-          <button id="btnSetRoles" class="w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Set Roles</button>
-          <div id="rolesMsg" class="text-xs text-slate-400 mt-1">—</div>
-        </div>
-      </div>
+            <div class="grid md:grid-cols-2 gap-4">
+        <div class="tile">
+          <div class="text-slate-300 font-semibold mb-2">Current Roles</div>
+          <div class="space-y-1 font-mono text-sm">
+            <div>Owner: <span id="ownerAddr">—</span></div>
+            <div>Treasury: <span id="roleTreasury">—</span></div>
+            <div>Rate Guardian: <span id="rateGuardian">—</span></div>
+            <div>Risk Guardian: <span id="riskGuardian">—</span></div>
+          </div>
+        </div>
+        <div class="tile">
+          <div class="text-slate-300 font-semibold mb-2">Set Roles</div>
+          <input id="inTreasury" placeholder="Treasury 0x…" class="w-full mb-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+          <input id="inRateG" placeholder="Rate Guardian 0x…" class="w-full mb-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+          <input id="inRiskG" placeholder="Risk Guardian 0x…" class="w-full mb-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+          <button id="btnSetRoles" class="w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Set Roles</button>
+          <div id="rolesMsg" class="text-xs text-slate-400 mt-1">—</div>
+        </div>
+      </div>
 
-      <div class="h-px bg-slate-800 my-3"></div>
+      <div class="h-px bg-slate-800 my-3"></div>
 
-      <!-- Params -->
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="tile">
-          <div class="text-slate-300 font-semibold mb-2">Rates & LTV</div>
-          <div class="grid grid-cols-2 gap-2">
-            <input id="inApr" type="number" placeholder="APR (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-            <input id="inMaxLtv" type="number" placeholder="Max LTV (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-            <input id="inLiqThresh" type="number" placeholder="Liq Thresh (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-            <input id="inLiqBonus" type="number" placeholder="Liq Bonus (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-          </div>
-          <button id="btnSetParams" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Set Params</button>
-          <div id="paramsMsg" class="text-xs text-slate-400 mt-1">—</div>
-        </div>
-        <div class="tile">
-          <div class="text-slate-300 font-semibold mb-2">Severe Liquidation</div>
-          <div class="grid grid-cols-2 gap-2">
-            <input id="inSevThresh" type="number" placeholder="Sev Thresh (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-            <input id="inSevBonus" type="number" placeholder="Sev Bonus (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-          </div>
-          <label class="inline-flex items-center gap-2 text-sm mt-2">
-            <input type="checkbox" id="inSevPublic" class="h-4 w-4 rounded border-slate-600 bg-slate-800">
-            Public Severe Liquidations
-          </label>
-          <button id="btnSetSevere" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Set Severe Params</button>
-          <div id="severeMsg" class="text-xs text-slate-400 mt-1">—</div>
-        </div>
-      </div>
+            <div class="grid md:grid-cols-2 gap-4">
+        <div class="tile">
+          <div class="text-slate-300 font-semibold mb-2">Rates & LTV</div>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="inApr" type="number" placeholder="APR (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+            <input id="inMaxLtv" type="number" placeholder="Max LTV (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+            <input id="inLiqThresh" type="number" placeholder="Liq Thresh (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+            <input id="inLiqBonus" type="number" placeholder="Liq Bonus (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+          </div>
+          <button id="btnSetParams" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Set Params</button>
+          <div id="paramsMsg" class="text-xs text-slate-400 mt-1">—</div>
+        </div>
+        <div class="tile">
+          <div class="text-slate-300 font-semibold mb-2">Severe Liquidation</div>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="inSevThresh" type="number" placeholder="Sev Thresh (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+            <input id="inSevBonus" type="number" placeholder="Sev Bonus (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+          </div>
+          <label class="inline-flex items-center gap-2 text-sm mt-2">
+            <input type="checkbox" id="inSevPublic" class="h-4 w-4 rounded border-slate-600 bg-slate-800">
+            Public Severe Liquidations
+          </label>
+          <button id="btnSetSevere" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Set Severe Params</button>
+          <div id="severeMsg" class="text-xs text-slate-400 mt-1">—</div>
+        </div>
+      </div>
 
-      <div class="h-px bg-slate-800 my-3"></div>
+      <div class="h-px bg-slate-800 my-3"></div>
 
-      <!-- Controls -->
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="tile">
-          <div class="text-slate-300 font-semibold mb-2">Operational</div>
-          <div class="grid grid-cols-2 gap-2">
-            <button id="btnPause" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Pause</button>
-            <button id="btnUnpause" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Unpause</button>
-            <button id="btnPauseLiq" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Pause Liq</button>
-            <button id="btnUnpauseLiq" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Unpause Liq</button>
-          </div>
-          <div id="opsMsg" class="text-xs text-slate-400 mt-1">—</div>
-        </div>
-        <div class="tile">
-          <div class="text-slate-300 font-semibold mb-2">Whitelist & Credit</div>
-          <div class="grid grid-cols-2 gap-2">
-            <input id="inWL" placeholder="User 0x…" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-            <input id="inScore" type="number" placeholder="Credit Score" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
-          </div>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <button id="btnWLOn" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Allow</button>
-            <button id="btnWLOff" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Remove</button>
-          </div>
-          <button id="btnSetCredit" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Set Credit Score</button>
-          <div id="wlMsg" class="text-xs text-slate-400 mt-1">—</div>
-        </div>
-      </div>
-    </div>
+            <div class="grid md:grid-cols-2 gap-4">
+        <div class="tile">
+          <div class="text-slate-300 font-semibold mb-2">Operational</div>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="btnPause" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Pause</button>
+            <button id="btnUnpause" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Unpause</button>
+            <button id="btnPauseLiq" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Pause Liq</button>
+            <button id="btnUnpauseLiq" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Unpause Liq</button>
+          </div>
+          <div id="opsMsg" class="text-xs text-slate-400 mt-1">—</div>
+        </div>
+        <div class="tile">
+          <div class="text-slate-300 font-semibold mb-2">Whitelist & Credit</div>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="inWL" placeholder="User 0x…" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+            <input id="inScore" type="number" placeholder="Credit Score" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <button id="btnWLOn" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Allow</button>
+            <button id="btnWLOff" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Remove</button>
+          </div>
+          <button id="btnSetCredit" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Set Credit Score</button>
+          <div id="wlMsg" class="text-xs text-slate-400 mt-1">—</div>
+        </div>
+      </div>
+    </div>
 
-    <!-- Collateral / Borrow -->
-    <div class="grid md:grid-cols-2 gap-4">
-      <!-- Collateral -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="text-slate-300 font-semibold">Collateral: MTYLD</div>
-        <div class="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <div class="text-slate-400 text-xs mb-1">Deposit MTYLD</div>
-            <div class="flex gap-2">
-              <input id="depAmt" inputmode="decimal" placeholder="Amount (MTYLD)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-              <button id="depMax" class="px-3 rounded-lg bg-slate-800 border border-slate-700">Max</button>
-            </div>
-            <button id="btnDeposit" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Approve & Deposit</button>
-            <div id="depMsg" class="text-sm text-slate-400 mt-1">—</div>
-          </div>
+        <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <div class="text-slate-300 font-semibold">Collateral: MTYLD</div>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-slate-400 text-xs mb-1">Deposit MTYLD</div>
+            <div class="flex gap-2">
+              <input id="depAmt" inputmode="decimal" placeholder="Amount (MTYLD)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+              <button id="depMax" class="px-3 rounded-lg bg-slate-800 border border-slate-700">Max</button>
+            </div>
+            <button id="btnDeposit" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Approve & Deposit</button>
+            <div id="depMsg" class="text-sm text-slate-400 mt-1">—</div>
+          </div>
 
-          <div>
-            <div class="text-slate-400 text-xs mb-1">Withdraw MTYLD</div>
-            <div class="flex gap-2">
-              <input id="wdAmt" inputmode="decimal" placeholder="Amount (MTYLD)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-              <button id="wdMax" class="px-3 rounded-lg bg-slate-800 border border-slate-700">Max</button>
-            </div>
-            <button id="btnWithdraw" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Withdraw</button>
-            <div id="wdMsg" class="text-sm text-slate-400 mt-1">—</div>
-          </div>
-        </div>
-      </div>
+          <div>
+            <div class="text-slate-400 text-xs mb-1">Withdraw MTYLD</div>
+            <div class="flex gap-2">
+              <input id="wdAmt" inputmode="decimal" placeholder="Amount (MTYLD)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+              <button id="wdMax" class="px-3 rounded-lg bg-slate-800 border border-slate-700">Max</button>
+            </div>
+            <button id="btnWithdraw" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Withdraw</button>
+            <div id="wdMsg" class="text-sm text-slate-400 mt-1">—</div>
+          </div>
+        </div>
+      </div>
 
-      <!-- Borrow / Repay -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="text-slate-300 font-semibold">Borrow / Repay (USDC)</div>
-        <div class="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <div class="text-slate-400 text-xs mb-1">Borrow USDC</div>
-            <input id="brAmt" inputmode="decimal" placeholder="Amount (USDC)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-            <div class="flex gap-2 mt-2">
-              <input id="brDays" inputmode="numeric" placeholder="Maturity (days)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-              <button id="btnBorrow" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Borrow</button>
-            </div>
-            <div id="brMsg" class="text-sm text-slate-400 mt-1">—</div>
-          </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <div class="text-slate-300 font-semibold">Borrow / Repay (USDC)</div>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-slate-400 text-xs mb-1">Borrow USDC</div>
+            <input id="brAmt" inputmode="decimal" placeholder="Amount (USDC)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+            <div class="flex gap-2 mt-2">
+              <input id="brDays" inputmode="numeric" placeholder="Maturity (days)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+              <button id="btnBorrow" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Borrow</button>
+            </div>
+            <div id="brMsg" class="text-sm text-slate-400 mt-1">—</div>
+          </div>
 
-          <div>
-            <div class="text-slate-400 text-xs mb-1">Repay USDC</div>
-            <div class="flex gap-2">
-              <input id="rpAmt" inputmode="decimal" placeholder="Amount (USDC)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-              <button id="rpMax" class="px-3 rounded-lg bg-slate-800 border border-slate-700">Max</button>
-            </div>
-            <button id="btnRepay" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Approve & Repay</button>
-            <div id="rpMsg" class="text-sm text-slate-400 mt-1">—</div>
-          </div>
-        </div>
-      </div>
-    </div>
+          <div>
+            <div class="text-slate-400 text-xs mb-1">Repay USDC</div>
+            <div class="flex gap-2">
+              <input id="rpAmt" inputmode="decimal" placeholder="Amount (USDC)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+              <button id="rpMax" class="px-3 rounded-lg bg-slate-800 border border-slate-700">Max</button>
+            </div>
+            <button id="btnRepay" class="mt-2 w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Approve & Repay</button>
+            <div id="rpMsg" class="text-sm text-slate-400 mt-1">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <p class="text-xs text-slate-500">Arbitrum One • MTYLD Credit Line UI</p>
-  </main>
+    <p class="text-xs text-slate-500">Arbitrum One • MTYLD Credit Line UI</p>
+  </main>
 
-  <!-- About -->
-  <section id="aboutCL" class="bg-slate-950 border-t border-slate-800 py-12 px-4">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center mb-8">
-        <h2 class="text-3xl sm:text-4xl font-black text-white">About the MTYLD Credit Line</h2>
-        <p class="mt-2 text-sky-300 text-lg">Borrow USDC against MTYLD at transparent, on-chain terms</p>
-      </div>
+    <section id="aboutCL" class="bg-slate-950 border-t border-slate-800 py-12 px-4">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl sm:text-4xl font-black text-white">About the MTYLD Credit Line</h2>
+        <p class="mt-2 text-sky-300 text-lg">Borrow USDC against MTYLD at transparent, on-chain terms</p>
+      </div>
 
-      <div class="space-y-3">
-        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
-          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
-            <span class="text-sky-300 font-semibold">🏦 How it works</span>
-            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
-          </summary>
-          <div class="px-5 pb-5 text-slate-300">
-            <ol class="list-decimal pl-5 space-y-2">
-              <li>Deposit MTYLD as collateral.</li>
-              <li>Borrow USDC up to your LTV limit (based on MTYLD price).</li>
-              <li>Interest accrues; repay principal + interest (and any late fees) in USDC.</li>
-              <li>If LTV exceeds liquidation threshold, positions can be liquidated.</li>
-            </ol>
-          </div>
-        </details>
+      <div class="space-y-3">
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">🏦 How it works</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-slate-300">
+            <ol class="list-decimal pl-5 space-y-2">
+              <li>Deposit MTYLD as collateral.</li>
+              <li>Borrow USDC up to your LTV limit (based on MTYLD price).</li>
+              <li>Interest accrues; repay principal + interest (and any late fees) in USDC.</li>
+              <li>If LTV exceeds liquidation threshold, positions can be liquidated.</li>
+            </ol>
+          </div>
+        </details>
 
-        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
-          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
-            <span class="text-sky-300 font-semibold">💧 Treasury funding</span>
-            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
-          </summary>
-          <div class="px-5 pb-5 text-slate-300">
-            <p>The Treasury wallet supplies USDC to borrowers and receives all repayments. Admin must fund it with USDC and approve the Lending contract to spend USDC.</p>
-          </div>
-        </details>
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">💧 Treasury funding</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-slate-300">
+            <p>The Treasury wallet supplies USDC to borrowers and receives all repayments. Admin must fund it with USDC and approve the Lending contract to spend USDC.</p>
+          </div>
+        </details>
 
-        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
-          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
-            <span class="text-sky-300 font-semibold">⚙️ Admin checklist</span>
-            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
-          </summary>
-          <div class="px-5 pb-5 text-slate-300">
-            <ul class="list-disc pl-5 space-y-2">
-              <li>Fund Treasury with USDC (Arbitrum: <span class="font-mono">0xaf88…e5831</span>).</li>
-              <li>From Treasury wallet: <span class="font-mono">USDC.approve(lending, MAX_UINT)</span>.</li>
-              <li>Whitelist borrowers if gating is enabled.</li>
-            </ul>
-          </div>
-        </details>
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">⚙️ Admin checklist</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-slate-300">
+            <ul class="list-disc pl-5 space-y-2">
+              <li>Fund Treasury with USDC (Arbitrum: <span class="font-mono">0xaf88…e5831</span>).</li>
+              <li>From Treasury wallet: <span class="font-mono">USDC.approve(lending, MAX_UINT)</span>.</li>
+              <li>Whitelist borrowers if gating is enabled.</li>
+            </ul>
+          </div>
+        </details>
 
-        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
-          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
-            <span class="text-sky-300 font-semibold">⚠️ Risks & Disclosures</span>
-            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
-          </summary>
-          <div class="px-5 pb-5 text-slate-300">
-            <ul class="list-disc pl-5 space-y-2">
-              <li>Price risk on MTYLD collateral</li>
-              <li>Smart contract & operator risk</li>
-              <li>Liquidation if LTV exceeds threshold</li>
-            </ul>
-          </div>
-        </details>
-      </div>
-    </div>
-  </section>
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none">
+            <span class="text-sky-300 font-semibold">⚠️ Risks & Disclosures</span>
+            <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-slate-300">
+            <ul class="list-disc pl-5 space-y-2">
+              <li>Price risk on MTYLD collateral</li>
+              <li>Smart contract & operator risk</li>
+              <li>Liquidation if LTV exceeds threshold</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
 
-  <!-- Footer -->
-  <footer class="mt-10 border-t border-slate-800 bg-slate-900">
-    <div class="max-w-7xl mx-auto px-4 py-8 text-center">
-      <p class="text-slate-300">Powered by <a href="https://www.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300 font-semibold">Mechanical Temp</a> <span class="text-slate-500">•</span> Southfield, MI</p>
-      <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
-    </div>
-  </footer>
+    <footer class="mt-10 border-t border-slate-800 bg-slate-900">
+    <div class="max-w-7xl mx-auto px-4 py-8 text-center">
+      <p class="text-slate-300">Powered by <a href="https://www.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300 font-semibold">Mechanical Temp</a> <span class="text-slate-500">•</span> Southfield, MI</p>
+      <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
+    </div>
+  </footer>
 
 <script>
 const CHAIN_ID_ARBITRUM = 42161;
@@ -319,344 +304,346 @@ const LENDING_ADDR = "0xdDce144833975CfF4B729FD3c4D0A717Ac24BAaa";
 
 // ABIs
 const LENDING_VAULT_GATED_V3_ABI = [
-  // --- Constructor ---
-  "constructor(address usdc, address mtyld, address mtyldVault, address _treasury)",
+  // --- Constructor ---
+  "constructor(address usdc, address mtyld, address mtyldVault, address _treasury)",
 
-  // --- View Functions (Read-Only) ---
-  "function APR_MAX_BPS() view returns (uint16)",
-  "function BPS_DENOMINATOR() view returns (uint256)",
-  "function MAX_BPS_U16() view returns (uint16)",
-  "function MTYLD() view returns (address)",
-  "function MTYLD_VAULT() view returns (address)",
-  "function SECONDS_PER_YEAR() view returns (uint256)",
-  "function USDC() view returns (address)",
-  "function USDC_6() view returns (uint256)",
-  "function USD_18() view returns (uint256)",
-  "function aprBps() view returns (uint16)",
-  "function canBeLiquidated(address user) view returns (bool)",
-  "function canBeSeverelyLiquidated(address user) view returns (bool)",
-  "function collateralMTYLD_18(address) view returns (uint256)",
-  "function collateralUsd_18(address user) view returns (uint256)",
-  "function creditScore(address) view returns (uint32 score, uint32 lastUpdated)",
-  "function debtUsd_18(address user) view returns (uint256)",
-  "function isWhitelisted(address) view returns (bool)",
-  "function lateFeeBpsFlat() view returns (uint16)",
-  "function liqBonusBps() view returns (uint16)",
-  "function liqThresholdBps() view returns (uint16)",
-  "function liquidationAmountUSDC_6(address user) view returns (uint256)",
-  "function liquidationPaused() view returns (bool)",
-  "function loans(address) view returns (uint256 principalUSDC_6, uint256 interestUSDC_6, uint256 lateFeesUSDC_6, uint64 start, uint64 maturity, bool lateFeeApplied, bool active)",
-  "function ltvBps(address user) view returns (uint16)",
-  "function maxLtvBps() view returns (uint16)",
-  "function mtyldUsdPrice_18() view returns (uint256)",
-  "function owner() view returns (address)",
-  "function paused() view returns (bool)",
-  "function rateGuardian() view returns (address)",
-  "function riskGuardian() view returns (address)",
-  "function severeLiqBonusBps() view returns (uint16)",
-  "function severeLiqThresholdBps() view returns (uint16)",
-  "function severePublic() view returns (bool)",
-  "function treasury() view returns (address)",
-  "function userView(address user) view returns (tuple)", // Returns UserView struct
+  // --- View Functions (Read-Only) ---
+  "function APR_MAX_BPS() view returns (uint16)",
+  "function BPS_DENOMINATOR() view returns (uint256)",
+  "function MAX_BPS_U16() view returns (uint16)",
+  "function MTYLD() view returns (address)",
+  "function MTYLD_VAULT() view returns (address)",
+  "function SECONDS_PER_YEAR() view returns (uint256)",
+  "function USDC() view returns (address)",
+  "function USDC_6() view returns (uint256)",
+  "function USD_18() view returns (uint256)",
+  "function aprBps() view returns (uint16)",
+  "function canBeLiquidated(address user) view returns (bool)",
+  "function canBeSeverelyLiquidated(address user) view returns (bool)",
+  "function collateralMTYLD_18(address) view returns (uint256)",
+  "function collateralUsd_18(address user) view returns (uint256)",
+  "function creditScore(address) view returns (uint32 score, uint32 lastUpdated)",
+  "function debtUsd_18(address user) view returns (uint256)",
+  "function isWhitelisted(address) view returns (bool)",
+  "function lateFeeBpsFlat() view returns (uint16)",
+  "function liqBonusBps() view returns (uint16)",
+  "function liqThresholdBps() view returns (uint16)",
+  "function liquidationAmountUSDC_6(address user) view returns (uint256)",
+  "function liquidationPaused() view returns (bool)",
+  "function loans(address) view returns (uint256 principalUSDC_6, uint256 interestUSDC_6, uint256 lateFeesUSDC_6, uint64 start, uint64 maturity, bool lateFeeApplied, bool active)",
+  "function ltvBps(address user) view returns (uint16)",
+  "function maxLtvBps() view returns (uint16)",
+  "function mtyldUsdPrice_18() view returns (uint256)",
+  "function owner() view returns (address)",
+  "function paused() view returns (bool)",
+  "function rateGuardian() view returns (address)",
+  "function riskGuardian() view returns (address)",
+  "function severeLiqBonusBps() view returns (uint16)",
+  "function severeLiqThresholdBps() view returns (uint16)",
+  "function severePublic() view returns (bool)",
+  "function treasury() view returns (address)",
+  "function userView(address user) view returns (tuple)", // Returns UserView struct
 
-  // --- Write Functions (State-Changing) ---
-  "function adminSetCredit(address user, uint32 score)",
-  "function borrow(uint256 usdcAmount_6, uint64 maturity)",
-  "function depositCollateral(uint256 amountMTYLD_18)",
-  "function liquidate(address user, uint256 repayUSDC_6, uint256 minSeizeMTYLD_18)",
-  "function pause()",
-  "function repay(uint256 usdcAmount_6)",
-  "function setLateFeeBps(uint16 _lateFeeBpsFlat)",
-  "function setLiquidationPaused(bool on)",
-  "function setParams(uint16 _aprBps, uint16 _maxLtvBps, uint16 _liqThresholdBps, uint16 _liqBonusBps)",
-  "function setRoles(address _treasury, address _rate, address _risk)",
-  "function setSevereParams(uint16 _sevThreshBps, uint16 _sevBonusBps, bool _public)",
-  "function setWhitelist(address user, bool allowed)",
-  "function severeLiquidate(address user, uint256 minSeizeMTYLD_18)",
-  "function transferOwnership(address n)",
-  "function unpause()",
-  "function withdrawCollateral(uint256 amountMTYLD_18)",
+  // --- Write Functions (State-Changing) ---
+  "function adminSetCredit(address user, uint32 score)",
+  "function borrow(uint256 usdcAmount_6, uint64 maturity)",
+  "function depositCollateral(uint256 amountMTYLD_18)",
+  "function liquidate(address user, uint256 repayUSDC_6, uint256 minSeizeMTYLD_18)",
+  "function pause()",
+  "function repay(uint256 usdcAmount_6)",
+  "function setLateFeeBps(uint16 _lateFeeBpsFlat)",
+  "function setLiquidationPaused(bool on)",
+  "function setParams(uint16 _aprBps, uint16 _maxLtvBps, uint16 _liqThresholdBps, uint16 _liqBonusBps)",
+  "function setRoles(address _treasury, address _rate, address _risk)",
+  "function setSevereParams(uint16 _sevThreshBps, uint16 _sevBonusBps, bool _public)",
+  "function setWhitelist(address user, bool allowed)",
+  "function severeLiquidate(address user, uint256 minSeizeMTYLD_18)",
+  "function transferOwnership(address n)",
+  "function unpause()",
+  "function withdrawCollateral(uint256 amountMTYLD_18)",
 
-  // --- Custom Errors ---
-  "error BadAddress()",
-  "error BadAmount()",
-  "error Healthy()",
-  "error NotActive()",
-  "error NotOwnerGuardian()",
-  "error NotSevere()",
-  "error NotWhitelisted()",
-  "error OverLTV()",
-  "error Slippage()",
-  "error TooEarly()",
-  
-  // --- Events (For listening to blockchain logs) ---
-  "event Accrued(address indexed user, uint256 interestAccrued_6, bool lateFeeApplied)",
-  "event Borrowed(address indexed user, uint256 usdcAmount_6, uint64 start, uint64 maturity)",
-  "event CollateralDeposited(address indexed user, uint256 mtyldAmount_18)",
-  "event CollateralWithdrawn(address indexed user, uint256 mtyldAmount_18)",
-  "event LateFeeUpdated(uint16 lateFeeBpsFlat)",
-  "event Liquidated(address indexed liquidator, address indexed user, uint256 repayUSDC_6, uint256 seizeMTYLD_18, uint256 price18, uint16 bonusBps, bool severe)",
-  "event LiquidationPaused(bool on)",
-  "event OwnershipTransferred(address indexed prev, address indexed next)",
-  "event ParamsUpdated(uint16 aprBps, uint16 maxLtvBps, uint16 liqThresholdBps, uint16 liqBonusBps)",
-  "event Paused(address indexed by)",
-  "event Repaid(address indexed user, uint256 repaidUSDC_6, uint256 principalLeft_6)",
-  "event RolesUpdated(address treasury, address rateGuardian, address riskGuardian)",
-  "event SevereParamsUpdated(uint16 severeLiqThresholdBps, uint16 severeLiqBonusBps, bool severePublic)",
-  "event SevereResidualSent(address indexed user, uint256 residualMTYLD_18)",
-  "event Unpaused(address indexed by)",
-  "event WhitelistSet(address indexed user, bool allowed)"
+  // --- Custom Errors ---
+  "error BadAddress()",
+  "error BadAmount()",
+  "error Healthy()",
+  "error NotActive()",
+  "error NotOwnerGuardian()",
+  "error NotSevere()",
+  "error NotWhitelisted()",
+  "error OverLTV()",
+  "error Slippage()",
+  "error TooEarly()",
+  
+  // --- Events (For listening to blockchain logs) ---
+  "event Accrued(address indexed user, uint256 interestAccrued_6, bool lateFeeApplied)",
+  "event Borrowed(address indexed user, uint256 usdcAmount_6, uint64 start, uint64 maturity)",
+  "event CollateralDeposited(address indexed user, uint256 mtyldAmount_18)",
+  "event CollateralWithdrawn(address indexed user, uint256 mtyldAmount_18)",
+  "event LateFeeUpdated(uint16 lateFeeBpsFlat)",
+  "event Liquidated(address indexed liquidator, address indexed user, uint256 repayUSDC_6, uint256 seizeMTYLD_18, uint256 price18, uint16 bonusBps, bool severe)",
+  "event LiquidationPaused(bool on)",
+  "event OwnershipTransferred(address indexed prev, address indexed next)",
+  "event ParamsUpdated(uint16 aprBps, uint16 maxLtvBps, uint16 liqThresholdBps, uint16 liqBonusBps)",
+  "event Paused(address indexed by)",
+  "event Repaid(address indexed user, uint256 repaidUSDC_6, uint256 principalLeft_6)",
+  "event RolesUpdated(address treasury, address rateGuardian, address riskGuardian)",
+  "event SevereParamsUpdated(uint16 severeLiqThresholdBps, uint16 severeLiqBonusBps, bool severePublic)",
+  "event SevereResidualSent(address indexed user, uint256 residualMTYLD_18)",
+  "event Unpaused(address indexed by)",
+  "event WhitelistSet(address indexed user, bool allowed)"
 ];
 
 const ERC20_ABI = [
-  "function balanceOf(address) view returns (uint256)",
-  "function allowance(address,address) view returns (uint256)",
-  "function approve(address,uint256) returns (bool)"
+  "function balanceOf(address) view returns (uint256)",
+  "function allowance(address,address) view returns (uint256)",
+  "function approve(address,uint256) returns (bool)"
 ];
 
 (async () => {
-  const $ = id => document.getElementById(id);
+  const $ = id => document.getElementById(id);
 
-  // fill contract address in the UI from the constant
-  $("lendingAddr").textContent = LENDING_ADDR;
+  // fill contract address in the UI from the constant
+  $("lendingAddr").textContent = LENDING_ADDR;
 
-  // DOM refs
-  const addrEl=$("addr"), tokenTriplet=$("tokenTriplet"), treasuryAddrEl=$("treasuryAddr");
-  const mtyldPriceEl=$("mtyldPrice"), balMtyldEl=$("balMtyld"), balUsdcEl=$("balUsdc"), ltvLine=$("ltvLine");
-  const userColMtyld=$("userColMtyld"), userColUsd=$("userColUsd"), userDebtUsdc=$("userDebtUsdc"), userDebtUsd=$("userDebtUsd"), userInterestLate=$("userInterestLate"), userScore=$("userScore"), userMaturity=$("userMaturity");
-  const treasuryBalEl=$("treasuryBal"), availBorrowEl=$("availBorrow"), warnBar=$("warnBar");
-  const borrowLimitEl=$("borrowLimit"), liqThresholdEl=$("liqThreshold"), debtAtLiqEl=$("debtAtLiq"), daysToMatEl=$("daysToMat"), aprLine=$("aprLine");
+  // DOM refs
+  const addrEl=$("addr"), tokenTriplet=$("tokenTriplet"), treasuryAddrEl=$("treasuryAddr");
+  const mtyldPriceEl=$("mtyldPrice"), balMtyldEl=$("balMtyld"), balUsdcEl=$("balUsdc"), ltvLine=$("ltvLine");
+  const userColMtyld=$("userColMtyld"), userColUsd=$("userColUsd"), userDebtUsdc=$("userDebtUsdc"), userDebtUsd=$("userDebtUsd"), userInterestLate=$("userInterestLate"), userScore=$("userScore"), userMaturity=$("userMaturity");
+  const treasuryBalEl=$("treasuryBal"), availBorrowEl=$("availBorrow"), warnBar=$("warnBar");
+  const borrowLimitEl=$("borrowLimit"), liqThresholdEl=$("liqThreshold"), debtAtLiqEl=$("debtAtLiq"), daysToMatEl=$("daysToMat"), aprLine=$("aprLine");
 
-  const adminPanel=$("adminPanel"), ownerOf=$("ownerOf"), ownerAddr=$("ownerAddr"), roleTreasury=$("roleTreasury"), rateGuardian=$("rateGuardian"), riskGuardian=$("riskGuardian");
-  const inTreasury=$("inTreasury"), inRateG=$("inRateG"), inRiskG=$("inRiskG"), rolesMsg=$("rolesMsg");
-  const inApr=$("inApr"), inMaxLtv=$("inMaxLtv"), inLiqThresh=$("inLiqThresh"), inLiqBonus=$("inLiqBonus"), paramsMsg=$("paramsMsg");
-  const inSevThresh=$("inSevThresh"), inSevBonus=$("inSevBonus"), inSevPublic=$("inSevPublic"), severeMsg=$("severeMsg");
-  const opsMsg=$("opsMsg"), inWL=$("inWL"), inScore=$("inScore"), wlMsg=$("wlMsg");
+  const adminPanel=$("adminPanel"), ownerOf=$("ownerOf"), ownerAddr=$("ownerAddr"), roleTreasury=$("roleTreasury"), rateGuardian=$("rateGuardian"), riskGuardian=$("riskGuardian");
+  const inTreasury=$("inTreasury"), inRateG=$("inRateG"), inRiskG=$("inRiskG"), rolesMsg=$("rolesMsg");
+  const inApr=$("inApr"), inMaxLtv=$("inMaxLtv"), inLiqThresh=$("inLiqThresh"), inLiqBonus=$("inLiqBonus"), paramsMsg=$("paramsMsg");
+  const inSevThresh=$("inSevThresh"), inSevBonus=$("inSevBonus"), inSevPublic=$("inSevPublic"), severeMsg=$("severeMsg");
+  const opsMsg=$("opsMsg"), inWL=$("inWL"), inScore=$("inScore"), wlMsg=$("wlMsg");
 
-  const depAmt=$("depAmt"), depMax=$("depMax"), depMsg=$("depMsg");
-  const wdAmt=$("wdAmt"), wdMax=$("wdMax"), wdMsg=$("wdMsg");
-  const brAmt=$("brAmt"), brDays=$("brDays"), brMsg=$("brMsg");
-  const rpAmt=$("rpAmt"), rpMax=$("rpMax"), rpMsg=$("rpMsg");
+  const depAmt=$("depAmt"), depMax=$("depMax"), depMsg=$("depMsg");
+  const wdAmt=$("wdAmt"), wdMax=$("wdMax"), wdMsg=$("wdMsg");
+  const brAmt=$("brAmt"), brDays=$("brDays"), brMsg=$("brMsg");
+  const rpAmt=$("rpAmt"), rpMax=$("rpMax"), rpMsg=$("rpMsg");
 
-  let provider, signer, acct, lending, USDC, MTYLD, VAULT_ADDR, TREASURY;
+  let provider, signer, acct, lending, USDC, MTYLD, VAULT_ADDR, TREASURY;
 
-  const fmt6=x=>Number(x)/1e6, fmt18=x=>Number(x)/1e18, to6=v=>BigInt(Math.round(Number(v||"0")*1e6)), to18=v=>BigInt(Math.round(Number(v||"0")*1e18));
-  const trunc=a=>a?a.slice(0,6)+"…"+a.slice(-4):"—", usd=(n,d=2)=>"$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:d});
-  const shortErr=e=>(e && (e.info?.error?.message || e.shortMessage || e.message))?.replace(/execution reverted: /i,'').slice(0,200) || "Error";
+  const fmt6=x=>Number(x)/1e6, fmt18=x=>Number(x)/1e18, to6=v=>BigInt(Math.round(Number(v||"0")*1e6)), to18=v=>BigInt(Math.round(Number(v||"0")*1e18));
+  const trunc=a=>a?a.slice(0,6)+"…"+a.slice(-4):"—", usd=(n,d=2)=>"$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:d});
+  const shortErr=e=>(e && (e.info?.error?.message || e.shortMessage || e.message))?.replace(/execution reverted: /i,'').slice(0,200) || "Error";
 
-  async function ensure(){
-    if(!window.ethereum){ alert("Please install/enable MetaMask."); throw new Error("no wallet"); }
-    provider = new ethers.BrowserProvider(window.ethereum);
-    const net = await provider.getNetwork();
-    if(Number(net.chainId)!==CHAIN_ID_ARBITRUM){
-      await window.ethereum.request({ method:"wallet_switchEthereumChain", params:[{chainId:"0xa4b1"}]});
-    }
-    signer = await provider.getSigner();
-    acct = await signer.getAddress();
-    addrEl.textContent = trunc(acct);
+  async function ensure(){
+    if(!window.ethereum){ alert("Please install/enable MetaMask."); throw new Error("no wallet"); }
+    provider = new ethers.BrowserProvider(window.ethereum);
+    const net = await provider.getNetwork();
+    if(Number(net.chainId)!==CHAIN_ID_ARBITRUM){
+      await window.ethereum.request({ method:"wallet_switchEthereumChain", params:[{chainId:"0xa4b1"}]});
+    }
+    signer = await provider.getSigner();
+    acct = await signer.getAddress();
+    addrEl.textContent = trunc(acct);
 
-    lending = new ethers.Contract(LENDING_ADDR, LENDING_ABI, signer);
-    const [usdcAddr, mtyldAddr, vaultAddr, treasuryAddr, own, rateG, riskG] = await Promise.all([
-      lending.USDC(), lending.MTYLD(), lending.MTYLD_VAULT(), lending.treasury(),
-      lending.owner(), lending.rateGuardian(), lending.riskGuardian()
-    ]);
-    VAULT_ADDR=vaultAddr; TREASURY=treasuryAddr;
-    tokenTriplet.textContent = `${usdcAddr} / ${mtyldAddr} / ${vaultAddr}`;
-    treasuryAddrEl.textContent = treasuryAddr;
-    ownerOf.textContent = trunc(LENDING_ADDR);
-    ownerAddr.textContent = trunc(own);
-    roleTreasury.textContent = trunc(treasuryAddr);
-    rateGuardian.textContent = trunc(rateG);
-    riskGuardian.textContent = trunc(riskG);
-    adminPanel.classList.toggle("hidden", own.toLowerCase() !== acct.toLowerCase());
+    // FIX 1: Using LENDING_VAULT_GATED_V3_ABI
+    lending = new ethers.Contract(LENDING_ADDR, LENDING_VAULT_GATED_V3_ABI, signer); 
+    const [usdcAddr, mtyldAddr, vaultAddr, treasuryAddr, own, rateG, riskG] = await Promise.all([
+      lending.USDC(), lending.MTYLD(), lending.MTYLD_VAULT(), lending.treasury(),
+      lending.owner(), lending.rateGuardian(), lending.riskGuardian()
+    ]);
+    VAULT_ADDR=vaultAddr; TREASURY=treasuryAddr;
+    tokenTriplet.textContent = `${usdcAddr} / ${mtyldAddr} / ${vaultAddr}`;
+    treasuryAddrEl.textContent = treasuryAddr;
+    ownerOf.textContent = trunc(LENDING_ADDR);
+    ownerAddr.textContent = trunc(own);
+    roleTreasury.textContent = trunc(treasuryAddr);
+    rateGuardian.textContent = trunc(rateG);
+    riskGuardian.textContent = trunc(riskG);
+    adminPanel.classList.toggle("hidden", own.toLowerCase() !== acct.toLowerCase());
 
-    USDC  = new ethers.Contract(usdcAddr, ERC20_ABI, signer);
-    MTYLD = new ethers.Contract(mtyldAddr, ERC20_ABI, signer);
-  }
+    USDC  = new ethers.Contract(usdcAddr, ERC20_ABI, signer);
+    MTYLD = new ethers.Contract(mtyldAddr, ERC20_ABI, signer);
+  }
 
-  async function refresh(){
-    try{
-      const readProv = provider || new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
-      const read = new ethers.Contract(LENDING_ADDR, LENDING_ABI, readProv);
-      const [usdcAddr, mtyldAddr, vaultAddr, treasuryAddr] = await Promise.all([read.USDC(), read.MTYLD(), read.MTYLD_VAULT(), read.treasury()]);
-      VAULT_ADDR=vaultAddr; TREASURY=treasuryAddr;
-      tokenTriplet.textContent = `${usdcAddr} / ${mtyldAddr} / ${vaultAddr}`;
-      treasuryAddrEl.textContent = treasuryAddr;
+  async function refresh(){
+    try{
+      const readProv = provider || new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
+      // FIX 2: Using LENDING_VAULT_GATED_V3_ABI
+      const read = new ethers.Contract(LENDING_ADDR, LENDING_VAULT_GATED_V3_ABI, readProv); 
+      const [usdcAddr, mtyldAddr, vaultAddr, treasuryAddr] = await Promise.all([read.USDC(), read.MTYLD(), read.MTYLD_VAULT(), read.treasury()]);
+      VAULT_ADDR=vaultAddr; TREASURY=treasuryAddr;
+      tokenTriplet.textContent = `${usdcAddr} / ${mtyldAddr} / ${vaultAddr}`;
+      treasuryAddrEl.textContent = treasuryAddr;
 
-      const readVault = new ethers.Contract(vaultAddr, ["function pricePerToken() view returns (uint256)"], readProv);
-      const price18 = await readVault.pricePerToken();
-      mtyldPriceEl.textContent = "$" + (Number(price18)/1e18).toFixed(6);
+      const readVault = new ethers.Contract(vaultAddr, ["function pricePerToken() view returns (uint256)"], readProv);
+      const price18 = await readVault.pricePerToken();
+      mtyldPriceEl.textContent = "$" + (Number(price18)/1e18).toFixed(6);
 
-      const USDC_r = new ethers.Contract(usdcAddr, ERC20_ABI, readProv);
-      const [treasuryBal, treasuryAllow] = await Promise.all([
-        USDC_r.balanceOf(treasuryAddr),
-        USDC_r.allowance(treasuryAddr, LENDING_ADDR)
-      ]);
-      treasuryBalEl.textContent = fmt6(treasuryBal).toLocaleString(undefined,{maximumFractionDigits:2}) + " USDC";
+      const USDC_r = new ethers.Contract(usdcAddr, ERC20_ABI, readProv);
+      const [treasuryBal, treasuryAllow] = await Promise.all([
+        USDC_r.balanceOf(treasuryAddr),
+        USDC_r.allowance(treasuryAddr, LENDING_ADDR)
+      ]);
+      treasuryBalEl.textContent = fmt6(treasuryBal).toLocaleString(undefined,{maximumFractionDigits:2}) + " USDC";
 
-      if(signer){
-        const a = acct || await signer.getAddress();
-        const MTYLD_r = new ethers.Contract(mtyldAddr, ERC20_ABI, readProv);
-        const [bu,bm] = await Promise.all([USDC_r.balanceOf(a), MTYLD_r.balanceOf(a)]);
-        balUsdcEl.textContent  = fmt6(bu).toFixed(2) + " USDC";
-        balMtyldEl.textContent = fmt18(bm).toFixed(4) + " MTYLD";
+      if(signer){
+        const a = acct || await signer.getAddress();
+        const MTYLD_r = new ethers.Contract(mtyldAddr, ERC20_ABI, readProv);
+        const [bu,bm] = await Promise.all([USDC_r.balanceOf(a), MTYLD_r.balanceOf(a)]);
+        balUsdcEl.textContent  = fmt6(bu).toFixed(2) + " USDC";
+        balMtyldEl.textContent = fmt18(bm).toFixed(4) + " MTYLD";
 
-        const [V, apr, maxLtv, liqThresh] = await Promise.all([read.userView(a), read.aprBps(), read.maxLtvBps(), read.liqThresholdBps()]);
-        const colM = Number(V.collateralMTYLD_18)/1e18;
-        const colU = Number(V.collateralUSD_18)/1e18;
-        const debtUSDC = (Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6;
-        const debtUSD  = Number(V.debtUSD_18)/1e18;
+        const [V, apr, maxLtv, liqThresh] = await Promise.all([read.userView(a), read.aprBps(), read.maxLtvBps(), read.liqThresholdBps()]);
+        const colM = Number(V.collateralMTYLD_18)/1e18;
+        const colU = Number(V.collateralUSD_18)/1e18;
+        const debtUSDC = (Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6;
+        const debtUSD  = Number(V.debtUSD_18)/1e18;
 
-        userColMtyld.textContent = colM.toFixed(4)+" MTYLD";
-        userColUsd.textContent    = usd(colU);
-        userDebtUsdc.textContent  = debtUSDC.toFixed(2)+" USDC";
-        userDebtUsd.textContent   = usd(debtUSD);
-        userInterestLate.textContent = (Number(V.interestUSDC_6)/1e6 + Number(V.lateFeesUSDC_6)/1e6).toFixed(2) + " USDC";
-        userScore.textContent     = String(V.creditScore || 0);
-        userMaturity.textContent  = V.maturity ? new Date(Number(V.maturity)*1000).toLocaleString() : "—";
-        ltvLine.textContent       = (Number(V.ltvBps)/100).toFixed(2) + "%";
+        userColMtyld.textContent = colM.toFixed(4)+" MTYLD";
+        userColUsd.textContent    = usd(colU);
+        userDebtUsdc.textContent  = debtUSDC.toFixed(2)+" USDC";
+        userDebtUsd.textContent   = usd(debtUSD);
+        userInterestLate.textContent = (Number(V.interestUSDC_6)/1e6 + Number(V.lateFeesUSDC_6)/1e6).toFixed(2) + " USDC";
+        userScore.textContent     = String(V.creditScore || 0);
+        userMaturity.textContent  = V.maturity ? new Date(Number(V.maturity)*1000).toLocaleString() : "—";
+        ltvLine.textContent       = (Number(V.ltvBps)/100).toFixed(2) + "%";
 
-        aprLine.textContent = (Number(apr)/100).toFixed(2) + "% APR";
-        liqThresholdEl.textContent = (Number(liqThresh)/100).toFixed(2) + "%";
+        aprLine.textContent = (Number(apr)/100).toFixed(2) + "% APR";
+        liqThresholdEl.textContent = (Number(liqThresh)/100).toFixed(2) + "%";
 
-        const borrowLimit = colU * (Number(maxLtv)/10000);
-        borrowLimitEl.textContent = usd(borrowLimit);
-        const debtAtLiq = colU * (Number(liqThresh)/10000);
-        debtAtLiqEl.textContent = usd(debtAtLiq);
+        const borrowLimit = colU * (Number(maxLtv)/10000);
+        borrowLimitEl.textContent = usd(borrowLimit);
+        const debtAtLiq = colU * (Number(liqThresh)/10000);
+        debtAtLiqEl.textContent = usd(debtAtLiq);
 
-        const now = Math.floor(Date.now()/1000);
-        daysToMatEl.textContent = V.maturity && V.maturity>0 ? Math.max(0, Math.ceil((Number(V.maturity)-now)/86400))+"d" : "—";
+        const now = Math.floor(Date.now()/1000);
+        daysToMatEl.textContent = V.maturity && V.maturity>0 ? Math.max(0, Math.ceil((Number(V.maturity)-now)/86400))+"d" : "—";
 
-        // headroom & availability
-        const headroom = Math.max(0, borrowLimit - debtUSD);
-        const treasuryUsd = fmt6(treasuryBal);
-        const allowUsd    = fmt6(treasuryAllow);
-        const available = Math.max(0, Math.min(headroom, treasuryUsd, allowUsd));
-        availBorrowEl.textContent = usd(available);
+        // headroom & availability
+        const headroom = Math.max(0, borrowLimit - debtUSD);
+        const treasuryUsd = fmt6(treasuryBal);
+        const allowUsd    = fmt6(treasuryAllow);
+        const available = Math.max(0, Math.min(headroom, treasuryUsd, allowUsd));
+        availBorrowEl.textContent = usd(available);
 
-        warnBar.textContent = "";
-        if (treasuryUsd <= 0) warnBar.textContent = "Treasury has no USDC. Admin must fund Treasury.";
-        else if (allowUsd <= 0) warnBar.textContent = "Treasury hasn’t approved the lending contract to spend USDC.";
-      }
-    }catch(e){ console.error(e); alert("Refresh failed: "+shortErr(e)); }
-  }
+        warnBar.textContent = "";
+        if (treasuryUsd <= 0) warnBar.textContent = "Treasury has no USDC. Admin must fund Treasury.";
+        else if (allowUsd <= 0) warnBar.textContent = "Treasury hasn’t approved the lending contract to spend USDC.";
+      }
+    }catch(e){ console.error(e); alert("Refresh failed: "+shortErr(e)); }
+  }
 
-  // ===== Collateral =====
-  depMax.onclick = async () => { try { if(!MTYLD) return; const b=await MTYLD.balanceOf(acct); depAmt.value=(Number(b)/1e18).toFixed(4);}catch{} };
-  wdMax.onclick = async () => { try { if(!lending) return; const V=await lending.userView(acct); wdAmt.value=(Number(V.collateralMTYLD_18)/1e18).toFixed(4);}catch{} };
+  // ===== Collateral =====
+  depMax.onclick = async () => { try { if(!MTYLD) return; const b=await MTYLD.balanceOf(acct); depAmt.value=(Number(b)/1e18).toFixed(4);}catch{} };
+  wdMax.onclick = async () => { try { if(!lending) return; const V=await lending.userView(acct); wdAmt.value=(Number(V.collateralMTYLD_18)/1e18).toFixed(4);}catch{} };
 
-  document.getElementById("btnDeposit").onclick = async () => {
-    try{
-      const depMsg = document.getElementById("depMsg");
-      depMsg.textContent="";
-      if(!provider) await ensure();
-      const a=to18(depAmt.value); if(a<=0n){depMsg.textContent="Enter amount";return;}
-      const allowance=await MTYLD.allowance(acct,LENDING_ADDR);
-      if(allowance<a){const txa=await MTYLD.approve(LENDING_ADDR,a);await txa.wait();}
-      const tx=await lending.depositCollateral(a); await tx.wait();
-      depMsg.textContent="Deposited ✅"; await refresh();
-    }catch(e){ console.error(e); depMsg.textContent=shortErr(e); }
-  };
+  document.getElementById("btnDeposit").onclick = async () => {
+    try{
+      const depMsg = document.getElementById("depMsg");
+      depMsg.textContent="";
+      if(!provider) await ensure();
+      const a=to18(depAmt.value); if(a<=0n){depMsg.textContent="Enter amount";return;}
+      const allowance=await MTYLD.allowance(acct,LENDING_ADDR);
+      if(allowance<a){const txa=await MTYLD.approve(LENDING_ADDR,a);await txa.wait();}
+      const tx=await lending.depositCollateral(a); await tx.wait();
+      depMsg.textContent="Deposited ✅"; await refresh();
+    }catch(e){ console.error(e); depMsg.textContent=shortErr(e); }
+  };
 
-  document.getElementById("btnWithdraw").onclick = async () => {
-    try{
-      const wdMsg = document.getElementById("wdMsg");
-      wdMsg.textContent="";
-      if(!provider) await ensure();
-      const a=to18(wdAmt.value); if(a<=0n){wdMsg.textContent="Enter amount";return;}
-      const tx=await lending.withdrawCollateral(a); await tx.wait();
-      wdMsg.textContent="Withdrawn ✅"; await refresh();
-    }catch(e){ console.error(e); wdMsg.textContent=shortErr(e); }
-  };
+  document.getElementById("btnWithdraw").onclick = async () => {
+    try{
+      const wdMsg = document.getElementById("wdMsg");
+      wdMsg.textContent="";
+      if(!provider) await ensure();
+      const a=to18(wdAmt.value); if(a<=0n){wdMsg.textContent="Enter amount";return;}
+      const tx=await lending.withdrawCollateral(a); await tx.wait();
+      wdMsg.textContent="Withdrawn ✅"; await refresh();
+    }catch(e){ console.error(e); wdMsg.textContent=shortErr(e); }
+  };
 
-  // ===== Borrow / Repay =====
-  document.getElementById("btnBorrow").onclick = async () => {
-    try{
-      const brMsg = document.getElementById("brMsg");
-      brMsg.textContent="";
-      if(!provider) await ensure();
-      const amt=to6(brAmt.value), days=Math.floor(Number(brDays.value||"0"));
-      if(amt<=0n || !(days>0)){ brMsg.textContent="Enter amount & days"; return; }
+  // ===== Borrow / Repay =====
+  document.getElementById("btnBorrow").onclick = async () => {
+    try{
+      const brMsg = document.getElementById("brMsg");
+      brMsg.textContent="";
+      if(!provider) await ensure();
+      const amt=to6(brAmt.value), days=Math.floor(Number(brDays.value||"0"));
+      if(amt<=0n || !(days>0)){ brMsg.textContent="Enter amount & days"; return; }
 
-      // preflight: treasury balance + allowance
-      const [usdcAddr, treasuryAddr] = await Promise.all([lending.USDC(), lending.treasury()]);
-      const USDC_r = new ethers.Contract(usdcAddr, ERC20_ABI, provider);
-      const [bal, allow] = await Promise.all([USDC_r.balanceOf(treasuryAddr), USDC_r.allowance(treasuryAddr, LENDING_ADDR)]);
-      if (bal < amt)   { brMsg.textContent="Treasury has insufficient USDC for this borrow."; return; }
-      if (allow < amt) { brMsg.textContent="Treasury hasn’t approved the lending contract (admin must call USDC.approve)."; return; }
+      // preflight: treasury balance + allowance
+      const [usdcAddr, treasuryAddr] = await Promise.all([lending.USDC(), lending.treasury()]);
+      const USDC_r = new ethers.Contract(usdcAddr, ERC20_ABI, provider);
+      const [bal, allow] = await Promise.all([USDC_r.balanceOf(treasuryAddr), USDC_r.allowance(treasuryAddr, LENDING_ADDR)]);
+      if (bal < amt)   { brMsg.textContent="Treasury has insufficient USDC for this borrow."; return; }
+      if (allow < amt) { brMsg.textContent="Treasury hasn’t approved the lending contract (admin must call USDC.approve)."; return; }
 
-      const maturity = BigInt(Math.floor(Date.now()/1000) + days*86400);
-      const tx=await lending.borrow(amt, maturity); await tx.wait();
-      brMsg.textContent="Borrowed ✅"; await refresh();
-    }catch(e){ console.error(e); brMsg.textContent=shortErr(e); }
-  };
+      const maturity = BigInt(Math.floor(Date.now()/1000) + days*86400);
+      const tx=await lending.borrow(amt, maturity); await tx.wait();
+      brMsg.textContent="Borrowed ✅"; await refresh();
+    }catch(e){ console.error(e); brMsg.textContent=shortErr(e); }
+  };
 
-  rpMax.onclick = async () => { try { if(!lending) return; const V=await lending.userView(acct); const d=(Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6; rpAmt.value=d.toFixed(2);}catch{} };
+  rpMax.onclick = async () => { try { if(!lending) return; const V=await lending.userView(acct); const d=(Number(V.principalUSDC_6)+Number(V.interestUSDC_6)+Number(V.lateFeesUSDC_6))/1e6; rpAmt.value=d.toFixed(2);}catch{} };
 
-  document.getElementById("btnRepay").onclick = async () => {
-    try{
-      const rpMsg = document.getElementById("rpMsg");
-      rpMsg.textContent="";
-      if(!provider) await ensure();
-      const amt=to6(rpAmt.value); if(amt<=0n){rpMsg.textContent="Enter amount";return;}
-      const allowance=await USDC.allowance(acct,LENDING_ADDR);
-      if(allowance<amt){const txa=await USDC.approve(LENDING_ADDR,amt); await txa.wait();}
-      const tx=await lending.repay(amt); await tx.wait();
-      rpMsg.textContent="Repaid ✅"; await refresh();
-    }catch(e){ console.error(e); rpMsg.textContent=shortErr(e); }
-  };
+  document.getElementById("btnRepay").onclick = async () => {
+    try{
+      const rpMsg = document.getElementById("rpMsg");
+      rpMsg.textContent="";
+      if(!provider) await ensure();
+      const amt=to6(rpAmt.value); if(amt<=0n){rpMsg.textContent="Enter amount";return;}
+      const allowance=await USDC.allowance(acct,LENDING_ADDR);
+      if(allowance<amt){const txa=await USDC.approve(LENDING_ADDR,amt); await txa.wait();}
+      const tx=await lending.repay(amt); await tx.wait();
+      rpMsg.textContent="Repaid ✅"; await refresh();
+    }catch(e){ console.error(e); rpMsg.textContent=shortErr(e); }
+  };
 
-  // ===== Admin handlers =====
-  const isAddr = a => /^0x[a-fA-F0-9]{40}$/.test(String(a||"").trim());
+  // ===== Admin handlers =====
+  const isAddr = a => /^0x[a-fA-F0-9]{40}$/.test(String(a||"").trim());
 
-  document.getElementById("btnSetRoles").onclick = async () => {
-    try{
-      rolesMsg.textContent="";
-      if(!provider) await ensure();
-      const t=inTreasury.value.trim(), r=inRateG.value.trim(), k=inRiskG.value.trim();
-      if(!isAddr(t)||!isAddr(r)||!isAddr(k)){ rolesMsg.textContent="Enter valid addresses"; return; }
-      const tx=await lending.setRoles(t,r,k); await tx.wait();
-      rolesMsg.textContent="Roles updated ✅"; await refresh();
-    }catch(e){ console.error(e); rolesMsg.textContent=shortErr(e); }
-  };
+  document.getElementById("btnSetRoles").onclick = async () => {
+    try{
+      rolesMsg.textContent="";
+      if(!provider) await ensure();
+      const t=inTreasury.value.trim(), r=inRateG.value.trim(), k=inRiskG.value.trim();
+      if(!isAddr(t)||!isAddr(r)||!isAddr(k)){ rolesMsg.textContent="Enter valid addresses"; return; }
+      const tx=await lending.setRoles(t,r,k); await tx.wait();
+      rolesMsg.textContent="Roles updated ✅"; await refresh();
+    }catch(e){ console.error(e); rolesMsg.textContent=shortErr(e); }
+  };
 
-  document.getElementById("btnSetParams").onclick = async () => {
-    try{
-      paramsMsg.textContent="";
-      if(!provider) await ensure();
-      const apr=Number(inApr.value||"0"), max=Number(inMaxLtv.value||"0"), th=Number(inLiqThresh.value||"0"), bo=Number(inLiqBonus.value||"0");
-      const tx=await lending.setParams(apr,max,th,bo); await tx.wait();
-      paramsMsg.textContent="Params updated ✅"; await refresh();
-    }catch(e){ console.error(e); paramsMsg.textContent=shortErr(e); }
-  };
+  document.getElementById("btnSetParams").onclick = async () => {
+    try{
+      paramsMsg.textContent="";
+      if(!provider) await ensure();
+      const apr=Number(inApr.value||"0"), max=Number(inMaxLtv.value||"0"), th=Number(inLiqThresh.value||"0"), bo=Number(inLiqBonus.value||"0");
+      const tx=await lending.setParams(apr,max,th,bo); await tx.wait();
+      paramsMsg.textContent="Params updated ✅"; await refresh();
+    }catch(e){ console.error(e); paramsMsg.textContent=shortErr(e); }
+  };
 
-  document.getElementById("btnSetSevere").onclick = async () => {
-    try{
-      severeMsg.textContent="";
-      if(!provider) await ensure();
-      const st=Number(inSevThresh.value||"0"), sb=Number(inSevBonus.value||"0"), pub=!!inSevPublic.checked;
-      const tx=await lending.setSevereParams(st,sb,pub); await tx.wait();
-      severeMsg.textContent="Severe params updated ✅";
-    }catch(e){ console.error(e); severeMsg.textContent=shortErr(e); }
-  };
+  document.getElementById("btnSetSevere").onclick = async () => {
+    try{
+      severeMsg.textContent="";
+      if(!provider) await ensure();
+      const st=Number(inSevThresh.value||"0"), sb=Number(inSevBonus.value||"0"), pub=!!inSevPublic.checked;
+      const tx=await lending.setSevereParams(st,sb,pub); await tx.wait();
+      severeMsg.textContent="Severe params updated ✅";
+    }catch(e){ console.error(e); severeMsg.textContent=shortErr(e); }
+  };
 
-  document.getElementById("btnPause").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.pause(); await tx.wait(); opsMsg.textContent="Paused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
-  document.getElementById("btnUnpause").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.unpause(); await tx.wait(); opsMsg.textContent="Unpaused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
-  document.getElementById("btnPauseLiq").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.setLiquidationPaused(true); await tx.wait(); opsMsg.textContent="Liquidations paused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
-  document.getElementById("btnUnpauseLiq").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.setLiquidationPaused(false); await tx.wait(); opsMsg.textContent="Liquidations unpaused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
+  document.getElementById("btnPause").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.pause(); await tx.wait(); opsMsg.textContent="Paused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
+  document.getElementById("btnUnpause").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.unpause(); await tx.wait(); opsMsg.textContent="Unpaused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
+  document.getElementById("btnPauseLiq").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.setLiquidationPaused(true); await tx.wait(); opsMsg.textContent="Liquidations paused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
+  document.getElementById("btnUnpauseLiq").onclick = async () => { try{ opsMsg.textContent=""; if(!provider) await ensure(); const tx=await lending.setLiquidationPaused(false); await tx.wait(); opsMsg.textContent="Liquidations unpaused ✅"; }catch(e){ opsMsg.textContent=shortErr(e);} };
 
-  document.getElementById("btnWLOn").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.setWhitelist(a,true); await tx.wait(); wlMsg.textContent="Whitelisted ✅"; }catch(e){ wlMsg.textContent=shortErr(e);} };
-  document.getElementById("btnWLOff").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.setWhitelist(a,false); await tx.wait(); wlMsg.textContent="Removed ✅"; }catch(e){ wlMsg.textContent=shortErr(e);} };
-  document.getElementById("btnSetCredit").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); const s=Math.max(0,Number(inScore.value||"0"))|0; if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.adminSetCredit(a,s); await tx.wait(); wlMsg.textContent="Credit score set ✅"; await refresh(); }catch(e){ wlMsg.textContent=shortErr(e);} };
+  document.getElementById("btnWLOn").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.setWhitelist(a,true); await tx.wait(); wlMsg.textContent="Whitelisted ✅"; }catch(e){ wlMsg.textContent=shortErr(e);} };
+  document.getElementById("btnWLOff").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.setWhitelist(a,false); await tx.wait(); wlMsg.textContent="Removed ✅"; }catch(e){ wlMsg.textContent=shortErr(e);} };
+  document.getElementById("btnSetCredit").onclick = async () => { try{ wlMsg.textContent=""; if(!provider) await ensure(); const a=inWL.value.trim(); const s=Math.max(0,Number(inScore.value||"0"))|0; if(!isAddr(a)){ wlMsg.textContent="Enter valid address"; return; } const tx=await lending.adminSetCredit(a,s); await tx.wait(); wlMsg.textContent="Credit score set ✅"; await refresh(); }catch(e){ wlMsg.textContent=shortErr(e);} };
 
-  // Connect + refresh + about + footer
-  document.getElementById("btnConnect").onclick = async () => { try{ await ensure(); await refresh(); }catch(e){ console.error(e);} };
-  document.getElementById("btnRefresh").onclick = async () => { await refresh(); };
-  document.getElementById("btnAbout").onclick = () => { document.getElementById("aboutCL").scrollIntoView({behavior:"smooth",block:"start"}); document.querySelectorAll("#aboutCL details").forEach(d=>d.open=true); };
-  document.getElementById("yr").textContent = new Date().getFullYear();
+  // Connect + refresh + about + footer
+  document.getElementById("btnConnect").onclick = async () => { try{ await ensure(); await refresh(); }catch(e){ console.error(e);} };
+  document.getElementById("btnRefresh").onclick = async () => { await refresh(); };
+  document.getElementById("btnAbout").onclick = () => { document.getElementById("aboutCL").scrollIntoView({behavior:"smooth",block:"start"}); document.querySelectorAll("#aboutCL details").forEach(d=>d.open=true); };
+  document.getElementById("yr").textContent = new Date().getFullYear();
 
-  // First paint
-  await refresh();
+  // First paint
+  await refresh();
 })();
 </script>
 </body>
