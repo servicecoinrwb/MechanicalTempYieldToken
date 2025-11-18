@@ -315,105 +315,105 @@
 
 <script>
 const CHAIN_ID_ARBITRUM = 42161;
-const LENDING_ADDR = "0xdDce144833975CfF4B729FD3c4D0A717Ac24BAaa";
+// Contract Address: Use the new Lending Contract address that points to the correct MTYLD Vault
+const LENDING_ADDR = "0xdDce144833975CfF4B729FD3c4D0A717Ac24BAaa"; 
 
 // ABIs
 const LENDING_VAULT_GATED_V3_ABI = [
-  // --- Constructor ---
-  "constructor(address usdc, address mtyld, address mtyldVault, address _treasury)",
+  // --- Constructor ---
+  "constructor(address usdc, address mtyld, address mtyldVault, address _treasury)",
 
-  // --- View Functions (Read-Only) ---
-  "function APR_MAX_BPS() view returns (uint16)",
-  "function BPS_DENOMINATOR() view returns (uint256)",
-  "function MAX_BPS_U16() view returns (uint16)",
-  "function MTYLD() view returns (address)",
-  "function MTYLD_VAULT() view returns (address)",
-  "function SECONDS_PER_YEAR() view returns (uint256)",
-  "function USDC() view returns (address)",
-  "function USDC_6() view returns (uint256)",
-  "function USD_18() view returns (uint256)",
-  "function aprBps() view returns (uint16)",
-  "function canBeLiquidated(address user) view returns (bool)",
-  "function canBeSeverelyLiquidated(address user) view returns (bool)",
-  "function collateralMTYLD_18(address) view returns (uint256)",
-  "function collateralUsd_18(address user) view returns (uint256)",
-  "function creditScore(address) view returns (uint32 score, uint32 lastUpdated)",
-  "function debtUsd_18(address user) view returns (uint256)",
-  "function isWhitelisted(address) view returns (bool)",
-  "function lateFeeBpsFlat() view returns (uint16)",
-  "function liqBonusBps() view returns (uint16)",
-  "function liqThresholdBps() view returns (uint16)",
-  "function liquidationAmountUSDC_6(address user) view returns (uint256)",
-  "function liquidationPaused() view returns (bool)",
-  "function loans(address) view returns (uint256 principalUSDC_6, uint256 interestUSDC_6, uint256 lateFeesUSDC_6, uint64 start, uint64 maturity, bool lateFeeApplied, bool active)",
-  "function ltvBps(address user) view returns (uint16)",
-  "function maxLtvBps() view returns (uint16)",
-  "function mtyldUsdPrice_18() view returns (uint256)",
-  "function owner() view returns (address)",
-  "function paused() view returns (bool)",
-  "function rateGuardian() view returns (address)",
-  "function riskGuardian() view returns (address)",
-  "function severeLiqBonusBps() view returns (uint16)",
-  "function severeLiqThresholdBps() view returns (uint16)",
-  "function severePublic() view returns (bool)",
-  "function treasury() view returns (address)",
-  "function userView(address user) view returns (tuple)", // Returns UserView struct
+  // --- View Functions (Read-Only) ---
+  "function APR_MAX_BPS() view returns (uint16)",
+  "function BPS_DENOMINATOR() view returns (uint256)",
+  "function MAX_BPS_U16() view returns (uint16)",
+  "function MTYLD() view returns (address)",
+  "function MTYLD_VAULT() view returns (address)",
+  "function SECONDS_PER_YEAR() view returns (uint256)",
+  "function USDC() view returns (address)",
+  "function USDC_6() view returns (uint256)",
+  "function USD_18() view returns (uint256)",
+  "function aprBps() view returns (uint16)",
+  "function canBeLiquidated(address user) view returns (bool)",
+  "function canBeSeverelyLiquidated(address user) view returns (bool)",
+  "function collateralMTYLD_18(address) view returns (uint256)",
+  "function collateralUsd_18(address user) view returns (uint256)",
+  "function creditScore(address) view returns (uint32 score, uint32 lastUpdated)",
+  "function debtUsd_18(address user) view returns (uint256)",
+  "function isWhitelisted(address) view returns (bool)",
+  "function lateFeeBpsFlat() view returns (uint16)",
+  "function liqBonusBps() view returns (uint16)",
+  "function liqThresholdBps() view returns (uint16)",
+  "function liquidationAmountUSDC_6(address user) view returns (uint256)",
+  "function liquidationPaused() view returns (bool)",
+  "function loans(address) view returns (uint256 principalUSDC_6, uint256 interestUSDC_6, uint256 lateFeesUSDC_6, uint64 start, uint64 maturity, bool lateFeeApplied, bool active)",
+  "function ltvBps(address user) view returns (uint16)",
+  "function maxLtvBps() view returns (uint16)",
+  "function mtyldUsdPrice_18() view returns (uint256)",
+  "function owner() view returns (address)",
+  "function paused() view returns (bool)",
+  "function rateGuardian() view returns (address)",
+  "function riskGuardian() view returns (address)",
+  "function severeLiqBonusBps() view returns (uint16)",
+  "function severeLiqThresholdBps() view returns (uint16)",
+  "function severePublic() view returns (bool)",
+  "function treasury() view returns (address)",
+  "function userView(address user) view returns (tuple)", // Returns UserView struct
 
-  // --- Write Functions (State-Changing) ---
-  "function adminSetCredit(address user, uint32 score)",
-  "function borrow(uint256 usdcAmount_6, uint64 maturity)",
-  "function depositCollateral(uint256 amountMTYLD_18)",
-  "function liquidate(address user, uint256 repayUSDC_6, uint256 minSeizeMTYLD_18)",
-  "function pause()",
-  "function repay(uint256 usdcAmount_6)",
-  "function setLateFeeBps(uint16 _lateFeeBpsFlat)",
-  "function setLiquidationPaused(bool on)",
-  "function setParams(uint16 _aprBps, uint16 _maxLtvBps, uint16 _liqThresholdBps, uint16 _liqBonusBps)",
-  "function setRoles(address _treasury, address _rate, address _risk)",
-  "function setSevereParams(uint16 _sevThreshBps, uint16 _sevBonusBps, bool _public)",
-  "function setWhitelist(address user, bool allowed)",
-  "function severeLiquidate(address user, uint256 minSeizeMTYLD_18)",
-  "function transferOwnership(address n)",
-  "function unpause()",
-  "function withdrawCollateral(uint256 amountMTYLD_18)",
+  // --- Write Functions (State-Changing) ---
+  "function adminSetCredit(address user, uint32 score)",
+  "function borrow(uint256 usdcAmount_6, uint64 maturity)",
+  "function depositCollateral(uint256 amountMTYLD_18)",
+  "function liquidate(address user, uint256 repayUSDC_6, uint256 minSeizeMTYLD_18)",
+  "function pause()",
+  "function repay(uint256 usdcAmount_6)",
+  "function setLateFeeBps(uint16 _lateFeeBpsFlat)",
+  "function setLiquidationPaused(bool on)",
+  "function setParams(uint16 _aprBps, uint16 _maxLtvBps, uint16 _liqThresholdBps, uint16 _liqBonusBps)",
+  "function setRoles(address _treasury, address _rate, address _risk)",
+  "function setSevereParams(uint16 _sevThreshBps, uint16 _sevBonusBps, bool _public)",
+  "function setWhitelist(address user, bool allowed)",
+  "function severeLiquidate(address user, uint256 minSeizeMTYLD_18)",
+  "function transferOwnership(address n)",
+  "function unpause()",
+  "function withdrawCollateral(uint256 amountMTYLD_18)",
 
-  // --- Custom Errors ---
-  "error BadAddress()",
-  "error BadAmount()",
-  "error Healthy()",
-  "error NotActive()",
-  "error NotOwnerGuardian()",
-  "error NotSevere()",
-  "error NotWhitelisted()",
-  "error OverLTV()",
-  "error Slippage()",
-  "error TooEarly()",
-  
-  // --- Events (For listening to blockchain logs) ---
-  "event Accrued(address indexed user, uint256 interestAccrued_6, bool lateFeeApplied)",
-  "event Borrowed(address indexed user, uint256 usdcAmount_6, uint64 start, uint64 maturity)",
-  "event CollateralDeposited(address indexed user, uint256 mtyldAmount_18)",
-  "event CollateralWithdrawn(address indexed user, uint256 mtyldAmount_18)",
-  "event LateFeeUpdated(uint16 lateFeeBpsFlat)",
-  "event Liquidated(address indexed liquidator, address indexed user, uint256 repayUSDC_6, uint256 seizeMTYLD_18, uint256 price18, uint16 bonusBps, bool severe)",
-  "event LiquidationPaused(bool on)",
-  "event OwnershipTransferred(address indexed prev, address indexed next)",
-  "event ParamsUpdated(uint16 aprBps, uint16 maxLtvBps, uint16 liqThresholdBps, uint16 liqBonusBps)",
-  "event Paused(address indexed by)",
-  "event Repaid(address indexed user, uint256 repaidUSDC_6, uint256 principalLeft_6)",
-  "event RolesUpdated(address treasury, address rateGuardian, address riskGuardian)",
-  "event SevereParamsUpdated(uint16 severeLiqThresholdBps, uint16 severeLiqBonusBps, bool severePublic)",
-  "event SevereResidualSent(address indexed user, uint256 residualMTYLD_18)",
-  "event Unpaused(address indexed by)",
-  "event WhitelistSet(address indexed user, bool allowed)"
+  // --- Custom Errors ---
+  "error BadAddress()",
+  "error BadAmount()",
+  "error Healthy()",
+  "error NotActive()",
+  "error NotOwnerGuardian()",
+  "error NotSevere()",
+  "error NotWhitelisted()",
+  "error OverLTV()",
+  "error Slippage()",
+  "error TooEarly()",
+  
+  // --- Events (For listening to blockchain logs) ---
+  "event Accrued(address indexed user, uint256 interestAccrued_6, bool lateFeeApplied)",
+  "event Borrowed(address indexed user, uint256 usdcAmount_6, uint64 start, uint64 maturity)",
+  "event CollateralDeposited(address indexed user, uint256 mtyldAmount_18)",
+  "event CollateralWithdrawn(address indexed user, uint256 mtyldAmount_18)",
+  "event LateFeeUpdated(uint16 lateFeeBpsFlat)",
+  "event Liquidated(address indexed liquidator, address indexed user, uint256 repayUSDC_6, uint256 seizeMTYLD_18, uint256 price18, uint16 bonusBps, bool severe)",
+  "event LiquidationPaused(bool on)",
+  "event OwnershipTransferred(address indexed prev, address indexed next)",
+  "event ParamsUpdated(uint16 aprBps, uint16 maxLtvBps, uint16 liqThresholdBps, uint16 liqBonusBps)",
+  "event Paused(address indexed by)",
+  "event Repaid(address indexed user, uint256 repaidUSDC_6, uint256 principalLeft_6)",
+  "event RolesUpdated(address treasury, address rateGuardian, address riskGuardian)",
+  "event SevereParamsUpdated(uint16 severeLiqThresholdBps, uint16 severeLiqBonusBps, bool severePublic)",
+  "event SevereResidualSent(address indexed user, uint256 residualMTYLD_18)",
+  "event Unpaused(address indexed by)",
+  "event WhitelistSet(address indexed user, bool allowed)"
 ];
 
 const ERC20_ABI = [
-  "function balanceOf(address) view returns (uint256)",
-  "function allowance(address,address) view returns (uint256)",
-  "function approve(address,uint256) returns (bool)"
+  "function balanceOf(address) view returns (uint256)",
+  "function allowance(address,address) view returns (uint256)",
+  "function approve(address,uint256) returns (bool)"
 ];
-
 (async () => {
   const $ = id => document.getElementById(id);
 
