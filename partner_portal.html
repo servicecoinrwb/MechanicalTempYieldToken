@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Partner Portal • Mechanical Temp</title>
+
+  <link rel="icon" href="data:,">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Ethers.js -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Web3Auth (The Magic Logic) -->
+  <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@8.0.1/dist/modal.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@web3auth/ethereum-provider@8.0.1/dist/ethereumProvider.umd.min.js"></script>
+  <!-- Adapters -->
+  <script src="https://cdn.jsdelivr.net/npm/@web3auth/openlogin-adapter@8.0.1/dist/openloginAdapter.umd.min.js"></script>
+
+  <style>
+    canvas { background: transparent; }
+    html { scroll-behavior: smooth; }
+    /* Hide scrollbar for clean UI */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans">
+
+  <!-- LOGIN SCREEN (Shown by default) -->
+  <div id="loginScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900 text-white transition-opacity duration-500">
+    <div class="w-full max-w-md p-8 text-center">
+      <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-16 mx-auto mb-6">
+      <h1 class="text-3xl font-bold mb-2">Partner Portal</h1>
+      <p class="text-slate-400 mb-8">Secure access to your MTYLD assets.</p>
+      
+      <button id="btnLogin" class="w-full py-4 px-6 bg-sky-500 hover:bg-sky-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-sky-500/20 transition-all transform hover:scale-[1.02]">
+        Log In / Sign Up
+      </button>
+      <p class="mt-4 text-xs text-slate-500">Powered by Web3Auth & Arbitrum</p>
+    </div>
+  </div>
+
+  <!-- APP INTERFACE (Hidden until logged in) -->
+  <div id="appInterface" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+      <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="https://i.imgur.com/YJvJw7V.png" alt="Logo" class="h-8 w-auto filter invert brightness-0"> 
+          <span class="font-bold text-slate-800 hidden sm:inline">Partner Portal</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right hidden sm:block">
+            <div class="text-xs text-slate-500">Logged in as</div>
+            <div class="text-sm font-semibold text-slate-800" id="userEmail">—</div>
+          </div>
+          <button id="btnLogout" class="text-sm px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-600">
+            Log Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-grow bg-slate-50">
+      <div class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+
+        <!-- Welcome / Overview Card -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900">Your Asset Balance</h2>
+              <p class="text-slate-500">Real-time valuation based on Treasury NAV.</p>
+            </div>
+            <div class="mt-4 md:mt-0 px-4 py-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium border border-green-100 flex items-center gap-2">
+              <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              Yield Active
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-5 bg-slate-900 text-white rounded-xl shadow-lg shadow-slate-200">
+              <div class="text-slate-400 text-sm mb-1">Total Value (USD)</div>
+              <div class="text-4xl font-mono font-bold tracking-tight" id="userVal">$0.00</div>
+              <div class="mt-4 text-xs text-slate-400 flex justify-between">
+                 <span>1 MTYLD = <span id="price" class="text-white">$—</span></span>
+              </div>
+            </div>
+
+            <div class="p-5 bg-white border border-slate-100 rounded-xl">
+              <div class="text-slate-500 text-sm mb-1">Token Balance</div>
+              <div class="text-2xl font-mono font-semibold text-slate-800" id="userBal">0.00</div>
+              <div class="text-xs text-slate-400 mt-1">MTYLD Tokens</div>
+            </div>
+
+            <div class="p-5 bg-white border border-slate-100 rounded-xl">
+              <div class="text-slate-500 text-sm mb-1">30-Day Growth</div>
+              <div class="text-2xl font-mono font-semibold text-green-600" id="apyLine">—</div>
+              <div class="text-xs text-slate-400 mt-1">Annualized Yield</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Cards -->
+        <div class="grid md:grid-cols-2 gap-6">
+          
+          <!-- Deposit (Mint) -->
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+              Deposit Cash
+            </h3>
+            <p class="text-sm text-slate-500 mb-4">Convert USDC into MTYLD to start earning yield.</p>
+            
+            <div class="space-y-4">
+              <div class="relative">
+                <input id="mintAmount" type="number" placeholder="0.00" class="w-full pl-4 pr-16 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none transition-all">
+                <div class="absolute right-3 top-3 text-slate-400 font-medium">USDC</div>
+              </div>
+              
+              <div class="flex justify-between text-xs text-slate-500 px-1">
+                <span>Wallet: <span id="usdcBal">—</span> USDC</span>
+                <button id="btnMintMax" class="text-sky-600 hover:text-sky-700 font-medium">Use Max</button>
+              </div>
+
+              <div id="mintPreview" class="text-sm text-center text-slate-600 h-5"></div>
+
+              <button id="btnMint" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                Confirm Deposit
+              </button>
+            </div>
+          </div>
+
+          <!-- Withdraw (Redeem) -->
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+              Withdraw Cash
+            </h3>
+            <p class="text-sm text-slate-500 mb-4">Redeem your MTYLD back to USDC instantly.</p>
+            
+            <div class="space-y-4">
+              <div class="relative">
+                <input id="redeemAmount" type="number" placeholder="0.00" class="w-full pl-4 pr-16 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-slate-500 outline-none transition-all">
+                <div class="absolute right-3 top-3 text-slate-400 font-medium">MTYLD</div>
+              </div>
+
+              <div class="flex justify-between text-xs text-slate-500 px-1">
+                <span>Available: <span id="mtyldBalDisplay">—</span></span>
+                <button id="btnRedeemMax" class="text-sky-600 hover:text-sky-700 font-medium">Use Max</button>
+              </div>
+
+              <div id="redeemPreview" class="text-sm text-center text-slate-600 h-5"></div>
+
+              <button id="btnRedeem" class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-900 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                Confirm Withdrawal
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <h3 class="text-lg font-bold text-slate-900 mb-4">Asset Performance</h3>
+          <div class="h-64">
+            <canvas id="navChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ==========================================
+    // CONFIGURATION
+    // ==========================================
+    
+    // 1. Get your Client ID from https://dashboard.web3auth.io (Free)
+    const WEB3AUTH_CLIENT_ID = "BOp1I844CnOw4gAPJXft8hk0r1z8OiwiquU9-qOtY3xedheGn13tykbaJa6xty2dGtOpCE2vnOZsFxYwKhM8w58"; // Updated Client ID
+    
+    const CHAIN_ID = "0xa4b1"; // Arbitrum One
+    const RPC_URL = "https://arb1.arbitrum.io/rpc";
+    
+    const VAULT_ADDR = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
+    const USDC_ADDR  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+
+    // ==========================================
+    // LOGIC
+    // ==========================================
+
+    let web3auth = null;
+    let provider = null;
+    let signer = null;
+    let vaultContract = null;
+    let usdcContract = null;
+    let userAddress = "";
+
+    // ABIs (Simplified for Portal)
+    const VAULT_ABI = [
+      "function balanceOf(address) view returns (uint256)",
+      "function totalSupply() view returns (uint256)",
+      "function pricePerToken() view returns (uint256)",
+      "function treasuryActiveUSDC() view returns (uint256)",
+      "function previewMint(uint256) view returns (uint256, uint256)",
+      "function previewRedeem(uint256) view returns (uint256, uint256)",
+      "function mint(uint256, uint256)",
+      "function redeem(uint256, uint256)"
+    ];
+    const ERC20_ABI = [
+      "function balanceOf(address) view returns (uint256)",
+      "function approve(address, uint256) returns (bool)",
+      "function allowance(address, address) view returns (uint256)"
+    ];
+
+    // DOM Elements
+    const els = {
+      loginScreen: document.getElementById("loginScreen"),
+      appInterface: document.getElementById("appInterface"),
+      btnLogin: document.getElementById("btnLogin"),
+      btnLogout: document.getElementById("btnLogout"),
+      userEmail: document.getElementById("userEmail"),
+      userVal: document.getElementById("userVal"),
+      userBal: document.getElementById("userBal"),
+      price: document.getElementById("price"),
+      usdcBal: document.getElementById("usdcBal"),
+      mtyldBalDisplay: document.getElementById("mtyldBalDisplay"),
+      apyLine: document.getElementById("apyLine"),
+      mintBtn: document.getElementById("btnMint"),
+      redeemBtn: document.getElementById("btnRedeem"),
+      mintInput: document.getElementById("mintAmount"),
+      redeemInput: document.getElementById("redeemAmount")
+    };
+
+    // --- Init Web3Auth ---
+    async function initWeb3Auth() {
+      try {
+        const { Web3Auth } = window.Modal;
+        
+        web3auth = new Web3Auth({
+          clientId: WEB3AUTH_CLIENT_ID,
+          web3AuthNetwork: "sapphire_mainnet", 
+          chainConfig: {
+            chainNamespace: "eip155",
+            chainId: CHAIN_ID,
+            rpcTarget: RPC_URL,
+            displayName: "Arbitrum One",
+            blockExplorer: "https://arbiscan.io",
+            ticker: "ETH",
+            tickerName: "Ethereum",
+          },
+        });
+
+        await web3auth.initModal();
+
+        if (web3auth.connected) {
+          showApp();
+        } else {
+          showLogin();
+        }
+      } catch (error) {
+        console.error("Web3Auth Init Error:", error);
+      }
+    }
+
+    // --- Auth Actions ---
+    els.btnLogin.onclick = async () => {
+      if (!web3auth) return;
+      try {
+        await web3auth.connect();
+        showApp();
+      } catch (e) {
+        console.error("Login failed", e);
+      }
+    };
+
+    els.btnLogout.onclick = async () => {
+      if (!web3auth) return;
+      await web3auth.logout();
+      showLogin();
+      window.location.reload();
+    };
+
+    async function showApp() {
+      els.loginScreen.classList.add("hidden");
+      els.appInterface.classList.remove("hidden");
+      
+      // Setup Ethers provider via Web3Auth
+      const web3authProvider = web3auth.provider;
+      provider = new ethers.BrowserProvider(web3authProvider);
+      signer = await provider.getSigner();
+      userAddress = await signer.getAddress();
+
+      // Get user info (email) from Web3Auth
+      try {
+        const user = await web3auth.getUserInfo();
+        els.userEmail.textContent = user.email || user.name || "Partner";
+      } catch(e) { els.userEmail.textContent = "Partner"; }
+
+      // Init Contracts
+      vaultContract = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
+      usdcContract = new ethers.Contract(USDC_ADDR, ERC20_ABI, signer);
+
+      // Start Data Loop
+      refreshData();
+      setInterval(refreshData, 15000);
+      setupChart();
+    }
+
+    function showLogin() {
+      els.loginScreen.classList.remove("hidden");
+      els.appInterface.classList.add("hidden");
+    }
+
+    // --- Data Logic ---
+    async function refreshData() {
+      if (!vaultContract) return;
+
+      try {
+        const [price, bal, usdcBal] = await Promise.all([
+          vaultContract.pricePerToken(),
+          vaultContract.balanceOf(userAddress),
+          usdcContract.balanceOf(userAddress)
+        ]);
+
+        const priceNum = +ethers.formatUnits(price, 18);
+        const balNum = +ethers.formatUnits(bal, 18);
+        const usdcNum = +ethers.formatUnits(usdcBal, 6);
+        const valueNum = balNum * priceNum;
+
+        // Update UI
+        els.price.textContent = "$" + priceNum.toFixed(6);
+        els.userBal.textContent = balNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        els.userVal.textContent = "$" + valueNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        els.usdcBal.textContent = usdcNum.toFixed(2);
+        els.mtyldBalDisplay.textContent = balNum.toFixed(2);
+
+        // Store history for chart
+        recordNavSample(priceNum);
+
+      } catch (e) { console.error("Data refresh error", e); }
+    }
+
+    // --- Transactions (Simplified) ---
+    // Note: In a full "Portal", you might use a Relayer (Gelato) here to sponsor gas.
+    // For now, this still requires the user to sign and have a tiny bit of ETH, 
+    // but the UI is much friendlier.
+    
+    els.mintBtn.onclick = async () => {
+      try {
+        const amt = els.mintInput.value;
+        if(!amt || amt <= 0) return alert("Please enter an amount");
+        
+        els.mintBtn.textContent = "Processing...";
+        els.mintBtn.disabled = true;
+
+        const weiAmt = ethers.parseUnits(amt, 6);
+        
+        // Check Allowance
+        const allowance = await usdcContract.allowance(userAddress, VAULT_ADDR);
+        if (allowance < weiAmt) {
+           els.mintBtn.textContent = "Approving USDC...";
+           const txApp = await usdcContract.approve(VAULT_ADDR, weiAmt);
+           await txApp.wait();
+        }
+
+        // Mint (0.5% slippage hardcoded for simplicity)
+        els.mintBtn.textContent = "Depositing...";
+        const [expectedOut] = await vaultContract.previewMint(weiAmt);
+        const minOut = expectedOut - (expectedOut * 50n / 10000n); // 0.5%
+        
+        const tx = await vaultContract.mint(weiAmt, minOut);
+        await tx.wait();
+        
+        alert("Deposit Successful!");
+        els.mintInput.value = "";
+        refreshData();
+      } catch(e) {
+        console.error(e);
+        alert("Transaction Failed: " + (e.reason || e.message));
+      } finally {
+        els.mintBtn.textContent = "Confirm Deposit";
+        els.mintBtn.disabled = false;
+      }
+    };
+
+    els.redeemBtn.onclick = async () => {
+      try {
+        const amt = els.redeemInput.value;
+        if(!amt || amt <= 0) return alert("Please enter an amount");
+        
+        els.redeemBtn.textContent = "Processing...";
+        els.redeemBtn.disabled = true;
+
+        const weiAmt = ethers.parseUnits(amt, 18);
+        
+        // Redeem (0.5% slippage)
+        const [expectedOut] = await vaultContract.previewRedeem(weiAmt);
+        const minOut = expectedOut - (expectedOut * 50n / 10000n); 
+
+        const tx = await vaultContract.redeem(weiAmt, minOut);
+        await tx.wait();
+        
+        alert("Withdrawal Successful!");
+        els.redeemInput.value = "";
+        refreshData();
+      } catch(e) {
+        console.error(e);
+        alert("Transaction Failed: " + (e.reason || e.message));
+      } finally {
+        els.redeemBtn.textContent = "Confirm Withdrawal";
+        els.redeemBtn.disabled = false;
+      }
+    };
+
+    // Max Buttons
+    document.getElementById("btnMintMax").onclick = () => els.mintInput.value = els.usdcBal.textContent;
+    document.getElementById("btnRedeemMax").onclick = () => els.redeemInput.value = els.mtyldBalDisplay.textContent;
+
+    // --- Simple Chart Logic (Local Storage) ---
+    const NAV_KEY = "mtyld_portal_nav";
+    let chartInstance = null;
+
+    function recordNavSample(price) {
+      const history = JSON.parse(localStorage.getItem(NAV_KEY) || "[]");
+      const now = Math.floor(Date.now()/1000);
+      // Only save once per hour to keep it light
+      if(history.length > 0 && (now - history[history.length-1].t) < 3600) return; 
+      
+      history.push({t: now, p: price});
+      // Keep last 30 days
+      const cutoff = now - (30*24*3600);
+      const cleanHistory = history.filter(x => x.t > cutoff);
+      localStorage.setItem(NAV_KEY, JSON.stringify(cleanHistory));
+      updateChart(cleanHistory);
+      calculateAPY(cleanHistory);
+    }
+
+    function updateChart(data) {
+      const ctx = document.getElementById('navChart').getContext('2d');
+      const labels = data.map(d => new Date(d.t*1000).toLocaleDateString());
+      const prices = data.map(d => d.p);
+
+      if(chartInstance) {
+        chartInstance.data.labels = labels;
+        chartInstance.data.datasets[0].data = prices;
+        chartInstance.update();
+      } else {
+        chartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Share Price ($)',
+              data: prices,
+              borderColor: '#10b981', // Emerald green
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: {display: false} },
+            scales: {
+              x: { display: false },
+              y: { display: true, position: 'right' }
+            }
+          }
+        });
+      }
+    }
+
+    function calculateAPY(data) {
+      if(data.length < 2) return;
+      const start = data[0];
+      const end = data[data.length-1];
+      const percentDiff = (end.p - start.p) / start.p;
+      const timeDiffYears = (end.t - start.t) / (365*24*3600);
+      if(timeDiffYears <= 0) return;
+      
+      const apy = ((1 + percentDiff) ** (1/timeDiffYears)) - 1;
+      els.apyLine.textContent = (apy * 100).toFixed(2) + "%";
+    }
+
+    // Initialize
+    window.onload = initWeb3Auth;
+
+  </script>
+</body>
+</html>
