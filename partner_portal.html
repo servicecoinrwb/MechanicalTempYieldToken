@@ -16,9 +16,7 @@
   <!-- Web3Auth (Updated to v9.4.4) -->
   <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@9.4.4/dist/modal.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@web3auth/ethereum-provider@9.4.4/dist/ethereumProvider.umd.min.js"></script>
-  <!-- Adapters -->
-  <script src="https://cdn.jsdelivr.net/npm/@web3auth/openlogin-adapter@9.4.4/dist/openloginAdapter.umd.min.js"></script>
-
+  
   <style>
     canvas { background: transparent; }
     html { scroll-behavior: smooth; }
@@ -245,7 +243,6 @@
       try {
         const { Web3Auth } = window.Modal;
         const { EthereumPrivateKeyProvider } = window.EthereumProvider;
-        const { OpenloginAdapter } = window.OpenloginAdapter;
         
         // 1. Config Object
         const chainConfig = {
@@ -264,20 +261,12 @@
         });
 
         // 3. Init Main Instance
+        // We pass privateKeyProvider directly here. This implicitly sets up the internal adapter.
         web3auth = new Web3Auth({
           clientId: WEB3AUTH_CLIENT_ID,
           web3AuthNetwork: "sapphire_mainnet", 
-          privateKeyProvider // Pass the provider here
+          privateKeyProvider
         });
-
-        // 4. Configure Adapter
-        const openloginAdapter = new OpenloginAdapter({
-            privateKeyProvider,
-            adapterSettings: {
-               uxMode: "popup", // or "redirect"
-            }
-        });
-        web3auth.configureAdapter(openloginAdapter);
 
         await web3auth.initModal();
 
