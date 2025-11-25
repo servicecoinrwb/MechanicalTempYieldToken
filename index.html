@@ -118,9 +118,9 @@
           </p>
         </div>
         <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5">
-          <div class="text-sky-300 font-semibold">2) Apply to Treasury</div>
+          <div class="text-sky-300 font-semibold">2) Active Treasury Management</div>
           <p class="mt-2 text-slate-400 text-sm">
-            After a short delay, queued revenue is applied to the active treasury, raising the vault’s NAV (price per token).
+            Idle treasury funds are actively deployed into low-risk, yield-bearing stablecoin strategies. This ensures consistent NAV growth even between business revenue cycles.
           </p>
         </div>
         <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5">
@@ -333,6 +333,7 @@
           successCard.classList.remove('hidden');
           formMsg.textContent = '';
         } else {
+          // Common 403 causes: wrong domain in Formspree "Restrict to Domain" OR form disabled
           formMsg.textContent = 'Submission failed. Please try again.';
           console.error('Formspree error', res.status, await res.text());
         }
