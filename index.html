@@ -50,7 +50,8 @@
             <button data-open-waitlist class="px-5 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold">
               Join the Waitlist
             </button>
-            <a href="whitepaper.pdf" target="_blank" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 flex items-center gap-2">
+            <!-- Updated Link to HTML Whitepaper -->
+            <a href="whitepaper.html" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -243,7 +244,8 @@
       </p>
       <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
       <div class="mt-4">
-          <a href="whitepaper.pdf" target="_blank" class="text-slate-400 hover:text-white text-sm">Whitepaper</a>
+          <!-- Updated to link to whitepaper.html instead of PDF -->
+          <a href="whitepaper.html" class="text-slate-400 hover:text-white text-sm">Whitepaper</a>
       </div>
     </div>
   </footer>
@@ -353,7 +355,6 @@
           successCard.classList.remove('hidden');
           formMsg.textContent = '';
         } else {
-          // Common 403 causes: wrong domain in Formspree "Restrict to Domain" OR form disabled
           formMsg.textContent = 'Submission failed. Please try again.';
           console.error('Formspree error', res.status, await res.text());
         }
