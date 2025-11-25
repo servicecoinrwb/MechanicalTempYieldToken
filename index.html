@@ -15,7 +15,6 @@
 </head>
 <body class="bg-slate-950 text-slate-100">
 
-  <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
@@ -30,7 +29,6 @@
     </div>
   </header>
 
-  <!-- Hero -->
   <section class="relative border-b border-slate-800">
     <div class="absolute inset-0 bg-gradient-to-b from-slate-900 to-sky-900 opacity-90"></div>
     <div class="relative max-w-7xl mx-auto px-4 py-16 sm:py-20">
@@ -57,7 +55,6 @@
           <p class="mt-3 text-xs text-slate-400">No credit cards. Joining the waitlist is free. Whitelist access may be limited.</p>
         </div>
 
-        <!-- Lite Live Stats -->
         <div class="glass ring-sky rounded-2xl p-6 border border-slate-800">
           <div class="grid grid-cols-2 gap-4">
             <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-4">
@@ -89,7 +86,6 @@
     </div>
   </section>
 
-  <!-- Social proof / badges -->
   <section class="border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-10">
       <div class="grid sm:grid-cols-3 gap-4">
@@ -109,7 +105,6 @@
     </div>
   </section>
 
-  <!-- How it works -->
   <section id="how" class="border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-14">
       <h2 class="text-3xl sm:text-4xl font-black">How MTYLD Works</h2>
@@ -143,7 +138,6 @@
     </div>
   </section>
 
-  <!-- Who is this for -->
   <section class="border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-14">
       <h2 class="text-3xl sm:text-4xl font-black">Who Is MTYLD For?</h2>
@@ -167,7 +161,6 @@
     </div>
   </section>
 
-  <!-- FAQ -->
   <section class="border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-14">
       <h2 class="text-3xl sm:text-4xl font-black">FAQ</h2>
@@ -205,20 +198,19 @@
     </div>
   </section>
 
-  <!-- Transparency -->
   <section class="border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-12">
       <h2 class="text-3xl sm:text-4xl font-black">Transparency</h2>
       <ul class="mt-4 space-y-2 text-slate-300 font-mono text-sm">
-        <li>Vault dApp: <a class="text-sky-400 hover:text-sky-300" href="https://vault.mechanicaltemp.com/vault.html">https://vault.mechanicaltemp.com/vault.html</a></li>
         <li>USDC (Arbitrum): <span class="text-sky-300">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</span></li>
-        <li>Vault Treasury: <span class="text-sky-300">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</span></li>
+        <li>Vault Contract: <span class="text-sky-300">0xd7e5b4Dd260Bc8da747aC6948C31645185544ddD</span></li>
+        <li>Lending Contract: <span class="text-sky-300">0x1Ac9cc4F9c88D64970d59Fb19098b5Da73D881Ce</span></li>
+        <li>Treasury Wallet: <span class="text-sky-300">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</span></li>
       </ul>
       <p class="mt-3 text-xs text-slate-500">Always verify official links and addresses.</p>
     </div>
   </section>
 
-  <!-- Footer CTA -->
   <section class="border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-12 text-center">
       <h3 class="text-2xl font-bold">Get early access to MTYLD</h3>
@@ -230,7 +222,6 @@
     </div>
   </section>
 
-  <!-- Footer -->
   <footer class="bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 py-8 text-center">
       <p class="text-slate-300">
@@ -241,7 +232,6 @@
     </div>
   </footer>
 
-  <!-- Waitlist Modal -->
   <div id="waitlistModal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
     <div class="absolute inset-0 bg-black/60"></div>
     <div class="relative mx-auto my-10 w-[95%] max-w-lg rounded-2xl glass ring-sky border border-slate-800 p-6">
@@ -251,9 +241,7 @@
       </div>
       <p class="mt-1 text-slate-400 text-sm">No wallet required. We’ll email simple next steps if you’re approved.</p>
 
-      <!-- IMPORTANT: direct POST to Formspree (no navigation thanks to JS fetch) -->
       <form id="whitelistForm" class="mt-4 space-y-3" action="https://formspree.io/f/myzbklpg" method="POST">
-        <!-- Honeypot -->
         <input type="text" name="company" class="hidden" tabindex="-1" autocomplete="off">
         <div>
           <label class="text-sm text-slate-300">Full Name</label>
@@ -282,9 +270,7 @@
           <span class="text-slate-300">I understand this is not a credit-card purchase and access may be limited by a whitelist.</span>
         </label>
 
-        <!-- You can customize the email subject in Formspree templates; this sets a default -->
         <input type="hidden" name="_subject" value="New MTYLD Waitlist Signup" />
-        <!-- Ask for JSON so we don’t get a redirect -->
         <input type="hidden" name="_format" value="json" />
 
         <button class="w-full px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Join Waitlist</button>
@@ -298,7 +284,6 @@
     </div>
   </div>
 
-  <!-- Scripts -->
   <script>
     // Footer year
     document.getElementById('yr').textContent = new Date().getFullYear();
@@ -360,13 +345,15 @@
 
     /* ===== Lite Live Stats (read-only, no wallet) ===== */
     (() => {
-      const VAULT_ADDR = "0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482";
+      // UPDATED VAULT ADDRESS (Contract)
+      const VAULT_ADDR = "0xd7e5b4Dd260Bc8da747aC6948C31645185544ddD";
+      
       const RPCS = [
         "https://arb1.arbitrum.io/rpc",
         "https://arbitrum.llamarpc.com"
       ];
       const VAULT_ABI = [
-        "function pricePerToken() view returns (uint256)",      // 1e18 USD/token
+        "function pricePerToken() view returns (uint256)",       // 1e18 USD/token
         "function treasuryActiveUSDC() view returns (uint256)", // 6 decimals
         "function pendingRevenueUSDC() view returns (uint256)"  // 6 decimals
       ];
@@ -424,5 +411,3 @@
   </script>
 </body>
 </html>
-
-
