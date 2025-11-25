@@ -244,20 +244,40 @@
     async function initWeb3Auth() {
       try {
         const { Web3Auth } = window.Modal;
+        const { EthereumPrivateKeyProvider } = window.EthereumProvider;
+        const { OpenloginAdapter } = window.OpenloginAdapter;
         
+        // 1. Config Object
+        const chainConfig = {
+          chainNamespace: "eip155",
+          chainId: CHAIN_ID,
+          rpcTarget: RPC_URL,
+          displayName: "Arbitrum One",
+          blockExplorer: "https://arbiscan.io",
+          ticker: "ETH",
+          tickerName: "Ethereum",
+        };
+
+        // 2. Init Private Key Provider (Required for v8+)
+        const privateKeyProvider = new EthereumPrivateKeyProvider({ 
+          config: { chainConfig } 
+        });
+
+        // 3. Init Main Instance
         web3auth = new Web3Auth({
           clientId: WEB3AUTH_CLIENT_ID,
           web3AuthNetwork: "sapphire_mainnet", 
-          chainConfig: {
-            chainNamespace: "eip155",
-            chainId: CHAIN_ID,
-            rpcTarget: RPC_URL,
-            displayName: "Arbitrum One",
-            blockExplorer: "https://arbiscan.io",
-            ticker: "ETH",
-            tickerName: "Ethereum",
-          },
+          privateKeyProvider // Pass the provider here
         });
+
+        // 4. Configure Adapter
+        const openloginAdapter = new OpenloginAdapter({
+            privateKeyProvider,
+            adapterSettings: {
+               uxMode: "popup", // or "redirect"
+            }
+        });
+        web3auth.configureAdapter(openloginAdapter);
 
         await web3auth.initModal();
 
