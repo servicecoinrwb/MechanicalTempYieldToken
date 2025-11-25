@@ -17,7 +17,6 @@
 </head>
 <body class="bg-slate-950 text-slate-100">
 
-  <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
@@ -32,7 +31,6 @@
     </div>
   </header>
 
-  <!-- Banner -->
   <section class="bg-gradient-to-b from-slate-900 to-sky-900 border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-12 sm:py-16 text-center">
       <h1 class="mt-1 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white">
@@ -44,25 +42,21 @@
     </div>
   </section>
 
-  <!-- App -->
   <main class="max-w-7xl mx-auto px-4 py-8 space-y-4">
 
-    <!-- Wallet + Vault Stats -->
     <div class="grid md:grid-cols-3 gap-4 items-start">
-      <!-- Wallet -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-full">
         <div class="flex items-center gap-2 mb-3">
           <button id="btnConnect" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Connect Wallet</button>
           <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
         </div>
         <div class="text-slate-400 font-mono text-sm truncate" id="addr">Not connected</div>
-        <div class="mt-2 text-xs text-slate-500">Vault:</div>
-        <div class="font-mono text-slate-300 truncate text-sm">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</div>
+        <div class="mt-2 text-xs text-slate-500">Vault Contract:</div>
+        <div class="font-mono text-slate-300 truncate text-sm">0xd7e5b4Dd260Bc8da747aC6948C31645185544ddD</div>
         <div class="mt-2 text-xs text-slate-500">Owner:</div>
         <div class="font-mono text-slate-300 truncate text-sm" id="ownerLine">—</div>
       </div>
 
-      <!-- Vault Stats -->
       <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center sm:text-left">
           <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
@@ -88,7 +82,6 @@
       </div>
     </div>
 
-    <!-- Your Position -->
     <div id="userPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
       <div class="text-slate-300 font-semibold mb-2">Your Position</div>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center sm:text-left">
@@ -109,7 +102,6 @@
 
     <div class="border-t border-slate-800"></div>
 
-    <!-- Mint / Redeem -->
     <div class="grid md:grid-cols-2 gap-4">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
         <div class="text-slate-300 font-semibold">USDC → MTYLD (Mint)</div>
@@ -140,7 +132,6 @@
       </div>
     </div>
 
-    <!-- Owner Panel (unchanged UI) -->
     <div id="ownerPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
       <div class="flex items-center justify-between gap-3">
         <div class="font-semibold">
@@ -236,7 +227,6 @@
       </div>
     </div>
 
-    <!-- Performance -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -258,7 +248,6 @@
       </p>
     </div>
 
-    <!-- USDC address -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
       <div class="text-slate-300">USDC (Arbitrum)</div>
       <div class="font-mono text-slate-200">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</div>
@@ -266,15 +255,41 @@
 
   </main>
 
-  <!-- About (same content as before) -->
   <section id="aboutMTYLD" class="bg-slate-950 border-t border-slate-800 py-12 px-4">
-    <!-- … unchanged accordion blocks … -->
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-8">
         <h2 class="text-3xl sm:text-4xl font-black text-white">About the MTYLD Vault</h2>
         <p class="mt-2 text-sky-300 text-lg">Real yield, powered by Mechanical Temp HVAC revenue</p>
       </div>
-      <!-- keep your original details sections here -->
+      <div class="max-w-3xl mx-auto space-y-4">
+        <details class="group bg-slate-900 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between p-4 cursor-pointer">
+            <h3 class="font-semibold text-slate-200">How does the yield work?</h3>
+            <span class="text-sky-500 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="px-4 pb-4 text-slate-400">
+            Mechanical Temp generates revenue from real-world HVAC contracts. A portion of this revenue is converted to USDC and injected into the vault. This increases the <b>Net Asset Value (NAV)</b> of the vault, meaning every MTYLD token is worth more USDC.
+          </div>
+        </details>
+        <details class="group bg-slate-900 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between p-4 cursor-pointer">
+            <h3 class="font-semibold text-slate-200">Is my deposit locked?</h3>
+            <span class="text-sky-500 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="px-4 pb-4 text-slate-400">
+            No. You can redeem your MTYLD for USDC at any time, unless the vault is in "Epoch Close" mode (a brief window when revenue is being added to prevent front-running).
+          </div>
+        </details>
+        <details class="group bg-slate-900 border border-slate-800 rounded-2xl">
+          <summary class="flex items-center justify-between p-4 cursor-pointer">
+            <h3 class="font-semibold text-slate-200">What is the "First Mint" tax?</h3>
+            <span class="text-sky-500 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="px-4 pb-4 text-slate-400">
+            To protect the protocol from "inflation attacks," the very first depositor burns a tiny amount of shares (1000 wei, less than $0.000001). This is a standard security practice.
+          </div>
+        </details>
+      </div>
     </div>
   </section>
 
@@ -304,104 +319,107 @@
 
   (async () => {
     // ===== Config =====
-    const VAULT = "0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482";
+    const VAULT = "0xd7e5b4Dd260Bc8da747aC6948C31645185544ddD";
     const USDC  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
     const CHAIN_ID_ARBITRUM = 42161;
 
     // ABIs
-// The main vault/token contract ABI, including all core logic and owner functions.
-const VAULT_ABI = [
-  // --- View Functions (Read-Only) ---
-  "function MAX_FEE_BPS() view returns (uint16)",
-  "function RESCUE_DELAY() view returns (uint256)",
-  "function allowance(address,address) view returns (uint256)",
-  "function balanceOf(address) view returns (uint256)",
-  "function decimals() view returns (uint8)",
-  "function epochClosing() view returns (bool)",
-  "function feeRecipient() view returns (address)",
-  "function feeRoundUp() view returns (bool)",
-  "function guardedLaunch() view returns (bool)",
-  "function isWhitelistedMinter(address) view returns (bool)",
-  "function maxSupply() view returns (uint256)",
-  "function mintFeeBps() view returns (uint16)",
-  "function name() view returns (string)",
-  "function navDelaySec() view returns (uint256)",
-  "function owner() view returns (address)",
-  "function paused() view returns (bool)",
-  "function pendingReleaseAt() view returns (uint64)",
-  "function pendingReleaseReady() view returns (bool)",
-  "function pendingRevenueUSDC() view returns (uint256)",
-  "function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)",
-  "function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)",
-  "function pricePerToken() view returns (uint256)",
-  "function redeemFeeBps() view returns (uint16)",
-  "function rescuable(address) view returns (bool)",
-  "function rescueReq() view returns (address token, uint256 amount, address to, uint64 eta)",
-  "function stable() view returns (address)",
-  "function stableDecimals() view returns (uint8)",
-  "function symbol() view returns (string)",
-  "function totalSupply() view returns (uint256)",
-  "function treasury18() view returns (uint256)",
-  "function treasuryActiveUSDC() view returns (uint256)",
-  "function treasuryUSDC() view returns (uint256)",
+    // The main vault/token contract ABI, including all core logic and owner functions.
+    // Updated to match the new deployment features (Guarded Launch default, InitLiquidityTooLow error)
+    const VAULT_ABI = [
+      // --- View Functions (Read-Only) ---
+      "function MAX_FEE_BPS() view returns (uint16)",
+      "function RESCUE_DELAY() view returns (uint256)",
+      "function allowance(address,address) view returns (uint256)",
+      "function balanceOf(address) view returns (uint256)",
+      "function decimals() view returns (uint8)",
+      "function epochClosing() view returns (bool)",
+      "function feeRecipient() view returns (address)",
+      "function feeRoundUp() view returns (bool)",
+      "function guardedLaunch() view returns (bool)",
+      "function isWhitelistedMinter(address) view returns (bool)",
+      "function maxSupply() view returns (uint256)",
+      "function mintFeeBps() view returns (uint16)",
+      "function name() view returns (string)",
+      "function navDelaySec() view returns (uint256)",
+      "function owner() view returns (address)",
+      "function paused() view returns (bool)",
+      "function pendingReleaseAt() view returns (uint64)",
+      "function pendingReleaseReady() view returns (bool)",
+      "function pendingRevenueUSDC() view returns (uint256)",
+      "function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)",
+      "function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)",
+      "function pricePerToken() view returns (uint256)",
+      "function redeemFeeBps() view returns (uint16)",
+      "function rescuable(address) view returns (bool)",
+      "function rescueReq() view returns (address token, uint256 amount, address to, uint64 eta)",
+      "function stable() view returns (address)",
+      "function stableDecimals() view returns (uint8)",
+      "function symbol() view returns (string)",
+      "function totalSupply() view returns (uint256)",
+      "function treasury18() view returns (uint256)",
+      "function treasuryActiveUSDC() view returns (uint256)",
+      "function treasuryUSDC() view returns (uint256)",
 
-  // --- Write Functions (State-Changing) ---
-  "function approve(address s, uint256 a) returns (bool)",
-  "function announceRescue(address token, uint256 amount, address to)",
-  "function applyPendingRevenue()",
-  "function beginEpochClose()",
-  "function endEpochClose()",
-  "function executeRescue()",
-  "function injectRevenue(uint256 usdcAmount)",
-  "function mint(uint256 usdcAmount, uint256 minMtyldOut)",
-  "function pause()",
-  "function redeem(uint256 mtyldAmount, uint256 minUsdcOut)",
-  "function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)",
-  "function setGuardedLaunch(bool on)",
-  "function setMaxSupply(uint256 cap)",
-  "function setNavDelay(uint256 seconds_)",
-  "function setWhitelist(address user, bool allowed)",
-  "function transfer(address to, uint256 a) returns (bool)",
-  "function transferFrom(address f, address t, uint256 a) returns (bool)",
-  "function transferOwnership(address n)",
-  "function unpause()",
-  "function whitelistRescuable(address token, bool allowed)",
+      // --- Write Functions (State-Changing) ---
+      "function approve(address s, uint256 a) returns (bool)",
+      "function announceRescue(address token, uint256 amount, address to)",
+      "function applyPendingRevenue()",
+      "function beginEpochClose()",
+      "function endEpochClose()",
+      "function executeRescue()",
+      "function injectRevenue(uint256 usdcAmount)",
+      "function mint(uint256 usdcAmount, uint256 minMtyldOut)",
+      "function pause()",
+      "function redeem(uint256 mtyldAmount, uint256 minUsdcOut)",
+      "function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)",
+      "function setGuardedLaunch(bool on)",
+      "function setMaxSupply(uint256 cap)",
+      "function setNavDelay(uint256 seconds_)",
+      "function setWhitelist(address user, bool allowed)",
+      "function transfer(address to, uint256 a) returns (bool)",
+      "function transferFrom(address f, address t, uint256 a) returns (bool)",
+      "function transferOwnership(address n)",
+      "function unpause()",
+      "function whitelistRescuable(address token, bool allowed)",
 
-  // --- Constructor (Needed for deployment tools) ---
-  "constructor(address usdc)",
+      // --- Constructor ---
+      "constructor(address usdc)",
 
-  // --- Events (For listening to blockchain logs) ---
-  "event Approval(address indexed owner, address indexed spender, uint256 amount)",
-  "event EpochCloseSet(bool closing)",
-  "event FeesUpdated(uint16 mintFeeBps, uint16 redeemFeeBps, address feeRecipient, bool feeRoundUp)",
-  "event Minted(address indexed user, uint256 usdcIn, uint256 mtyldOut, uint256 price)",
-  "event OwnershipTransferred(address indexed prev, address indexed next)",
-  "event Paused(address indexed by)",
-  "event Redeemed(address indexed user, uint256 mtyldIn, uint256 usdcOut, uint256 price)",
-  "event RevenueQueued(address indexed from, uint256 usdcAmount, uint64 releaseAt)",
-  "event Transfer(address indexed from, address indexed to, uint256 amount)",
-  "event Unpaused(address indexed by)",
+      // --- Events ---
+      "event Approval(address indexed owner, address indexed spender, uint256 amount)",
+      "event EpochCloseSet(bool closing)",
+      "event FeesUpdated(uint16 mintFeeBps, uint16 redeemFeeBps, address feeRecipient, bool feeRoundUp)",
+      "event GuardedLaunchSet(bool enabled)",
+      "event Minted(address indexed user, uint256 usdcIn, uint256 mtyldOut, uint256 price)",
+      "event OwnershipTransferred(address indexed prev, address indexed next)",
+      "event Paused(address indexed by)",
+      "event Redeemed(address indexed user, uint256 mtyldIn, uint256 usdcOut, uint256 price)",
+      "event RevenueQueued(address indexed from, uint256 usdcAmount, uint64 releaseAt)",
+      "event Transfer(address indexed from, address indexed to, uint256 amount)",
+      "event Unpaused(address indexed by)",
 
-  // --- Custom Errors (For decoding reverts) ---
-  "error BadDecimals()",
-  "error EpochClosing()",
-  "error Guarded()",
-  "error InsufficientTreasury()",
-  "error InvalidAddress()",
-  "error InvalidFee()",
-  "error NotRescuable()",
-  "error TooEarly()",
-  "error ZeroAmount()"
-];
+      // --- Custom Errors ---
+      "error BadDecimals()",
+      "error EpochClosing()",
+      "error Guarded()",
+      "error InsufficientTreasury()",
+      "error InvalidAddress()",
+      "error InvalidFee()",
+      "error NotRescuable()",
+      "error TooEarly()",
+      "error ZeroAmount()",
+      "error InitLiquidityTooLow()"
+    ];
 
-// ABI for the underlying stablecoin (e.g., USDC), used for approvals and balance checks.
-const ERC20_ABI = [
-  "function allowance(address owner, address spender) view returns (uint256)",
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function balanceOf(address account) view returns (uint256)",
-  "function decimals() view returns (uint8)",
-  "function symbol() view returns (string)"
-];
+    // ABI for the underlying stablecoin (e.g., USDC), used for approvals and balance checks.
+    const ERC20_ABI = [
+      "function allowance(address owner, address spender) view returns (uint256)",
+      "function approve(address spender, uint256 amount) returns (bool)",
+      "function balanceOf(address account) view returns (uint256)",
+      "function decimals() view returns (uint8)",
+      "function symbol() view returns (string)"
+    ];
 
     // ===== DOM =====
     const el = (id) => document.getElementById(id);
@@ -426,7 +444,8 @@ const ERC20_ABI = [
     const p18 = (s) => ethers.parseUnits(String(s||"0"), 18);
 
     // ===== NAV history (now stored as floats) =====
-    const NAV_HISTORY_KEY = "mtyld_nav_history_" + "0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482";
+    // UPDATED KEY: Uses the new contract address to separate history
+    const NAV_HISTORY_KEY = "mtyld_nav_history_" + VAULT;
     let navHistory = []; // [{t, p}] p = float USD
     let navChart;
 
@@ -488,12 +507,14 @@ const ERC20_ABI = [
       const c24 = p24h ? pctChange(curr, p24h) : null;
       const c7  = p7d  ? pctChange(curr, p7d)  : null;
       const c30 = p30d ? pctChange(curr, p30d) : null;
-      el("changeLine").textContent = `Δ 24h: ${fmt(c24)}  •  Δ 7d: ${fmt(c7)}  •  Δ 30d: ${fmt(c30)}`;
+      const elChange = el("changeLine");
+      if (elChange) elChange.textContent = `Δ 24h: ${fmt(c24)}  •  Δ 7d: ${fmt(c7)}  •  Δ 30d: ${fmt(c30)}`;
       let apy = null;
       if (p30d) apy = annualizedFromWindow(curr, p30d, 30*24*3600);
       else if (p7d) apy = annualizedFromWindow(curr, p7d, 7*24*3600);
       else if (p24h) apy = annualizedFromWindow(curr, p24h, 24*3600);
-      el("apyLine").textContent = "APY (30d annualized): " + (apy===null ? "—" : apy.toFixed(2) + "%");
+      const elApy = el("apyLine");
+      if (elApy) elApy.textContent = "APY (30d annualized): " + (apy===null ? "—" : apy.toFixed(2) + "%");
     }
 
     // ===== Ethers =====
@@ -531,21 +552,23 @@ const ERC20_ABI = [
 
     async function loadOwnerState(){
       if (!vault) return;
-      const [mf, rf, fr, fru, gl, delay, closing, pending, relAt] = await Promise.all([
-        vault.mintFeeBps(), vault.redeemFeeBps(), vault.feeRecipient(), vault.feeRoundUp(),
-        vault.guardedLaunch(), vault.navDelaySec(), vault.epochClosing(),
-        vault.pendingRevenueUSDC(), vault.pendingReleaseAt()
-      ]);
-      el("feesLine").textContent = `Mint: ${Number(mf)} bps | Redeem: ${Number(rf)} bps | RoundUp: ${fru?"Yes":"No"} | Recipient: ${trunc(fr)}`;
-      mintFee.value = Number(mf); redeemFee.value = Number(rf); feeRecipient.value = fr; feeRoundUp.checked = Boolean(fru);
-      el("guardedLine").textContent = "Guarded: " + (gl ? "Enabled" : "Disabled");
-      delayLine.textContent = "Current: " + Number(delay) + "s";
-      epochState.textContent = "Epoch: " + (closing ? "Closing (paused)" : "Open");
+      try {
+        const [mf, rf, fr, fru, gl, delay, closing, pending, relAt] = await Promise.all([
+          vault.mintFeeBps(), vault.redeemFeeBps(), vault.feeRecipient(), vault.feeRoundUp(),
+          vault.guardedLaunch(), vault.navDelaySec(), vault.epochClosing(),
+          vault.pendingRevenueUSDC(), vault.pendingReleaseAt()
+        ]);
+        el("feesLine").textContent = `Mint: ${Number(mf)} bps | Redeem: ${Number(rf)} bps | RoundUp: ${fru?"Yes":"No"} | Recipient: ${trunc(fr)}`;
+        mintFee.value = Number(mf); redeemFee.value = Number(rf); feeRecipient.value = fr; feeRoundUp.checked = Boolean(fru);
+        el("guardedLine").textContent = "Guarded: " + (gl ? "Enabled" : "Disabled");
+        delayLine.textContent = "Current: " + Number(delay) + "s";
+        epochState.textContent = "Epoch: " + (closing ? "Closing (paused)" : "Open");
 
-      const now = Math.floor(Date.now()/1000);
-      const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
-      const ready = secs === 0 && BigInt(pending) > 0n;
-      pendingHint.textContent = ready ? "Ready to apply ✅" : (BigInt(pending)>0n ? "Waiting for release…" : "No pending revenue");
+        const now = Math.floor(Date.now()/1000);
+        const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
+        const ready = secs === 0 && BigInt(pending) > 0n;
+        pendingHint.textContent = ready ? "Ready to apply ✅" : (BigInt(pending)>0n ? "Waiting for release…" : "No pending revenue");
+      } catch (e) { console.error("Owner load err", e); }
     }
 
     async function loadUserPanel(price){
@@ -612,7 +635,7 @@ const ERC20_ABI = [
 
       }catch(e){
         console.error(e);
-        alert("Refresh failed (check network/contract).");
+        // alert("Refresh failed (check network/contract).");
       }
     }
 
@@ -624,7 +647,6 @@ const ERC20_ABI = [
         if (usdcAmt <= 0n) { mintPrev.textContent = "Enter amount"; return; }
         const [mtyldOut, price] = await vault.previewMint(usdcAmt);
         mintPrev.textContent = `Est. MTYLD: ${ethers.formatUnits(mtyldOut,18)} @ $${(+ethers.formatUnits(price,18)).toFixed(6)}`;
-        mintBtn.disabled = true ? false : false; // keep explicit
         mintBtn.disabled = false;
       } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
     };
@@ -760,8 +782,8 @@ const ERC20_ABI = [
     document.getElementById("btnResetHistory").onclick = () => {
       if (!confirm("Reset locally stored NAV history?")) return;
       navHistory = []; saveHistory(); drawNavChart();
-      el("apyLine").textContent = "APY (30d annualized): —";
-      el("changeLine").textContent = "Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —";
+      const elApy = el("apyLine"); if (elApy) elApy.textContent = "APY (30d annualized): —";
+      const elChange = el("changeLine"); if (elChange) elChange.textContent = "Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —";
     };
 
     // Connect & Refresh
