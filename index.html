@@ -203,8 +203,8 @@
       <h2 class="text-3xl sm:text-4xl font-black">Transparency</h2>
       <ul class="mt-4 space-y-2 text-slate-300 font-mono text-sm">
         <li>USDC (Arbitrum): <span class="text-sky-300">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</span></li>
-        <li>Vault Contract: <span class="text-sky-300">0xd7e5b4Dd260Bc8da747aC6948C31645185544ddD</span></li>
-        <li>Lending Contract: <span class="text-sky-300">0x1Ac9cc4F9c88D64970d59Fb19098b5Da73D881Ce</span></li>
+        <li>Vault Contract: <span class="text-sky-300">0xdFD1C01678e713FDe1630c9db921e6206f3795b4</span></li>
+        <li>Lending Contract: <span class="text-sky-300">0x91B2dF57E6272C8652BEb9D2e32548B6ACbFAF56</span></li>
         <li>Treasury Wallet: <span class="text-sky-300">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</span></li>
       </ul>
       <p class="mt-3 text-xs text-slate-500">Always verify official links and addresses.</p>
@@ -333,7 +333,6 @@
           successCard.classList.remove('hidden');
           formMsg.textContent = '';
         } else {
-          // Common 403 causes: wrong domain in Formspree "Restrict to Domain" OR form disabled
           formMsg.textContent = 'Submission failed. Please try again.';
           console.error('Formspree error', res.status, await res.text());
         }
@@ -345,8 +344,8 @@
 
     /* ===== Lite Live Stats (read-only, no wallet) ===== */
     (() => {
-      // UPDATED VAULT ADDRESS (Contract)
-      const VAULT_ADDR = "0xd7e5b4Dd260Bc8da747aC6948C31645185544ddD";
+      // UPDATED VAULT ADDRESS (Fixed Contract)
+      const VAULT_ADDR = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
       
       const RPCS = [
         "https://arb1.arbitrum.io/rpc",
