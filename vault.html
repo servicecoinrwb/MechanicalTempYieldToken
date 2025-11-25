@@ -52,7 +52,7 @@
         </div>
         <div class="text-slate-400 font-mono text-sm truncate" id="addr">Not connected</div>
         <div class="mt-2 text-xs text-slate-500">Vault Contract:</div>
-        <div class="font-mono text-slate-300 truncate text-sm">0xd7e5b4Dd260Bc8da747aC6948C31645185544ddD</div>
+        <div class="font-mono text-slate-300 truncate text-sm">0xdFD1C01678e713FDe1630c9db921e6206f3795b4</div>
         <div class="mt-2 text-xs text-slate-500">Owner:</div>
         <div class="font-mono text-slate-300 truncate text-sm" id="ownerLine">—</div>
       </div>
@@ -319,15 +319,13 @@
 
   (async () => {
     // ===== Config =====
-    const VAULT = "0xd7e5b4Dd260Bc8da747aC6948C31645185544ddD";
+    // UPDATED TO THE NEW FIXED CONTRACT
+    const VAULT = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
     const USDC  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
     const CHAIN_ID_ARBITRUM = 42161;
 
     // ABIs
-    // The main vault/token contract ABI, including all core logic and owner functions.
-    // Updated to match the new deployment features (Guarded Launch default, InitLiquidityTooLow error)
     const VAULT_ABI = [
-      // --- View Functions (Read-Only) ---
       "function MAX_FEE_BPS() view returns (uint16)",
       "function RESCUE_DELAY() view returns (uint256)",
       "function allowance(address,address) view returns (uint256)",
@@ -360,8 +358,6 @@
       "function treasury18() view returns (uint256)",
       "function treasuryActiveUSDC() view returns (uint256)",
       "function treasuryUSDC() view returns (uint256)",
-
-      // --- Write Functions (State-Changing) ---
       "function approve(address s, uint256 a) returns (bool)",
       "function announceRescue(address token, uint256 amount, address to)",
       "function applyPendingRevenue()",
@@ -382,11 +378,7 @@
       "function transferOwnership(address n)",
       "function unpause()",
       "function whitelistRescuable(address token, bool allowed)",
-
-      // --- Constructor ---
       "constructor(address usdc)",
-
-      // --- Events ---
       "event Approval(address indexed owner, address indexed spender, uint256 amount)",
       "event EpochCloseSet(bool closing)",
       "event FeesUpdated(uint16 mintFeeBps, uint16 redeemFeeBps, address feeRecipient, bool feeRoundUp)",
@@ -398,8 +390,6 @@
       "event RevenueQueued(address indexed from, uint256 usdcAmount, uint64 releaseAt)",
       "event Transfer(address indexed from, address indexed to, uint256 amount)",
       "event Unpaused(address indexed by)",
-
-      // --- Custom Errors ---
       "error BadDecimals()",
       "error EpochClosing()",
       "error Guarded()",
@@ -412,7 +402,6 @@
       "error InitLiquidityTooLow()"
     ];
 
-    // ABI for the underlying stablecoin (e.g., USDC), used for approvals and balance checks.
     const ERC20_ABI = [
       "function allowance(address owner, address spender) view returns (uint256)",
       "function approve(address spender, uint256 amount) returns (bool)",
