@@ -121,7 +121,7 @@
         </div>
 
         <!-- Action Cards -->
-        <div class="grid md:grid-cols-2 gap-6">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           
           <!-- Deposit (Mint) -->
           <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
@@ -192,6 +192,38 @@
             </div>
           </div>
 
+          <!-- Send USDC (Transfer) -->
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+              Send USDC
+            </h3>
+            <p class="text-sm text-slate-500 mb-4">Send USDC to an external wallet (Coinbase, Rabby).</p>
+            
+            <div class="space-y-4">
+              <div class="relative">
+                <input id="sendDest" type="text" placeholder="0x..." class="w-full pl-4 pr-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-slate-500 outline-none transition-all font-mono text-sm">
+                <div class="absolute right-3 top-3 text-slate-400 font-medium text-xs">Addr</div>
+              </div>
+              
+              <div class="relative">
+                <input id="sendAmount" type="number" placeholder="0.00" class="w-full pl-4 pr-16 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-slate-500 outline-none transition-all">
+                <div class="absolute right-3 top-3 text-slate-400 font-medium">USDC</div>
+              </div>
+
+              <div class="flex justify-between text-xs text-slate-500 px-1">
+                <span>Available: <span id="usdcSendBal">—</span> USDC</span>
+                <button id="btnSendMax" class="text-sky-600 hover:text-sky-700 font-medium">Use Max</button>
+              </div>
+              
+              <div class="h-5"></div> <!-- Spacer to align buttons -->
+
+              <button id="btnSend" class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-900 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                Confirm Transfer
+              </button>
+            </div>
+          </div>
+
         </div>
 
         <!-- Performance Chart -->
@@ -244,10 +276,12 @@
       "function mint(uint256, uint256)",
       "function redeem(uint256, uint256)"
     ];
+    // Added 'transfer' to ERC20 ABI
     const ERC20_ABI = [
       "function balanceOf(address) view returns (uint256)",
       "function approve(address, uint256) returns (bool)",
-      "function allowance(address, address) view returns (uint256)"
+      "function allowance(address, address) view returns (uint256)",
+      "function transfer(address to, uint256 amount) returns (bool)"
     ];
 
     // DOM Elements
@@ -265,12 +299,16 @@
       userBal: document.getElementById("userBal"),
       price: document.getElementById("price"),
       usdcBal: document.getElementById("usdcBal"),
+      usdcSendBal: document.getElementById("usdcSendBal"),
       mtyldBalDisplay: document.getElementById("mtyldBalDisplay"),
       apyLine: document.getElementById("apyLine"),
       mintBtn: document.getElementById("btnMint"),
       redeemBtn: document.getElementById("btnRedeem"),
+      sendBtn: document.getElementById("btnSend"),
       mintInput: document.getElementById("mintAmount"),
-      redeemInput: document.getElementById("redeemAmount")
+      redeemInput: document.getElementById("redeemAmount"),
+      sendInput: document.getElementById("sendAmount"),
+      sendDest: document.getElementById("sendDest")
     };
 
     // --- Init Web3Auth ---
@@ -443,6 +481,7 @@
         els.userBal.textContent = balNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         els.userVal.textContent = "$" + valueNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         els.usdcBal.textContent = usdcNum.toFixed(2);
+        if(els.usdcSendBal) els.usdcSendBal.textContent = usdcNum.toFixed(2);
         els.mtyldBalDisplay.textContent = balNum.toFixed(2);
 
         // Store history for chart
@@ -451,11 +490,9 @@
       } catch (e) { console.error("Data refresh error", e); }
     }
 
-    // --- Transactions (Simplified) ---
-    // Note: In a full "Portal", you might use a Relayer (Gelato) here to sponsor gas.
-    // For now, this still requires the user to sign and have a tiny bit of ETH, 
-    // but the UI is much friendlier.
+    // --- Transactions ---
     
+    // Deposit (Mint)
     els.mintBtn.onclick = async () => {
       try {
         const amt = els.mintInput.value;
@@ -494,6 +531,7 @@
       }
     };
 
+    // Withdraw (Redeem)
     els.redeemBtn.onclick = async () => {
       try {
         const amt = els.redeemInput.value;
@@ -523,9 +561,40 @@
       }
     };
 
+    // Send (Transfer)
+    els.sendBtn.onclick = async () => {
+      try {
+        const dest = els.sendDest.value;
+        const amt = els.sendInput.value;
+        
+        if(!dest || !ethers.isAddress(dest)) return alert("Invalid destination address");
+        if(!amt || amt <= 0) return alert("Please enter an amount");
+        
+        els.sendBtn.textContent = "Processing...";
+        els.sendBtn.disabled = true;
+
+        const weiAmt = ethers.parseUnits(amt, 6);
+        
+        const tx = await usdcContract.transfer(dest, weiAmt);
+        await tx.wait();
+        
+        alert("Transfer Successful!");
+        els.sendInput.value = "";
+        els.sendDest.value = "";
+        refreshData();
+      } catch(e) {
+        console.error(e);
+        alert("Transfer Failed: " + (e.reason || e.message));
+      } finally {
+        els.sendBtn.textContent = "Confirm Transfer";
+        els.sendBtn.disabled = false;
+      }
+    };
+
     // Max Buttons
     document.getElementById("btnMintMax").onclick = () => els.mintInput.value = els.usdcBal.textContent;
     document.getElementById("btnRedeemMax").onclick = () => els.redeemInput.value = els.mtyldBalDisplay.textContent;
+    document.getElementById("btnSendMax").onclick = () => els.sendInput.value = els.usdcBal.textContent;
 
     // --- Simple Chart Logic (Local Storage) ---
     const NAV_KEY = "mtyld_portal_nav";
