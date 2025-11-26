@@ -85,6 +85,12 @@
             <!-- Header Address Display -->
             <div class="text-xs font-mono text-slate-400 mt-0.5 cursor-pointer hover:text-sky-600 transition-colors" id="headerAddress" title="Click to copy">0x...</div>
           </div>
+          
+          <!-- Export Key Button (Hidden for External Wallets) -->
+          <button id="btnExportKey" class="hidden p-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-800" title="Export Private Key">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+          </button>
+
           <button id="btnLogout" class="text-sm px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-600">
             Log Out
           </button>
@@ -319,6 +325,37 @@
       </div>
     </div>
 
+    <!-- Private Key Export Modal -->
+    <div id="keyModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+      <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-red-100">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold text-red-600 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            WARNING
+          </h3>
+          <button id="btnCloseKey" class="text-slate-400 hover:text-slate-600">✕</button>
+        </div>
+        <p class="text-sm text-slate-600 mb-4">
+          Your Private Key gives <b>full control</b> over your funds. Never share it with anyone, not even support.
+        </p>
+        
+        <div id="keyRevealSection" class="text-center py-4">
+           <button id="btnRevealKey" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors">
+             Reveal Private Key
+           </button>
+        </div>
+
+        <div id="keyDisplaySection" class="hidden">
+           <div class="bg-slate-900 text-slate-200 p-3 rounded-lg font-mono text-xs break-all mb-3 select-all" id="privateKeyText">
+             Loading...
+           </div>
+           <button id="btnCopyKey" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium">
+             Copy to Clipboard
+           </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -402,7 +439,16 @@
       btnCloseRamp: document.getElementById("btnCloseRamp"),
       btnRealMoonpay: document.getElementById("btnRealMoonpay"),
       btnModalCopy: document.getElementById("btnModalCopy"),
-      qrcode: document.getElementById("qrcode")
+      qrcode: document.getElementById("qrcode"),
+      // Export Key Elements
+      btnExportKey: document.getElementById("btnExportKey"),
+      keyModal: document.getElementById("keyModal"),
+      btnCloseKey: document.getElementById("btnCloseKey"),
+      btnRevealKey: document.getElementById("btnRevealKey"),
+      keyDisplaySection: document.getElementById("keyDisplaySection"),
+      keyRevealSection: document.getElementById("keyRevealSection"),
+      privateKeyText: document.getElementById("privateKeyText"),
+      btnCopyKey: document.getElementById("btnCopyKey")
     };
 
     // --- Init Web3Auth ---
@@ -505,6 +551,7 @@
       if (isExternalWallet) {
           provider = new ethers.BrowserProvider(window.ethereum);
           els.userEmail.textContent = "External Wallet";
+          els.btnExportKey.classList.add("hidden"); // Hide key export for ext wallet
       } else {
           const web3authProvider = web3auth.provider;
           provider = new ethers.BrowserProvider(web3authProvider);
@@ -512,6 +559,7 @@
           try {
             const user = await web3auth.getUserInfo();
             els.userEmail.textContent = user.email || user.name || "Partner";
+            els.btnExportKey.classList.remove("hidden"); // Show key export for email wallet
           } catch(e) { els.userEmail.textContent = "Partner"; }
       }
 
@@ -597,6 +645,39 @@
     els.btnRealMoonpay.onclick = () => {
       const url = `https://buy.moonpay.com?currencyCode=usdc_arbitrum&walletAddress=${userAddress}`;
       openRampLink(url, "MoonPay");
+    };
+
+    // --- Export Private Key Logic ---
+    els.btnExportKey.onclick = () => {
+      els.keyModal.classList.remove("hidden");
+      els.keyRevealSection.classList.remove("hidden");
+      els.keyDisplaySection.classList.add("hidden");
+    };
+    
+    els.btnCloseKey.onclick = () => {
+      els.keyModal.classList.add("hidden");
+      els.privateKeyText.textContent = "Loading..."; // Clear on close for security
+    };
+
+    els.btnRevealKey.onclick = async () => {
+      if (!web3auth) return;
+      try {
+        // Request private key from Web3Auth provider
+        const pk = await web3auth.provider.request({ method: "eth_private_key" });
+        els.privateKeyText.textContent = pk;
+        els.keyRevealSection.classList.add("hidden");
+        els.keyDisplaySection.classList.remove("hidden");
+      } catch(e) {
+        console.error(e);
+        alert("Failed to retrieve private key. Please try logging in again.");
+      }
+    };
+
+    els.btnCopyKey.onclick = () => {
+      const key = els.privateKeyText.textContent;
+      navigator.clipboard.writeText(key);
+      els.btnCopyKey.textContent = "Copied to Clipboard";
+      setTimeout(() => els.btnCopyKey.textContent = "Copy to Clipboard", 2000);
     };
 
 
