@@ -135,7 +135,7 @@
             <div class="p-5 bg-white border border-slate-100 rounded-xl">
               <div class="text-slate-500 text-sm mb-1">Growth</div>
               <div class="text-2xl font-mono font-semibold text-green-600" id="apyLine">—%</div>
-              <div class="text-xs text-slate-400 mt-1">Annualized Yield (Est.)</div>
+              <div class="text-xs text-slate-400 mt-1" id="apyLabel">Recent Growth</div>
             </div>
           </div>
         </div>
@@ -448,7 +448,8 @@
       keyDisplaySection: document.getElementById("keyDisplaySection"),
       keyRevealSection: document.getElementById("keyRevealSection"),
       privateKeyText: document.getElementById("privateKeyText"),
-      btnCopyKey: document.getElementById("btnCopyKey")
+      btnCopyKey: document.getElementById("btnCopyKey"),
+      apyLabel: document.getElementById("apyLabel")
     };
 
     // --- Init Web3Auth ---
@@ -925,15 +926,30 @@
     }
 
     function calculateAPY(data) {
-      if(data.length < 2) return;
-      const start = data[0];
-      const end = data[data.length-1];
-      const percentDiff = (end.p - start.p) / start.p;
-      const timeDiffYears = (end.t - start.t) / (365*24*3600);
-      if(timeDiffYears <= 0) return;
+      if (!data || data.length === 0) return;
+
+      const currentPrice = data[data.length - 1].p;
+      // Default to the oldest data point we have
+      let baselinePrice = data[0].p;
+      let labelText = "Recent Growth";
+
+      // SMART FALLBACK: 
+      // If local history shows no change (0%), but the price is clearly above the $1.00 peg,
+      // assume the user is new and show them the "Lifetime" growth from $1.00.
+      if (Math.abs(currentPrice - baselinePrice) < 0.000001 && currentPrice > 1.001) {
+        baselinePrice = 1.0;
+        labelText = "Total Return (Lifetime)";
+      }
+
+      const percentChange = ((currentPrice - baselinePrice) / baselinePrice) * 100;
+      const sign = percentChange >= 0 ? "+" : "";
       
-      const apy = ((1 + percentDiff) ** (1/timeDiffYears)) - 1;
-      els.apyLine.textContent = (apy * 100).toFixed(2) + "%";
+      if(els.apyLine) {
+        els.apyLine.textContent = `${sign}${percentChange.toFixed(2)}%`;
+        // Color
+        els.apyLine.className = `text-2xl font-mono font-semibold ${percentChange >= 0 ? 'text-green-600' : 'text-red-600'}`;
+        if(els.apyLabel) els.apyLabel.textContent = labelText;
+      }
     }
 
     // Initialize
