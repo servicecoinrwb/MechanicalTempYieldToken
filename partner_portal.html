@@ -123,9 +123,9 @@
             </div>
 
             <div class="p-5 bg-white border border-slate-100 rounded-xl">
-              <div class="text-slate-500 text-sm mb-1">30-Day Growth</div>
-              <div class="text-2xl font-mono font-semibold text-green-600" id="apyLine">—</div>
-              <div class="text-xs text-slate-400 mt-1">Annualized Yield</div>
+              <div class="text-slate-500 text-sm mb-1">Growth</div>
+              <div class="text-2xl font-mono font-semibold text-green-600" id="apyLine">—%</div>
+              <div class="text-xs text-slate-400 mt-1">Annualized Yield (Est.)</div>
             </div>
           </div>
         </div>
@@ -211,7 +211,7 @@
 
           <!-- Send USDC (Transfer) -->
           <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <h3 class="text-lg font-bold text-slate-600 mb-4 flex items-center gap-2">
               <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
               Send USDC
             </h3>
@@ -664,7 +664,9 @@
       const history = JSON.parse(localStorage.getItem(NAV_KEY) || "[]");
       const now = Math.floor(Date.now()/1000);
       // Only save once per hour to keep it light
-      if(history.length > 0 && (now - history[history.length-1].t) < 3600) return; 
+      // MODIFIED: Allow faster updates for the first few points to visualize the chart
+      const minInterval = history.length < 5 ? 10 : 3600; 
+      if(history.length > 0 && (now - history[history.length-1].t) < minInterval) return; 
       
       history.push({t: now, p: price});
       // Keep last 30 days
