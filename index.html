@@ -4,16 +4,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MTYLD • Earn With Mechanical Temp</title>
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <!-- QRCode.js for the portal section -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     html { scroll-behavior: smooth; }
     .glass { background: rgba(15,23,42,.6); backdrop-filter: blur(8px); }
     .ring-sky { box-shadow: 0 0 0 1px rgba(56,189,248,.35) inset; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100">
+<body class="bg-slate-950 text-slate-100 font-sans selection:bg-sky-900 selection:text-white">
 
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800">
@@ -50,12 +52,11 @@
             <button data-open-waitlist class="px-5 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold">
               Join the Waitlist
             </button>
-            <!-- Updated Link to HTML Whitepaper -->
-            <a href="whitepaper.html" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 flex items-center gap-2">
+            <a href="partner_portal.html" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
               </svg>
-              Read Whitepaper
+              Member Login
             </a>
           </div>
           <p class="mt-3 text-xs text-slate-400">No credit cards. Joining the waitlist is free. Whitelist access may be limited.</p>
@@ -108,6 +109,65 @@
         <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
           <div class="text-slate-300 font-semibold">Local Roots</div>
           <p class="text-slate-400 text-sm mt-1">Built by a real HVAC company in Southfield, MI.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEW SECTION: The Partner Portal -->
+  <section class="border-b border-slate-800 bg-slate-900/30">
+    <div class="max-w-7xl mx-auto px-4 py-14">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="inline-block px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-sky-400 uppercase bg-sky-900/20 rounded-full border border-sky-900/50">
+            New Feature
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-black text-white">The Partner Portal</h2>
+          <p class="mt-4 text-lg text-slate-400">
+            We believe accessing financial freedom should be as easy as checking your email. You do <strong>not</strong> need to be a crypto expert to participate.
+          </p>
+          
+          <div class="mt-8 space-y-6">
+            <!-- Feature 1 -->
+            <div class="flex gap-4">
+              <div class="flex-none w-12 h-12 rounded-xl bg-sky-900/20 border border-sky-900/50 flex items-center justify-center text-sky-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white">Log In with Email</h3>
+                <p class="text-slate-400 mt-1">No seed phrases required. Our Partner Portal creates a secure, self-custodial wallet for you instantly using your company email.</p>
+              </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="flex gap-4">
+              <div class="flex-none w-12 h-12 rounded-xl bg-indigo-900/20 border border-indigo-900/50 flex items-center justify-center text-indigo-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white">Buy with Card</h3>
+                <p class="text-slate-400 mt-1">Direct integration with MoonPay. Buy USDC directly to your portal wallet using a debit or credit card.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center">
+          <h3 class="text-2xl font-bold text-white mb-2">Access on Mobile</h3>
+          <p class="text-slate-400 mb-6">Scan to open the Partner Portal on your phone.</p>
+          
+          <div class="flex justify-center mb-6">
+             <div class="bg-white p-4 rounded-xl">
+                <div id="portalQR"></div>
+             </div>
+          </div>
+
+          <a href="partner_portal.html" class="block w-full py-4 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl transition shadow-lg shadow-sky-900/20">
+            Launch Partner Portal
+          </a>
+          <p class="mt-4 text-xs text-slate-500">
+            Secure • Self-Custodial • 24/7 Access
+          </p>
         </div>
       </div>
     </div>
@@ -192,7 +252,7 @@
             <svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
           </summary>
           <div class="px-5 pb-5 text-slate-300">
-            No. We’re not offering card payments. Access is gated via whitelist and on-chain flows.
+            No. We’re not offering card payments directly on this site. Access is gated via whitelist and on-chain flows. However, the Partner Portal supports MoonPay for approved users.
           </div>
         </details>
 
@@ -206,20 +266,6 @@
           </div>
         </details>
       </div>
-    </div>
-  </section>
-
-  <!-- Transparency -->
-  <section class="border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 py-12">
-      <h2 class="text-3xl sm:text-4xl font-black">Transparency</h2>
-      <ul class="mt-4 space-y-2 text-slate-300 font-mono text-sm">
-        <li>USDC (Arbitrum): <span class="text-sky-300">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</span></li>
-        <li>Vault Contract: <span class="text-sky-300">0xdFD1C01678e713FDe1630c9db921e6206f3795b4</span></li>
-        <li>Lending Contract: <span class="text-sky-300">0x91B2dF57E6272C8652BEb9D2e32548B6ACbFAF56</span></li>
-        <li>Treasury Wallet: <span class="text-sky-300">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</span></li>
-      </ul>
-      <p class="mt-3 text-xs text-slate-500">Always verify official links and addresses.</p>
     </div>
   </section>
 
@@ -244,8 +290,7 @@
       </p>
       <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
       <div class="mt-4">
-          <!-- Updated to link to whitepaper.html instead of PDF -->
-          <a href="partner_portal.html" class="text-slate-400 hover:text-white text-sm">Partner Portal</a>
+          <a href="whitepaper.html" class="text-slate-400 hover:text-white text-sm">whitepaper.html</a>
       </div>
     </div>
   </footer>
@@ -309,6 +354,18 @@
   <script>
     // Footer year
     document.getElementById('yr').textContent = new Date().getFullYear();
+
+    // Generate Portal QR Code
+    if(document.getElementById("portalQR")) {
+        new QRCode(document.getElementById("portalQR"), {
+            text: "https://vault.mechanicaltemp.com/",
+            width: 128,
+            height: 128,
+            colorDark : "#0f172a",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    }
 
     // ===== Modal controls (bind safely after DOM ready) =====
     const modal = document.getElementById('waitlistModal');
@@ -374,7 +431,7 @@
         "https://arbitrum.llamarpc.com"
       ];
       const VAULT_ABI = [
-        "function pricePerToken() view returns (uint256)",       // 1e18 USD/token
+        "function pricePerToken() view returns (uint256)",        // 1e18 USD/token
         "function treasuryActiveUSDC() view returns (uint256)", // 6 decimals
         "function pendingRevenueUSDC() view returns (uint256)"  // 6 decimals
       ];
@@ -432,5 +489,3 @@
   </script>
 </body>
 </html>
-
-
