@@ -36,9 +36,21 @@
       <p class="text-slate-400 mb-8">Secure access to your MTYLD assets.</p>
       
       <button id="btnLogin" class="w-full py-4 px-6 bg-sky-500 hover:bg-sky-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-sky-500/20 transition-all transform hover:scale-[1.02]">
-        Log In / Sign Up
+        Log In with Email
       </button>
-      <p class="mt-4 text-xs text-slate-500">Powered by Web3Auth & Arbitrum</p>
+
+      <div class="my-6 flex items-center justify-between">
+        <hr class="w-full border-slate-700 opacity-50">
+        <span class="px-3 text-slate-500 text-xs font-semibold uppercase">OR</span>
+        <hr class="w-full border-slate-700 opacity-50">
+      </div>
+
+      <button id="btnConnectExternal" class="w-full py-3 px-6 bg-transparent border border-slate-600 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+        Connect External Wallet (Rabby/Metamask)
+      </button>
+      
+      <p class="mt-8 text-xs text-slate-500">Powered by Web3Auth & Arbitrum</p>
     </div>
   </div>
 
@@ -219,6 +231,7 @@
     let vaultContract = null;
     let usdcContract = null;
     let userAddress = "";
+    let isExternalWallet = false;
 
     // ABIs (Simplified for Portal)
     const VAULT_ABI = [
@@ -242,6 +255,7 @@
       loginScreen: document.getElementById("loginScreen"),
       appInterface: document.getElementById("appInterface"),
       btnLogin: document.getElementById("btnLogin"),
+      btnConnectExternal: document.getElementById("btnConnectExternal"),
       btnLogout: document.getElementById("btnLogout"),
       userEmail: document.getElementById("userEmail"),
       headerAddress: document.getElementById("headerAddress"),
@@ -305,15 +319,48 @@
       if (!web3auth) return;
       try {
         await web3auth.connect();
+        isExternalWallet = false;
         showApp();
       } catch (e) {
         console.error("Login failed", e);
       }
     };
+    
+    // --- External Wallet Logic ---
+    els.btnConnectExternal.onclick = async () => {
+       if (!window.ethereum) {
+           alert("No wallet found. Please install Metamask or Rabby.");
+           return;
+       }
+       try {
+           // Request accounts
+           await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+           // Switch chain to Arbitrum
+           try {
+               await window.ethereum.request({
+                   method: 'wallet_switchEthereumChain',
+                   params: [{ chainId: CHAIN_ID }],
+               });
+           } catch (switchError) {
+               if (switchError.code === 4902) {
+                   alert("Please add Arbitrum One to your wallet.");
+                   return;
+               }
+           }
+           
+           isExternalWallet = true;
+           showApp();
+
+       } catch (e) {
+           console.error("External wallet connect failed", e);
+       }
+    };
 
     els.btnLogout.onclick = async () => {
-      if (!web3auth) return;
-      await web3auth.logout();
+      if (!isExternalWallet && web3auth) {
+         await web3auth.logout();
+      }
       showLogin();
       window.location.reload();
     };
@@ -322,9 +369,20 @@
       els.loginScreen.classList.add("hidden");
       els.appInterface.classList.remove("hidden");
       
-      // Setup Ethers provider via Web3Auth
-      const web3authProvider = web3auth.provider;
-      provider = new ethers.BrowserProvider(web3authProvider);
+      // Initialize Provider based on Login Method
+      if (isExternalWallet) {
+          provider = new ethers.BrowserProvider(window.ethereum);
+          els.userEmail.textContent = "External Wallet";
+      } else {
+          const web3authProvider = web3auth.provider;
+          provider = new ethers.BrowserProvider(web3authProvider);
+          // Get user info (email) from Web3Auth
+          try {
+            const user = await web3auth.getUserInfo();
+            els.userEmail.textContent = user.email || user.name || "Partner";
+          } catch(e) { els.userEmail.textContent = "Partner"; }
+      }
+
       signer = await provider.getSigner();
       userAddress = await signer.getAddress();
 
@@ -348,12 +406,6 @@
       els.btnCopyAddress.onclick = copyFn;
       els.headerAddress.onclick = copyFn;
 
-
-      // Get user info (email) from Web3Auth
-      try {
-        const user = await web3auth.getUserInfo();
-        els.userEmail.textContent = user.email || user.name || "Partner";
-      } catch(e) { els.userEmail.textContent = "Partner"; }
 
       // Init Contracts
       vaultContract = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
