@@ -610,10 +610,15 @@
       vaultContract = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
       usdcContract = new ethers.Contract(USDC_ADDR, ERC20_ABI, signer);
 
+      // Load Cached Chart Data immediately so it appears before refresh
+      loadCachedChart();
+
       // Start Data Loop
-      refreshData();
+      // Add delay to ensure DOM is painted before chart rendering
+      setTimeout(() => {
+        refreshData();
+      }, 100); 
       setInterval(refreshData, 15000);
-      setupChart();
     }
 
     function showLogin() {
@@ -854,6 +859,17 @@
     // --- Simple Chart Logic (Local Storage) ---
     const NAV_KEY = "mtyld_portal_nav";
     let chartInstance = null;
+
+    // NEW FUNCTION: Loads chart immediately from cache
+    function loadCachedChart() {
+      try {
+        const history = JSON.parse(localStorage.getItem(NAV_KEY) || "[]");
+        if (history.length > 0) {
+          updateChart(history);
+          calculateAPY(history);
+        }
+      } catch(e) { console.error("Cache load error", e); }
+    }
 
     function recordNavSample(price) {
       const history = JSON.parse(localStorage.getItem(NAV_KEY) || "[]");
