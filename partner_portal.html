@@ -56,6 +56,8 @@
           <div class="text-right hidden sm:block">
             <div class="text-xs text-slate-500">Logged in as</div>
             <div class="text-sm font-semibold text-slate-800" id="userEmail">—</div>
+            <!-- Header Address Display -->
+            <div class="text-xs font-mono text-slate-400 mt-0.5 cursor-pointer hover:text-sky-600 transition-colors" id="headerAddress" title="Click to copy">0x...</div>
           </div>
           <button id="btnLogout" class="text-sm px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-600">
             Log Out
@@ -115,6 +117,21 @@
               <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
               Deposit Cash
             </h3>
+            
+            <!-- Address Box for Funding -->
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-4">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Your Funding Address</span>
+                <span class="text-[10px] text-slate-400">Send USDC (Arb1) here</span>
+              </div>
+              <div class="flex items-center gap-2 bg-white border border-slate-200 rounded px-2 py-1.5">
+                <code class="text-xs font-mono text-slate-600 truncate flex-1" id="fundingAddress">Loading...</code>
+                <button id="btnCopyAddress" class="text-xs font-bold text-sky-600 hover:text-sky-700 px-2 py-0.5 rounded hover:bg-sky-50 transition-colors">
+                  Copy
+                </button>
+              </div>
+            </div>
+
             <p class="text-sm text-slate-500 mb-4">Convert USDC into MTYLD to start earning yield.</p>
             
             <div class="space-y-4">
@@ -183,9 +200,10 @@
     // ==========================================
     
     // 1. Get your Client ID from https://dashboard.web3auth.io (Free)
-    const WEB3AUTH_CLIENT_ID = "BOp1I844CnOw4gAPJXft8hk0r1z8OiwiquU9-qOtY3xedheGn13tykbaJa6xty2dGtOpCE2vnOZsFxYwKhM8w58"; // Updated Client ID
+    const WEB3AUTH_CLIENT_ID = "BOp1I844CnOw4gAPJXft8hk0r1z8OiwiquU9-qOtY3xedheGn13tykbaJa6xty2dGtOpCE2vnOZsFxYwKhM8w58"; 
     
-    const CHAIN_ID = "0xa4b1"; // Arbitrum One
+    // Chain Config: Arbitrum One (Mainnet)
+    const CHAIN_ID = "0xa4b1"; // 42161
     const RPC_URL = "https://arb1.arbitrum.io/rpc";
     
     const VAULT_ADDR = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
@@ -226,6 +244,9 @@
       btnLogin: document.getElementById("btnLogin"),
       btnLogout: document.getElementById("btnLogout"),
       userEmail: document.getElementById("userEmail"),
+      headerAddress: document.getElementById("headerAddress"),
+      fundingAddress: document.getElementById("fundingAddress"),
+      btnCopyAddress: document.getElementById("btnCopyAddress"),
       userVal: document.getElementById("userVal"),
       userBal: document.getElementById("userBal"),
       price: document.getElementById("price"),
@@ -244,13 +265,13 @@
         const { Web3Auth } = window.Modal;
         const { EthereumPrivateKeyProvider } = window.EthereumProvider;
         
-        // 1. Config Object
+        // 1. Config Object (Arbitrum Mainnet)
         const chainConfig = {
           chainNamespace: "eip155",
-          chainId: CHAIN_ID,
+          chainId: CHAIN_ID, // 0xa4b1
           rpcTarget: RPC_URL,
           displayName: "Arbitrum One",
-          blockExplorer: "https://arbiscan.io",
+          blockExplorerUrl: "https://arbiscan.io",
           ticker: "ETH",
           tickerName: "Ethereum",
         };
@@ -261,10 +282,9 @@
         });
 
         // 3. Init Main Instance
-        // We pass privateKeyProvider directly here. This implicitly sets up the internal adapter.
         web3auth = new Web3Auth({
           clientId: WEB3AUTH_CLIENT_ID,
-          web3AuthNetwork: "sapphire_mainnet", 
+          web3AuthNetwork: "sapphire_mainnet", // Auth Network
           privateKeyProvider
         });
 
@@ -307,6 +327,27 @@
       provider = new ethers.BrowserProvider(web3authProvider);
       signer = await provider.getSigner();
       userAddress = await signer.getAddress();
+
+      // Display Address
+      const shortAddr = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+      els.headerAddress.textContent = shortAddr;
+      els.fundingAddress.textContent = userAddress;
+
+      // Copy Logic
+      const copyFn = () => {
+        navigator.clipboard.writeText(userAddress);
+        const originalText = els.btnCopyAddress.textContent;
+        els.btnCopyAddress.textContent = "Copied!";
+        els.headerAddress.textContent = "Copied!";
+        setTimeout(() => {
+           els.btnCopyAddress.textContent = originalText;
+           els.headerAddress.textContent = shortAddr;
+        }, 2000);
+      };
+      
+      els.btnCopyAddress.onclick = copyFn;
+      els.headerAddress.onclick = copyFn;
+
 
       // Get user info (email) from Web3Auth
       try {
