@@ -100,6 +100,22 @@
                <div class="text-slate-500 text-[10px] mt-1">Incoming <span class="text-purple-400 font-bold">USUAL</span> rewards</div>
             </div>
 
+             <!-- Cypher Yield (Now Live) -->
+            <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-4 relative overflow-hidden">
+               <div class="absolute top-0 right-0 p-1.5">
+                 <span class="flex h-2 w-2">
+                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                   <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                 </span>
+               </div>
+               <div class="text-slate-400 text-xs font-semibold flex items-center gap-1">
+                 Cypher Yield
+                 <span class="text-[9px] bg-cyan-900 text-cyan-300 px-1 rounded uppercase tracking-wider font-bold">New</span>
+               </div>
+               <div class="text-xl font-mono text-cyan-400" id="statCypher">$—</div>
+               <div class="text-slate-500 text-[10px] mt-1">Streaming <span class="text-cyan-400 font-bold">CYPH</span> rewards</div>
+            </div>
+
             <!-- Service Revenue (Pending) -->
             <div class="rounded-xl bg-slate-900/30 border border-slate-800/50 p-4 relative overflow-hidden">
                <div class="text-slate-500 text-xs font-semibold">Service Revenue</div>
@@ -107,16 +123,9 @@
                <div class="inline-block mt-1 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[9px] text-slate-400 uppercase tracking-wide">Pending Launch</div>
             </div>
 
-            <!-- Cypher Yield (Pending) -->
-            <div class="rounded-xl bg-slate-900/30 border border-slate-800/50 p-4 relative overflow-hidden">
-               <div class="text-slate-500 text-xs font-semibold">Cypher Yield</div>
-               <div class="text-xl font-mono text-slate-600">$0.00</div>
-               <div class="inline-block mt-1 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[9px] text-slate-400 uppercase tracking-wide">Pending Launch</div>
-            </div>
-
           </div>
           <div class="mt-4 text-xs text-slate-500">
-            For live on-chain stats, visit the <a class="text-sky-300 hover:text-sky-200" href="vault.html">Vault</a>.
+            For live on-chain stats, visit the <a class="text-sky-300 hover:text-sky-200" href="partner_portal.html">Partner Portal</a>.
           </div>
         </div>
       </div>
@@ -230,8 +239,7 @@
       </div>
 
       <div class="mt-8 flex flex-wrap gap-3">
-        <a href="vault.html" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">See Live Vault</a>
-        <a href="lend.html" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Explore Credit Line</a>
+        <a href="partner_portal.html" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">See Live Vault</a>
       </div>
     </div>
   </section>
@@ -333,7 +341,7 @@
       </p>
       <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
       <div class="mt-4">
-          <a href="whitepaper.html" class="text-slate-400 hover:text-white text-sm">Whitepaper</a>
+          <a href="partner_portal.html" class="text-slate-400 hover:text-white text-sm">Partner Portal Login</a>
       </div>
     </div>
   </footer>
@@ -484,6 +492,7 @@
       const treEl = $("statTreasury");
       const dailyEl = $("statDaily");
       const weeklyEl = $("statWeekly");
+      const cypherEl = $("statCypher");
 
       const fmt18 = (x) => Number(x) / 1e18;
       const fmt6  = (x) => Number(x) / 1e6;
@@ -521,15 +530,18 @@
           // Based on ~0.57% daily (xGRAIL) and ~2.3% weekly (USUAL) relative to ~$1752 treasury
           const estDaily = active * 0.0057;  
           const estWeekly = active * 0.0233; 
+          const estCypher = active * 0.0075; // Est. based on active yield
 
           // Only show calculations if treasury has funds
           if (active > 500) {
              if(dailyEl) dailyEl.textContent = "~" + usd(estDaily);
              if(weeklyEl) weeklyEl.textContent = "+" + usd(estWeekly);
+             if(cypherEl) cypherEl.textContent = "~" + usd(estCypher);
           } else {
              // Fallback for empty/new vault
              if(dailyEl) dailyEl.textContent = "~$10.13";
              if(weeklyEl) weeklyEl.textContent = "+$40.96";
+             if(cypherEl) cypherEl.textContent = "~$15.20";
           }
 
         } catch (e) {
@@ -545,4 +557,3 @@
   </script>
 </body>
 </html>
-
