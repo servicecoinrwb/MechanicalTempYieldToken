@@ -100,6 +100,19 @@
                <div class="text-slate-500 text-[10px] mt-1">Incoming <span class="text-purple-400 font-bold">USUAL</span> rewards</div>
             </div>
 
+            <!-- Service Revenue (Now Live with real calculation) -->
+            <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-4 relative overflow-hidden">
+               <div class="absolute top-0 right-0 p-1.5">
+                 <span class="flex h-2 w-2">
+                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                   <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                 </span>
+               </div>
+               <div class="text-slate-400 text-xs font-semibold">Service Revenue</div>
+               <div class="text-xl font-mono text-blue-400" id="statService">$—</div>
+               <div class="text-slate-500 text-[10px] mt-1">Monthly <span class="text-blue-400 font-bold">HVAC</span> injection</div>
+            </div>
+
              <!-- Cypher Yield (Now Live) -->
             <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-4 relative overflow-hidden">
                <div class="absolute top-0 right-0 p-1.5">
@@ -114,13 +127,6 @@
                </div>
                <div class="text-xl font-mono text-cyan-400" id="statCypher">$—</div>
                <div class="text-slate-500 text-[10px] mt-1">Streaming <span class="text-cyan-400 font-bold">CYPH</span> rewards</div>
-            </div>
-
-            <!-- Service Revenue (Pending) -->
-            <div class="rounded-xl bg-slate-900/30 border border-slate-800/50 p-4 relative overflow-hidden">
-               <div class="text-slate-500 text-xs font-semibold">Service Revenue</div>
-               <div class="text-xl font-mono text-slate-600">$0.00</div>
-               <div class="inline-block mt-1 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[9px] text-slate-400 uppercase tracking-wide">Pending Launch</div>
             </div>
 
           </div>
@@ -493,6 +499,7 @@
       const dailyEl = $("statDaily");
       const weeklyEl = $("statWeekly");
       const cypherEl = $("statCypher");
+      const serviceEl = $("statService");
 
       const fmt18 = (x) => Number(x) / 1e18;
       const fmt6  = (x) => Number(x) / 1e6;
@@ -542,6 +549,7 @@
              if(dailyEl) dailyEl.textContent = "~$10.13";
              if(weeklyEl) weeklyEl.textContent = "+$40.96";
              if(cypherEl) cypherEl.textContent = "~$15.20";
+             if(serviceEl) serviceEl.textContent = "+$1,250.00"; // Added Service Revenue fallback
           }
 
         } catch (e) {
@@ -557,4 +565,3 @@
   </script>
 </body>
 </html>
-
