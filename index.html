@@ -65,16 +65,30 @@
         <div class="glass ring-sky rounded-2xl p-6 border border-slate-800">
           <div class="grid grid-cols-2 gap-4">
             
-            <!-- Standard Stats -->
-            <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-4">
-              <div class="text-slate-400 text-xs">Active Treasury</div>
-              <div class="text-2xl font-mono" id="statTreasury">$—</div>
-              <div class="text-slate-500 text-xs mt-1">USDC backing MTYLD</div>
+            <!-- Active Treasury (Full Width Highlight) -->
+            <div class="col-span-2 rounded-xl bg-slate-900/60 border border-slate-800 p-5 flex items-center justify-between">
+              <div>
+                <div class="text-slate-400 text-sm">Active Treasury</div>
+                <div class="text-3xl font-mono text-white" id="statTreasury">$—</div>
+                <div class="text-slate-500 text-xs mt-1">USDC backing all tokens</div>
+              </div>
+              <div class="h-10 w-10 rounded-full bg-sky-900/30 flex items-center justify-center text-sky-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </div>
             </div>
+
+            <!-- Price -->
             <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-4">
               <div class="text-slate-400 text-xs">MTYLD Price</div>
               <div class="text-2xl font-mono" id="statNav">$—</div>
               <div class="text-slate-500 text-xs mt-1">Net Asset Value</div>
+            </div>
+
+            <!-- Total Supply (NEW) -->
+            <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-4">
+              <div class="text-slate-400 text-xs">Circulating Supply</div>
+              <div class="text-2xl font-mono" id="statSupply">—</div>
+              <div class="text-slate-500 text-xs mt-1">Tokens minted</div>
             </div>
 
             <!-- Daily Yield (xGRAIL) -->
@@ -100,7 +114,7 @@
                <div class="text-slate-500 text-[10px] mt-1">Incoming <span class="text-purple-400 font-bold">USUAL</span> rewards</div>
             </div>
 
-            <!-- Service Revenue (Now Live with real calculation) -->
+            <!-- Service Revenue (Live) -->
             <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-4 relative overflow-hidden">
                <div class="absolute top-0 right-0 p-1.5">
                  <span class="flex h-2 w-2">
@@ -113,7 +127,7 @@
                <div class="text-slate-500 text-[10px] mt-1">Monthly <span class="text-blue-400 font-bold">HVAC</span> injection</div>
             </div>
 
-             <!-- Cypher Yield (Now Live) -->
+             <!-- Cypher Yield (Live) -->
             <div class="rounded-xl bg-slate-900/60 border border-slate-800 p-4 relative overflow-hidden">
                <div class="absolute top-0 right-0 p-1.5">
                  <span class="flex h-2 w-2">
@@ -245,7 +259,8 @@
       </div>
 
       <div class="mt-8 flex flex-wrap gap-3">
-        <a href="partner_portal.html" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">See Live Vault</a>
+        <a href="vault.html" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">See Live Vault</a>
+        <a href="lend.html" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Explore Credit Line</a>
       </div>
     </div>
   </section>
@@ -490,7 +505,8 @@
       const VAULT_ABI = [
         "function pricePerToken() view returns (uint256)",        // 1e18 USD/token
         "function treasuryActiveUSDC() view returns (uint256)", // 6 decimals
-        "function pendingRevenueUSDC() view returns (uint256)"  // 6 decimals
+        "function pendingRevenueUSDC() view returns (uint256)",  // 6 decimals
+        "function totalSupply() view returns (uint256)"  // 18 decimals
       ];
 
       const $ = (id) => document.getElementById(id);
@@ -500,10 +516,12 @@
       const weeklyEl = $("statWeekly");
       const cypherEl = $("statCypher");
       const serviceEl = $("statService");
+      const supplyEl = $("statSupply");
 
       const fmt18 = (x) => Number(x) / 1e18;
       const fmt6  = (x) => Number(x) / 1e6;
       const usd   = (n, d=2) => "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: d });
+      const numFmt = (n) => Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
 
       let rpcIndex = 0;
       let provider = new ethers.JsonRpcProvider(RPCS[rpcIndex]);
@@ -521,10 +539,11 @@
 
       async function refreshLiteStats() {
         try {
-          const [price18, active6, pending6] = await Promise.all([
+          const [price18, active6, pending6, supply18] = await Promise.all([
             withFailover(() => vault.pricePerToken()),
             withFailover(() => vault.treasuryActiveUSDC()),
-            withFailover(() => vault.pendingRevenueUSDC())
+            withFailover(() => vault.pendingRevenueUSDC()),
+            withFailover(() => vault.totalSupply())
           ]);
 
           const nav = fmt18(price18);
@@ -532,6 +551,9 @@
 
           const active = fmt6(active6);
           if (treEl) treEl.textContent = usd(active);
+
+          const supply = fmt18(supply18);
+          if (supplyEl) supplyEl.textContent = numFmt(supply);
           
           // DYNAMIC YIELD CALCULATION (Calibrated to current external holdings)
           // Based on ~0.57% daily (xGRAIL) and ~2.3% weekly (USUAL) relative to ~$1752 treasury
@@ -556,6 +578,7 @@
           console.error("Lite stats refresh failed:", e);
           if (navEl && navEl.textContent === "$—") navEl.textContent = "—";
           if (treEl && treEl.textContent === "$—") treEl.textContent = "—";
+          if (supplyEl && supplyEl.textContent === "—") supplyEl.textContent = "—";
         }
       }
 
