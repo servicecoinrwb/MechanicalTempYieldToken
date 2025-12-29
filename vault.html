@@ -165,6 +165,20 @@
 
       <div class="h-px bg-slate-800 my-3"></div>
 
+      <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 mb-3">
+        <div class="text-slate-200 font-semibold mb-2">Multi-Wallet Sender (Employee Payroll)</div>
+        <p class="text-xs text-slate-400 mb-2">1. Mint MTYLD above first. 2. Enter formatted list below. 3. Send.</p>
+        
+        <textarea id="batchInput" rows="4" 
+          placeholder="0xAddress, 100&#10;0xAddress, 50.5" 
+          class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 font-mono text-sm placeholder-slate-600 focus:outline-none focus:border-sky-500"></textarea>
+        
+        <div class="flex items-center justify-between mt-2">
+            <div class="text-xs text-slate-400" id="batchStats">Wait: 0 | Total: 0 MTYLD</div>
+            <button id="btnSendBatch" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm">Send to All</button>
+        </div>
+        <div id="batchLog" class="mt-2 text-xs font-mono text-slate-300 max-h-32 overflow-y-auto whitespace-pre-wrap"></div>
+      </div>
       <div class="grid md:grid-cols-2 gap-4">
         <div>
           <div class="text-slate-300">NAV Delay (seconds)</div>
@@ -178,8 +192,8 @@
         <div>
           <div class="text-slate-300">Fees & Recipient</div>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <input id="mintFee" placeholder="Mint Fee (bps 0-500)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-            <input id="redeemFee" placeholder="Redeem Fee (bps 0-500)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+            <input id="mintFee" placeholder="Mint Fee (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+            <input id="redeemFee" placeholder="Redeem Fee (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
           </div>
           <input id="feeRecipient" placeholder="Fee Recipient (0x…)" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
           <div class="mt-2 flex items-center gap-3">
@@ -319,7 +333,6 @@
 
   (async () => {
     // ===== Config =====
-    // UPDATED TO THE NEW FIXED CONTRACT
     const VAULT = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
     const USDC  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
     const CHAIN_ID_ARBITRUM = 42161;
@@ -425,6 +438,9 @@
     const wlAddr = el("wlAddr"), wlMsg = el("wlMsg");
     const btnGuardOn = el("btnGuardOn"), btnGuardOff = el("btnGuardOff");
     const btnMintMax = el("btnMintMax"), btnRedeemMax = el("btnRedeemMax");
+
+    // NEW BATCH DOM ELEMENTS
+    const batchInput = el("batchInput"), btnSendBatch = el("btnSendBatch"), batchStats = el("batchStats"), batchLog = el("batchLog");
 
     // ===== Safer unit helpers (no Number(bi)) =====
     const f6  = (x) => ethers.formatUnits(x, 6);    // string
@@ -756,6 +772,94 @@
         const tx = await vault.setWhitelist(a, false); await tx.wait(); wlMsg.textContent = "Removed ✅"; }
       catch (e) { console.error(e); wlMsg.textContent = shortErr(e); }
     };
+    
+    // ===== BATCH SENDER LOGIC =====
+    // 1. Monitor TextArea for valid addresses
+    batchInput.addEventListener("input", () => {
+        const text = batchInput.value;
+        const lines = text.split(/\r?\n/);
+        let count = 0;
+        let total = 0n;
+        for (let l of lines) {
+            const parts = l.split(",");
+            if (parts.length >= 2) {
+                const addr = parts[0].trim();
+                const amt = parts[1].trim();
+                if (ethers.isAddress(addr) && !isNaN(amt) && amt > 0) {
+                    count++;
+                    try { total += ethers.parseUnits(amt, 18); } catch {}
+                }
+            }
+        }
+        batchStats.textContent = `Wait: ${count} | Total: ${ethers.formatUnits(total, 18)} MTYLD`;
+    });
+
+    // 2. Process Batch
+    btnSendBatch.onclick = async () => {
+        try {
+            if (!provider) await ensureProvider();
+            
+            // Parse recipients
+            const lines = batchInput.value.split(/\r?\n/);
+            const recipients = [];
+            let totalNeeded = 0n;
+            
+            for (let l of lines) {
+                const parts = l.split(",");
+                if (parts.length < 2) continue;
+                const addr = parts[0].trim();
+                const amtStr = parts[1].trim();
+                if (!ethers.isAddress(addr)) continue;
+                try {
+                    const amt = ethers.parseUnits(amtStr, 18);
+                    if (amt > 0n) {
+                        recipients.push({ to: addr, amount: amt, str: amtStr });
+                        totalNeeded += amt;
+                    }
+                } catch {}
+            }
+
+            if (recipients.length === 0) { alert("No valid lines found. Use format: Address, Amount"); return; }
+            
+            // Check admin balance
+            const adminBal = await vault.balanceOf(acct);
+            if (adminBal < totalNeeded) {
+                alert(`Insufficient Balance!\nYou have: ${ethers.formatUnits(adminBal,18)}\nNeeded: ${ethers.formatUnits(totalNeeded,18)}\n\nPlease Mint more MTYLD first.`);
+                return;
+            }
+
+            if (!confirm(`Send ${recipients.length} transactions totaling ${ethers.formatUnits(totalNeeded, 18)} MTYLD? \n\nNote: You will need to confirm each transaction in MetaMask.`)) return;
+
+            // Execute Loop
+            btnSendBatch.disabled = true;
+            batchLog.textContent = "Starting batch...\n";
+            
+            for (let i = 0; i < recipients.length; i++) {
+                const r = recipients[i];
+                try {
+                    batchLog.textContent += `[${i+1}/${recipients.length}] Sending ${r.str} to ${r.to.slice(0,6)}... `;
+                    const tx = await vault.transfer(r.to, r.amount);
+                    batchLog.textContent += `Waiting... `;
+                    await tx.wait();
+                    batchLog.textContent += `OK ✅\n`;
+                    // Auto scroll
+                    batchLog.scrollTop = batchLog.scrollHeight;
+                } catch (err) {
+                    console.error(err);
+                    batchLog.textContent += `FAILED ❌ (${shortErr(err)})\n`;
+                }
+            }
+            batchLog.textContent += "Batch Complete.";
+            await refresh();
+
+        } catch (e) {
+            console.error(e);
+            alert(shortErr(e));
+        } finally {
+            btnSendBatch.disabled = false;
+        }
+    };
+    // ===== END BATCH LOGIC =====
 
     // Perf buttons
     document.getElementById("btnExportCSV").onclick = () => {
