@@ -54,6 +54,7 @@
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-danger { background: var(--danger); }
         .btn-success { background: var(--success); }
+        .btn-outline { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); }
 
         /* Cards */
         .card {
@@ -118,6 +119,14 @@
         .admin-controls { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
 
         .loader { display: none; font-size: 0.9rem; color: var(--text-muted); text-align: center; margin-top: 10px; }
+
+        /* How to Play Modal/Section */
+        #rulesSection { display: none; margin-bottom: 20px; }
+        .step { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start; }
+        .step-num { background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; margin-top: 2px;}
+        .step-text { font-size: 0.9rem; color: var(--text-muted); }
+        .step-text strong { color: var(--text); }
+
     </style>
 </head>
 <body>
@@ -125,11 +134,51 @@
 <div class="container">
     <header>
         <div>
-            <h1>Yield Prediction Game</h1>
+            <h1>Yield Prediction</h1>
             <div style="font-size: 0.8rem; color: var(--text-muted);">Contract: <span id="shortAddr">...</span></div>
         </div>
-        <button id="connectBtn" class="btn">Connect Wallet</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-outline" onclick="toggleRules()">?</button>
+            <button id="connectBtn" class="btn">Connect Wallet</button>
+        </div>
     </header>
+
+    <div class="card" id="rulesSection">
+        <h3 style="margin-top: 0;">How to Play</h3>
+        
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text">
+                <strong>Check "The Line"</strong><br>
+                Look at the Threshold amount. This is the target yield injection for this round.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text">
+                <strong>Pick a Side</strong><br>
+                Bet <strong>OVER</strong> if you think the Admin will inject MORE than the line.<br>
+                Bet <strong>UNDER</strong> if you think they will inject LESS.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text">
+                <strong>Wait for Resolution</strong><br>
+                Once betting closes, the Admin injects the real yield.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-text">
+                <strong>Win & Boost</strong><br>
+                Winners split the Losers' pot. A 5% fee from the losers is added to the Vault Yield to boost returns for everyone holding MTYLD.
+            </div>
+        </div>
+    </div>
 
     <div class="card">
         <div class="row">
@@ -142,7 +191,7 @@
         </div>
         <div class="row" style="margin-top: 15px;">
             <span class="label">THE LINE (THRESHOLD)</span>
-            <span class="value" style="color: var(--primary);" id="thresholdDisplay">0 USDC</span>
+            <span class="value" style="color: var(--primary); font-size: 1.4rem;" id="thresholdDisplay">0 USDC</span>
         </div>
         <div class="row">
             <span class="label">DEADLINE</span>
@@ -151,8 +200,8 @@
 
         <div style="margin-top: 20px;">
             <div class="row">
-                <span style="color: var(--success);">OVER POT: <span id="potOver">0</span></span>
-                <span style="color: var(--danger);">UNDER POT: <span id="potUnder">0</span></span>
+                <span style="color: var(--success); font-weight: bold;">OVER POT: <span id="potOver">0</span></span>
+                <span style="color: var(--danger); font-weight: bold;">UNDER POT: <span id="potUnder">0</span></span>
             </div>
             <div class="vs-bar">
                 <div class="bar-over" id="barOver"></div>
@@ -203,6 +252,16 @@
 </div>
 
 <script>
+    // --- TOGGLE RULES ---
+    function toggleRules() {
+        const el = document.getElementById('rulesSection');
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            el.style.display = 'block';
+        }
+    }
+
     // --- CONFIGURATION ---
     const GAME_ADDRESS = "0x7EcD27E879E99D0262bcE2fe0054C6360d70A262";
     
