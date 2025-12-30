@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yield Prediction Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --success: #10B981;
+            --danger: #EF4444;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #F8FAFC;
+            --text-muted: #94A3B8;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 { margin: 0; font-size: 1.5rem; }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-danger { background: var(--danger); }
+        .btn-success { background: var(--success); }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .label { color: var(--text-muted); font-size: 0.9rem; }
+        .value { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
+
+        /* Game State Indicators */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-open { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .status-closed { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        /* Pots Visualization */
+        .vs-bar {
+            display: flex;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+            background: #334155;
+        }
+        .bar-over { background: var(--success); width: 50%; transition: width 0.5s; }
+        .bar-under { background: var(--danger); width: 50%; transition: width 0.5s; }
+
+        /* Inputs */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        input {
+            background: #334155;
+            border: 1px solid #475569;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        /* Tabs */
+        .bet-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .bet-opt { padding: 15px; border: 2px solid transparent; background: #334155; color: white; border-radius: 8px; cursor: pointer; text-align: center; font-weight: bold; }
+        .bet-opt.selected-over { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .bet-opt.selected-under { border-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+
+        /* Admin Panel */
+        #adminPanel { border: 1px solid var(--primary); display: none; }
+        .admin-controls { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+
+        .loader { display: none; font-size: 0.9rem; color: var(--text-muted); text-align: center; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Yield Prediction Game</h1>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Contract: <span id="shortAddr">...</span></div>
+        </div>
+        <button id="connectBtn" class="btn">Connect Wallet</button>
+    </header>
+
+    <div class="card">
+        <div class="row">
+            <span class="label">CURRENT ROUND</span>
+            <span class="value" id="roundIdDisplay">#0</span>
+        </div>
+        <div class="row">
+            <span class="label">STATUS</span>
+            <span id="statusBadge" class="status-badge status-closed">Loading...</span>
+        </div>
+        <div class="row" style="margin-top: 15px;">
+            <span class="label">THE LINE (THRESHOLD)</span>
+            <span class="value" style="color: var(--primary);" id="thresholdDisplay">0 USDC</span>
+        </div>
+        <div class="row">
+            <span class="label">DEADLINE</span>
+            <span class="value" id="timerDisplay">--:--:--</span>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <div class="row">
+                <span style="color: var(--success);">OVER POT: <span id="potOver">0</span></span>
+                <span style="color: var(--danger);">UNDER POT: <span id="potUnder">0</span></span>
+            </div>
+            <div class="vs-bar">
+                <div class="bar-over" id="barOver"></div>
+                <div class="bar-under" id="barUnder"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" id="bettingCard">
+        <h3>Place Your Bet</h3>
+        <div class="bet-buttons">
+            <div class="bet-opt" id="btnOver" onclick="selectSide(true)">OVER</div>
+            <div class="bet-opt" id="btnUnder" onclick="selectSide(false)">UNDER</div>
+        </div>
+        <div class="input-group">
+            <input type="number" id="betAmount" placeholder="Amount (USDC)">
+            <button class="btn" onclick="placeBet()" id="placeBetBtn">Place Bet</button>
+        </div>
+        <div class="loader" id="txStatus">Processing transaction...</div>
+    </div>
+
+    <div class="card">
+        <h3>Claim Winnings</h3>
+        <p class="label">Enter a Round ID to check for winnings.</p>
+        <div class="input-group">
+            <input type="number" id="claimRoundId" placeholder="Round ID">
+            <button class="btn btn-success" onclick="claimWinnings()">Check & Claim</button>
+        </div>
+    </div>
+
+    <div class="card" id="adminPanel">
+        <h3 style="color: var(--primary);">Admin Panel</h3>
+        <div class="admin-controls">
+            <div class="input-group">
+                <input type="number" id="newThreshold" placeholder="Threshold (USDC)">
+                <input type="number" id="newDuration" placeholder="Duration (Seconds)">
+                <button class="btn" onclick="adminStartRound()">Start Round</button>
+            </div>
+            <hr style="border-color: #334155; width: 100%;">
+            <button class="btn btn-danger" onclick="adminCloseBetting()">Close Betting Window</button>
+            <div class="input-group">
+                <input type="number" id="injectAmount" placeholder="Injection Amount (USDC)">
+                <button class="btn btn-success" onclick="adminExecuteInjection()">Inject & Resolve</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- CONFIGURATION ---
+    const GAME_ADDRESS = "0x7EcD27E879E99D0262bcE2fe0054C6360d70A262";
+    
+    // Minimal ERC20 ABI for USDC
+    const ERC20_ABI = [
+        "function decimals() view returns (uint8)",
+        "function allowance(address owner, address spender) view returns (uint256)",
+        "function approve(address spender, uint256 amount) returns (bool)",
+        "function balanceOf(address account) view returns (uint256)"
+    ];
+
+    // Game Contract ABI (From prompt)
+    const GAME_ABI = [{"inputs":[{"internalType":"address","name":"_vault","type":"address"},{"internalType":"address","name":"_usdc","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"roundId","type":"uint256"}],"name":"BettingClosed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"prev","type":"address"},{"indexed":true,"internalType":"address","name":"next","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"roundId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"threshold","type":"uint256"},{"indexed":false,"internalType":"uint64","name":"deadline","type":"uint64"}],"name":"RoundOpened","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"roundId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"injected","type":"uint256"},{"indexed":false,"internalType":"bool","name":"overWon","type":"bool"}],"name":"RoundResolved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"WinningsClaimed","type":"event"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"address","name":"","type":"address"},{"internalType":"bool","name":"","type":"bool"}],"name":"bets","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"roundId","type":"uint256"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"closeBetting","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"currentRoundId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountToInject","type":"uint256"}],"name":"executeInjection","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"gameFeeBps","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"minBet","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bool","name":"predictOver","type":"bool"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"placeBet","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"rescueTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"rounds","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"thresholdAmount","type":"uint256"},{"internalType":"uint256","name":"totalOver","type":"uint256"},{"internalType":"uint256","name":"totalUnder","type":"uint256"},{"internalType":"uint256","name":"finalAmount","type":"uint256"},{"internalType":"uint256","name":"feeBpsAtSnapshot","type":"uint256"},{"internalType":"bool","name":"outcomeOver","type":"bool"},{"internalType":"uint8","name":"state","type":"uint8"},{"internalType":"uint64","name":"bettingDeadline","type":"uint64"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_bps","type":"uint256"}],"name":"setGameFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_thresholdAmount","type":"uint256"},{"internalType":"uint64","name":"_durationSeconds","type":"uint64"}],"name":"startNextRound","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"n","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"usdc","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"vault","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}];
+
+    // --- STATE ---
+    let provider, signer, gameContract, usdcContract;
+    let userAddress, usdcDecimals;
+    let selectedPrediction = null; // true = Over, false = Under
+
+    const ROUND_STATE = {
+        0: "Inactive",
+        1: "Betting Open",
+        2: "Betting Closed",
+        3: "Resolved"
+    };
+
+    // --- INIT ---
+    document.getElementById('shortAddr').innerText = GAME_ADDRESS.substring(0,6) + "..." + GAME_ADDRESS.substring(38);
+
+    document.getElementById('connectBtn').addEventListener('click', connectWallet);
+
+    async function connectWallet() {
+        if (!window.ethereum) return alert("Please install MetaMask");
+        
+        try {
+            provider = new ethers.BrowserProvider(window.ethereum);
+            signer = await provider.getSigner();
+            userAddress = await signer.getAddress();
+            
+            document.getElementById('connectBtn').innerText = userAddress.substring(0, 6) + "...";
+            
+            gameContract = new ethers.Contract(GAME_ADDRESS, GAME_ABI, signer);
+            
+            // 1. Get USDC Address from Contract
+            const usdcAddr = await gameContract.usdc();
+            usdcContract = new ethers.Contract(usdcAddr, ERC20_ABI, signer);
+            
+            // 2. Get Decimals
+            try {
+                usdcDecimals = await usdcContract.decimals();
+            } catch (e) {
+                console.warn("Could not fetch decimals, defaulting to 6");
+                usdcDecimals = 6n;
+            }
+
+            // 3. Check Owner for Admin Panel
+            const ownerAddr = await gameContract.owner();
+            if (ownerAddr.toLowerCase() === userAddress.toLowerCase()) {
+                document.getElementById('adminPanel').style.display = 'block';
+            }
+
+            // 4. Load Data
+            refreshData();
+            
+            // Auto refresh every 10s
+            setInterval(refreshData, 10000);
+
+        } catch (err) {
+            console.error(err);
+            alert("Connection Failed: " + err.message);
+        }
+    }
+
+    // --- DATA FETCHING ---
+    async function refreshData() {
+        if (!gameContract) return;
+
+        try {
+            const currentId = await gameContract.currentRoundId();
+            document.getElementById('roundIdDisplay').innerText = "#" + currentId;
+            document.getElementById('claimRoundId').value = Number(currentId) > 1 ? Number(currentId) - 1 : 1;
+
+            if (currentId == 0) {
+                document.getElementById('statusBadge').innerText = "Inactive";
+                return;
+            }
+
+            const round = await gameContract.rounds(currentId);
+            // Struct: id, threshold, over, under, final, fee, outcome, state, deadline
+            
+            // State
+            const state = ROUND_STATE[round[7]]; // round.state is index 7
+            const badge = document.getElementById('statusBadge');
+            badge.innerText = state;
+            badge.className = "status-badge " + (round[7] == 1n ? "status-open" : "status-closed");
+
+            // Threshold
+            const formattedThreshold = ethers.formatUnits(round[1], usdcDecimals);
+            document.getElementById('thresholdDisplay').innerText = formattedThreshold + " USDC";
+
+            // Pots
+            const over = ethers.formatUnits(round[2], usdcDecimals);
+            const under = ethers.formatUnits(round[3], usdcDecimals);
+            document.getElementById('potOver').innerText = Number(over).toFixed(2);
+            document.getElementById('potUnder').innerText = Number(under).toFixed(2);
+
+            // Bar Widths
+            const total = Number(over) + Number(under);
+            if (total > 0) {
+                const pctOver = (Number(over) / total) * 100;
+                document.getElementById('barOver').style.width = pctOver + "%";
+                document.getElementById('barUnder').style.width = (100 - pctOver) + "%";
+            }
+
+            // Timer
+            const deadline = Number(round[8]);
+            const now = Math.floor(Date.now() / 1000);
+            const diff = deadline - now;
+            
+            if (round[7] == 1n) { // If open
+                if (diff > 0) {
+                    const hrs = Math.floor(diff / 3600);
+                    const mins = Math.floor((diff % 3600) / 60);
+                    const secs = diff % 60;
+                    document.getElementById('timerDisplay').innerText = `${hrs}h ${mins}m ${secs}s`;
+                    document.getElementById('timerDisplay').style.color = "white";
+                } else {
+                    document.getElementById('timerDisplay').innerText = "Closing...";
+                    document.getElementById('timerDisplay').style.color = "orange";
+                }
+            } else {
+                document.getElementById('timerDisplay').innerText = "Ended";
+                document.getElementById('timerDisplay').style.color = "var(--text-muted)";
+            }
+
+        } catch (err) {
+            console.error("Data refresh error", err);
+        }
+    }
+
+    // --- INTERACTIONS ---
+
+    function selectSide(isOver) {
+        selectedPrediction = isOver;
+        document.getElementById('btnOver').className = isOver ? "bet-opt selected-over" : "bet-opt";
+        document.getElementById('btnUnder').className = !isOver ? "bet-opt selected-under" : "bet-opt";
+    }
+
+    async function placeBet() {
+        if (selectedPrediction === null) return alert("Select OVER or UNDER");
+        const val = document.getElementById('betAmount').value;
+        if (!val || val <= 0) return alert("Enter Amount");
+
+        setLoading(true, "Checking Allowance...");
+        try {
+            const amountWei = ethers.parseUnits(val, usdcDecimals);
+            
+            // 1. Check Allowance
+            const allowance = await usdcContract.allowance(userAddress, GAME_ADDRESS);
+            
+            if (allowance < amountWei) {
+                setLoading(true, "Approving USDC...");
+                const txApprove = await usdcContract.approve(GAME_ADDRESS, ethers.MaxUint256);
+                await txApprove.wait();
+            }
+
+            // 2. Place Bet
+            setLoading(true, "Placing Bet...");
+            const txBet = await gameContract.placeBet(selectedPrediction, amountWei);
+            await txBet.wait();
+            
+            alert("Bet Placed Successfully!");
+            document.getElementById('betAmount').value = "";
+            refreshData();
+
+        } catch (err) {
+            console.error(err);
+            alert("Error: " + (err.reason || err.message));
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function claimWinnings() {
+        const rId = document.getElementById('claimRoundId').value;
+        if (!rId) return alert("Enter Round ID");
+        
+        setLoading(true, "Claiming...");
+        try {
+            const tx = await gameContract.claim(rId);
+            await tx.wait();
+            alert("Winnings Claimed!");
+        } catch (err) {
+            console.error(err);
+            alert("Error (Maybe you didn't win?): " + (err.reason || err.message));
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // --- ADMIN ---
+    async function adminStartRound() {
+        const th = document.getElementById('newThreshold').value;
+        const dur = document.getElementById('newDuration').value;
+        if(!th || !dur) return alert("Fill fields");
+
+        setLoading(true, "Starting Round...");
+        try {
+            const wei = ethers.parseUnits(th, usdcDecimals);
+            const tx = await gameContract.startNextRound(wei, dur);
+            await tx.wait();
+            alert("Round Started");
+            refreshData();
+        } catch(e) { alert(e.reason || e.message); } finally { setLoading(false); }
+    }
+
+    async function adminCloseBetting() {
+        setLoading(true, "Closing Betting...");
+        try {
+            const tx = await gameContract.closeBetting();
+            await tx.wait();
+            alert("Betting Closed");
+            refreshData();
+        } catch(e) { alert(e.reason || e.message); } finally { setLoading(false); }
+    }
+
+    async function adminExecuteInjection() {
+        const amount = document.getElementById('injectAmount').value;
+        if(!amount) return alert("Enter Amount");
+
+        setLoading(true, "Injecting Yield...");
+        try {
+            // Need allowance first? Usually admin wallet needs to approve GAME to spend their USDC
+            const wei = ethers.parseUnits(amount, usdcDecimals);
+            
+            const allowance = await usdcContract.allowance(userAddress, GAME_ADDRESS);
+            if (allowance < wei) {
+                const txApp = await usdcContract.approve(GAME_ADDRESS, ethers.MaxUint256);
+                await txApp.wait();
+            }
+
+            const tx = await gameContract.executeInjection(wei);
+            await tx.wait();
+            alert("Yield Injected & Resolved!");
+            refreshData();
+        } catch(e) { alert(e.reason || e.message); } finally { setLoading(false); }
+    }
+
+    function setLoading(isLoading, text) {
+        const el = document.getElementById('txStatus');
+        el.style.display = isLoading ? 'block' : 'none';
+        el.innerText = text || "Processing...";
+        
+        const btn = document.getElementById('placeBetBtn');
+        if(isLoading) btn.setAttribute('disabled', 'true');
+        else btn.removeAttribute('disabled');
+    }
+
+</script>
+</body>
+</html>
