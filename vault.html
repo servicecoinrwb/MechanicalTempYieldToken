@@ -133,111 +133,135 @@
     </div>
 
     <div id="ownerPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      
       <div class="flex items-center justify-between gap-3">
-        <div class="font-semibold">
-          Owner Panel
-          <span class="ml-2 text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300">You are owner</span>
+        <div class="font-semibold text-lg text-white">
+          Admin Command Center
+          <span class="ml-2 text-xs px-2 py-1 rounded-full bg-sky-900 text-sky-200 border border-sky-700">Owner</span>
         </div>
-        <div class="font-mono text-slate-300" id="epochState">Epoch: —</div>
+        <div class="text-right">
+             <div class="font-mono text-slate-300 text-sm" id="epochState">Epoch: —</div>
+             <div class="font-mono text-red-400 text-xs font-bold uppercase" id="pausedState" style="display:none">⚠ PAUSED ⚠</div>
+        </div>
       </div>
       <div class="h-px bg-slate-800 my-3"></div>
 
       <div class="grid md:grid-cols-2 gap-4">
         <div>
-          <div class="text-slate-300">Queue Revenue (USDC)</div>
-          <input id="revAmount" placeholder="Amount (USDC)" inputmode="decimal" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-          <div class="mt-2 flex items-center gap-2">
-            <button id="btnQueueRev" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Approve & Queue</button>
-            <div class="font-mono text-slate-300" id="revMsg"></div>
+          <div class="text-slate-300 font-medium">1. Revenue Injection</div>
+          <div class="text-xs text-slate-500 mb-2">Queues USDC. Does not affect NAV until Applied.</div>
+          <div class="flex gap-2">
+              <input id="revAmount" placeholder="Amount (USDC)" inputmode="decimal" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
+              <button id="btnQueueRev" class="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold whitespace-nowrap">Queue</button>
           </div>
+          <div class="font-mono text-xs text-slate-400 mt-1" id="revMsg"></div>
         </div>
 
         <div>
-          <div class="text-slate-300">Pending Controls</div>
-          <div class="mt-2 flex flex-wrap items-center gap-2">
-            <button id="btnApply" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Apply Pending</button>
-            <button id="btnBeginClose" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Begin Epoch Close</button>
-            <button id="btnEndClose" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">End Epoch Close</button>
+          <div class="text-slate-300 font-medium">2. Epoch Controls</div>
+          <div class="text-xs text-slate-500 mb-2">Manage pending revenue and close windows.</div>
+          <div class="flex flex-wrap gap-2">
+            <button id="btnApply" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700">Apply Pending</button>
+            <button id="btnBeginClose" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700">Begin Close</button>
+            <button id="btnEndClose" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700">End Close</button>
           </div>
-          <div id="pendingHint" class="font-mono text-slate-300 mt-2">—</div>
+          <div id="pendingHint" class="font-mono text-xs text-slate-400 mt-1">—</div>
         </div>
       </div>
 
-      <div class="h-px bg-slate-800 my-3"></div>
+      <div class="h-px bg-slate-800 my-4"></div>
 
-      <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 mb-3">
-        <div class="text-slate-200 font-semibold mb-2">Multi-Wallet Sender (Employee Payroll)</div>
-        <p class="text-xs text-slate-400 mb-2">1. Mint MTYLD above first. 2. Enter formatted list below. 3. Send.</p>
+      <div class="bg-slate-800/30 border border-slate-700/50 rounded-xl p-3 mb-4">
+        <div class="text-slate-200 font-semibold mb-1">Employee Payroll (Batch Sender)</div>
+        <p class="text-xs text-slate-400 mb-2">Distribute MTYLD tokens to multiple wallets in one click. Mint tokens to yourself first.</p>
         
-        <textarea id="batchInput" rows="4" 
-          placeholder="0xAddress, 100&#10;0xAddress, 50.5" 
-          class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 font-mono text-sm placeholder-slate-600 focus:outline-none focus:border-sky-500"></textarea>
+        <textarea id="batchInput" rows="3" 
+          placeholder="0xAddress1, 100&#10;0xAddress2, 50.5" 
+          class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 font-mono text-xs placeholder-slate-600 focus:outline-none focus:border-sky-500"></textarea>
         
         <div class="flex items-center justify-between mt-2">
-            <div class="text-xs text-slate-400" id="batchStats">Wait: 0 | Total: 0 MTYLD</div>
-            <button id="btnSendBatch" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm">Send to All</button>
+            <div class="text-xs text-slate-400" id="batchStats">Wait: 0 | Total: 0</div>
+            <button id="btnSendBatch" class="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs">Send Batch</button>
         </div>
-        <div id="batchLog" class="mt-2 text-xs font-mono text-slate-300 max-h-32 overflow-y-auto whitespace-pre-wrap"></div>
+        <div id="batchLog" class="mt-2 text-xs font-mono text-slate-300 max-h-24 overflow-y-auto whitespace-pre-wrap hidden"></div>
       </div>
-      <div class="grid md:grid-cols-2 gap-4">
-        <div>
-          <div class="text-slate-300">NAV Delay (seconds)</div>
-          <div class="mt-2 flex items-center gap-2">
-            <input id="navDelay" placeholder="e.g. 3600" class="flex-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-            <button id="btnSetDelay" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Set</button>
-          </div>
-          <div id="delayLine" class="text-slate-400 font-mono mt-2">Current: —</div>
-        </div>
-
-        <div>
-          <div class="text-slate-300">Fees & Recipient</div>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <input id="mintFee" placeholder="Mint Fee (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-            <input id="redeemFee" placeholder="Redeem Fee (bps)" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-          </div>
-          <input id="feeRecipient" placeholder="Fee Recipient (0x…)" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-          <div class="mt-2 flex items-center gap-3">
-            <label class="inline-flex items-center gap-2 text-slate-300 text-sm">
-              <input type="checkbox" id="feeRoundUp" class="h-4 w-4 rounded border-slate-600 bg-slate-800">
-              Round fees up
-            </label>
-            <button id="btnSetFees" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Set Fees</button>
-          </div>
-          <div id="feesLine" class="text-slate-400 font-mono mt-2">Mint: — bps | Redeem: — bps | RoundUp: — | Recipient: —</div>
-        </div>
-      </div>
-
-      <div class="h-px bg-slate-800 my-3"></div>
 
       <div class="grid md:grid-cols-2 gap-4">
-        <div>
-          <div class="text-slate-300">Guarded Launch</div>
-          <div class="mt-2 flex items-center gap-2">
-            <button id="btnGuardOn" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Enable Guarded</button>
-            <button id="btnGuardOff" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Disable Guarded</button>
-          </div>
-          <div id="guardedLine" class="text-slate-400 font-mono mt-2">Guarded: —</div>
+        <div class="bg-slate-800/30 border border-slate-700/50 rounded-xl p-3">
+             <div class="text-slate-200 font-semibold text-sm">Supply Cap (TVL Limit)</div>
+             <div class="text-xs text-slate-500 mb-2">Max MTYLD tokens allowed.</div>
+             <div class="flex gap-2">
+                 <input id="maxSupplyIn" placeholder="e.g. 1000000" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-sm">
+                 <button id="btnSetCap" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs whitespace-nowrap">Set Cap</button>
+             </div>
+             <div id="capLine" class="text-xs font-mono text-slate-400 mt-1">Current Cap: —</div>
         </div>
 
-        <div>
-          <div class="text-slate-300">Whitelist Minter</div>
-          <input id="wlAddr" placeholder="Wallet (0x…)" class="mt-2 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-          <div class="mt-2 flex items-center gap-2">
-            <button id="btnWhitelistOn" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Allow</button>
-            <button id="btnWhitelistOff" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Remove</button>
-          </div>
-          <div id="wlMsg" class="text-slate-400 font-mono mt-2">—</div>
+        <div class="bg-red-900/10 border border-red-900/30 rounded-xl p-3 flex flex-col justify-between">
+             <div>
+                <div class="text-red-200 font-semibold text-sm">Emergency Controls</div>
+                <div class="text-xs text-red-300/60 mb-2">Freeze all Mint/Redeem actions.</div>
+             </div>
+             <div class="flex items-center gap-2">
+                 <button id="btnPause" class="flex-1 px-3 py-2 rounded-lg bg-red-600/20 hover:bg-red-600/40 text-red-200 border border-red-800 text-xs font-bold transition-colors">PAUSE CONTRACT</button>
+                 <button id="btnUnpause" class="flex-1 px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-200 border border-emerald-800 text-xs font-bold transition-colors">UNPAUSE</button>
+             </div>
         </div>
       </div>
+      
+      <div class="mt-4 bg-slate-800/30 border border-slate-700/50 rounded-xl p-3">
+          <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('rescueBody').classList.toggle('hidden')">
+             <div class="text-slate-200 font-semibold text-sm">⚠️ Token Rescue</div>
+             <div class="text-xs text-slate-500">Recover lost tokens (accidental sends) ▼</div>
+          </div>
+          <div id="rescueBody" class="hidden mt-3 space-y-3">
+              <div class="p-2 bg-slate-900/50 rounded text-xs text-slate-400 border border-slate-800">
+                  <span class="text-amber-400">Status:</span> <span id="rescueStatus" class="font-mono">No active rescue</span>
+              </div>
+              
+              <div id="rescueForm" class="grid grid-cols-2 gap-2">
+                  <input id="resToken" placeholder="Token Address (0x...)" class="col-span-2 px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-xs text-slate-100">
+                  <input id="resAmt" placeholder="Amount (Wei)" class="px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-xs text-slate-100">
+                  <input id="resTo" placeholder="Recipient (0x...)" class="px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-xs text-slate-100">
+                  <button id="btnAnnounceRescue" class="col-span-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-xs font-semibold">Announce Rescue</button>
+              </div>
 
-      <div class="mt-3 text-sm text-slate-400">
-        <ul class="list-disc pl-5 space-y-1">
-          <li><b>Queue</b>: transfers USDC in; excluded from NAV until applied.</li>
-          <li><b>Apply</b>: moves pending into active NAV after delay.</li>
-          <li><b>Epoch Close</b>: pauses mint/redeem during sensitive windows.</li>
-          <li><b>Fees</b> are in bps (100 bps = 1%). “Round up” charges the ceiling cent.</li>
-          <li><b>Guarded</b> launch only allows whitelisted wallets to mint.</li>
-        </ul>
+              <button id="btnExecuteRescue" disabled class="hidden w-full py-2 bg-amber-600 hover:bg-amber-500 text-white rounded text-xs font-bold">EXECUTE PENDING RESCUE</button>
+          </div>
+      </div>
+
+      <div class="h-px bg-slate-800 my-4"></div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <div class="text-slate-300 font-medium text-sm">Configuration</div>
+          <div class="mt-2 flex items-center gap-2">
+            <input id="navDelay" placeholder="Delay (sec)" class="w-20 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-sm">
+            <button id="btnSetDelay" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs">Set Delay</button>
+          </div>
+          <div id="delayLine" class="text-xs text-slate-500 mt-1">Current: —</div>
+          
+          <div class="mt-2 flex items-center gap-2">
+             <button id="btnGuardOn" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700">Guard On</button>
+             <button id="btnGuardOff" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700">Guard Off</button>
+             <span id="guardedLine" class="text-xs text-slate-500 ml-1">Avg: -</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="text-slate-300 font-medium text-sm">Fees & Whitelist</div>
+          <div class="flex gap-2 mt-2">
+            <input id="mintFee" placeholder="Mint Bps" class="w-16 px-2 py-1.5 rounded bg-slate-800 border border-slate-700 text-slate-100 text-xs">
+            <input id="redeemFee" placeholder="Redeem Bps" class="w-16 px-2 py-1.5 rounded bg-slate-800 border border-slate-700 text-slate-100 text-xs">
+            <button id="btnSetFees" class="px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs">Update</button>
+          </div>
+          <div class="mt-2 flex gap-2">
+             <input id="wlAddr" placeholder="Whitelist Addr" class="flex-1 px-2 py-1.5 rounded bg-slate-800 border border-slate-700 text-slate-100 text-xs">
+             <button id="btnWhitelistOn" class="px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-green-400/20 text-green-400 text-xs">+</button>
+             <button id="btnWhitelistOff" class="px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-red-400/20 text-red-400 text-xs">-</button>
+          </div>
+          <div id="wlMsg" class="text-xs text-slate-500 mt-1"></div>
+        </div>
       </div>
     </div>
 
@@ -256,10 +280,6 @@
       <div class="mt-4">
         <canvas id="navChart" height="120"></canvas>
       </div>
-      <p class="mt-3 text-sm text-slate-400">
-        APY is computed from the last 30 days of NAV (pricePerToken). If fewer than 30 days exist, the longest window is used.
-        Data is sampled locally and stored in your browser (localStorage).
-      </p>
     </div>
 
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
@@ -318,10 +338,7 @@
   </footer>
 
   <script>
-  // Footer year
   document.getElementById('yr').textContent = new Date().getFullYear();
-
-  // Smooth scroll + auto-expand About
   const aboutBtn = document.getElementById("btnAbout");
   const aboutSection = document.querySelector("#aboutMTYLD");
   if (aboutBtn && aboutSection) {
@@ -392,27 +409,9 @@
       "function unpause()",
       "function whitelistRescuable(address token, bool allowed)",
       "constructor(address usdc)",
-      "event Approval(address indexed owner, address indexed spender, uint256 amount)",
-      "event EpochCloseSet(bool closing)",
-      "event FeesUpdated(uint16 mintFeeBps, uint16 redeemFeeBps, address feeRecipient, bool feeRoundUp)",
-      "event GuardedLaunchSet(bool enabled)",
-      "event Minted(address indexed user, uint256 usdcIn, uint256 mtyldOut, uint256 price)",
-      "event OwnershipTransferred(address indexed prev, address indexed next)",
-      "event Paused(address indexed by)",
-      "event Redeemed(address indexed user, uint256 mtyldIn, uint256 usdcOut, uint256 price)",
-      "event RevenueQueued(address indexed from, uint256 usdcAmount, uint64 releaseAt)",
-      "event Transfer(address indexed from, address indexed to, uint256 amount)",
-      "event Unpaused(address indexed by)",
-      "error BadDecimals()",
-      "error EpochClosing()",
-      "error Guarded()",
-      "error InsufficientTreasury()",
-      "error InvalidAddress()",
-      "error InvalidFee()",
-      "error NotRescuable()",
-      "error TooEarly()",
-      "error ZeroAmount()",
-      "error InitLiquidityTooLow()"
+      "error BadDecimals()", "error EpochClosing()", "error Guarded()",
+      "error InsufficientTreasury()", "error InvalidAddress()", "error InvalidFee()",
+      "error NotRescuable()", "error TooEarly()", "error ZeroAmount()", "error InitLiquidityTooLow()"
     ];
 
     const ERC20_ABI = [
@@ -430,28 +429,31 @@
     const userPanel = el("userPanel"), userBalEl = el("userBal"), userValEl = el("userVal"), userShareEl = el("userShare");
     const mintAmt = el("mintAmount"), mintSlip = el("mintSlippage"), mintPrev = el("mintPreview"), mintBtn = el("btnMint");
     const redAmt = el("redeemAmount"), redSlip = el("redeemSlippage"), redPrev = el("redeemPreview"), redBtn = el("btnRedeem");
+    
+    // Admin DOM
     const ownerPanel = el("ownerPanel"), ownerLine = el("ownerLine");
     const revAmount = el("revAmount"), revMsg = el("revMsg");
     const btnApply = el("btnApply"), btnBeginClose = el("btnBeginClose"), btnEndClose = el("btnEndClose"), epochState = el("epochState"), pendingHint = el("pendingHint");
     const navDelay = el("navDelay"), delayLine = el("delayLine");
-    const mintFee = el("mintFee"), redeemFee = el("redeemFee"), feeRecipient = el("feeRecipient"), feeRoundUp = el("feeRoundUp"), feesLine = el("feesLine");
-    const wlAddr = el("wlAddr"), wlMsg = el("wlMsg");
-    const btnGuardOn = el("btnGuardOn"), btnGuardOff = el("btnGuardOff");
+    const mintFee = el("mintFee"), redeemFee = el("redeemFee"), btnSetFees = el("btnSetFees"), wlAddr = el("wlAddr"), wlMsg = el("wlMsg");
+    const btnGuardOn = el("btnGuardOn"), btnGuardOff = el("btnGuardOff"), guardedLine = el("guardedLine");
     const btnMintMax = el("btnMintMax"), btnRedeemMax = el("btnRedeemMax");
-
-    // NEW BATCH DOM ELEMENTS
+    // New Admin DOM
+    const pausedState = el("pausedState"), btnPause = el("btnPause"), btnUnpause = el("btnUnpause");
+    const maxSupplyIn = el("maxSupplyIn"), btnSetCap = el("btnSetCap"), capLine = el("capLine");
+    const rescueStatus = el("rescueStatus"), btnAnnounceRescue = el("btnAnnounceRescue"), btnExecuteRescue = el("btnExecuteRescue");
+    const resToken = el("resToken"), resAmt = el("resAmt"), resTo = el("resTo"), rescueForm = el("rescueForm");
     const batchInput = el("batchInput"), btnSendBatch = el("btnSendBatch"), batchStats = el("batchStats"), batchLog = el("batchLog");
 
-    // ===== Safer unit helpers (no Number(bi)) =====
-    const f6  = (x) => ethers.formatUnits(x, 6);    // string
-    const f18 = (x) => ethers.formatUnits(x, 18);   // string
+    // ===== Safer unit helpers =====
+    const f6  = (x) => ethers.formatUnits(x, 6);
+    const f18 = (x) => ethers.formatUnits(x, 18);
     const p6  = (s) => ethers.parseUnits(String(s||"0"), 6);
     const p18 = (s) => ethers.parseUnits(String(s||"0"), 18);
 
-    // ===== NAV history (now stored as floats) =====
-    // UPDATED KEY: Uses the new contract address to separate history
+    // ===== NAV history =====
     const NAV_HISTORY_KEY = "mtyld_nav_history_" + VAULT;
-    let navHistory = []; // [{t, p}] p = float USD
+    let navHistory = []; 
     let navChart;
 
     function loadHistory(){ try{ navHistory = JSON.parse(localStorage.getItem(NAV_HISTORY_KEY) || "[]"); }catch{ navHistory = []; } }
@@ -459,7 +461,6 @@
     function pruneHistory(){ const cutoff = Math.floor(Date.now()/1000) - 370*24*3600; navHistory = navHistory.filter(pt => pt.t >= cutoff); }
     function recordNavSample(price1e18){
       const val = +ethers.formatUnits(price1e18, 18);
-      // sanity: discard impossible values
       if (!isFinite(val) || val <= 0 || val > 10000) return;
       const now = Math.floor(Date.now()/1000);
       const last = navHistory[navHistory.length-1];
@@ -558,21 +559,55 @@
     async function loadOwnerState(){
       if (!vault) return;
       try {
-        const [mf, rf, fr, fru, gl, delay, closing, pending, relAt] = await Promise.all([
-          vault.mintFeeBps(), vault.redeemFeeBps(), vault.feeRecipient(), vault.feeRoundUp(),
+        const [mf, rf, fr, gl, delay, closing, pending, relAt, isPaused, cap, res] = await Promise.all([
+          vault.mintFeeBps(), vault.redeemFeeBps(), vault.feeRecipient(),
           vault.guardedLaunch(), vault.navDelaySec(), vault.epochClosing(),
-          vault.pendingRevenueUSDC(), vault.pendingReleaseAt()
+          vault.pendingRevenueUSDC(), vault.pendingReleaseAt(),
+          vault.paused(), vault.maxSupply(), vault.rescueReq()
         ]);
-        el("feesLine").textContent = `Mint: ${Number(mf)} bps | Redeem: ${Number(rf)} bps | RoundUp: ${fru?"Yes":"No"} | Recipient: ${trunc(fr)}`;
-        mintFee.value = Number(mf); redeemFee.value = Number(rf); feeRecipient.value = fr; feeRoundUp.checked = Boolean(fru);
-        el("guardedLine").textContent = "Guarded: " + (gl ? "Enabled" : "Disabled");
+        
+        // Basic Settings
+        mintFee.value = Number(mf); redeemFee.value = Number(rf);
+        guardedLine.textContent = gl ? "Guarded: ON" : "Guarded: OFF";
         delayLine.textContent = "Current: " + Number(delay) + "s";
         epochState.textContent = "Epoch: " + (closing ? "Closing (paused)" : "Open");
 
+        // Paused State
+        pausedState.style.display = isPaused ? "block" : "none";
+        btnPause.style.display = isPaused ? "none" : "block";
+        btnUnpause.style.display = isPaused ? "block" : "none";
+
+        // Pending Rev
         const now = Math.floor(Date.now()/1000);
         const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
         const ready = secs === 0 && BigInt(pending) > 0n;
         pendingHint.textContent = ready ? "Ready to apply ✅" : (BigInt(pending)>0n ? "Waiting for release…" : "No pending revenue");
+
+        // Supply Cap
+        capLine.textContent = "Current Cap: " + ethers.formatUnits(cap, 18);
+
+        // Rescue
+        const rAmt = res[1]; // amount
+        const rEta = Number(res[3]); // eta
+        if (rAmt > 0n) {
+           rescueForm.classList.add("hidden");
+           btnExecuteRescue.classList.remove("hidden");
+           const wait = rEta - now;
+           if (wait > 0) {
+              rescueStatus.textContent = `Pending: ${humanize(wait)} wait.`;
+              btnExecuteRescue.disabled = true;
+              btnExecuteRescue.textContent = `WAIT ${humanize(wait)}`;
+           } else {
+              rescueStatus.textContent = "Rescue Ready to Execute!";
+              btnExecuteRescue.disabled = false;
+              btnExecuteRescue.textContent = "EXECUTE RESCUE NOW";
+           }
+        } else {
+           rescueForm.classList.remove("hidden");
+           btnExecuteRescue.classList.add("hidden");
+           rescueStatus.textContent = "No active rescue.";
+        }
+
       } catch (e) { console.error("Owner load err", e); }
     }
 
@@ -606,17 +641,13 @@
           readVault.totalSupply()
         ]);
 
-        // Display with safe formatting
         const priceUsd = +ethers.formatUnits(price, 18);
         priceEl.textContent = `$${priceUsd.toFixed(6)}`;
         const activeUsd = +ethers.formatUnits(active, 6);
         const pendingUsd = +ethers.formatUnits(pending, 6);
 
-        // show up to 6 d.p. so dust isn't hidden
         actEl.textContent  = `$${activeUsd.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits:6})}`;
         pendEl.textContent = `$${pendingUsd.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits:6})}`;
-
-        // small-dust warning
         tinyWarn.style.display = (activeUsd > 0 && activeUsd < 0.001) ? '' : 'none';
 
         const now = Math.floor(Date.now()/1000);
@@ -628,23 +659,12 @@
           await loadOwnerState();
         }
 
-        // Client-side sanity check: recompute price
-        const supplyTok = +ethers.formatUnits(supply, 18);
-        const calcPrice = supplyTok > 0 ? (activeUsd / supplyTok) : 0;
-        const drift = (calcPrice && priceUsd) ? Math.abs(priceUsd - calcPrice) / calcPrice * 100 : 0;
-        if (drift > 0.5) console.warn(`NAV sanity: on-chain ${priceUsd} vs calc ${calcPrice} (${drift.toFixed(2)}% drift)`);
-
-        // Record + update chart/apy
         recordNavSample(price);
         updatePerformanceLines(price);
-
-      }catch(e){
-        console.error(e);
-        // alert("Refresh failed (check network/contract).");
-      }
+      }catch(e){ console.error(e); }
     }
 
-    // ===== User previews & actions (BigInt-safe) =====
+    // ===== Mint/Redeem =====
     document.getElementById("btnPreviewMint").onclick = async () => {
       try {
         if (!provider) await ensureProvider();
@@ -655,7 +675,6 @@
         mintBtn.disabled = false;
       } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
     };
-
     document.getElementById("btnMint").onclick = async () => {
       try {
         mintBtn.disabled = true;
@@ -671,7 +690,6 @@
       } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
       finally { mintBtn.disabled = false; }
     };
-
     document.getElementById("btnPreviewRedeem").onclick = async () => {
       try {
         if (!provider) await ensureProvider();
@@ -682,7 +700,6 @@
         redBtn.disabled = false;
       } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
     };
-
     document.getElementById("btnRedeem").onclick = async () => {
       try {
         redBtn.disabled = true;
@@ -696,172 +713,90 @@
       } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
       finally { redBtn.disabled = false; }
     };
+    btnMintMax.onclick = async () => { try{ if (!provider) await ensureProvider(); const bal = await usdc.balanceOf(acct); mintAmt.value = ethers.formatUnits(bal, 6); }catch(e){} };
+    btnRedeemMax.onclick = async () => { try{ if (!provider) await ensureProvider(); const bal = await vault.balanceOf(acct); redAmt.value = ethers.formatUnits(bal, 18); }catch(e){} };
 
-    // ===== Max buttons =====
-    btnMintMax.onclick = async () => {
-      try{
-        if (!provider) await ensureProvider();
-        const bal = await usdc.balanceOf(acct);
-        mintAmt.value = ethers.formatUnits(bal, 6);
-      }catch(e){ console.error(e); }
-    };
-    btnRedeemMax.onclick = async () => {
-      try{
-        if (!provider) await ensureProvider();
-        const bal = await vault.balanceOf(acct);
-        redAmt.value = ethers.formatUnits(bal, 18);
-      }catch(e){ console.error(e); }
-    };
-
-    // ===== Owner actions =====
+    // ===== ADMIN ACTIONS =====
     document.getElementById("btnQueueRev").onclick = async () => {
       try {
-        revMsg.textContent = "";
-        if (!provider) await ensureProvider();
-        if (vaultOwner.toLowerCase() !== acct.toLowerCase()) { revMsg.textContent = "Not owner"; return; }
-        const amt = p6(revAmount.value);
-        if (amt <= 0n) { revMsg.textContent = "Enter amount"; return; }
+        revMsg.textContent = ""; if (!provider) await ensureProvider();
+        const amt = p6(revAmount.value); if (amt <= 0n) { revMsg.textContent = "Enter amount"; return; }
         const allowance = await usdc.allowance(acct, VAULT);
         if (allowance < amt) { const txa = await usdc.approve(VAULT, amt); await txa.wait(); }
         const tx = await vault.injectRevenue(amt); await tx.wait();
         revMsg.textContent = "Queued ✅"; await refresh();
       } catch (e) { console.error(e); revMsg.textContent = shortErr(e); }
     };
-
-    btnApply.onclick = async () => {
-      try { if (!provider) await ensureProvider(); const tx = await vault.applyPendingRevenue(); await tx.wait(); pendingHint.textContent="Applied ✅"; await refresh(); }
-      catch (e) { console.error(e); pendingHint.textContent = shortErr(e); }
-    };
+    btnApply.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.applyPendingRevenue(); await tx.wait(); pendingHint.textContent="Applied ✅"; await refresh(); } catch (e) { pendingHint.textContent = shortErr(e); } };
     btnBeginClose.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.beginEpochClose(); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-    btnEndClose.onclick   = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.endEpochClose();   await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-
-    document.getElementById("btnSetDelay").onclick = async () => {
-      try {
-        if (!provider) await ensureProvider();
-        const secs = Number(navDelay.value || "0");
-        if (!(secs > 0)) { alert("Enter seconds > 0"); return; }
-        const tx = await vault.setNavDelay(secs); await tx.wait();
-        await refresh();
-      } catch (e) { console.error(e); alert(shortErr(e)); }
-    };
-
-    document.getElementById("btnSetFees").onclick = async () => {
-      try {
-        if (!provider) await ensureProvider();
-        const mf = Number(mintFee.value || "0");
-        const rf = Number(redeemFee.value || "0");
-        const fr = String(feeRecipient.value || "").trim();
-        const ru = !!feeRoundUp.checked;
-        if (isNaN(mf) || isNaN(rf) || mf < 0 || rf < 0 || mf > 500 || rf > 500) { alert("Fees must be 0–500 bps"); return; }
-        if (!/^0x[a-fA-F0-9]{40}$/.test(fr)) { alert("Enter a valid recipient address"); return; }
-        const tx = await vault.setFees(mf, rf, fr, ru); await tx.wait();
-        await refresh();
-      } catch (e) { console.error(e); alert(shortErr(e)); }
-    };
-
-    btnGuardOn.onclick  = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(true);  await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-    btnGuardOff.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(false); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-
-    document.getElementById("btnWhitelistOn").onclick = async () => {
-      try { if (!provider) await ensureProvider(); const a = String(wlAddr.value||"").trim(); if (!/^0x[a-fA-F0-9]{40}$/.test(a)) { wlMsg.textContent="Enter valid address"; return; }
-        const tx = await vault.setWhitelist(a, true); await tx.wait(); wlMsg.textContent = "Whitelisted ✅"; }
-      catch (e) { console.error(e); wlMsg.textContent = shortErr(e); }
-    };
-    document.getElementById("btnWhitelistOff").onclick = async () => {
-      try { if (!provider) await ensureProvider(); const a = String(wlAddr.value||"").trim(); if (!/^0x[a-fA-F0-9]{40}$/.test(a)) { wlMsg.textContent="Enter valid address"; return; }
-        const tx = await vault.setWhitelist(a, false); await tx.wait(); wlMsg.textContent = "Removed ✅"; }
-      catch (e) { console.error(e); wlMsg.textContent = shortErr(e); }
-    };
+    btnEndClose.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.endEpochClose(); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
     
-    // ===== BATCH SENDER LOGIC =====
-    // 1. Monitor TextArea for valid addresses
+    document.getElementById("btnSetDelay").onclick = async () => {
+      try { if (!provider) await ensureProvider(); const s = Number(navDelay.value); if(!(s>0)){alert("Invalid");return;} const tx = await vault.setNavDelay(s); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); }
+    };
+    btnSetFees.onclick = async () => {
+      try { if (!provider) await ensureProvider(); const m = Number(mintFee.value), r = Number(redeemFee.value); const recip = await vault.feeRecipient(); const ru = await vault.feeRoundUp();
+      const tx = await vault.setFees(m, r, recip, ru); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); }
+    };
+    btnGuardOn.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(true); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+    btnGuardOff.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(false); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
+    document.getElementById("btnWhitelistOn").onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setWhitelist(wlAddr.value, true); await tx.wait(); wlMsg.textContent="Added"; } catch(e){ wlMsg.textContent=shortErr(e); }};
+    document.getElementById("btnWhitelistOff").onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setWhitelist(wlAddr.value, false); await tx.wait(); wlMsg.textContent="Removed"; } catch(e){ wlMsg.textContent=shortErr(e); }};
+
+    // New Admin Actions
+    btnSetCap.onclick = async () => { try { if (!provider) await ensureProvider(); const c = p18(maxSupplyIn.value); const tx = await vault.setMaxSupply(c); await tx.wait(); await refresh(); } catch(e){ alert(shortErr(e)); }};
+    btnPause.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.pause(); await tx.wait(); await refresh(); } catch(e){ alert(shortErr(e)); }};
+    btnUnpause.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.unpause(); await tx.wait(); await refresh(); } catch(e){ alert(shortErr(e)); }};
+    
+    btnAnnounceRescue.onclick = async () => {
+        try {
+            if (!provider) await ensureProvider();
+            const t = resToken.value.trim(), a = resAmt.value.trim(), recipient = resTo.value.trim();
+            if(!ethers.isAddress(t) || !ethers.isAddress(recipient)) return alert("Invalid addresses");
+            const tx = await vault.announceRescue(t, BigInt(a), recipient);
+            await tx.wait(); await refresh();
+        } catch(e) { alert(shortErr(e)); }
+    };
+    btnExecuteRescue.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.executeRescue(); await tx.wait(); await refresh(); } catch(e) { alert(shortErr(e)); } };
+
+    // Batch Sender
     batchInput.addEventListener("input", () => {
-        const text = batchInput.value;
-        const lines = text.split(/\r?\n/);
-        let count = 0;
-        let total = 0n;
+        const text = batchInput.value, lines = text.split(/\r?\n/);
+        let count = 0, total = 0n;
         for (let l of lines) {
             const parts = l.split(",");
-            if (parts.length >= 2) {
-                const addr = parts[0].trim();
-                const amt = parts[1].trim();
-                if (ethers.isAddress(addr) && !isNaN(amt) && amt > 0) {
-                    count++;
-                    try { total += ethers.parseUnits(amt, 18); } catch {}
-                }
+            if (parts.length >= 2 && ethers.isAddress(parts[0].trim()) && !isNaN(parts[1].trim())) {
+                count++; try { total += ethers.parseUnits(parts[1].trim(), 18); } catch {}
             }
         }
-        batchStats.textContent = `Wait: ${count} | Total: ${ethers.formatUnits(total, 18)} MTYLD`;
+        batchStats.textContent = `Wait: ${count} | Total: ${ethers.formatUnits(total, 18)}`;
     });
-
-    // 2. Process Batch
     btnSendBatch.onclick = async () => {
         try {
             if (!provider) await ensureProvider();
-            
-            // Parse recipients
-            const lines = batchInput.value.split(/\r?\n/);
-            const recipients = [];
-            let totalNeeded = 0n;
-            
+            const lines = batchInput.value.split(/\r?\n/), recipients = [];
             for (let l of lines) {
                 const parts = l.split(",");
-                if (parts.length < 2) continue;
-                const addr = parts[0].trim();
-                const amtStr = parts[1].trim();
-                if (!ethers.isAddress(addr)) continue;
-                try {
-                    const amt = ethers.parseUnits(amtStr, 18);
-                    if (amt > 0n) {
-                        recipients.push({ to: addr, amount: amt, str: amtStr });
-                        totalNeeded += amt;
-                    }
-                } catch {}
-            }
-
-            if (recipients.length === 0) { alert("No valid lines found. Use format: Address, Amount"); return; }
-            
-            // Check admin balance
-            const adminBal = await vault.balanceOf(acct);
-            if (adminBal < totalNeeded) {
-                alert(`Insufficient Balance!\nYou have: ${ethers.formatUnits(adminBal,18)}\nNeeded: ${ethers.formatUnits(totalNeeded,18)}\n\nPlease Mint more MTYLD first.`);
-                return;
-            }
-
-            if (!confirm(`Send ${recipients.length} transactions totaling ${ethers.formatUnits(totalNeeded, 18)} MTYLD? \n\nNote: You will need to confirm each transaction in MetaMask.`)) return;
-
-            // Execute Loop
-            btnSendBatch.disabled = true;
-            batchLog.textContent = "Starting batch...\n";
-            
-            for (let i = 0; i < recipients.length; i++) {
-                const r = recipients[i];
-                try {
-                    batchLog.textContent += `[${i+1}/${recipients.length}] Sending ${r.str} to ${r.to.slice(0,6)}... `;
-                    const tx = await vault.transfer(r.to, r.amount);
-                    batchLog.textContent += `Waiting... `;
-                    await tx.wait();
-                    batchLog.textContent += `OK ✅\n`;
-                    // Auto scroll
-                    batchLog.scrollTop = batchLog.scrollHeight;
-                } catch (err) {
-                    console.error(err);
-                    batchLog.textContent += `FAILED ❌ (${shortErr(err)})\n`;
+                if (parts.length >= 2 && ethers.isAddress(parts[0].trim())) {
+                    try { recipients.push({ to: parts[0].trim(), amount: ethers.parseUnits(parts[1].trim(), 18) }); } catch {}
                 }
             }
-            batchLog.textContent += "Batch Complete.";
+            if (!recipients.length) return alert("No valid lines");
+            if (!confirm(`Send to ${recipients.length} wallets?`)) return;
+            btnSendBatch.disabled = true; batchLog.classList.remove("hidden");
+            batchLog.textContent = "Starting...\n";
+            for (let i = 0; i < recipients.length; i++) {
+                try {
+                    batchLog.textContent += `Sending to ${recipients[i].to.slice(0,6)}... `;
+                    const tx = await vault.transfer(recipients[i].to, recipients[i].amount);
+                    await tx.wait(); batchLog.textContent += `OK\n`;
+                } catch (e) { batchLog.textContent += `FAIL\n`; }
+            }
             await refresh();
-
-        } catch (e) {
-            console.error(e);
-            alert(shortErr(e));
-        } finally {
-            btnSendBatch.disabled = false;
-        }
+        } catch (e) { alert(shortErr(e)); } finally { btnSendBatch.disabled = false; }
     };
-    // ===== END BATCH LOGIC =====
 
-    // Perf buttons
+    // Misc
     document.getElementById("btnExportCSV").onclick = () => {
       const rows = [["timestamp","iso","nav_usd"]];
       for (const p of navHistory) rows.push([p.t, new Date(p.t*1000).toISOString(), p.p.toFixed(8)]);
@@ -872,24 +807,12 @@
       a.href = url; a.download = "mtyld_nav_history.csv"; a.click();
       URL.revokeObjectURL(url);
     };
-    document.getElementById("btnResetHistory").onclick = () => {
-      if (!confirm("Reset locally stored NAV history?")) return;
-      navHistory = []; saveHistory(); drawNavChart();
-      const elApy = el("apyLine"); if (elApy) elApy.textContent = "APY (30d annualized): —";
-      const elChange = el("changeLine"); if (elChange) elChange.textContent = "Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —";
-    };
-
-    // Connect & Refresh
-    document.getElementById("btnConnect").onclick = async () => { try { await ensureProvider(); await refresh(); await loadOwnerState(); } catch(e){ console.error(e); } };
+    document.getElementById("btnResetHistory").onclick = () => { if(confirm("Reset history?")) { navHistory=[]; saveHistory(); drawNavChart(); }};
+    document.getElementById("btnConnect").onclick = async () => { try { await ensureProvider(); await refresh(); await loadOwnerState(); } catch(e){} };
     document.getElementById("btnRefresh").onclick = async () => { await refresh(); if (vaultOwner && signer) await loadOwnerState(); };
 
-    // Init local history + chart
     loadHistory(); drawNavChart();
-
-    // Auto-refresh every 10s
     setInterval(() => { refresh().catch(()=>{}); }, 10000);
-
-    // First paint
     refresh().catch(()=>{});
   })();
   </script>
