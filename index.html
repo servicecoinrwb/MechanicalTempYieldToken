@@ -493,99 +493,114 @@
       }
     });
 
-    /* ===== Lite Live Stats + Yield Calc (read-only, no wallet) ===== */
-    (() => {
-      // UPDATED VAULT ADDRESS
-      const VAULT_ADDR = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
+<script>
+    // Footer year
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    // Generate Portal QR Code
+    if(document.getElementById("portalQR")) {
+        new QRCode(document.getElementById("portalQR"), {
+            text: "https://vault.mechanicaltemp.com/",
+            width: 128, height: 128,
+            colorDark : "#0f172a", colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    }
+
+    // ===== Modal controls =====
+    const modal = document.getElementById('waitlistModal');
+    const closeBtn = document.getElementById('closeWaitlist');
+
+    function openModal(){ modal.classList.remove('hidden'); }
+    function closeModal(){ modal.classList.add('hidden'); }
+
+    document.querySelectorAll('[data-open-waitlist]').forEach(btn => {
+      btn.addEventListener('click', openModal);
+    });
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    // ===== Formspree submit logic (Kept the same) =====
+    const form = document.getElementById('whitelistForm');
+    const formMsg = document.getElementById('formMsg');
+    const successCard = document.getElementById('successCard');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const hp = new FormData(form).get('company');
+      if (hp) return; // Honeypot
+      const data = new FormData(form);
+      const endpoint = form.getAttribute('action');
       
-      const RPCS = [
-        "https://arb1.arbitrum.io/rpc",
-        "https://arbitrum.llamarpc.com"
-      ];
-      const VAULT_ABI = [
-        "function pricePerToken() view returns (uint256)",        // 1e18 USD/token
-        "function treasuryActiveUSDC() view returns (uint256)", // 6 decimals
-        "function pendingRevenueUSDC() view returns (uint256)",  // 6 decimals
-        "function totalSupply() view returns (uint256)"  // 18 decimals
-      ];
-
-      const $ = (id) => document.getElementById(id);
-      const navEl = $("statNav");
-      const treEl = $("statTreasury");
-      const dailyEl = $("statDaily");
-      const weeklyEl = $("statWeekly");
-      const cypherEl = $("statCypher");
-      const serviceEl = $("statService");
-      const supplyEl = $("statSupply");
-
-      const fmt18 = (x) => Number(x) / 1e18;
-      const fmt6  = (x) => Number(x) / 1e6;
-      const usd   = (n, d=2) => "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: d });
-      const numFmt = (n) => Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
-
-      let rpcIndex = 0;
-      let provider = new ethers.JsonRpcProvider(RPCS[rpcIndex]);
-      let vault    = new ethers.Contract(VAULT_ADDR, VAULT_ABI, provider);
-
-      async function withFailover(fn) {
-        try { return await fn(); }
-        catch {
-          rpcIndex = (rpcIndex + 1) % RPCS.length;
-          provider = new ethers.JsonRpcProvider(RPCS[rpcIndex]);
-          vault    = new ethers.Contract(VAULT_ADDR, VAULT_ABI, provider);
-          return await fn();
+      try {
+        formMsg.textContent = 'Submitting...';
+        const res = await fetch(endpoint, {
+          method: 'POST', body: data,
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          form.reset(); form.classList.add('hidden');
+          successCard.classList.remove('hidden'); formMsg.textContent = '';
+        } else {
+          formMsg.textContent = 'Submission failed. Please try again.';
         }
+      } catch (err) { formMsg.textContent = 'Network error.'; }
+    });
+
+    // ===== NEW: Simple API Fetch (Replaces Ethers.js logic) =====
+    async function refreshLiteStats() {
+      try {
+        // 1. Fetch data from your new Vercel API
+        // REPLACE THIS URL with your actual Vercel link (e.g. https://mtyld-api.vercel.app/api/nav)
+        const response = await fetch('YOUR_VERCEL_API_URL_HERE'); 
+        const data = await response.json();
+
+        // 2. Parse the data (API returns raw numbers)
+        const price = data.price; 
+        const treasury = data.totalBackingUSDC; // Ensure your API returns this key
+        const supply = data.totalSupply;
+
+        // 3. Update the UI
+        const usd = (n) => "$" + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const num = (n) => Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+        if(document.getElementById("statNav")) 
+            document.getElementById("statNav").textContent = "$" + price.toFixed(4);
+        
+        if(document.getElementById("statTreasury")) 
+            document.getElementById("statTreasury").textContent = usd(treasury);
+        
+        if(document.getElementById("statSupply")) 
+            document.getElementById("statSupply").textContent = num(supply);
+
+        // 4. Calculate Estimates (Same logic as before, just using API data)
+        const estDaily = treasury * 0.0057;   
+        const estWeekly = treasury * 0.0233;  
+        const estCypher = treasury * 0.0075; 
+
+        if(document.getElementById("statDaily")) 
+            document.getElementById("statDaily").textContent = "~" + usd(estDaily);
+        if(document.getElementById("statWeekly")) 
+            document.getElementById("statWeekly").textContent = "+" + usd(estWeekly);
+        if(document.getElementById("statCypher")) 
+            document.getElementById("statCypher").textContent = "~" + usd(estCypher);
+        
+        // Service revenue is hardcoded or could be added to API later
+        if(document.getElementById("statService")) 
+            document.getElementById("statService").textContent = "+$1,250.00"; 
+
+      } catch (e) {
+        console.error("API Error:", e);
+        // Optional: Leave the "Loading..." or "—" state
       }
+    }
 
-      async function refreshLiteStats() {
-        try {
-          const [price18, active6, pending6, supply18] = await Promise.all([
-            withFailover(() => vault.pricePerToken()),
-            withFailover(() => vault.treasuryActiveUSDC()),
-            withFailover(() => vault.pendingRevenueUSDC()),
-            withFailover(() => vault.totalSupply())
-          ]);
+    // Run immediately, then update every 30 seconds
+    refreshLiteStats();
+    setInterval(refreshLiteStats, 30000);
 
-          const nav = fmt18(price18);
-          if (navEl) navEl.textContent = "$" + nav.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
-
-          const active = fmt6(active6);
-          if (treEl) treEl.textContent = usd(active);
-
-          const supply = fmt18(supply18);
-          if (supplyEl) supplyEl.textContent = numFmt(supply);
-          
-          // DYNAMIC YIELD CALCULATION (Calibrated to current external holdings)
-          // Based on ~0.57% daily (xGRAIL) and ~2.3% weekly (USUAL) relative to ~$1752 treasury
-          const estDaily = active * 0.0057;  
-          const estWeekly = active * 0.0233; 
-          const estCypher = active * 0.0075; // Est. based on active yield
-
-          // Only show calculations if treasury has funds
-          if (active > 500) {
-             if(dailyEl) dailyEl.textContent = "~" + usd(estDaily);
-             if(weeklyEl) weeklyEl.textContent = "+" + usd(estWeekly);
-             if(cypherEl) cypherEl.textContent = "~" + usd(estCypher);
-          } else {
-             // Fallback for empty/new vault
-             if(dailyEl) dailyEl.textContent = "~$10.13";
-             if(weeklyEl) weeklyEl.textContent = "+$40.96";
-             if(cypherEl) cypherEl.textContent = "~$15.20";
-             if(serviceEl) serviceEl.textContent = "+$1,250.00"; // Added Service Revenue fallback
-          }
-
-        } catch (e) {
-          console.error("Lite stats refresh failed:", e);
-          if (navEl && navEl.textContent === "$—") navEl.textContent = "—";
-          if (treEl && treEl.textContent === "$—") treEl.textContent = "—";
-          if (supplyEl && supplyEl.textContent === "—") supplyEl.textContent = "—";
-        }
-      }
-
-      refreshLiteStats();
-      setInterval(refreshLiteStats, 15000);
-    })();
-  </script>
+</script>
 </body>
 </html>
+
 
