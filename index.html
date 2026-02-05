@@ -184,7 +184,7 @@
           <p class="mt-4 text-lg text-slate-400">
             We believe accessing financial freedom should be as easy as checking your email. You do <strong>not</strong> need to be a crypto expert to participate.
           </p>
-          
+           
           <div class="mt-8 space-y-6">
             <!-- Feature 1 -->
             <div class="flex gap-4">
@@ -213,7 +213,7 @@
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center">
           <h3 class="text-2xl font-bold text-white mb-2">Access on Mobile</h3>
           <p class="text-slate-400 mb-6">Scan to open the Partner Portal on your phone.</p>
-          
+           
           <div class="flex justify-center mb-6">
              <div class="bg-white p-4 rounded-xl">
                 <div id="portalQR"></div>
@@ -555,24 +555,34 @@
           const supply = fmt18(supply18);
           if (supplyEl) supplyEl.textContent = numFmt(supply);
           
+          const pendingRevenue = fmt6(pending6); // Correctly define pending revenue
+
           // DYNAMIC YIELD CALCULATION (Calibrated to current external holdings)
           // Based on ~0.57% daily (xGRAIL) and ~2.3% weekly (USUAL) relative to ~$1752 treasury
           const estDaily = active * 0.0057;  
           const estWeekly = active * 0.0233; 
           const estCypher = active * 0.0075; // Est. based on active yield
 
-          // Only show calculations if treasury has funds
-          if (active > 500) {
-             if(dailyEl) dailyEl.textContent = "~" + usd(estDaily);
-             if(weeklyEl) weeklyEl.textContent = "+" + usd(estWeekly);
-             if(cypherEl) cypherEl.textContent = "~" + usd(estCypher);
-             if(serviceEl) serviceEl.textContent = "~" + usd(estService);
+          // Only show calculations if treasury has funds OR if there is pending revenue
+          if (active > 500 || pendingRevenue > 0) {
+              if(dailyEl) dailyEl.textContent = "~" + usd(estDaily);
+              if(weeklyEl) weeklyEl.textContent = "+" + usd(estWeekly);
+              if(cypherEl) cypherEl.textContent = "~" + usd(estCypher);
+              
+              if(serviceEl) {
+                  serviceEl.textContent = "+" + usd(pendingRevenue);
+                  // Make it stand out if there is revenue waiting
+                  if(pendingRevenue > 0) {
+                      serviceEl.classList.add("text-blue-300", "font-bold");
+                      serviceEl.classList.remove("text-blue-400");
+                  }
+              }
           } else {
-             // Fallback for empty/new vault
-             if(dailyEl) dailyEl.textContent = "~$10.13";
-             if(weeklyEl) weeklyEl.textContent = "+$40.96";
-             if(cypherEl) cypherEl.textContent = "~$15.20";
-             if(serviceEl) serviceEl.textContent = "+$1,250.00"; // Added Service Revenue fallback
+              // Fallback for empty/new vault
+              if(dailyEl) dailyEl.textContent = "~$10.13";
+              if(weeklyEl) weeklyEl.textContent = "+$40.96";
+              if(cypherEl) cypherEl.textContent = "~$15.20";
+              if(serviceEl) serviceEl.textContent = "+$1,250.00"; // Default fallback
           }
 
         } catch (e) {
@@ -589,4 +599,3 @@
   </script>
 </body>
 </html>
-
