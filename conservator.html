@@ -23,7 +23,7 @@
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">ETH Strategy</span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">DEFI</span></span>
       </a>
       <div class="flex items-center gap-3">
         <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
@@ -103,7 +103,7 @@
       <div class="glass rounded-2xl p-5">
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Vault TVL</p>
         <p id="stat-tvl" class="text-2xl font-mono text-sky-400">—</p>
-        <p class="text-slate-600 text-xs mt-1">Total WETH in vault</p>
+        <p id="tvl-breakdown" class="text-slate-600 text-xs mt-1">Total WETH in vault</p>
       </div>
       <div class="glass rounded-2xl p-5">
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">NAV / Share</p>
@@ -432,6 +432,11 @@
       {"inputs":[{"name":"shares","type":"uint256"},{"name":"receiver","type":"address"},{"name":"owner","type":"address"}],"name":"redeem","outputs":[{"type":"uint256"}],"stateMutability":"nonpayable","type":"function"},
     ];
 
+
+    const AWETH_ADDRESS = "0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8";
+    const AWETH_ABI = [
+      {"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+    ];
     const WETH_ABI = [
       {"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"type":"bool"}],"stateMutability":"nonpayable","type":"function"},
@@ -530,9 +535,33 @@
           rc.convertToAssets(ethers.parseEther("1")).catch(() => ethers.parseEther("1")),
           rc.MIN_DEPOSIT(), rc.WITHDRAW_LOCK_PERIOD(), rc.asset(), rc.owner()
         ]);
-        currentNav = parseFloat(ethers.formatEther(nav));
-        document.getElementById('stat-tvl').textContent = parseFloat(ethers.formatEther(assets)).toFixed(6) + ' WETH';
-        document.getElementById('stat-nav').textContent = currentNav.toFixed(6);
+        // Also fetch aWETH balance (funds deployed to Aave)
+        const aweth = new ethers.Contract(AWETH_ADDRESS, AWETH_ABI, rp);
+        const aWethBal = await aweth.balanceOf(VAULT_ADDRESS).catch(() => 0n);
+        const totalReal = assets + aWethBal;
+        const totalRealFloat = parseFloat(ethers.formatEther(totalReal));
+        const aWethFloat = parseFloat(ethers.formatEther(aWethBal));
+        const vaultFloat = parseFloat(ethers.formatEther(assets));
+
+        // NAV = totalReal / totalSupply (recalculate properly)
+        const supplyFloat = parseFloat(ethers.formatEther(supply));
+        const realNav = supplyFloat > 0 ? totalRealFloat / supplyFloat : 1.0;
+        currentNav = realNav;
+
+        document.getElementById('stat-tvl').textContent = totalRealFloat.toFixed(6) + ' WETH';
+        document.getElementById('stat-nav').textContent = realNav.toFixed(6);
+        
+        // Show deployment breakdown
+        const breakdown = document.getElementById('tvl-breakdown');
+        if (breakdown) {
+          if (aWethFloat > 0) {
+            breakdown.textContent = vaultFloat.toFixed(4) + ' idle + ' + aWethFloat.toFixed(4) + ' in Aave';
+            breakdown.style.display = 'block';
+          } else {
+            breakdown.textContent = 'Total WETH in vault';
+            breakdown.style.display = 'block';
+          }
+        }
         document.getElementById('stat-agent').textContent = agent.slice(0,6) + '...' + agent.slice(-4);
         document.getElementById('current-agent-display').textContent = agent;
         document.getElementById('info-min-deposit').textContent = ethers.formatEther(minDep) + ' WETH';
@@ -544,8 +573,9 @@
           const [myShares, maxR] = await Promise.all([rc.balanceOf(userAddress), rc.maxRedeem(userAddress)]);
           const sharesFloat = parseFloat(ethers.formatEther(myShares));
           const wethValue = sharesFloat * currentNav;
+          const pct = supplyFloat > 0 ? (sharesFloat / supplyFloat * 100).toFixed(2) : '0.00';
           document.getElementById('stat-my-shares').textContent = sharesFloat.toFixed(4) + ' mtETH-S';
-          document.getElementById('stat-my-value').textContent = '≈ ' + wethValue.toFixed(6) + ' WETH';
+          document.getElementById('stat-my-value').textContent = '≈ ' + wethValue.toFixed(6) + ' WETH  •  ' + pct + '% of vault';
         }
       } catch(e) { console.error('Read error:', e); }
     }
