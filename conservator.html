@@ -24,7 +24,7 @@
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">ETH Strategy</span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">DEFI</span></span>
       </a>
       <div class="flex items-center gap-3">
         <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
@@ -133,13 +133,16 @@
 
     <!-- ── AGENT PORTFOLIO TRACKER ─────────────────────────── -->
     <div class="glass rounded-2xl p-6 mb-6">
-      <div class="flex items-center justify-between mb-5">
+      <button onclick="toggleSection('portfolio')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
         <h2 class="text-lg font-bold text-white flex items-center gap-2">
           <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Agent Portfolio
         </h2>
-        <a id="agent-arbiscan-link" href="#" target="_blank" class="text-xs font-mono text-sky-400 hover:underline">View on Arbiscan ↗</a>
-      </div>
+        <svg id="portfolio-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div id="portfolio-body" style="display:none">
+      <div class="px-6 pb-6 pt-2">
+        <a id="agent-arbiscan-link" href="#" target="_blank" class="text-xs font-mono text-sky-400 hover:underline float-right">View on Arbiscan ↗</a>
 
       <div class="grid md:grid-cols-4 gap-4 mb-6">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
@@ -192,12 +195,21 @@
         </div>
 
       </div>
+      </div>
     </div>
 
     <!-- ── DEPOSIT / WITHDRAW TABS ─────────────────────────── -->
-    <div class="glass rounded-2xl p-6 mb-6">
-
-      <div class="flex gap-3 mb-6">
+    <div class="glass rounded-2xl mb-6 overflow-hidden">
+      <button onclick="toggleSection('deposit-section')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Deposit / Withdraw
+        </h2>
+        <svg id="deposit-section-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div id="deposit-section-body" style="display:none">
+      <div class="px-6 pb-6">
+      <div class="flex gap-3 mb-6 pt-2">
         <button id="tab-deposit" onclick="switchTab('deposit')" class="tab-btn active px-5 py-2 rounded-xl border border-slate-700 text-slate-300 text-sm font-bold">
           ↓ Deposit WETH
         </button>
@@ -279,11 +291,16 @@
 
 
       <!-- Aave Calldata Generator -->
-      <div class="glass rounded-2xl p-6 mb-6">
-        <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
-          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-          Aave Calldata Generator
-        </h3>
+      <div class="glass rounded-2xl mb-6 overflow-hidden">
+        <button onclick="toggleSection('calldata')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+            Aave Calldata Generator
+          </h3>
+          <svg id="calldata-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div id="calldata-body" style="display:none">
+        <div class="px-6 pb-6 pt-2">
         <p class="text-slate-500 text-xs mb-4">Generate the exact calldata needed to deploy vault funds to Aave V3. Run Step 1 first, wait for confirmation, then Step 2. Paste each into the Execute Strategy panel below.</p>
 
         <div class="flex items-center gap-4 mb-5">
@@ -348,16 +365,25 @@
         </div>
       </div>
 
+        </div>
+        </div>
+      </div>
       <!-- Hidden value holders for copy -->
       <span id="step1-target-val" class="hidden">0x82aF49447D8a07e3bd95BD0d56f35241523fBab1</span>
       <span id="step2-target-val" class="hidden">0x794a61358D6845594F94dc1DB02A252b5b4814aD</span>
 
     <!-- ── ADMIN PANELS ────────────────────────────────────── -->
-    <div class="mb-4">
-      <h2 class="text-lg font-bold text-white mb-1">Owner Controls</h2>
-      <p class="text-slate-500 text-xs font-mono">Only the vault owner wallet can use these functions.</p>
-    </div>
-
+    <div class="glass rounded-2xl mb-6 overflow-hidden">
+      <button onclick="toggleSection('owner')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          Owner Controls
+        </h2>
+        <svg id="owner-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div id="owner-body" style="display:none">
+      <div class="px-6 pb-6 pt-2">
+        <p class="text-slate-500 text-xs font-mono mb-4">Only the vault owner wallet can use these functions.</p>
     <div class="grid md:grid-cols-2 gap-6 mb-6">
 
       <!-- Execute Strategy -->
@@ -408,7 +434,7 @@
 
     </div>
 
-    <div class="grid md:grid-cols-2 gap-6 mb-6">
+    <div class="grid md:grid-cols-2 gap-6 mb-4">
 
       <!-- Agent Management -->
       <div class="glass rounded-2xl p-6">
@@ -458,6 +484,10 @@
         </div>
       </div>
 
+    </div>
+
+      </div>
+      </div>
     </div>
 
     <!-- Footer -->
@@ -550,6 +580,16 @@
     let currentNav = 1.0;
     let toastTimer;
 
+
+
+    // ── Section toggles ────────────────────────────────────────
+    function toggleSection(id) {
+      const body = document.getElementById(id + '-body');
+      const chevron = document.getElementById(id + '-chevron');
+      const isHidden = body.style.display === 'none';
+      body.style.display = isHidden ? 'block' : 'none';
+      chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
 
     // ── Explainer toggle ───────────────────────────────────────
     function toggleExplainer() {
