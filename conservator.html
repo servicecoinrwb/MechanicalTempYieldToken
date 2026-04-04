@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -23,7 +23,7 @@
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">DEFI</span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">ETH Strategy</span></span>
       </a>
       <div class="flex items-center gap-3">
         <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
@@ -37,7 +37,7 @@
     <!-- Title -->
     <div class="mb-8">
       <h1 class="text-3xl font-black text-white">The Conservator <span class="text-sky-400">Dashboard</span></h1>
-      <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (CETH) • Arbitrum One • <a href="https://arbiscan.io/address/0x0b5873fFfDD786F3A807C7c875370d3266600183" target="_blank" class="text-sky-400 hover:underline">0x0b5873...0183</a></p>
+      <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) • Arbitrum One • <a href="https://arbiscan.io/address/0x0b5873fFfDD786F3A807C7c875370d3266600183" target="_blank" class="text-sky-400 hover:underline">0x0b5873...0183</a></p>
     </div>
 
     <!-- Network Warning -->
@@ -55,7 +55,7 @@
       <div class="grid md:grid-cols-3 gap-4 mb-6">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <div class="text-sky-400 font-bold text-sm mb-2">① The Vault (Smart Contract)</div>
-          <p class="text-slate-400 text-sm">A secure on-chain safe on Arbitrum. It holds WETH (wrapped ETH). When you deposit WETH, you get <strong class="text-white">CETH (Conservator ETH)</strong> back. These shares represent your ownership slice of everything in the vault.</p>
+          <p class="text-slate-400 text-sm">A secure on-chain safe on Arbitrum. It holds WETH (wrapped ETH). When you deposit WETH, you get <strong class="text-white">mtETH-S</strong> back. These shares represent your ownership slice of everything in the vault.</p>
         </div>
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <div class="text-emerald-400 font-bold text-sm mb-2">② The Conservator (AI Agent)</div>
@@ -89,7 +89,7 @@
       <div class="grid md:grid-cols-2 gap-4 mt-4">
         <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
           <div class="text-slate-300 font-semibold text-sm mb-2">🔐 What is NAV / Share Price?</div>
-          <p class="text-slate-400 text-sm">NAV = Net Asset Value. It starts at 1.0. As the vault earns yield, NAV goes up. If you deposit when NAV = 1.0 and withdraw when NAV = 1.05, you earned 5%. Your CETH is always worth (shares × NAV) in WETH.</p>
+          <p class="text-slate-400 text-sm">NAV = Net Asset Value. It starts at 1.0. As the vault earns yield, NAV goes up. If you deposit when NAV = 1.0 and withdraw when NAV = 1.05, you earned 5%. Your mtETH-S is always worth (shares × NAV) in WETH.</p>
         </div>
         <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
           <div class="text-slate-300 font-semibold text-sm mb-2">⏱ What is the Withdraw Lock?</div>
@@ -111,7 +111,7 @@
         <p class="text-slate-600 text-xs mt-1">Share price in WETH</p>
       </div>
       <div class="glass rounded-2xl p-5">
-        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Your CETH</p>
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Your mtETH-S</p>
         <p id="stat-my-shares" class="text-2xl font-mono text-emerald-400">—</p>
         <p class="text-slate-600 text-xs mt-1" id="stat-my-value">Connect wallet to see</p>
       </div>
@@ -145,7 +145,7 @@
           <a href="https://www.mechanicaltemp.com" class="underline hover:text-amber-300">Get MTYLD →</a>
         </div>
         <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-800 mb-4">
-          <p class="text-slate-400 text-sm">You send <strong class="text-white">WETH</strong> → You receive <strong class="text-sky-400">CETH — Conservator ETH</strong>. Your shares grow in value as the vault earns yield. Minimum deposit is 0.01 WETH. You cannot withdraw for 24 hours after depositing.</p>
+          <p class="text-slate-400 text-sm">You send <strong class="text-white">WETH</strong> → You receive <strong class="text-sky-400">mtETH-S</strong>. Your shares grow in value as the vault earns yield. Minimum deposit is 0.01 WETH. You cannot withdraw for 24 hours after depositing.</p>
         </div>
         <div class="grid md:grid-cols-3 gap-4 mb-4">
           <div>
@@ -177,11 +177,11 @@
       <!-- WITHDRAW TAB -->
       <div id="panel-withdraw" class="hidden">
         <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-800 mb-4">
-          <p class="text-slate-400 text-sm">You burn <strong class="text-white">CETH (Conservator ETH)</strong> → You receive <strong class="text-sky-400">WETH</strong> at current NAV. If NAV has grown, you get back more WETH than you put in. You must have waited 24 hours since your last deposit.</p>
+          <p class="text-slate-400 text-sm">You burn <strong class="text-white">mtETH-S</strong> → You receive <strong class="text-sky-400">WETH</strong> at current NAV. If NAV has grown, you get back more WETH than you put in. You must have waited 24 hours since your last deposit.</p>
         </div>
         <div class="grid md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">CETH to Redeem</label>
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">mtETH-S to Redeem</label>
             <input id="withdraw-shares" type="number" step="0.0001" min="0" placeholder="0.0000"
               class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
           </div>
@@ -197,13 +197,13 @@
         </div>
         <div class="grid grid-cols-2 gap-3">
           <button onclick="setMaxShares()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-sm transition">
-            Use Max CETH
+            Use Max mtETH-S
           </button>
           <button id="btn-withdraw" class="py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition shadow-lg shadow-sky-900/30">
             Withdraw WETH
           </button>
         </div>
-        <p class="text-slate-600 text-xs mt-3 font-mono">This calls redeem() on the vault contract. Your CETH is burned and WETH is sent to the receiver address.</p>
+        <p class="text-slate-600 text-xs mt-3 font-mono">This calls redeem() on the vault contract. Your mtETH-S is burned and WETH is sent to the receiver address.</p>
       </div>
 
     </div>
@@ -544,7 +544,7 @@
           const [myShares, maxR] = await Promise.all([rc.balanceOf(userAddress), rc.maxRedeem(userAddress)]);
           const sharesFloat = parseFloat(ethers.formatEther(myShares));
           const wethValue = sharesFloat * currentNav;
-          document.getElementById('stat-my-shares').textContent = sharesFloat.toFixed(4) + ' CETH';
+          document.getElementById('stat-my-shares').textContent = sharesFloat.toFixed(4) + ' mtETH-S';
           document.getElementById('stat-my-value').textContent = '≈ ' + wethValue.toFixed(6) + ' WETH';
         }
       } catch(e) { console.error('Read error:', e); }
@@ -622,9 +622,9 @@
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm deposit() in MetaMask...');
         const tx = await contract.deposit(ethers.parseEther(amt), receiver);
-        showToast('pending', 'TX Submitted', 'Depositing WETH, minting CETH...', tx.hash);
+        showToast('pending', 'TX Submitted', 'Depositing WETH, minting mtETH-S...', tx.hash);
         await tx.wait();
-        showToast('success', 'Deposit Confirmed ✓', 'CETH (Conservator ETH) issued. Check your balance.', tx.hash);
+        showToast('success', 'Deposit Confirmed ✓', 'mtETH-S issued. Check your balance.', tx.hash);
         refreshAll();
       } catch(e) { showToast('error', 'Deposit Failed', e.reason || e.message || 'Rejected.'); }
     };
@@ -645,19 +645,19 @@
         const val = ethers.formatEther(maxR);
         document.getElementById('withdraw-shares').value = val;
         document.getElementById('withdraw-preview').textContent = (parseFloat(val) * currentNav).toFixed(6) + ' WETH';
-      } catch(e) { alert('Could not fetch max CETH: ' + e.message); }
+      } catch(e) { alert('Could not fetch max mtETH-S: ' + e.message); }
     }
 
     document.getElementById('btn-withdraw').onclick = async () => {
       if (!await requireConnected()) return;
       const sharesStr = document.getElementById('withdraw-shares').value;
-      if (!sharesStr || parseFloat(sharesStr) <= 0) return alert('Enter number of CETH to redeem.');
+      if (!sharesStr || parseFloat(sharesStr) <= 0) return alert('Enter number of mtETH-S to redeem.');
       const receiverInput = document.getElementById('withdraw-receiver').value.trim();
       const receiver = receiverInput && ethers.isAddress(receiverInput) ? receiverInput : userAddress;
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm redeem() in MetaMask...');
         const tx = await contract.redeem(ethers.parseEther(sharesStr), receiver, userAddress);
-        showToast('pending', 'TX Submitted', 'Burning CETH, sending WETH...', tx.hash);
+        showToast('pending', 'TX Submitted', 'Burning mtETH-S, sending WETH...', tx.hash);
         await tx.wait();
         showToast('success', 'Withdrawal Confirmed ✓', 'WETH sent to receiver.', tx.hash);
         refreshAll();
