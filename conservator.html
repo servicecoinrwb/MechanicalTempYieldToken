@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -23,7 +23,7 @@
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">ETH Strategy</span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">DEFI</span></span>
       </a>
       <div class="flex items-center gap-3">
         <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
@@ -207,6 +207,81 @@
       </div>
 
     </div>
+
+
+      <!-- Aave Calldata Generator -->
+      <div class="glass rounded-2xl p-6 mb-6">
+        <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          Aave Calldata Generator
+        </h3>
+        <p class="text-slate-500 text-xs mb-4">Generate the exact calldata needed to deploy vault funds to Aave V3. Run Step 1 first, wait for confirmation, then Step 2. Paste each into the Execute Strategy panel below.</p>
+
+        <div class="flex items-center gap-4 mb-5">
+          <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider whitespace-nowrap">WETH Amount</label>
+          <input id="calldata-amount" type="number" step="0.001" min="0.001" value="0.01"
+            class="w-36 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+          <span id="calldata-wei" class="text-xs font-mono text-slate-500">= 10000000000000000 wei</span>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+
+          <!-- Step 1 -->
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-900/50 border border-sky-800 text-sky-400">STEP 1</span>
+                <span class="text-sm font-semibold text-white">Approve WETH</span>
+              </div>
+            </div>
+            <div class="mb-2">
+              <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Target Contract (WETH)</div>
+              <div class="flex gap-2 items-center">
+                <div class="text-[11px] font-mono text-slate-300 bg-slate-950 rounded-lg px-3 py-2 flex-1 truncate">0x82aF49447D8a07e3bd95BD0d56f35241523fBab1</div>
+                <button onclick="copyAndFill('step1-target-val','exec-target','cp1t')" id="cp1t" class="text-[10px] px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 whitespace-nowrap transition">Copy + Fill</button>
+              </div>
+            </div>
+            <div>
+              <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Call Data</div>
+              <div class="flex gap-2 items-start">
+                <div id="step1-calldata" class="text-[10px] font-mono text-sky-300 bg-slate-950 rounded-lg px-3 py-2 flex-1 break-all leading-relaxed"></div>
+                <button onclick="copyAndFill('step1-calldata','exec-data','cp1d')" id="cp1d" class="text-[10px] px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 whitespace-nowrap transition mt-0.5">Copy + Fill</button>
+              </div>
+            </div>
+            <p class="text-[10px] text-slate-600 mt-2">Grants Aave permission to pull WETH from the vault. Only needed once.</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-900/50 border border-emerald-800 text-emerald-400">STEP 2</span>
+                <span class="text-sm font-semibold text-white">Supply to Aave</span>
+              </div>
+            </div>
+            <div class="mb-2">
+              <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Target Contract (Aave V3 Pool)</div>
+              <div class="flex gap-2 items-center">
+                <div class="text-[11px] font-mono text-slate-300 bg-slate-950 rounded-lg px-3 py-2 flex-1 truncate">0x794a61358D6845594F94dc1DB02A252b5b4814aD</div>
+                <button onclick="copyAndFill('step2-target-val','exec-target','cp2t')" id="cp2t" class="text-[10px] px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 whitespace-nowrap transition">Copy + Fill</button>
+              </div>
+            </div>
+            <div>
+              <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Call Data</div>
+              <div class="flex gap-2 items-start">
+                <div id="step2-calldata" class="text-[10px] font-mono text-emerald-300 bg-slate-950 rounded-lg px-3 py-2 flex-1 break-all leading-relaxed"></div>
+                <button onclick="copyAndFill('step2-calldata','exec-data','cp2d')" id="cp2d" class="text-[10px] px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 whitespace-nowrap transition mt-0.5">Copy + Fill</button>
+              </div>
+            </div>
+            <p class="text-[10px] text-slate-600 mt-2">Deposits WETH into Aave V3. Vault receives aWETH. Yield accrues automatically.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Hidden value holders for copy -->
+      <span id="step1-target-val" class="hidden">0x82aF49447D8a07e3bd95BD0d56f35241523fBab1</span>
+      <span id="step2-target-val" class="hidden">0x794a61358D6845594F94dc1DB02A252b5b4814aD</span>
 
     <!-- ── ADMIN PANELS ────────────────────────────────────── -->
     <div class="mb-4">
@@ -670,6 +745,49 @@
       document.getElementById('btn-deposit').classList.add('opacity-40', 'cursor-not-allowed');
       document.getElementById('deposit-lock-msg').style.display = 'block';
     }
+
+    // ── Aave Calldata Generator ────────────────────────────────
+    const AAVE_POOL = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
+
+    function pad32(hex) {
+      return hex.replace('0x','').toLowerCase().padStart(64,'0');
+    }
+
+    function generateCalldata() {
+      const eth = parseFloat(document.getElementById('calldata-amount').value) || 0.01;
+      const wei = BigInt(Math.round(eth * 1e18));
+      document.getElementById('calldata-wei').textContent = '= ' + wei.toString() + ' wei';
+
+      // Step 1: WETH.approve(AavePool, maxUint256)
+      const step1 = '0x095ea7b3' +
+        pad32(AAVE_POOL) +
+        'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+      document.getElementById('step1-calldata').textContent = step1;
+
+      // Step 2: AavePool.supply(WETH, amount, vault, 0)
+      const step2 = '0x617ba037' +
+        pad32(WETH_ADDRESS) +
+        pad32(wei.toString(16)) +
+        pad32(VAULT_ADDRESS) +
+        pad32('0');
+      document.getElementById('step2-calldata').textContent = step2;
+    }
+
+    function copyAndFill(sourceId, targetId, btnId) {
+      const text = document.getElementById(sourceId).textContent.trim();
+      document.getElementById(targetId).value = text;
+      navigator.clipboard.writeText(text).catch(() => {});
+      const btn = document.getElementById(btnId);
+      const orig = btn.textContent;
+      btn.textContent = '✓ Filled!';
+      btn.classList.add('text-emerald-400');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('text-emerald-400'); }, 1500);
+      document.getElementById('exec-target') && document.getElementById('exec-target').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    document.getElementById('calldata-amount').addEventListener('input', generateCalldata);
+    generateCalldata();
+
     setInterval(refreshAll, 15000);
   </script>
 </body>
