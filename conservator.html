@@ -46,64 +46,6 @@
       ⚠ Wrong Network — Switch MetaMask to Arbitrum One (Chain ID: 42161)
     </div>
 
-    <!-- ── HOW IT WORKS EXPLAINER ──────────────────────────── -->
-    <div class="glass rounded-2xl mb-8 overflow-hidden">
-      <button onclick="toggleExplainer()" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition">
-        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          How This All Works
-        </h2>
-        <svg id="explainer-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-      </button>
-      <div id="explainer-body" class="px-6 pb-6">
-
-      <div class="grid md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
-          <div class="text-sky-400 font-bold text-sm mb-2">① The Vault (Smart Contract)</div>
-          <p class="text-slate-400 text-sm">A secure on-chain safe on Arbitrum. It holds WETH (wrapped ETH). When you deposit WETH, you get <strong class="text-white">mtETH-S</strong> back. These shares represent your ownership slice of everything in the vault.</p>
-        </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
-          <div class="text-emerald-400 font-bold text-sm mb-2">② The Conservator (AI Agent)</div>
-          <p class="text-slate-400 text-sm">The AI running on your computer (ElizaOS + Claude). It watches the vault and can move funds into <strong class="text-white">approved yield strategies</strong> like Aave — but only ones you've whitelisted. It cannot steal funds.</p>
-        </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
-          <div class="text-amber-400 font-bold text-sm mb-2">③ This Dashboard</div>
-          <p class="text-slate-400 text-sm">Your control panel. You deposit WETH, withdraw back to WETH, approve which strategies the AI can use, and rotate the AI agent wallet. <strong class="text-white">Only the owner wallet can approve strategies.</strong></p>
-        </div>
-      </div>
-
-      <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
-        <div class="text-slate-300 font-semibold text-sm mb-3">💡 The Money Flow — Plain English</div>
-        <div class="flex flex-wrap items-center gap-2 text-sm font-mono">
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">HVAC Revenue (ETH)</span>
-          <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">Wrap to WETH</span>
-          <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Deposit into Vault</span>
-          <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Get MTYLD Shares</span>
-          <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-amber-300">AI deploys to Aave</span>
-          <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-amber-300">Yield grows NAV</span>
-          <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-purple-300">Withdraw = more WETH than you put in</span>
-        </div>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-4 mt-4">
-        <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
-          <div class="text-slate-300 font-semibold text-sm mb-2">🔐 What is NAV / Share Price?</div>
-          <p class="text-slate-400 text-sm">NAV = Net Asset Value. It starts at 1.0. As the vault earns yield, NAV goes up. If you deposit when NAV = 1.0 and withdraw when NAV = 1.05, you earned 5%. Your mtETH-S is always worth (shares × NAV) in WETH.</p>
-        </div>
-        <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
-          <div class="text-slate-300 font-semibold text-sm mb-2">⏱ What is the Withdraw Lock?</div>
-          <p class="text-slate-400 text-sm">After depositing, you must wait <strong class="text-white">24 hours</strong> before withdrawing. This is a security feature built into the contract — it prevents flash loan attacks. Plan accordingly.</p>
-        </div>
-      </div>
-      </div>
-    </div>
-
     <!-- ── LIVE STATS ──────────────────────────────────────── -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       <div class="glass rounded-2xl p-5">
@@ -138,9 +80,9 @@
           <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Agent Portfolio
         </h2>
-        <svg id="portfolio-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        <svg id="portfolio-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" style="transform:rotate(180deg)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
       </button>
-      <div id="portfolio-body" style="display:none">
+      <div id="portfolio-body" style="display:block">
       <div class="px-6 pb-6 pt-2">
         <a id="agent-arbiscan-link" href="#" target="_blank" class="text-xs font-mono text-sky-400 hover:underline float-right">View on Arbiscan ↗</a>
 
@@ -486,6 +428,64 @@
 
     </div>
 
+      </div>
+      </div>
+    </div>
+
+    <!-- ── HOW IT WORKS EXPLAINER ──────────────────────────── -->
+    <div class="glass rounded-2xl mb-8 overflow-hidden">
+      <button onclick="toggleExplainer()" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          How This All Works
+        </h2>
+        <svg id="explainer-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div id="explainer-body" class="px-6 pb-6">
+
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <div class="text-sky-400 font-bold text-sm mb-2">① The Vault (Smart Contract)</div>
+          <p class="text-slate-400 text-sm">A secure on-chain safe on Arbitrum. It holds WETH (wrapped ETH). When you deposit WETH, you get <strong class="text-white">mtETH-S</strong> back. These shares represent your ownership slice of everything in the vault.</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <div class="text-emerald-400 font-bold text-sm mb-2">② The Conservator (AI Agent)</div>
+          <p class="text-slate-400 text-sm">The AI running on your computer (ElizaOS + Claude). It watches the vault and can move funds into <strong class="text-white">approved yield strategies</strong> like Aave — but only ones you've whitelisted. It cannot steal funds.</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <div class="text-amber-400 font-bold text-sm mb-2">③ This Dashboard</div>
+          <p class="text-slate-400 text-sm">Your control panel. You deposit WETH, withdraw back to WETH, approve which strategies the AI can use, and rotate the AI agent wallet. <strong class="text-white">Only the owner wallet can approve strategies.</strong></p>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
+        <div class="text-slate-300 font-semibold text-sm mb-3">💡 The Money Flow — Plain English</div>
+        <div class="flex flex-wrap items-center gap-2 text-sm font-mono">
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">HVAC Revenue (ETH)</span>
+          <span class="text-slate-500">→</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">Wrap to WETH</span>
+          <span class="text-slate-500">→</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Deposit into Vault</span>
+          <span class="text-slate-500">→</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Get MTYLD Shares</span>
+          <span class="text-slate-500">→</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-amber-300">AI deploys to Aave</span>
+          <span class="text-slate-500">→</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-amber-300">Yield grows NAV</span>
+          <span class="text-slate-500">→</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-purple-300">Withdraw = more WETH than you put in</span>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4 mt-4">
+        <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
+          <div class="text-slate-300 font-semibold text-sm mb-2">🔐 What is NAV / Share Price?</div>
+          <p class="text-slate-400 text-sm">NAV = Net Asset Value. It starts at 1.0. As the vault earns yield, NAV goes up. If you deposit when NAV = 1.0 and withdraw when NAV = 1.05, you earned 5%. Your mtETH-S is always worth (shares × NAV) in WETH.</p>
+        </div>
+        <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
+          <div class="text-slate-300 font-semibold text-sm mb-2">⏱ What is the Withdraw Lock?</div>
+          <p class="text-slate-400 text-sm">After depositing, you must wait <strong class="text-white">24 hours</strong> before withdrawing. This is a security feature built into the contract — it prevents flash loan attacks. Plan accordingly.</p>
+        </div>
       </div>
       </div>
     </div>
