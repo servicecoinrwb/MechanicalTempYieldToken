@@ -46,11 +46,15 @@
     </div>
 
     <!-- ── HOW IT WORKS EXPLAINER ──────────────────────────── -->
-    <div class="glass rounded-2xl p-6 mb-8">
-      <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-        <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        How This All Works
-      </h2>
+    <div class="glass rounded-2xl mb-8 overflow-hidden">
+      <button onclick="toggleExplainer()" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          How This All Works
+        </h2>
+        <svg id="explainer-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div id="explainer-body" class="px-6 pb-6">
 
       <div class="grid md:grid-cols-3 gap-4 mb-6">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
@@ -95,6 +99,7 @@
           <div class="text-slate-300 font-semibold text-sm mb-2">⏱ What is the Withdraw Lock?</div>
           <p class="text-slate-400 text-sm">After depositing, you must wait <strong class="text-white">24 hours</strong> before withdrawing. This is a security feature built into the contract — it prevents flash loan attacks. Plan accordingly.</p>
         </div>
+      </div>
       </div>
     </div>
 
@@ -480,6 +485,16 @@
 
     let currentNav = 1.0;
     let toastTimer;
+
+
+    // ── Explainer toggle ───────────────────────────────────────
+    function toggleExplainer() {
+      const body = document.getElementById('explainer-body');
+      const chevron = document.getElementById('explainer-chevron');
+      const isHidden = body.style.display === 'none';
+      body.style.display = isHidden ? 'block' : 'none';
+      chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
 
     // ── Tab switching ──────────────────────────────────────────
     function switchTab(tab) {
