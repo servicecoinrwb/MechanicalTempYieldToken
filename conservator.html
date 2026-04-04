@@ -7,6 +7,7 @@
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     .glass { background: rgba(15,23,42,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(51,65,85,0.6); }
     .pulse-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; animation:pulse 2s infinite; }
@@ -127,6 +128,69 @@
           <span id="stat-agent" class="text-sm font-mono text-emerald-400 truncate">Connecting...</span>
         </div>
         <p class="text-slate-600 text-xs mt-1">Active AI agent</p>
+      </div>
+    </div>
+
+    <!-- ── AGENT PORTFOLIO TRACKER ─────────────────────────── -->
+    <div class="glass rounded-2xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Agent Portfolio
+        </h2>
+        <a id="agent-arbiscan-link" href="#" target="_blank" class="text-xs font-mono text-sky-400 hover:underline">View on Arbiscan ↗</a>
+      </div>
+
+      <div class="grid md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Agent Wallet</p>
+          <p id="portfolio-agent" class="text-xs font-mono text-emerald-400 truncate">—</p>
+          <p class="text-slate-600 text-xs mt-1">Active AI agent</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Gas Balance</p>
+          <p id="portfolio-gas" class="text-lg font-mono text-white">—</p>
+          <p id="portfolio-gas-status" class="text-xs mt-1">ETH on Arbitrum</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Deployed to Aave</p>
+          <p id="portfolio-aave" class="text-lg font-mono text-emerald-400">—</p>
+          <p class="text-slate-600 text-xs mt-1">aWETH earning yield</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Idle in Vault</p>
+          <p id="portfolio-idle" class="text-lg font-mono text-sky-400">—</p>
+          <p class="text-slate-600 text-xs mt-1">WETH awaiting deploy</p>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+
+        <!-- Allocation donut chart -->
+        <div>
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-3">Allocation</p>
+          <div class="relative flex items-center justify-center" style="height:180px">
+            <canvas id="allocation-chart" width="180" height="180"></canvas>
+            <div class="absolute text-center pointer-events-none">
+              <div id="donut-center-value" class="text-lg font-mono text-white">—</div>
+              <div class="text-slate-500 text-xs">Total AUM</div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center gap-6 mt-3">
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span><span class="text-xs text-slate-400">Aave</span></div>
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span><span class="text-xs text-slate-400">Idle</span></div>
+          </div>
+        </div>
+
+        <!-- NAV history line chart -->
+        <div>
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-3">NAV History</p>
+          <div style="height:180px">
+            <canvas id="nav-chart"></canvas>
+          </div>
+          <p class="text-slate-600 text-xs mt-2 text-center">Snapshots stored locally every 15 minutes</p>
+        </div>
+
       </div>
     </div>
 
@@ -791,6 +855,160 @@
       document.getElementById('deposit-lock-msg').style.display = 'block';
     }
 
+
+    // ── Agent Portfolio Tracker ────────────────────────────────
+    let allocationChart = null;
+    let navChart = null;
+
+    function getNavHistory() {
+      try {
+        return JSON.parse(localStorage.getItem('mtvault_nav_history') || '[]');
+      } catch(e) { return []; }
+    }
+
+    function saveNavSnapshot(nav) {
+      const history = getNavHistory();
+      const now = new Date();
+      const label = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+      history.push({ label, nav: parseFloat(nav.toFixed(6)), time: Date.now() });
+      // Keep last 48 snapshots (~12 hours at 15min intervals)
+      if (history.length > 48) history.shift();
+      localStorage.setItem('mtvault_nav_history', JSON.stringify(history));
+    }
+
+    function initCharts() {
+      const chartDefaults = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+        animation: { duration: 400 }
+      };
+
+      // Allocation donut
+      const donutCtx = document.getElementById('allocation-chart').getContext('2d');
+      allocationChart = new Chart(donutCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Aave', 'Idle'],
+          datasets: [{
+            data: [0, 1],
+            backgroundColor: ['#10b981', '#0ea5e9'],
+            borderColor: ['#0f172a'],
+            borderWidth: 3,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          ...chartDefaults,
+          cutout: '70%',
+          plugins: { ...chartDefaults.plugins }
+        }
+      });
+
+      // NAV line chart
+      const navCtx = document.getElementById('nav-chart').getContext('2d');
+      const history = getNavHistory();
+      navChart = new Chart(navCtx, {
+        type: 'line',
+        data: {
+          labels: history.length > 0 ? history.map(h => h.label) : ['Now'],
+          datasets: [{
+            label: 'NAV',
+            data: history.length > 0 ? history.map(h => h.nav) : [1.0],
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14,165,233,0.08)',
+            borderWidth: 2,
+            pointRadius: 2,
+            pointHoverRadius: 5,
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          ...chartDefaults,
+          scales: {
+            x: {
+              ticks: { color: '#475569', font: { size: 10 } },
+              grid: { color: 'rgba(71,85,105,0.2)' }
+            },
+            y: {
+              ticks: { color: '#475569', font: { size: 10 }, callback: v => v.toFixed(4) },
+              grid: { color: 'rgba(71,85,105,0.2)' },
+              min: 0.999
+            }
+          }
+        }
+      });
+    }
+
+    async function refreshPortfolio() {
+      if (!window.ethereum) return;
+      try {
+        const rp = new ethers.BrowserProvider(window.ethereum);
+        const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
+
+        // Get agent address from contract
+        const agentAddr = await rc.aiAgent();
+        document.getElementById('portfolio-agent').textContent = agentAddr;
+        document.getElementById('agent-arbiscan-link').href = 
+          'https://arbiscan.io/address/' + agentAddr;
+
+        // Agent gas balance
+        const gasBal = await rp.getBalance(agentAddr);
+        const gasFloat = parseFloat(ethers.formatEther(gasBal));
+        document.getElementById('portfolio-gas').textContent = gasFloat.toFixed(5) + ' ETH';
+        const gasStatus = document.getElementById('portfolio-gas-status');
+        if (gasFloat < 0.001) {
+          gasStatus.textContent = '⚠ Low — top up soon';
+          gasStatus.className = 'text-xs mt-1 text-red-400';
+        } else if (gasFloat < 0.005) {
+          gasStatus.textContent = '⚡ OK — monitor';
+          gasStatus.className = 'text-xs mt-1 text-amber-400';
+        } else {
+          gasStatus.textContent = '✓ Healthy';
+          gasStatus.className = 'text-xs mt-1 text-emerald-400';
+        }
+
+        // aWETH (Aave deployed)
+        const aweth = new ethers.Contract(AWETH_ADDRESS, AWETH_ABI, rp);
+        const aWethBal = await aweth.balanceOf(VAULT_ADDRESS).catch(() => 0n);
+        const vaultWeth = await rc.totalAssets();
+        const aWethFloat = parseFloat(ethers.formatEther(aWethBal));
+        const idleFloat = parseFloat(ethers.formatEther(vaultWeth));
+        const totalAUM = aWethFloat + idleFloat;
+
+        document.getElementById('portfolio-aave').textContent = aWethFloat.toFixed(6) + ' WETH';
+        document.getElementById('portfolio-idle').textContent = idleFloat.toFixed(6) + ' WETH';
+        document.getElementById('donut-center-value').textContent = totalAUM.toFixed(4);
+
+        // Update donut chart
+        if (allocationChart) {
+          allocationChart.data.datasets[0].data = [aWethFloat, idleFloat];
+          allocationChart.update();
+        }
+
+        // Save NAV snapshot and update line chart
+        if (currentNav > 0) {
+          saveNavSnapshot(currentNav);
+          const history = getNavHistory();
+          if (navChart) {
+            navChart.data.labels = history.map(h => h.label);
+            navChart.data.datasets[0].data = history.map(h => h.nav);
+            const minNav = Math.min(...history.map(h => h.nav));
+            navChart.options.scales.y.min = Math.max(0.999, minNav - 0.001);
+            navChart.update();
+          }
+        }
+
+      } catch(e) { console.error('Portfolio refresh error:', e); }
+    }
+
+    // Init charts after DOM ready
+    setTimeout(() => {
+      initCharts();
+      refreshPortfolio();
+    }, 500);
+
     // ── Aave Calldata Generator ────────────────────────────────
     const AAVE_POOL = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
 
@@ -834,6 +1052,7 @@
     generateCalldata();
 
     setInterval(refreshAll, 15000);
+    setInterval(refreshPortfolio, 15000);
   </script>
 </body>
 </html>
