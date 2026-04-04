@@ -24,7 +24,7 @@
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">ETH Strategy</span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">DEFI</span></span>
       </a>
       <div class="flex items-center gap-3">
         <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
@@ -315,7 +315,7 @@
       <span id="step2-target-val" class="hidden">0x794a61358D6845594F94dc1DB02A252b5b4814aD</span>
 
     <!-- ── ADMIN PANELS ────────────────────────────────────── -->
-    <div class="glass rounded-2xl mb-6 overflow-hidden">
+    <div id="owner-section" class="glass rounded-2xl mb-6 overflow-hidden" style="display:none">
       <button onclick="toggleSection('owner')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
         <h2 class="text-lg font-bold text-white flex items-center gap-2">
           <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -441,7 +441,7 @@
         </h2>
         <svg id="explainer-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
       </button>
-      <div id="explainer-body" class="px-6 pb-6">
+      <div id="explainer-body" style="display:none" class="px-6 pb-6">
 
       <div class="grid md:grid-cols-3 gap-4 mb-6">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
@@ -729,6 +729,16 @@
         await refreshAll();
         isMtyldHolder = await checkMtyldHolder(userAddress);
         updateDepositAccess();
+
+        // Show owner controls only if connected wallet is the vault owner
+        try {
+          const rp2 = new ethers.BrowserProvider(window.ethereum);
+          const rc2 = new ethers.Contract(VAULT_ADDRESS, ABI, rp2);
+          const ownerAddr = await rc2.owner();
+          const isOwner = ownerAddr.toLowerCase() === userAddress.toLowerCase();
+          document.getElementById('owner-section').style.display = isOwner ? 'block' : 'none';
+          document.getElementById('owner-bottom-section').style.display = isOwner ? 'grid' : 'none';
+        } catch(e) { console.error('Owner check failed:', e); }
         const mtyldBadge = document.getElementById('mtyld-badge');
         if (isMtyldHolder) {
           mtyldBadge.textContent = '✓ MTYLD Holder — Deposit Access Granted';
