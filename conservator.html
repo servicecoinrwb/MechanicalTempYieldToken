@@ -736,8 +736,10 @@
           const rc2 = new ethers.Contract(VAULT_ADDRESS, ABI, rp2);
           const ownerAddr = await rc2.owner();
           const isOwner = ownerAddr.toLowerCase() === userAddress.toLowerCase();
-          document.getElementById('owner-section').style.display = isOwner ? 'block' : 'none';
-          document.getElementById('owner-bottom-section').style.display = isOwner ? 'grid' : 'none';
+          const ownerSection = document.getElementById('owner-section');
+          const ownerBottom = document.getElementById('owner-bottom-section');
+          if (ownerSection) ownerSection.style.display = isOwner ? 'block' : 'none';
+          if (ownerBottom) ownerBottom.style.display = isOwner ? 'grid' : 'none';
         } catch(e) { console.error('Owner check failed:', e); }
         const mtyldBadge = document.getElementById('mtyld-badge');
         if (isMtyldHolder) {
