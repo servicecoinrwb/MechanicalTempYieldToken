@@ -466,7 +466,7 @@
       </div>
     </div>
 
-    <!-- ── HOW IT WORKS EXPLAINER ──────────────────────────── -->
+     <!-- ── HOW IT WORKS EXPLAINER ──────────────────────────── -->
     <div class="glass rounded-2xl mb-8 overflow-hidden">
       <button onclick="toggleExplainer()" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition">
         <h2 class="text-lg font-bold text-white flex items-center gap-2">
@@ -476,7 +476,7 @@
         <svg id="explainer-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
       </button>
       <div id="explainer-body" style="display:none" class="px-6 pb-6">
-
+ 
       <div class="grid md:grid-cols-3 gap-4 mb-6">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <div class="text-sky-400 font-bold text-sm mb-2">① The Vault (Smart Contract)</div>
@@ -491,15 +491,15 @@
           <p class="text-slate-400 text-sm">Your control panel. You deposit WETH, withdraw back to WETH, approve which strategies the AI can use, and rotate the AI agent wallet. <strong class="text-white">Only the owner wallet can approve strategies.</strong></p>
         </div>
       </div>
-
+ 
       <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
         <div class="text-slate-300 font-semibold text-sm mb-3">💡 The Money Flow — Plain English</div>
         <div class="flex flex-wrap items-center gap-2 text-sm font-mono">
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">HVAC Revenue (ETH)</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">User Deposits WETH</span>
           <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">Wrap to WETH</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Vault mints mtETH-S</span>
           <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Deposit into Vault</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">AI deploys to Aave</span>
           <span class="text-slate-500">→</span>
           <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Get MTYLD Shares</span>
           <span class="text-slate-500">→</span>
@@ -510,11 +510,11 @@
           <span class="bg-slate-800 px-3 py-1 rounded-lg text-purple-300">Withdraw = more WETH than you put in</span>
         </div>
       </div>
-
+ 
       <div class="grid md:grid-cols-2 gap-4 mt-4">
         <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
           <div class="text-slate-300 font-semibold text-sm mb-2">🔐 What is NAV / Share Price?</div>
-          <p class="text-slate-400 text-sm">NAV = Net Asset Value. It starts at 1.0. As the vault earns yield, NAV goes up. If you deposit when NAV = 1.0 and withdraw when NAV = 1.05, you earned 5%. Your mtETH-S is always worth (shares × NAV) in WETH.</p>
+          <p class="text-slate-400 text-sm">NAV = Net Asset Value. It represents how much WETH each mtETH-S share is worth. As Aave earns yield, NAV goes up. Your mtETH-S balance stays the same but each share is worth more WETH over time. Your position value = shares × NAV.</p>
         </div>
         <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
           <div class="text-slate-300 font-semibold text-sm mb-2">⏱ What is the Withdraw Lock?</div>
@@ -523,15 +523,15 @@
       </div>
       </div>
     </div>
-
+ 
     <!-- Footer -->
     <div class="pt-6 border-t border-slate-800 flex items-center justify-between">
       <p class="text-slate-600 text-xs font-mono">Vault: 0x0b5873fFfDD786F3A807C7c875370d3266600183 • Arbitrum One • Auto-refresh 15s</p>
       <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
     </div>
-
+ 
   </main>
-
+ 
   <!-- TX Toast -->
   <div id="tx-toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm w-full">
     <div id="tx-card" class="bg-slate-900 border rounded-2xl p-4 shadow-2xl">
