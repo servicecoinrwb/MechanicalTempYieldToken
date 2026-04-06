@@ -22,7 +22,7 @@
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="https://vault.mechanicaltemp.com" class="flex items-center gap-3">
+      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
         <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">ETH Strategy</span></span>
       </a>
@@ -38,7 +38,7 @@
     <!-- Title -->
     <div class="mb-8">
       <h1 class="text-3xl font-black text-white">The Conservator <span class="text-sky-400">Agent of ETH</span></h1>
-      <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) • Arbitrum One • <a href="https://arbiscan.io/address/0x0b5873fFfDD786F3A807C7c875370d3266600183" target="_blank" class="text-sky-400 hover:underline">0x0b5873...0183</a></p>
+      <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) • Arbitrum One • <a href="https://arbiscan.io/address/0xE52b6C43e8b36930Eaf506083dAb3098788D45c6" target="_blank" class="text-sky-400 hover:underline">0x0b5873...0183</a></p>
     </div>
 
     <!-- Network Warning -->
@@ -165,7 +165,7 @@
         <div id="mtyld-badge" class="hidden mb-4"></div>
         <div id="deposit-lock-msg" class="hidden mb-4 px-4 py-3 rounded-xl bg-amber-900/20 border border-amber-800 text-amber-400 text-sm font-semibold">
           🔒 Deposit access is restricted to MTYLD token holders. 
-          <a href="https://vault.mechanicaltemp.com/" class="underline hover:text-amber-300">Get MTYLD →</a>
+          <a href="https://www.mechanicaltemp.com" class="underline hover:text-amber-300">Get MTYLD →</a>
         </div>
         <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-800 mb-4">
           <p class="text-slate-400 text-sm">You send <strong class="text-white">WETH</strong> → You receive <strong class="text-sky-400">mtETH-S</strong>. Your shares grow in value as the vault earns yield. Minimum deposit is 0.01 WETH. You cannot withdraw for 24 hours after depositing.</p>
@@ -437,7 +437,7 @@
       <button onclick="toggleExplainer()" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition">
         <h2 class="text-lg font-bold text-white flex items-center gap-2">
           <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          User Guide
+          How This All Works
         </h2>
         <svg id="explainer-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
       </button>
@@ -461,11 +461,15 @@
       <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
         <div class="text-slate-300 font-semibold text-sm mb-3">💡 The Money Flow — Plain English</div>
         <div class="flex flex-wrap items-center gap-2 text-sm font-mono">
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">User deposits WETH</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">HVAC Revenue (ETH)</span>
           <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Get mtETH-S shares</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">Wrap to WETH</span>
           <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">AI deploys to Aave</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Deposit into Vault</span>
+          <span class="text-slate-500">→</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Get MTYLD Shares</span>
+          <span class="text-slate-500">→</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-amber-300">AI deploys to Aave</span>
           <span class="text-slate-500">→</span>
           <span class="bg-slate-800 px-3 py-1 rounded-lg text-amber-300">Yield grows NAV</span>
           <span class="text-slate-500">→</span>
@@ -488,7 +492,7 @@
 
     <!-- Footer -->
     <div class="pt-6 border-t border-slate-800 flex items-center justify-between">
-      <p class="text-slate-600 text-xs font-mono">Vault: 0x0b5873fFfDD786F3A807C7c875370d3266600183 • Arbitrum One • Auto-refresh 15s</p>
+      <p class="text-slate-600 text-xs font-mono">Vault: 0xE52b6C43e8b36930Eaf506083dAb3098788D45c6 • Arbitrum One • Auto-refresh 15s</p>
       <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
     </div>
 
@@ -504,7 +508,7 @@
   </div>
 
   <script>
-    const VAULT_ADDRESS = "0x0b5873fFfDD786F3A807C7c875370d3266600183";
+    const VAULT_ADDRESS = "0xE52b6C43e8b36930Eaf506083dAb3098788D45c6";
     const WETH_ADDRESS  = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
     const ARBITRUM_ID   = 42161n;
 
@@ -901,6 +905,51 @@
       document.getElementById('deposit-lock-msg').style.display = 'block';
     }
 
+
+
+    // ── Aave Withdraw Calldata ─────────────────────────────────
+    function pad32w(val) {
+      return val.toString(16).padStart(64, '0');
+    }
+
+    function generateWithdrawCalldata() {
+      const amountInput = document.getElementById('withdraw-amount');
+      const calldataEl = document.getElementById('withdraw-calldata');
+      if (!amountInput || !calldataEl) return;
+      const amount = parseFloat(amountInput.value);
+      if (!amount || amount <= 0) {
+        calldataEl.textContent = 'Set amount above to generate';
+        return;
+      }
+      const amountWei = BigInt(Math.floor(amount * 1e18));
+      const WETH = '82af49447d8a07e3bd95bd0d56f35241523fbab1';
+      const VAULT = '0b5873fffdd786f3a807c7c875370d3266600183';
+      // withdraw(address asset, uint256 amount, address to)
+      // selector: 0x69328dec
+      const calldata = '0x69328dec' +
+        pad32w('0x' + WETH).replace('0x','').padStart(64,'0') +
+        pad32w(amountWei).replace('0x','') +
+        pad32w('0x' + VAULT).replace('0x','').padStart(64,'0');
+      calldataEl.textContent = calldata;
+    }
+
+    function copyAndFillWithdraw() {
+      const calldataEl = document.getElementById('withdraw-calldata');
+      if (!calldataEl || calldataEl.textContent === 'Set amount above to generate') return;
+      const calldata = calldataEl.textContent;
+      const target = '0x794a61358D6845594F94dc1DB02A252b5b4814aD';
+      navigator.clipboard.writeText(calldata);
+      const targetInput = document.getElementById('strategy-target');
+      const dataInput = document.getElementById('strategy-data');
+      if (targetInput) targetInput.value = target;
+      if (dataInput) dataInput.value = calldata;
+      showToast('Withdraw calldata copied and filled ✓', 'amber');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const withdrawInput = document.getElementById('withdraw-amount');
+      if (withdrawInput) withdrawInput.addEventListener('input', generateWithdrawCalldata);
+    });
 
     // ── Agent Portfolio Tracker ────────────────────────────────
     let allocationChart = null;
