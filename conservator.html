@@ -22,9 +22,9 @@
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
+      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">ETH Strategy</span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">DEFI</span></span>
       </a>
       <div class="flex items-center gap-3">
         <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
@@ -37,7 +37,7 @@
 
     <!-- Title -->
     <div class="mb-8">
-      <h1 class="text-3xl font-black text-white">The Conservator <span class="text-sky-400">Agent of ETH</span></h1>
+      <h1 class="text-3xl font-black text-white">The Conservator <span class="text-sky-400">Dashboard</span></h1>
       <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) • Arbitrum One • <a href="https://arbiscan.io/address/0x0b5873fFfDD786F3A807C7c875370d3266600183" target="_blank" class="text-sky-400 hover:underline">0x0b5873...0183</a></p>
     </div>
 
@@ -466,7 +466,19 @@
       </div>
     </div>
 
-     <!-- ── HOW IT WORKS EXPLAINER ──────────────────────────── -->
+    <!-- Growth Milestones -->
+    <div class="glass rounded-2xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-white flex items-center gap-2">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Growth Milestones
+        </h2>
+        <span class="text-xs text-slate-500">TVL targets unlock new features</span>
+      </div>
+      <div id="milestone-list" class="space-y-3"></div>
+    </div>
+
+    <!-- ── HOW IT WORKS EXPLAINER ──────────────────────────── -->
     <div class="glass rounded-2xl mb-8 overflow-hidden">
       <button onclick="toggleExplainer()" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition">
         <h2 class="text-lg font-bold text-white flex items-center gap-2">
@@ -476,7 +488,7 @@
         <svg id="explainer-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
       </button>
       <div id="explainer-body" style="display:none" class="px-6 pb-6">
- 
+
       <div class="grid md:grid-cols-3 gap-4 mb-6">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <div class="text-sky-400 font-bold text-sm mb-2">① The Vault (Smart Contract)</div>
@@ -491,7 +503,7 @@
           <p class="text-slate-400 text-sm">Your control panel. You deposit WETH, withdraw back to WETH, approve which strategies the AI can use, and rotate the AI agent wallet. <strong class="text-white">Only the owner wallet can approve strategies.</strong></p>
         </div>
       </div>
- 
+
       <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
         <div class="text-slate-300 font-semibold text-sm mb-3">💡 The Money Flow — Plain English</div>
         <div class="flex flex-wrap items-center gap-2 text-sm font-mono">
@@ -501,16 +513,12 @@
           <span class="text-slate-500">→</span>
           <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">AI deploys to Aave</span>
           <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Get MTYLD Shares</span>
-          <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-amber-300">AI deploys to Aave</span>
-          <span class="text-slate-500">→</span>
           <span class="bg-slate-800 px-3 py-1 rounded-lg text-amber-300">Yield grows NAV</span>
           <span class="text-slate-500">→</span>
           <span class="bg-slate-800 px-3 py-1 rounded-lg text-purple-300">Withdraw = more WETH than you put in</span>
         </div>
       </div>
- 
+
       <div class="grid md:grid-cols-2 gap-4 mt-4">
         <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
           <div class="text-slate-300 font-semibold text-sm mb-2">🔐 What is NAV / Share Price?</div>
@@ -523,15 +531,15 @@
       </div>
       </div>
     </div>
- 
+
     <!-- Footer -->
     <div class="pt-6 border-t border-slate-800 flex items-center justify-between">
       <p class="text-slate-600 text-xs font-mono">Vault: 0x0b5873fFfDD786F3A807C7c875370d3266600183 • Arbitrum One • Auto-refresh 15s</p>
       <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
     </div>
- 
+
   </main>
- 
+
   <!-- TX Toast -->
   <div id="tx-toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm w-full">
     <div id="tx-card" class="bg-slate-900 border rounded-2xl p-4 shadow-2xl">
@@ -643,6 +651,11 @@
     }
 
     // ── Toast ──────────────────────────────────────────────────
+    function updateMilestonesFromChain(tvlWeth, ethPrice) {
+      const tvlUSD = parseFloat(tvlWeth) * (ethPrice || 2040);
+      renderMilestones(tvlUSD);
+    }
+
     function showToast(state, title, msg, hash) {
       clearTimeout(toastTimer);
       const colors = { pending: 'border-amber-600', success: 'border-emerald-600', error: 'border-red-600' };
@@ -987,7 +1000,64 @@
       if (withdrawInput) withdrawInput.addEventListener('input', generateWithdrawCalldata);
     });
 
-    // ── Agent Portfolio Tracker ────────────────────────────────
+
+    // ── Milestone Tracker ─────────────────────────────────────
+    const MILESTONES = [
+      { tvl: 100,     label: "Genesis",       sub: "First real depositors",   unlocks: ["NAV history chart", "Arbiscan token listing", "Twitter presence"] },
+      { tvl: 5000,    label: "Seedling",      sub: "Product proves itself",   unlocks: ["Second yield strategy", "Protocol fee on yield", "Aave grants"] },
+      { tvl: 25000,   label: "Growing",       sub: "Multi-strategy vault",    unlocks: ["Multi-strategy allocation", "External depositors", "Yield fee"] },
+      { tvl: 100000,  label: "Established",   sub: "Secondary market ready",  unlocks: ["WETH/mtETH-S LP pool", "Camelot listing", "Leverage yield"] },
+      { tvl: 500000,  label: "Institutional", sub: "Standalone product",      unlocks: ["Balancer pool", "Institutional partners", "License model"] },
+      { tvl: 1000000, label: "Protocol",      sub: "Full DeFi primitive",     unlocks: ["DAO governance", "Cross-chain", "ETH derivative status"] }
+    ];
+
+    function fmtMsTvl(n) {
+      if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+      if (n >= 1000) return '$' + (n/1000).toFixed(0) + 'K';
+      return '$' + n.toFixed(0);
+    }
+
+    function renderMilestones(tvlUSD) {
+      const container = document.getElementById('milestone-list');
+      if (!container) return;
+      container.innerHTML = '';
+      MILESTONES.forEach(function(m, i) {
+        const pct = Math.min(100, (tvlUSD / m.tvl) * 100);
+        const isDone = tvlUSD >= m.tvl;
+        const isActive = !isDone && (i === 0 || tvlUSD >= MILESTONES[i-1].tvl);
+        const badgeText = isDone ? 'Complete' : isActive ? 'In progress' : 'Locked';
+        const badgeColor = isDone ? 'bg-emerald-900/40 text-emerald-400' : isActive ? 'bg-sky-900/40 text-sky-400' : 'bg-slate-800 text-slate-500';
+        const barColor = isDone ? '#1D9E75' : isActive ? '#378ADD' : '#444';
+        const opacity = (!isDone && !isActive) ? 'opacity-50' : '';
+        const div = document.createElement('div');
+        div.className = opacity + ' bg-slate-900/40 rounded-xl p-4 border border-slate-800';
+        const header = document.createElement('div');
+        header.className = 'flex items-center justify-between mb-2';
+        header.innerHTML = '<div><span class="text-sm font-semibold text-white">' + m.label + '</span><span class="text-slate-500 text-xs ml-2">' + fmtMsTvl(m.tvl) + '</span><span class="text-slate-600 text-xs ml-1">— ' + m.sub + '</span></div><span class="text-xs px-2 py-0.5 rounded-full ' + badgeColor + '">' + badgeText + '</span>';
+        const barBg = document.createElement('div');
+        barBg.className = 'w-full bg-slate-800 rounded-full h-1.5 mb-2';
+        const barFill = document.createElement('div');
+        barFill.className = 'h-1.5 rounded-full';
+        barFill.style.cssText = 'width:' + pct.toFixed(1) + '%;background:' + barColor;
+        barBg.appendChild(barFill);
+        const unlocks = document.createElement('div');
+        unlocks.className = 'text-slate-500 text-xs';
+        unlocks.textContent = 'Unlocks: ' + m.unlocks.join(' • ');
+        div.appendChild(header);
+        div.appendChild(barBg);
+        div.appendChild(unlocks);
+        container.appendChild(div);
+      });
+    }
+
+    renderMilestones(0);
+
+    function updateMilestonesFromChain(tvlWeth, ethPrice) {
+      const tvlUSD = parseFloat(tvlWeth) * (ethPrice || 2040);
+      renderMilestones(tvlUSD);
+    }
+
+        // ── Agent Portfolio Tracker ────────────────────────────────
     let allocationChart = null;
     let navChart = null;
 
