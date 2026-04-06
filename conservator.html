@@ -22,9 +22,9 @@
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
+      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">ETH Strategy</span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">DEFI</span></span>
       </a>
       <div class="flex items-center gap-3">
         <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
@@ -37,7 +37,7 @@
 
     <!-- Title -->
     <div class="mb-8">
-      <h1 class="text-3xl font-black text-white">The Conservator <span class="text-sky-400">Agent of ETH</span></h1>
+      <h1 class="text-3xl font-black text-white">The Conservator <span class="text-sky-400">Dashboard</span></h1>
       <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) • Arbitrum One • <a href="https://arbiscan.io/address/0x0b5873fFfDD786F3A807C7c875370d3266600183" target="_blank" class="text-sky-400 hover:underline">0x0b5873...0183</a></p>
     </div>
 
@@ -51,6 +51,7 @@
       <div class="glass rounded-2xl p-5">
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Vault TVL</p>
         <p id="stat-tvl" class="text-2xl font-mono text-sky-400">—</p>
+        <p id="tvl-usd" class="text-emerald-400 text-xs font-mono mt-0.5">—</p>
         <p id="tvl-breakdown" class="text-slate-600 text-xs mt-1">Total WETH in vault</p>
       </div>
       <div class="glass rounded-2xl p-5">
@@ -580,6 +581,9 @@
 
 
     const AWETH_ADDRESS = "0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8";
+    const CHAINLINK_ETH_USD = "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612";
+    const CHAINLINK_ABI = [{"inputs":[],"name":"latestRoundData","outputs":[{"type":"uint80"},{"type":"int256"},{"type":"uint256"},{"type":"uint256"},{"type":"uint80"}],"stateMutability":"view","type":"function"}];
+    let cachedEthPrice = 2040;
     const AWETH_ABI = [
       {"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
     ];
@@ -696,6 +700,18 @@
     }
 
     // ── Read data ──────────────────────────────────────────────
+    async function getEthPrice() {
+      try {
+        const rp = new ethers.BrowserProvider(window.ethereum);
+        const feed = new ethers.Contract(CHAINLINK_ETH_USD, CHAINLINK_ABI, rp);
+        const result = await feed.latestRoundData();
+        cachedEthPrice = parseFloat(result[1].toString()) / 1e8;
+        return cachedEthPrice;
+      } catch(e) {
+        return cachedEthPrice;
+      }
+    }
+
     async function refreshData() {
       if (!window.ethereum) return;
       try {
@@ -719,10 +735,12 @@
         const realNav = supplyFloat > 0 ? totalRealFloat / supplyFloat : 1.0;
         currentNav = realNav;
 
+        const ethPrice = await getEthPrice();
+        const tvlUSD = totalRealFloat * ethPrice;
         document.getElementById('stat-tvl').textContent = totalRealFloat.toFixed(6) + ' WETH';
-        // Update milestone tracker with live TVL
-        const ETH_PRICE_EST = 2040;
-        renderMilestones(totalRealFloat * ETH_PRICE_EST);
+        const tvlUsdEl = document.getElementById('tvl-usd');
+        if (tvlUsdEl) tvlUsdEl.textContent = '≈ $' + tvlUSD.toLocaleString(undefined, {maximumFractionDigits: 2});
+        renderMilestones(tvlUSD);
         document.getElementById('stat-nav').textContent = realNav.toFixed(6);
         
         // Show deployment breakdown
