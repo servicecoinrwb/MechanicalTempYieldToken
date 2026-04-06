@@ -720,6 +720,9 @@
         currentNav = realNav;
 
         document.getElementById('stat-tvl').textContent = totalRealFloat.toFixed(6) + ' WETH';
+        // Update milestone tracker with live TVL
+        const ETH_PRICE_EST = 2040;
+        renderMilestones(totalRealFloat * ETH_PRICE_EST);
         document.getElementById('stat-nav').textContent = realNav.toFixed(6);
         
         // Show deployment breakdown
@@ -1055,7 +1058,7 @@
       });
     }
 
-    renderMilestones(0);
+    renderMilestones(0); // will update with live TVL after chain read
 
     function updateMilestonesFromChain(tvlWeth, ethPrice) {
       const tvlUSD = parseFloat(tvlWeth) * (ethPrice || 2040);
