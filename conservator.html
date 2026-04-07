@@ -728,7 +728,9 @@
         const totalReal = assets + aWethBal;
         const totalRealFloat = parseFloat(ethers.formatEther(totalReal));
         const aWethFloat = parseFloat(ethers.formatEther(aWethBal));
-        const vaultFloat = parseFloat(ethers.formatEther(assets));
+        const wethContractMain = new ethers.Contract(WETH_ADDRESS, WETH_ABI, rp);
+        const idleWethBal = await wethContractMain.balanceOf(VAULT_ADDRESS).catch(() => 0n);
+        const vaultFloat = parseFloat(ethers.formatEther(idleWethBal));
 
         // NAV = totalReal / totalSupply (recalculate properly)
         const supplyFloat = parseFloat(ethers.formatEther(supply));
