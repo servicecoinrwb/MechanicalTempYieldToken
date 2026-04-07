@@ -725,8 +725,8 @@
         // Also fetch aWETH balance (funds deployed to Aave)
         const aweth = new ethers.Contract(AWETH_ADDRESS, AWETH_ABI, rp);
         const aWethBal = await aweth.balanceOf(VAULT_ADDRESS).catch(() => 0n);
-        const totalReal = assets + aWethBal;
-        const totalRealFloat = parseFloat(ethers.formatEther(totalReal));
+        // totalAssets() already returns WETH + AWETH so use it directly as totalReal
+        const totalRealFloat = parseFloat(ethers.formatEther(assets));
         const aWethFloat = parseFloat(ethers.formatEther(aWethBal));
         const wethContractMain = new ethers.Contract(WETH_ADDRESS, WETH_ABI, rp);
         const idleWethBal = await wethContractMain.balanceOf(VAULT_ADDRESS).catch(() => 0n);
