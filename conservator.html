@@ -22,9 +22,9 @@
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
+      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">The Conservator <span class="text-sky-400"></span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">DEFI</span></span>
       </a>
       <div class="flex items-center gap-3">
         <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
@@ -37,8 +37,8 @@
 
     <!-- Title -->
     <div class="mb-8">
-      <h1 class="text-3xl font-black text-white"><span class="text-sky-400">Agent of ETH</span></h1>
-      <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) • Arbitrum One • <a href="https://arbiscan.io/address/0x00Eb736770F51b87e5149C39D4C3bC6A53b5e57D" target="_blank" class="text-sky-400 hover:underline">0x00Eb7367....e57D</a></p>
+      <h1 class="text-3xl font-black text-white">The Conservator <span class="text-sky-400">Dashboard</span></h1>
+      <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) • Arbitrum One • <a href="https://arbiscan.io/address/0x00Eb736770F51b87e5149C39D4C3bC6A53b5e57D" target="_blank" class="text-sky-400 hover:underline">0x0b5873...0183</a></p>
     </div>
 
     <!-- Network Warning -->
@@ -1000,7 +1000,7 @@
       }
       const amountWei = BigInt(Math.floor(amount * 1e18));
       const WETH = '82af49447d8a07e3bd95bd0d56f35241523fbab1';
-      const VAULT = '0b5873fffdd786f3a807c7c875370d3266600183';
+      const VAULT = '00Eb736770F51b87e5149C39D4C3bC6A53b5e57D';
       // withdraw(address asset, uint256 amount, address to)
       // selector: 0x69328dec
       const calldata = '0x69328dec' +
@@ -1032,7 +1032,7 @@
     // ── Milestone Tracker ─────────────────────────────────────
     const MILESTONES = [
       { tvl: 100,     label: "Genesis",       sub: "First real depositors",   unlocks: ["NAV history chart", "Arbiscan token listing", "Twitter presence"] },
-      { tvl: 5000,    label: "Seeding",      sub: "Product proves itself",   unlocks: ["Second yield strategy", "Protocol fee on yield", "Aave grants"] },
+      { tvl: 5000,    label: "Seedling",      sub: "Product proves itself",   unlocks: ["Second yield strategy", "Protocol fee on yield", "Aave grants"] },
       { tvl: 25000,   label: "Growing",       sub: "Multi-strategy vault",    unlocks: ["Multi-strategy allocation", "External depositors", "Yield fee"] },
       { tvl: 100000,  label: "Established",   sub: "Secondary market ready",  unlocks: ["WETH/mtETH-S LP pool", "Camelot listing", "Leverage yield"] },
       { tvl: 500000,  label: "Institutional", sub: "Standalone product",      unlocks: ["Balancer pool", "Institutional partners", "License model"] },
