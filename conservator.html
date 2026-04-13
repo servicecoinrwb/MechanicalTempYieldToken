@@ -22,9 +22,9 @@
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
+      <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">The <span class="text-sky-400">Conservator</span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">The  <span class="text-sky-400">ConservatorI</span></span>
       </a>
       <div class="flex items-center gap-3">
         <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
@@ -890,6 +890,33 @@
       if (!sharesStr || parseFloat(sharesStr) <= 0) return alert('Enter number of mtETH-S to redeem.');
       const receiverInput = document.getElementById('withdraw-receiver').value.trim();
       const receiver = receiverInput && ethers.isAddress(receiverInput) ? receiverInput : userAddress;
+
+      // Check if vault has enough idle WETH before attempting redeem
+      try {
+        const rp = new ethers.BrowserProvider(window.ethereum);
+        const wethCheck = new ethers.Contract(WETH_ADDRESS, WETH_ABI, rp);
+        const idleWeth = await wethCheck.balanceOf(VAULT_ADDRESS);
+        const sharesWei = ethers.parseEther(sharesStr);
+        const assetsNeeded = BigInt(Math.floor(parseFloat(sharesStr) * currentNav * 1e18));
+
+        if (idleWeth < assetsNeeded) {
+          // Not enough idle — signal the agent to pull from Aave
+          showToast('pending', 'Requesting Withdrawal', 'Signaling agent to pull funds from Aave...');
+          try {
+            const resp = await fetch('http://127.0.0.1:3001/request-withdrawal', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ owner: userAddress, assets: parseFloat(sharesStr) * currentNav })
+            });
+            const data = await resp.json();
+            showToast('pending', 'Agent Notified ✓', 'The Conservator is pulling your WETH from Aave. Try withdrawing again in ~1 minute.');
+          } catch(e) {
+            showToast('error', 'Funds in Aave', 'Agent not reachable locally. The Conservator will process your withdrawal within 4 hours automatically.');
+          }
+          return;
+        }
+      } catch(e) { /* proceed anyway */ }
+
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm redeem() in MetaMask...');
         const tx = await contract.redeem(ethers.parseEther(sharesStr), receiver, userAddress);
@@ -897,7 +924,7 @@
         await tx.wait();
         showToast('success', 'Withdrawal Confirmed ✓', 'WETH sent to receiver.', tx.hash);
         refreshAll();
-      } catch(e) { showToast('error', 'Withdrawal Failed', e.reason || e.message || 'Rejected. Check lock period.'); }
+      } catch(e: any) { showToast('error', 'Withdrawal Failed', e.reason || e.message || 'Rejected. Check lock period.'); }
     };
 
     // ── Agent ──────────────────────────────────────────────────
