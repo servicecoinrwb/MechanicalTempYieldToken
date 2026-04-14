@@ -46,6 +46,7 @@
       ⚠ Wrong Network — Switch MetaMask to Arbitrum One (Chain ID: 42161)
     </div>
 
+
     <!-- ── LIVE STATS ──────────────────────────────────────── -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       <div class="glass rounded-2xl p-5">
@@ -200,41 +201,73 @@
 
       <!-- WITHDRAW TAB -->
       <div id="panel-withdraw" class="hidden">
-        <div class="bg-amber-900/20 border border-amber-800/50 rounded-xl p-4 mb-4 flex items-start gap-3">
-          <svg class="w-5 h-5 text-amber-400 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+
+        <!-- Step indicator -->
+        <div class="flex items-center gap-2 mb-5">
+          <div id="wd-step1-dot" class="w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-white text-xs font-bold">1</div>
+          <div class="flex-1 h-0.5 bg-slate-700"></div>
+          <div id="wd-step2-dot" class="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-xs font-bold">2</div>
+          <div class="flex-1 h-0.5 bg-slate-700"></div>
+          <div id="wd-step3-dot" class="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-xs font-bold">3</div>
+        </div>
+        <div class="flex justify-between text-xs text-slate-500 mb-5 px-1">
+          <span>Enter Amount</span>
+          <span>Request Funds</span>
+          <span>Receive WETH</span>
+        </div>
+
+        <!-- Your position info -->
+        <div id="wd-position" class="bg-slate-900/60 rounded-xl p-4 border border-slate-800 mb-4 grid grid-cols-3 gap-4">
           <div>
-            <p class="text-amber-300 text-sm font-semibold">Funds are deployed to Aave</p>
-            <p class="text-amber-400/80 text-xs mt-1">The vault AI agent must pull funds back from Aave before your withdrawal can process. If your withdrawal fails, contact the vault admin — funds will be available within 4 hours as the agent runs its scheduled check.</p>
+            <p class="text-slate-500 text-xs mb-1">Your mtETH-S</p>
+            <p id="wd-my-shares" class="text-white font-mono font-semibold">—</p>
+          </div>
+          <div>
+            <p class="text-slate-500 text-xs mb-1">Current NAV</p>
+            <p id="wd-nav" class="text-white font-mono font-semibold">—</p>
+          </div>
+          <div>
+            <p class="text-slate-500 text-xs mb-1">Your WETH Value</p>
+            <p id="wd-value" class="text-emerald-400 font-mono font-semibold">—</p>
           </div>
         </div>
-        <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-800 mb-4">
-          <p class="text-slate-400 text-sm">You burn <strong class="text-white">mtETH-S</strong> → You receive <strong class="text-sky-400">WETH</strong> at current NAV. If NAV has grown, you get back more WETH than you put in. You must have waited 24 hours since your last deposit.</p>
-        </div>
+
+        <!-- Amount input -->
         <div class="grid md:grid-cols-2 gap-4 mb-4">
           <div>
             <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">mtETH-S to Redeem</label>
             <input id="withdraw-shares" type="number" step="0.0001" min="0" placeholder="0.0000"
               class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            <button onclick="setMaxShares()" class="mt-1 text-xs text-sky-400 hover:underline">Use max →</button>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Receiver Address</label>
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Receive To</label>
             <input id="withdraw-receiver" type="text" placeholder="Defaults to your wallet"
               class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
           </div>
         </div>
+
+        <!-- Preview -->
         <div class="bg-slate-900/40 rounded-xl p-3 border border-slate-800 mb-4 flex items-center justify-between">
-          <span class="text-slate-400 text-sm">Estimated WETH you'll receive:</span>
-          <span id="withdraw-preview" class="text-emerald-400 font-mono font-bold">—</span>
+          <span class="text-slate-400 text-sm">You will receive:</span>
+          <span id="withdraw-preview" class="text-emerald-400 font-mono font-bold text-lg">—</span>
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <button onclick="setMaxShares()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-sm transition">
-            Use Max mtETH-S
-          </button>
-          <button id="btn-withdraw" class="py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition shadow-lg shadow-sky-900/30">
-            Withdraw WETH
-          </button>
+
+        <!-- Status message -->
+        <div id="wd-status" class="hidden rounded-xl p-4 mb-4 text-sm"></div>
+
+        <!-- Action buttons -->
+        <div id="wd-btn-check" class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition text-center cursor-pointer" onclick="checkAndWithdraw()">
+          Check &amp; Withdraw
         </div>
-        <p class="text-slate-600 text-xs mt-3 font-mono">This calls redeem() on the vault contract. Your mtETH-S is burned and WETH is sent to the receiver address.</p>
+        <div id="wd-btn-request" class="hidden w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition text-center cursor-pointer mt-3" onclick="requestFundsFromAgent()">
+          🏦 Request Agent Pull Funds from Aave
+        </div>
+        <div id="wd-btn-redeem" class="hidden w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition text-center cursor-pointer mt-3" onclick="executeRedeem()">
+          ✓ Funds Ready — Complete Withdrawal
+        </div>
+
+        <p class="text-slate-600 text-xs mt-3 font-mono text-center">24 hour lock applies after each deposit. Shares are burned and WETH sent instantly once funds are available.</p>
       </div>
 
     </div>
@@ -825,6 +858,7 @@
           mtyldBadge.className = 'mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-red-900/20 border border-red-800 text-red-400';
         }
         mtyldBadge.style.display = 'block';
+        updateWithdrawPosition();
       } catch(e) { console.error(e); }
     }
 
@@ -884,48 +918,173 @@
       } catch(e) { alert('Could not fetch max mtETH-S: ' + e.message); }
     }
 
-    document.getElementById('btn-withdraw').onclick = async () => {
+    // ── New Withdraw Flow ─────────────────────────────────────
+    document.getElementById('withdraw-shares').addEventListener('input', function() {
+      const shares = parseFloat(this.value) || 0;
+      const wethOut = shares * currentNav;
+      document.getElementById('withdraw-preview').textContent = wethOut.toFixed(6) + ' WETH';
+      // Reset buttons when amount changes
+      document.getElementById('wd-btn-request').style.display = 'none';
+      document.getElementById('wd-btn-redeem').style.display = 'none';
+      document.getElementById('wd-btn-check').style.display = 'block';
+      document.getElementById('wd-status').style.display = 'none';
+    });
+
+    async function updateWithdrawPosition() {
+      if (!isConnected || !userAddress) return;
+      try {
+        const rp = new ethers.BrowserProvider(window.ethereum);
+        const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
+        const myShares = await rc.balanceOf(userAddress);
+        const sharesFloat = parseFloat(ethers.formatEther(myShares));
+        const wethValue = sharesFloat * currentNav;
+        document.getElementById('wd-my-shares').textContent = sharesFloat.toFixed(4) + ' mtETH-S';
+        document.getElementById('wd-nav').textContent = currentNav.toFixed(6);
+        document.getElementById('wd-value').textContent = wethValue.toFixed(6) + ' WETH';
+      } catch(e) {}
+    }
+
+    function setWdStatus(type, msg) {
+      const el = document.getElementById('wd-status');
+      const styles = {
+        info:    'bg-sky-900/20 border border-sky-800 text-sky-300',
+        warning: 'bg-amber-900/20 border border-amber-800 text-amber-300',
+        success: 'bg-emerald-900/20 border border-emerald-800 text-emerald-300',
+        error:   'bg-red-900/20 border border-red-800 text-red-300',
+      };
+      el.className = 'rounded-xl p-4 mb-4 text-sm ' + (styles[type] || styles.info);
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function setWdStep(step) {
+      const dots = ['wd-step1-dot','wd-step2-dot','wd-step3-dot'];
+      dots.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (i < step) {
+          el.className = 'w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold';
+        } else if (i === step) {
+          el.className = 'w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-white text-xs font-bold';
+        } else {
+          el.className = 'w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-xs font-bold';
+        }
+      });
+    }
+
+    async function checkAndWithdraw() {
       if (!await requireConnected()) return;
       const sharesStr = document.getElementById('withdraw-shares').value;
-      if (!sharesStr || parseFloat(sharesStr) <= 0) return alert('Enter number of mtETH-S to redeem.');
+      if (!sharesStr || parseFloat(sharesStr) <= 0) {
+        setWdStatus('error', 'Enter the amount of mtETH-S you want to redeem first.');
+        return;
+      }
+
+      const sharesFloat = parseFloat(sharesStr);
+      const assetsNeeded = sharesFloat * currentNav;
+
+      setWdStatus('info', 'Checking vault balance...');
+      setWdStep(1);
+
+      try {
+        const rp = new ethers.BrowserProvider(window.ethereum);
+        const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
+        const wethContract2 = new ethers.Contract(WETH_ADDRESS, WETH_ABI, rp);
+
+        // Check 24hr lock
+        const lastDeposit = await rc.lastDepositTime ? await rc.lastDepositTime(userAddress).catch(() => 0n) : 0n;
+        const lockPeriod = await rc.WITHDRAW_LOCK_PERIOD().catch(() => 86400n);
+        const now = BigInt(Math.floor(Date.now() / 1000));
+        if (lastDeposit > 0n && now < lastDeposit + lockPeriod) {
+          const unlockTime = new Date(Number(lastDeposit + lockPeriod) * 1000);
+          setWdStatus('error', `⏱ Withdrawal locked until ${unlockTime.toLocaleTimeString()} ${unlockTime.toLocaleDateString()}. This is a 24-hour security requirement after depositing.`);
+          document.getElementById('wd-btn-check').style.display = 'block';
+          return;
+        }
+
+        // Check share balance
+        const myShares = await rc.balanceOf(userAddress);
+        const mySharesFloat = parseFloat(ethers.formatEther(myShares));
+        if (sharesFloat > mySharesFloat) {
+          setWdStatus('error', `You only have ${mySharesFloat.toFixed(6)} mtETH-S. Reduce your amount.`);
+          return;
+        }
+
+        // Check idle WETH
+        const idleWeth = await wethContract2.balanceOf(VAULT_ADDRESS);
+        const idleFloat = parseFloat(ethers.formatEther(idleWeth));
+
+        if (idleFloat >= assetsNeeded) {
+          // Enough idle — go straight to redeem
+          setWdStatus('success', `✓ Vault has ${idleFloat.toFixed(4)} WETH available. Ready to withdraw immediately.`);
+          setWdStep(2);
+          document.getElementById('wd-btn-check').style.display = 'none';
+          document.getElementById('wd-btn-redeem').style.display = 'block';
+        } else {
+          // Need to pull from Aave first
+          const shortfall = (assetsNeeded - idleFloat).toFixed(4);
+          setWdStatus('warning', `⚠ Vault only has ${idleFloat.toFixed(4)} WETH idle. Need to pull ${shortfall} WETH from Aave first. Click the button below to request this — it takes about 1 minute.`);
+          setWdStep(1);
+          document.getElementById('wd-btn-check').style.display = 'none';
+          document.getElementById('wd-btn-request').style.display = 'block';
+        }
+      } catch(e) {
+        setWdStatus('error', 'Error checking vault: ' + (e.message || e));
+      }
+    }
+
+    async function requestFundsFromAgent() {
+      const sharesStr = document.getElementById('withdraw-shares').value;
+      const assetsNeeded = parseFloat(sharesStr) * currentNav;
+
+      setWdStatus('info', '📡 Contacting The Conservator agent...');
+      document.getElementById('wd-btn-request').style.display = 'none';
+
+      try {
+        const resp = await fetch('http://127.0.0.1:3001/request-withdrawal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ owner: userAddress, assets: assetsNeeded })
+        });
+        const data = await resp.json();
+        setWdStatus('success', '✓ Agent notified! The Conservator is pulling your WETH from Aave now. This takes about 1 minute. Click "Check & Withdraw" again when ready.');
+        setWdStep(2);
+        document.getElementById('wd-btn-check').style.display = 'block';
+        document.getElementById('wd-btn-check').textContent = '🔄 Check Again';
+      } catch(e) {
+        setWdStatus('warning', '⚠ Agent not reachable right now. The Conservator runs every 4 hours and will automatically process your withdrawal. You can also ask the vault admin to pull funds manually.');
+        document.getElementById('wd-btn-request').style.display = 'block';
+      }
+    }
+
+    async function executeRedeem() {
+      if (!await requireConnected()) return;
+      const sharesStr = document.getElementById('withdraw-shares').value;
       const receiverInput = document.getElementById('withdraw-receiver').value.trim();
       const receiver = receiverInput && ethers.isAddress(receiverInput) ? receiverInput : userAddress;
 
-      // Check if vault has enough idle WETH before attempting redeem
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const wethCheck = new ethers.Contract(WETH_ADDRESS, WETH_ABI, rp);
-        const idleWeth = await wethCheck.balanceOf(VAULT_ADDRESS);
-        const sharesWei = ethers.parseEther(sharesStr);
-        const assetsNeeded = BigInt(Math.floor(parseFloat(sharesStr) * currentNav * 1e18));
-
-        if (idleWeth < assetsNeeded) {
-          // Not enough idle — signal the agent to pull from Aave
-          showToast('pending', 'Requesting Withdrawal', 'Signaling agent to pull funds from Aave...');
-          try {
-            const resp = await fetch('http://127.0.0.1:3001/request-withdrawal', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ owner: userAddress, assets: parseFloat(sharesStr) * currentNav })
-            });
-            const data = await resp.json();
-            showToast('pending', 'Agent Notified ✓', 'The Conservator is pulling your WETH from Aave. Try withdrawing again in ~1 minute.');
-          } catch(e) {
-            showToast('error', 'Funds in Aave', 'Agent not reachable locally. The Conservator will process your withdrawal within 4 hours automatically.');
-          }
-          return;
-        }
-      } catch(e) { /* proceed anyway */ }
+      document.getElementById('wd-btn-redeem').style.display = 'none';
+      setWdStatus('info', 'Confirm the transaction in your wallet...');
 
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm redeem() in MetaMask...');
         const tx = await contract.redeem(ethers.parseEther(sharesStr), receiver, userAddress);
         showToast('pending', 'TX Submitted', 'Burning mtETH-S, sending WETH...', tx.hash);
+        setWdStatus('info', 'Transaction submitted. Waiting for confirmation...');
         await tx.wait();
-        showToast('success', 'Withdrawal Confirmed ✓', 'WETH sent to receiver.', tx.hash);
+        showToast('success', 'Withdrawal Confirmed ✓', 'WETH sent to your wallet.', tx.hash);
+        setWdStatus('success', '🎉 Withdrawal complete! WETH has been sent to your wallet.');
+        setWdStep(3);
+        document.getElementById('withdraw-shares').value = '';
+        document.getElementById('withdraw-preview').textContent = '—';
         refreshAll();
-      } catch(e) { showToast('error', 'Withdrawal Failed', e.reason || e.message || 'Rejected. Check lock period.'); }
-    };
+        updateWithdrawPosition();
+      } catch(e) {
+        const msg = e.reason || e.message || 'Transaction rejected.';
+        setWdStatus('error', '❌ ' + msg);
+        document.getElementById('wd-btn-redeem').style.display = 'block';
+        showToast('error', 'Withdrawal Failed', msg);
+      }
+    }
 
     // ── Agent ──────────────────────────────────────────────────
     document.getElementById('btn-set-agent').onclick = async () => {
