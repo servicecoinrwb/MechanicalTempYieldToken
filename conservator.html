@@ -169,7 +169,7 @@
           <a href="https://www.mechanicaltemp.com" class="underline hover:text-amber-300">Get MTYLD →</a>
         </div>
         <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-800 mb-4">
-          <p class="text-slate-400 text-sm">You send <strong class="text-white">WETH</strong> → You receive <strong class="text-sky-400">mtETH-S</strong>. Your shares grow in value as the vault earns yield. Minimum deposit is 0.01 WETH. You cannot withdraw for 24 hours after depositing.</p>
+          <p class="text-slate-400 text-sm">You send <strong class="text-white">WETH</strong> → You receive <strong class="text-sky-400">mtETH-S</strong>. Your shares grow in value as the vault earns yield. Minimum deposit is 0.01 WETH. Withdrawals are instant.</p>
         </div>
         <div class="grid md:grid-cols-3 gap-4 mb-4">
           <div>
@@ -647,8 +647,13 @@
       try {
         const rp = new ethers.BrowserProvider(window.ethereum);
         const mtyld = new ethers.Contract(MTYLD_ADDRESS, MTYLD_ABI, rp);
-        const bal = await mtyld.balanceOf(address);
-        return parseFloat(ethers.formatEther(bal)) > 0;
+        const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
+        const [bal, minRequired] = await Promise.all([
+          mtyld.balanceOf(address),
+          rc.minMtyldRequired().catch(() => 1n)
+        ]);
+        const threshold = minRequired > 0n ? minRequired : 1n;
+        return bal >= threshold;
       } catch(e) { return false; }
     }
 
@@ -862,9 +867,10 @@
         const mtyldBadge = document.getElementById('mtyld-badge');
         if (isMtyldHolder) {
           mtyldBadge.textContent = '✓ MTYLD Holder — Deposit Access Granted';
+          // Store holder status for deposit buttons
           mtyldBadge.className = 'mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-900/20 border border-emerald-800 text-emerald-400';
         } else {
-          mtyldBadge.textContent = '✗ No MTYLD detected — Deposit access is restricted to MTYLD holders only.';
+          mtyldBadge.textContent = '✗ Insufficient MTYLD — You need at least 5 MTYLD tokens to deposit. Connect a wallet with enough MTYLD.';
           mtyldBadge.className = 'mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-red-900/20 border border-red-800 text-red-400';
         }
         mtyldBadge.style.display = 'block';
