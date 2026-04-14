@@ -924,7 +924,7 @@
         await tx.wait();
         showToast('success', 'Withdrawal Confirmed ✓', 'WETH sent to receiver.', tx.hash);
         refreshAll();
-      } catch(e: any) { showToast('error', 'Withdrawal Failed', e.reason || e.message || 'Rejected. Check lock period.'); }
+      } catch(e) { showToast('error', 'Withdrawal Failed', e.reason || e.message || 'Rejected. Check lock period.'); }
     };
 
     // ── Agent ──────────────────────────────────────────────────
