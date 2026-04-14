@@ -1692,6 +1692,43 @@ Requires: 5 MTYLD to deposit${userInfo}`;
       }
     }
 
+    function getStaticResponse(msg, ctx) {
+      const m = msg.toLowerCase();
+      const lines = ctx.split('\n');
+      const get = (key) => { const l = lines.find(x => x.includes(key)); return l ? l.split(': ')[1] : '—'; };
+
+      if (m.includes('status') || m.includes('tvl') || m.includes('vault')) {
+        return `Vault Status:\n` +
+          `TVL: ${get('TVL:')}\n` +
+          `Deployed to Aave: ${get('Deployed to Aave:')}\n` +
+          `Idle: ${get('Idle buffer:')}\n` +
+          `NAV: ${get('NAV per share:')}\n` +
+          `ETH: ${get('ETH price:')}`;
+      }
+      if (m.includes('nav') || m.includes('share price')) {
+        return `Current NAV is ${get('NAV per share:')} WETH per mtETH-S share. NAV only goes up as Aave earns yield — it can never decrease.`;
+      }
+      if (m.includes('balance') || m.includes('my ')) {
+        const bal = get('User mtETH-S balance:');
+        const val = get('User WETH value:');
+        if (bal && bal !== '—') return `Your balance: ${bal}\nWETH value: ${val}`;
+        return 'Connect your wallet to see your balance.';
+      }
+      if (m.includes('deposit') || m.includes('how to')) {
+        return 'To deposit:\n1. Make sure you hold at least 5 MTYLD\n2. Open the Deposit tab above\n3. Click Step 1 — Approve WETH\n4. Click Step 2 — Deposit into Vault\n\nYou receive mtETH-S shares that grow in value as Aave earns yield.';
+      }
+      if (m.includes('withdraw') || m.includes('redeem')) {
+        return 'To withdraw:\n1. Open the Withdraw tab above\n2. Enter your mtETH-S amount\n3. Click Check & Withdraw\n4. If funds are in Aave, the agent will pull them back automatically\n5. Complete the withdrawal\n\nWithdrawals are instant — no lock period.';
+      }
+      if (m.includes('yield') || m.includes('apy') || m.includes('earn')) {
+        return `Your WETH earns yield via Aave V3 on Arbitrum. Current TVL: ${get('TVL:')}. Aave WETH yields roughly 2-3% APY. Yield compounds automatically — NAV slowly increases each block.`;
+      }
+      if (m.includes('aave')) {
+        return `${get('Deployed to Aave:')} is currently deployed to Aave V3 on Arbitrum, earning interest every block. The agent keeps a small buffer idle for instant withdrawals.`;
+      }
+      return `I'm The Conservator managing this ETH vault. Current TVL: ${get('TVL:')} with NAV at ${get('NAV per share:')}. Ask me about deposits, withdrawals, yield, or your balance.`;
+    }
+
     async function sendChat() {
       const input = document.getElementById('chat-input');
       const msg = input.value.trim();
@@ -1732,12 +1769,21 @@ Instructions:
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
+            model: 'claude-sonnet-4-6',
             max_tokens: 1000,
             system: systemPrompt,
-            messages: chatHistory.slice(-10), // last 10 messages for context
+            messages: chatHistory.slice(-10),
           })
         });
+
+        if (!response.ok) {
+          // API key not available in browser — fall back to smart static responses
+          removeTyping(typingId);
+          const reply = getStaticResponse(msg, vaultContext);
+          appendMessage('agent', reply);
+          chatHistory.push({ role: 'assistant', content: reply });
+          return;
+        }
 
         const data = await response.json();
         const reply = data.content?.[0]?.text || 'I encountered an error. Please try again.';
