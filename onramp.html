@@ -141,13 +141,13 @@
       <div style="margin-bottom:28px">
         <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;margin-bottom:12px">NETWORK</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="network-btn selected" onclick="selectNetwork('ethereum', this)">Ethereum</button>
-          <button class="network-btn" onclick="selectNetwork('base', this)">Base</button>
-          <button class="network-btn" onclick="selectNetwork('polygon', this)">Polygon</button>
-          <button class="network-btn" onclick="selectNetwork('optimism', this)">Optimism</button>
+          <button class="network-btn selected" onclick="selectNetwork('ethereum', this)">Ethereum <span style="opacity:0.5;font-size:10px">ETH</span></button>
+          <button class="network-btn" onclick="selectNetwork('base', this)">Base <span style="opacity:0.5;font-size:10px">ETH</span></button>
+          <button class="network-btn" onclick="selectNetwork('polygon', this)">Polygon <span style="opacity:0.5;font-size:10px">USDC</span></button>
+          <button class="network-btn" onclick="selectNetwork('optimism', this)">Optimism <span style="opacity:0.5;font-size:10px">ETH</span></button>
         </div>
-        <div style="margin-top:8px;font-size:11px;color:var(--muted)">
-          You choose the asset (ETH, USDC, etc.) on the next screen
+        <div style="margin-top:8px;font-size:11px;color:var(--muted)" id="network-hint">
+          Receiving ETH on Ethereum mainnet
         </div>
       </div>
 
@@ -235,10 +235,21 @@
     document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
   }
 
+  const NETWORK_INFO = {
+    ethereum: { label: 'Ethereum mainnet', currency: 'ETH' },
+    base:     { label: 'Base', currency: 'ETH' },
+    polygon:  { label: 'Polygon', currency: 'USDC' },
+    optimism: { label: 'Optimism', currency: 'ETH' },
+  };
+
   function selectNetwork(network, btn) {
     selectedNetwork = network;
     document.querySelectorAll('.network-btn').forEach(b => b.classList.remove('selected'));
     if (btn) btn.classList.add('selected');
+    const info = NETWORK_INFO[network];
+    if (info) {
+      document.getElementById('network-hint').textContent = 'Receiving ' + info.currency + ' on ' + info.label;
+    }
   }
 
   function showError(msg) {
