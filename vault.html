@@ -78,7 +78,7 @@
           </div>
         </div>
         <div class="mt-2 text-xs text-amber-300" id="tinyWarn" style="display:none">
-          Note: Treasury has sub-$0.001 “dust”. With very low supply this can make NAV appear jumpy.
+          Note: Treasury has sub-$0.001 "dust". With very low supply this can make NAV appear jumpy.
         </div>
       </div>
     </div>
@@ -172,6 +172,7 @@
 
       <div class="h-px bg-slate-800 my-4"></div>
 
+      <!-- Employee Payroll Batch Sender -->
       <div class="bg-slate-800/30 border border-slate-700/50 rounded-xl p-3 mb-4">
         <div class="text-slate-200 font-semibold mb-1">Employee Payroll (Batch Sender)</div>
         <p class="text-xs text-slate-400 mb-2">Distribute MTYLD tokens to multiple wallets in one click. Mint tokens to yourself first.</p>
@@ -185,6 +186,51 @@
             <button id="btnSendBatch" class="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs">Send Batch</button>
         </div>
         <div id="batchLog" class="mt-2 text-xs font-mono text-slate-300 max-h-24 overflow-y-auto whitespace-pre-wrap hidden"></div>
+      </div>
+
+      <!-- On-Chain Distributor -->
+      <div class="bg-emerald-900/10 border border-emerald-800/40 rounded-xl p-3 mb-4">
+        <div class="flex items-center gap-2 mb-1">
+          <div class="text-emerald-300 font-semibold">📋 On-Chain Quarterly Distribution</div>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-800">Transparent</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-3">Distribute MTYLD proportionally in one transaction. Fully recorded on Arbiscan with timestamp, note, and per-employee amounts. Step 1 approves the distributor, Step 2 executes.</p>
+        
+        <div class="mb-2">
+          <label class="text-xs text-slate-400">Recipients & Weights (address, weight — one per line)</label>
+          <textarea id="distInput" rows="4"
+            placeholder="0xAddress1, 50&#10;0xAddress2, 30&#10;0xAddress3, 20"
+            class="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 font-mono text-xs placeholder-slate-600 focus:outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div>
+            <label class="text-xs text-slate-400">Total MTYLD to distribute</label>
+            <input id="distTotal" placeholder="e.g. 1000" class="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="text-xs text-slate-400">Quarter label (stored on-chain)</label>
+            <input id="distNote" placeholder="e.g. Q1 2026" class="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="text-xs text-slate-400" id="distStats">Recipients: 0 | Total weight: 0</div>
+          <div class="flex gap-2">
+            <button id="btnApproveDist" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold">Step 1: Approve</button>
+            <button id="btnDistribute" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">Step 2: Distribute</button>
+          </div>
+        </div>
+        <div id="distLog" class="mt-2 text-xs font-mono text-emerald-300 hidden"></div>
+
+        <!-- Distribution History -->
+        <div class="mt-3 pt-3 border-t border-slate-700/50">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-xs text-slate-400 font-semibold">Distribution History</div>
+            <button id="btnLoadHistory" class="text-xs text-sky-400 hover:underline">Load from chain</button>
+          </div>
+          <div id="distHistory" class="text-xs font-mono text-slate-400">Click "Load from chain" to view past distributions.</div>
+        </div>
       </div>
 
       <div class="grid md:grid-cols-2 gap-4">
@@ -212,21 +258,19 @@
       
       <div class="mt-4 bg-slate-800/30 border border-slate-700/50 rounded-xl p-3">
           <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('rescueBody').classList.toggle('hidden')">
-             <div class="text-slate-200 font-semibold text-sm">⚠️ Token Rescue</div>
+             <div class="text-slate-200 font-semibold text-sm">Token Rescue</div>
              <div class="text-xs text-slate-500">Recover lost tokens (accidental sends) ▼</div>
           </div>
           <div id="rescueBody" class="hidden mt-3 space-y-3">
               <div class="p-2 bg-slate-900/50 rounded text-xs text-slate-400 border border-slate-800">
                   <span class="text-amber-400">Status:</span> <span id="rescueStatus" class="font-mono">No active rescue</span>
               </div>
-              
               <div id="rescueForm" class="grid grid-cols-2 gap-2">
                   <input id="resToken" placeholder="Token Address (0x...)" class="col-span-2 px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-xs text-slate-100">
                   <input id="resAmt" placeholder="Amount (Wei)" class="px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-xs text-slate-100">
                   <input id="resTo" placeholder="Recipient (0x...)" class="px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-xs text-slate-100">
                   <button id="btnAnnounceRescue" class="col-span-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-xs font-semibold">Announce Rescue</button>
               </div>
-
               <button id="btnExecuteRescue" disabled class="hidden w-full py-2 bg-amber-600 hover:bg-amber-500 text-white rounded text-xs font-bold">EXECUTE PENDING RESCUE</button>
           </div>
       </div>
@@ -241,7 +285,6 @@
             <button id="btnSetDelay" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs">Set Delay</button>
           </div>
           <div id="delayLine" class="text-xs text-slate-500 mt-1">Current: —</div>
-          
           <div class="mt-2 flex items-center gap-2">
              <button id="btnGuardOn" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700">Guard On</button>
              <button id="btnGuardOff" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700">Guard Off</button>
@@ -258,8 +301,8 @@
           </div>
           <div class="mt-2 flex gap-2">
              <input id="wlAddr" placeholder="Whitelist Addr" class="flex-1 px-2 py-1.5 rounded bg-slate-800 border border-slate-700 text-slate-100 text-xs">
-             <button id="btnWhitelistOn" class="px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-green-400/20 text-green-400 text-xs">+</button>
-             <button id="btnWhitelistOff" class="px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-red-400/20 text-red-400 text-xs">-</button>
+             <button id="btnWhitelistOn" class="px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-green-400 text-xs">+</button>
+             <button id="btnWhitelistOff" class="px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-red-400 text-xs">-</button>
           </div>
           <div id="wlMsg" class="text-xs text-slate-500 mt-1"></div>
         </div>
@@ -271,7 +314,7 @@
         <div>
           <div class="text-slate-300">Performance</div>
           <div id="apyLine" class="font-mono text-slate-200">APY (30d annualized): —</div>
-          <div id="changeLine" class="font-mono text-slate-400">Δ 24h: —  •  Δ 7d: —  •  Δ 30d: —</div>
+          <div id="changeLine" class="font-mono text-slate-400">24h: —  •  7d: —  •  30d: —</div>
         </div>
         <div class="flex gap-2">
           <button id="btnExportCSV" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Export NAV CSV</button>
@@ -350,12 +393,11 @@
   }
 
   (async () => {
-    // ===== Config =====
     const VAULT = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
     const USDC  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+    const DISTRIBUTOR = "0x787e7354d28F40E4418D07043E04be77F00f0a13";
     const CHAIN_ID_ARBITRUM = 42161;
 
-    // ABIs
     const VAULT_ABI = [
       "function MAX_FEE_BPS() view returns (uint16)",
       "function RESCUE_DELAY() view returns (uint256)",
@@ -408,11 +450,15 @@
       "function transferFrom(address f, address t, uint256 a) returns (bool)",
       "function transferOwnership(address n)",
       "function unpause()",
-      "function whitelistRescuable(address token, bool allowed)",
-      "constructor(address usdc)",
-      "error BadDecimals()", "error EpochClosing()", "error Guarded()",
-      "error InsufficientTreasury()", "error InvalidAddress()", "error InvalidFee()",
-      "error NotRescuable()", "error TooEarly()", "error ZeroAmount()", "error InitLiquidityTooLow()"
+      "function whitelistRescuable(address token, bool allowed)"
+    ];
+
+    const DIST_ABI = [
+      "function distribute(address[] recipients, uint256[] amounts, string note)",
+      "function distributeProportional(address[] recipients, uint256[] weights, uint256 totalAmount, string note)",
+      "function distributionCount() view returns (uint256)",
+      "function getDistribution(uint256 id) view returns (uint256 timestamp, uint256 totalAmount, uint256 recipientCount, string note)",
+      "function getAllDistributions() view returns (tuple(uint256 timestamp, uint256 totalAmount, uint256 recipientCount, string note)[])"
     ];
 
     const ERC20_ABI = [
@@ -423,15 +469,12 @@
       "function symbol() view returns (string)"
     ];
 
-    // ===== DOM =====
     const el = (id) => document.getElementById(id);
     const addrEl = el("addr"), priceEl = el("price"), actEl = el("treasuryActive"), pendEl = el("pending"), cdEl = el("countdown");
     const tinyWarn = el("tinyWarn");
     const userPanel = el("userPanel"), userBalEl = el("userBal"), userValEl = el("userVal"), userShareEl = el("userShare");
     const mintAmt = el("mintAmount"), mintSlip = el("mintSlippage"), mintPrev = el("mintPreview"), mintBtn = el("btnMint");
     const redAmt = el("redeemAmount"), redSlip = el("redeemSlippage"), redPrev = el("redeemPreview"), redBtn = el("btnRedeem");
-    
-    // Admin DOM
     const ownerPanel = el("ownerPanel"), ownerLine = el("ownerLine");
     const revAmount = el("revAmount"), revMsg = el("revMsg");
     const btnApply = el("btnApply"), btnBeginClose = el("btnBeginClose"), btnEndClose = el("btnEndClose"), epochState = el("epochState"), pendingHint = el("pendingHint");
@@ -439,20 +482,18 @@
     const mintFee = el("mintFee"), redeemFee = el("redeemFee"), btnSetFees = el("btnSetFees"), wlAddr = el("wlAddr"), wlMsg = el("wlMsg");
     const btnGuardOn = el("btnGuardOn"), btnGuardOff = el("btnGuardOff"), guardedLine = el("guardedLine");
     const btnMintMax = el("btnMintMax"), btnRedeemMax = el("btnRedeemMax");
-    // New Admin DOM
     const pausedState = el("pausedState"), btnPause = el("btnPause"), btnUnpause = el("btnUnpause");
     const maxSupplyIn = el("maxSupplyIn"), btnSetCap = el("btnSetCap"), capLine = el("capLine");
     const rescueStatus = el("rescueStatus"), btnAnnounceRescue = el("btnAnnounceRescue"), btnExecuteRescue = el("btnExecuteRescue");
     const resToken = el("resToken"), resAmt = el("resAmt"), resTo = el("resTo"), rescueForm = el("rescueForm");
     const batchInput = el("batchInput"), btnSendBatch = el("btnSendBatch"), batchStats = el("batchStats"), batchLog = el("batchLog");
+    const distInput = el("distInput"), distStats = el("distStats"), distLog = el("distLog"), distHistory = el("distHistory");
 
-    // ===== Safer unit helpers =====
     const f6  = (x) => ethers.formatUnits(x, 6);
     const f18 = (x) => ethers.formatUnits(x, 18);
     const p6  = (s) => ethers.parseUnits(String(s||"0"), 6);
     const p18 = (s) => ethers.parseUnits(String(s||"0"), 18);
 
-    // ===== NAV history =====
     const NAV_HISTORY_KEY = "mtyld_nav_history_" + VAULT;
     let navHistory = []; 
     let navChart;
@@ -510,35 +551,34 @@
       const p24h = lookupPriceAgo(24*3600);
       const p7d  = lookupPriceAgo(7*24*3600);
       const p30d = lookupPriceAgo(30*24*3600);
-      const fmt = v => (v===null ? "—" : ((v>=0?"+":"") + v.toFixed(2) + "%"));
+      const fmt = v => (v===null ? "--" : ((v>=0?"+":"") + v.toFixed(2) + "%"));
       const c24 = p24h ? pctChange(curr, p24h) : null;
       const c7  = p7d  ? pctChange(curr, p7d)  : null;
       const c30 = p30d ? pctChange(curr, p30d) : null;
       const elChange = el("changeLine");
-      if (elChange) elChange.textContent = `Δ 24h: ${fmt(c24)}  •  Δ 7d: ${fmt(c7)}  •  Δ 30d: ${fmt(c30)}`;
+      if (elChange) elChange.textContent = "24h: " + fmt(c24) + "  •  7d: " + fmt(c7) + "  •  30d: " + fmt(c30);
       let apy = null;
       if (p30d) apy = annualizedFromWindow(curr, p30d, 30*24*3600);
       else if (p7d) apy = annualizedFromWindow(curr, p7d, 7*24*3600);
       else if (p24h) apy = annualizedFromWindow(curr, p24h, 24*3600);
       const elApy = el("apyLine");
-      if (elApy) elApy.textContent = "APY (30d annualized): " + (apy===null ? "—" : apy.toFixed(2) + "%");
+      if (elApy) elApy.textContent = "APY (30d annualized): " + (apy===null ? "--" : apy.toFixed(2) + "%");
     }
 
-    // ===== Ethers =====
-    let provider, signer, acct, vault, usdc, vaultOwner;
+    let provider, signer, acct, vault, usdc, dist, vaultOwner;
 
-    const trunc = (a) => a ? a.slice(0,6)+"…"+a.slice(-4) : "—";
+    const trunc = (a) => a ? a.slice(0,6)+"..."+a.slice(-4) : "--";
     const shortErr = (e) => {
       const s = (e && (e.info?.error?.message || e.shortMessage || e.message)) || String(e);
       return "Error: " + s.replace(/execution reverted: /i,'').slice(0,180);
     };
     function humanize(s){
       const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
-      return (h?`${h}h `:"") + (m?`${m}m `:"") + `${sec}s`;
+      return (h?h+"h ":"") + (m?m+"m ":"") + sec+"s";
     }
 
     async function ensureProvider(){
-      if (!window.ethereum) { alert("No wallet found. Please install/enable MetaMask."); throw new Error("no wallet"); }
+      if (!window.ethereum) { alert("No wallet found. Please install MetaMask."); throw new Error("no wallet"); }
       provider = new ethers.BrowserProvider(window.ethereum);
       const net = await provider.getNetwork();
       if (Number(net.chainId) !== CHAIN_ID_ARBITRUM) {
@@ -549,8 +589,8 @@
       acct = await signer.getAddress();
       vault = new ethers.Contract(VAULT, VAULT_ABI, signer);
       usdc  = new ethers.Contract(USDC, ERC20_ABI, signer);
+      dist  = new ethers.Contract(DISTRIBUTOR, DIST_ABI, signer);
       addrEl.textContent = trunc(acct);
-
       vaultOwner = await vault.owner();
       ownerLine.textContent = trunc(vaultOwner);
       ownerPanel.classList.toggle("hidden", vaultOwner.toLowerCase() !== acct.toLowerCase());
@@ -560,55 +600,42 @@
     async function loadOwnerState(){
       if (!vault) return;
       try {
-        const [mf, rf, fr, gl, delay, closing, pending, relAt, isPaused, cap, res] = await Promise.all([
-          vault.mintFeeBps(), vault.redeemFeeBps(), vault.feeRecipient(),
+        const [mf, rf, gl, delay, closing, pending, relAt, isPaused, cap, res] = await Promise.all([
+          vault.mintFeeBps(), vault.redeemFeeBps(),
           vault.guardedLaunch(), vault.navDelaySec(), vault.epochClosing(),
           vault.pendingRevenueUSDC(), vault.pendingReleaseAt(),
           vault.paused(), vault.maxSupply(), vault.rescueReq()
         ]);
-        
-        // Basic Settings
         mintFee.value = Number(mf); redeemFee.value = Number(rf);
         guardedLine.textContent = gl ? "Guarded: ON" : "Guarded: OFF";
         delayLine.textContent = "Current: " + Number(delay) + "s";
-        epochState.textContent = "Epoch: " + (closing ? "Closing (paused)" : "Open");
-
-        // Paused State
+        epochState.textContent = "Epoch: " + (closing ? "Closing" : "Open");
         pausedState.style.display = isPaused ? "block" : "none";
         btnPause.style.display = isPaused ? "none" : "block";
         btnUnpause.style.display = isPaused ? "block" : "none";
-
-        // Pending Rev
         const now = Math.floor(Date.now()/1000);
         const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
         const ready = secs === 0 && BigInt(pending) > 0n;
-        pendingHint.textContent = ready ? "Ready to apply ✅" : (BigInt(pending)>0n ? "Waiting for release…" : "No pending revenue");
-
-        // Supply Cap
+        pendingHint.textContent = ready ? "Ready to apply" : (BigInt(pending)>0n ? "Waiting..." : "No pending revenue");
         capLine.textContent = "Current Cap: " + ethers.formatUnits(cap, 18);
-
-        // Rescue
-        const rAmt = res[1]; // amount
-        const rEta = Number(res[3]); // eta
+        const rAmt = res[1];
+        const rEta = Number(res[3]);
         if (rAmt > 0n) {
            rescueForm.classList.add("hidden");
            btnExecuteRescue.classList.remove("hidden");
            const wait = rEta - now;
            if (wait > 0) {
-              rescueStatus.textContent = `Pending: ${humanize(wait)} wait.`;
+              rescueStatus.textContent = "Pending: " + humanize(wait) + " wait.";
               btnExecuteRescue.disabled = true;
-              btnExecuteRescue.textContent = `WAIT ${humanize(wait)}`;
            } else {
-              rescueStatus.textContent = "Rescue Ready to Execute!";
+              rescueStatus.textContent = "Rescue Ready!";
               btnExecuteRescue.disabled = false;
-              btnExecuteRescue.textContent = "EXECUTE RESCUE NOW";
            }
         } else {
            rescueForm.classList.remove("hidden");
            btnExecuteRescue.classList.add("hidden");
            rescueStatus.textContent = "No active rescue.";
         }
-
       } catch (e) { console.error("Owner load err", e); }
     }
 
@@ -619,8 +646,7 @@
         const bal18 = +ethers.formatUnits(bal, 18);
         userBalEl.textContent = bal18.toLocaleString(undefined,{maximumFractionDigits:6}) + " MTYLD";
         const navUsd = +ethers.formatUnits(price, 18);
-        const valUsd = bal18 * navUsd;
-        userValEl.textContent = "$" + valUsd.toFixed(2);
+        userValEl.textContent = "$" + (bal18 * navUsd).toFixed(2);
         const supply = +ethers.formatUnits(ts, 18);
         const share = supply > 0 ? (bal18 / supply) * 100 : 0;
         userShareEl.textContent = (isFinite(share) ? share.toFixed(4) : "0.0000") + "%";
@@ -634,49 +660,43 @@
                                      : new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
         }
         const readVault = new ethers.Contract(VAULT, VAULT_ABI, provider);
-        const [price, active, pending, relAt, supply] = await Promise.all([
+        const [price, active, pending, relAt] = await Promise.all([
           readVault.pricePerToken(),
           readVault.treasuryActiveUSDC(),
           readVault.pendingRevenueUSDC(),
-          readVault.pendingReleaseAt(),
-          readVault.totalSupply()
+          readVault.pendingReleaseAt()
         ]);
-
         const priceUsd = +ethers.formatUnits(price, 18);
-        priceEl.textContent = `$${priceUsd.toFixed(6)}`;
+        priceEl.textContent = "$" + priceUsd.toFixed(6);
         const activeUsd = +ethers.formatUnits(active, 6);
         const pendingUsd = +ethers.formatUnits(pending, 6);
-
-        actEl.textContent  = `$${activeUsd.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits:6})}`;
-        pendEl.textContent = `$${pendingUsd.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits:6})}`;
+        actEl.textContent  = "$" + activeUsd.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits:6});
+        pendEl.textContent = "$" + pendingUsd.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits:6});
         tinyWarn.style.display = (activeUsd > 0 && activeUsd < 0.001) ? '' : 'none';
-
         const now = Math.floor(Date.now()/1000);
         const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
-        cdEl.textContent = secs ? humanize(secs) : (BigInt(pending)>0n ? "Queued (awaiting apply)" : "—");
-
+        cdEl.textContent = secs ? humanize(secs) : (BigInt(pending)>0n ? "Queued" : "--");
         if (vault && signer && acct) { await loadUserPanel(price); }
         if (vault && vaultOwner && signer && vaultOwner.toLowerCase() === (await signer.getAddress()).toLowerCase()) {
           await loadOwnerState();
         }
-
         recordNavSample(price);
         updatePerformanceLines(price);
       }catch(e){ console.error(e); }
     }
 
     // ===== Mint/Redeem =====
-    document.getElementById("btnPreviewMint").onclick = async () => {
+    el("btnPreviewMint").onclick = async () => {
       try {
         if (!provider) await ensureProvider();
         const usdcAmt = p6(mintAmt.value);
         if (usdcAmt <= 0n) { mintPrev.textContent = "Enter amount"; return; }
         const [mtyldOut, price] = await vault.previewMint(usdcAmt);
-        mintPrev.textContent = `Est. MTYLD: ${ethers.formatUnits(mtyldOut,18)} @ $${(+ethers.formatUnits(price,18)).toFixed(6)}`;
+        mintPrev.textContent = "Est. MTYLD: " + ethers.formatUnits(mtyldOut,18) + " @ $" + (+ethers.formatUnits(price,18)).toFixed(6);
         mintBtn.disabled = false;
-      } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
+      } catch (e) { mintPrev.textContent = shortErr(e); }
     };
-    document.getElementById("btnMint").onclick = async () => {
+    el("btnMint").onclick = async () => {
       try {
         mintBtn.disabled = true;
         if (!provider) await ensureProvider();
@@ -687,21 +707,21 @@
         const allowance = await usdc.allowance(acct, VAULT);
         if (allowance < usdcAmt) { const txa = await usdc.approve(VAULT, usdcAmt); await txa.wait(); }
         const tx = await vault.mint(usdcAmt, minOut); await tx.wait();
-        mintPrev.textContent = "Minted ✅"; await refresh();
-      } catch (e) { console.error(e); mintPrev.textContent = shortErr(e); }
+        mintPrev.textContent = "Minted!"; await refresh();
+      } catch (e) { mintPrev.textContent = shortErr(e); }
       finally { mintBtn.disabled = false; }
     };
-    document.getElementById("btnPreviewRedeem").onclick = async () => {
+    el("btnPreviewRedeem").onclick = async () => {
       try {
         if (!provider) await ensureProvider();
         const mtyldAmt = p18(redAmt.value);
         if (mtyldAmt <= 0n) { redPrev.textContent = "Enter amount"; return; }
         const [usdcOut, price] = await vault.previewRedeem(mtyldAmt);
-        redPrev.textContent = `Est. USDC: ${ethers.formatUnits(usdcOut,6)} @ $${(+ethers.formatUnits(price,18)).toFixed(6)}`;
+        redPrev.textContent = "Est. USDC: " + ethers.formatUnits(usdcOut,6) + " @ $" + (+ethers.formatUnits(price,18)).toFixed(6);
         redBtn.disabled = false;
-      } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
+      } catch (e) { redPrev.textContent = shortErr(e); }
     };
-    document.getElementById("btnRedeem").onclick = async () => {
+    el("btnRedeem").onclick = async () => {
       try {
         redBtn.disabled = true;
         if (!provider) await ensureProvider();
@@ -710,95 +730,160 @@
         const [usdcOut] = await vault.previewRedeem(mtyldAmt);
         const minUsdc  = usdcOut - (usdcOut * BigInt(slipBps) / 10000n);
         const tx = await vault.redeem(mtyldAmt, minUsdc); await tx.wait();
-        redPrev.textContent = "Redeemed ✅"; await refresh();
-      } catch (e) { console.error(e); redPrev.textContent = shortErr(e); }
+        redPrev.textContent = "Redeemed!"; await refresh();
+      } catch (e) { redPrev.textContent = shortErr(e); }
       finally { redBtn.disabled = false; }
     };
     btnMintMax.onclick = async () => { try{ if (!provider) await ensureProvider(); const bal = await usdc.balanceOf(acct); mintAmt.value = ethers.formatUnits(bal, 6); }catch(e){} };
     btnRedeemMax.onclick = async () => { try{ if (!provider) await ensureProvider(); const bal = await vault.balanceOf(acct); redAmt.value = ethers.formatUnits(bal, 18); }catch(e){} };
 
-    // ===== ADMIN ACTIONS =====
-    document.getElementById("btnQueueRev").onclick = async () => {
+    // ===== Admin =====
+    el("btnQueueRev").onclick = async () => {
       try {
         revMsg.textContent = ""; if (!provider) await ensureProvider();
         const amt = p6(revAmount.value); if (amt <= 0n) { revMsg.textContent = "Enter amount"; return; }
         const allowance = await usdc.allowance(acct, VAULT);
         if (allowance < amt) { const txa = await usdc.approve(VAULT, amt); await txa.wait(); }
         const tx = await vault.injectRevenue(amt); await tx.wait();
-        revMsg.textContent = "Queued ✅"; await refresh();
-      } catch (e) { console.error(e); revMsg.textContent = shortErr(e); }
+        revMsg.textContent = "Queued!"; await refresh();
+      } catch (e) { revMsg.textContent = shortErr(e); }
     };
-    btnApply.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.applyPendingRevenue(); await tx.wait(); pendingHint.textContent="Applied ✅"; await refresh(); } catch (e) { pendingHint.textContent = shortErr(e); } };
+    btnApply.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.applyPendingRevenue(); await tx.wait(); pendingHint.textContent="Applied!"; await refresh(); } catch (e) { pendingHint.textContent = shortErr(e); } };
     btnBeginClose.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.beginEpochClose(); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
     btnEndClose.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.endEpochClose(); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-    
-    document.getElementById("btnSetDelay").onclick = async () => {
-      try { if (!provider) await ensureProvider(); const s = Number(navDelay.value); if(!(s>0)){alert("Invalid");return;} const tx = await vault.setNavDelay(s); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); }
-    };
-    btnSetFees.onclick = async () => {
-      try { if (!provider) await ensureProvider(); const m = Number(mintFee.value), r = Number(redeemFee.value); const recip = await vault.feeRecipient(); const ru = await vault.feeRoundUp();
-      const tx = await vault.setFees(m, r, recip, ru); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); }
-    };
+    el("btnSetDelay").onclick = async () => { try { if (!provider) await ensureProvider(); const s = Number(navDelay.value); if(!(s>0)){alert("Invalid");return;} const tx = await vault.setNavDelay(s); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); }};
+    btnSetFees.onclick = async () => { try { if (!provider) await ensureProvider(); const m = Number(mintFee.value), r = Number(redeemFee.value); const recip = await vault.feeRecipient(); const ru = await vault.feeRoundUp(); const tx = await vault.setFees(m, r, recip, ru); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); }};
     btnGuardOn.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(true); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
     btnGuardOff.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(false); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-    document.getElementById("btnWhitelistOn").onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setWhitelist(wlAddr.value, true); await tx.wait(); wlMsg.textContent="Added"; } catch(e){ wlMsg.textContent=shortErr(e); }};
-    document.getElementById("btnWhitelistOff").onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setWhitelist(wlAddr.value, false); await tx.wait(); wlMsg.textContent="Removed"; } catch(e){ wlMsg.textContent=shortErr(e); }};
-
-    // New Admin Actions
+    el("btnWhitelistOn").onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setWhitelist(wlAddr.value, true); await tx.wait(); wlMsg.textContent="Added"; } catch(e){ wlMsg.textContent=shortErr(e); }};
+    el("btnWhitelistOff").onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setWhitelist(wlAddr.value, false); await tx.wait(); wlMsg.textContent="Removed"; } catch(e){ wlMsg.textContent=shortErr(e); }};
     btnSetCap.onclick = async () => { try { if (!provider) await ensureProvider(); const c = p18(maxSupplyIn.value); const tx = await vault.setMaxSupply(c); await tx.wait(); await refresh(); } catch(e){ alert(shortErr(e)); }};
     btnPause.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.pause(); await tx.wait(); await refresh(); } catch(e){ alert(shortErr(e)); }};
     btnUnpause.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.unpause(); await tx.wait(); await refresh(); } catch(e){ alert(shortErr(e)); }};
-    
     btnAnnounceRescue.onclick = async () => {
-        try {
-            if (!provider) await ensureProvider();
-            const t = resToken.value.trim(), a = resAmt.value.trim(), recipient = resTo.value.trim();
-            if(!ethers.isAddress(t) || !ethers.isAddress(recipient)) return alert("Invalid addresses");
-            const tx = await vault.announceRescue(t, BigInt(a), recipient);
-            await tx.wait(); await refresh();
-        } catch(e) { alert(shortErr(e)); }
+      try {
+        if (!provider) await ensureProvider();
+        const t = resToken.value.trim(), a = resAmt.value.trim(), recipient = resTo.value.trim();
+        if(!ethers.isAddress(t) || !ethers.isAddress(recipient)) return alert("Invalid addresses");
+        const tx = await vault.announceRescue(t, BigInt(a), recipient);
+        await tx.wait(); await refresh();
+      } catch(e) { alert(shortErr(e)); }
     };
     btnExecuteRescue.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.executeRescue(); await tx.wait(); await refresh(); } catch(e) { alert(shortErr(e)); } };
 
-    // Batch Sender
+    // ===== Batch Sender =====
     batchInput.addEventListener("input", () => {
-        const text = batchInput.value, lines = text.split(/\r?\n/);
-        let count = 0, total = 0n;
-        for (let l of lines) {
-            const parts = l.split(",");
-            if (parts.length >= 2 && ethers.isAddress(parts[0].trim()) && !isNaN(parts[1].trim())) {
-                count++; try { total += ethers.parseUnits(parts[1].trim(), 18); } catch {}
-            }
+      const lines = batchInput.value.split(/\r?\n/);
+      let count = 0, total = 0n;
+      for (let l of lines) {
+        const parts = l.split(",");
+        if (parts.length >= 2 && ethers.isAddress(parts[0].trim()) && !isNaN(parts[1].trim())) {
+          count++; try { total += ethers.parseUnits(parts[1].trim(), 18); } catch {}
         }
-        batchStats.textContent = `Wait: ${count} | Total: ${ethers.formatUnits(total, 18)}`;
+      }
+      batchStats.textContent = "Wait: " + count + " | Total: " + ethers.formatUnits(total, 18);
     });
     btnSendBatch.onclick = async () => {
-        try {
-            if (!provider) await ensureProvider();
-            const lines = batchInput.value.split(/\r?\n/), recipients = [];
-            for (let l of lines) {
-                const parts = l.split(",");
-                if (parts.length >= 2 && ethers.isAddress(parts[0].trim())) {
-                    try { recipients.push({ to: parts[0].trim(), amount: ethers.parseUnits(parts[1].trim(), 18) }); } catch {}
-                }
-            }
-            if (!recipients.length) return alert("No valid lines");
-            if (!confirm(`Send to ${recipients.length} wallets?`)) return;
-            btnSendBatch.disabled = true; batchLog.classList.remove("hidden");
-            batchLog.textContent = "Starting...\n";
-            for (let i = 0; i < recipients.length; i++) {
-                try {
-                    batchLog.textContent += `Sending to ${recipients[i].to.slice(0,6)}... `;
-                    const tx = await vault.transfer(recipients[i].to, recipients[i].amount);
-                    await tx.wait(); batchLog.textContent += `OK\n`;
-                } catch (e) { batchLog.textContent += `FAIL\n`; }
-            }
-            await refresh();
-        } catch (e) { alert(shortErr(e)); } finally { btnSendBatch.disabled = false; }
+      try {
+        if (!provider) await ensureProvider();
+        const lines = batchInput.value.split(/\r?\n/), recipients = [];
+        for (let l of lines) {
+          const parts = l.split(",");
+          if (parts.length >= 2 && ethers.isAddress(parts[0].trim())) {
+            try { recipients.push({ to: parts[0].trim(), amount: ethers.parseUnits(parts[1].trim(), 18) }); } catch {}
+          }
+        }
+        if (!recipients.length) return alert("No valid lines");
+        if (!confirm("Send to " + recipients.length + " wallets?")) return;
+        btnSendBatch.disabled = true; batchLog.classList.remove("hidden");
+        batchLog.textContent = "Starting...\n";
+        for (let i = 0; i < recipients.length; i++) {
+          try {
+            batchLog.textContent += "Sending to " + recipients[i].to.slice(0,6) + "... ";
+            const tx = await vault.transfer(recipients[i].to, recipients[i].amount);
+            await tx.wait(); batchLog.textContent += "OK\n";
+          } catch (e) { batchLog.textContent += "FAIL\n"; }
+        }
+        await refresh();
+      } catch (e) { alert(shortErr(e)); } finally { btnSendBatch.disabled = false; }
     };
 
-    // Misc
-    document.getElementById("btnExportCSV").onclick = () => {
+    // ===== On-Chain Distributor =====
+    distInput.addEventListener('input', () => {
+      const lines = distInput.value.split(/\r?\n/).filter(l => l.trim());
+      let count = 0, totalWeight = 0;
+      for (const l of lines) {
+        const parts = l.split(',');
+        if (parts.length >= 2 && ethers.isAddress(parts[0].trim())) {
+          count++;
+          totalWeight += parseFloat(parts[1].trim()) || 0;
+        }
+      }
+      distStats.textContent = "Recipients: " + count + " | Total weight: " + totalWeight;
+    });
+
+    el('btnApproveDist').onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        const total = el('distTotal').value;
+        if (!total) return alert('Enter total MTYLD amount first');
+        const amount = ethers.parseUnits(total, 18);
+        distLog.classList.remove('hidden');
+        distLog.textContent = 'Approving distributor contract...';
+        const tx = await vault.approve(DISTRIBUTOR, amount);
+        await tx.wait();
+        distLog.textContent = 'Approved! Now click Step 2: Distribute.';
+      } catch(e) { distLog.classList.remove('hidden'); distLog.textContent = shortErr(e); }
+    };
+
+    el('btnDistribute').onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        const lines = distInput.value.split(/\r?\n/).filter(l => l.trim());
+        const recipients = [], weights = [];
+        for (const l of lines) {
+          const parts = l.split(',');
+          if (parts.length >= 2 && ethers.isAddress(parts[0].trim())) {
+            recipients.push(parts[0].trim());
+            weights.push(BigInt(Math.round(parseFloat(parts[1].trim()) * 100)));
+          }
+        }
+        if (!recipients.length) return alert('No valid recipients');
+        const total = el('distTotal').value;
+        const note = el('distNote').value || 'Distribution';
+        if (!total) return alert('Enter total MTYLD amount');
+        if (!confirm('Distribute ' + total + ' MTYLD to ' + recipients.length + ' employees via on-chain contract?')) return;
+        distLog.classList.remove('hidden');
+        distLog.textContent = 'Sending on-chain distribution...';
+        const totalWei = ethers.parseUnits(total, 18);
+        const tx = await dist.distributeProportional(recipients, weights, totalWei, note);
+        distLog.textContent = 'Transaction submitted... waiting for confirmation...';
+        await tx.wait();
+        distLog.textContent = 'Distribution complete! ' + recipients.length + ' employees paid. Recorded on Arbiscan as "' + note + '".';
+        await refresh();
+      } catch(e) { distLog.classList.remove('hidden'); distLog.textContent = shortErr(e); }
+    };
+
+    el('btnLoadHistory').onclick = async () => {
+      try {
+        if (!provider) await ensureProvider();
+        distHistory.textContent = 'Loading...';
+        const readDist = new ethers.Contract(DISTRIBUTOR, DIST_ABI, provider);
+        const count = await readDist.distributionCount();
+        if (count === 0n) { distHistory.textContent = 'No distributions yet.'; return; }
+        let html = '';
+        for (let i = Number(count) - 1; i >= 0; i--) {
+          const [ts, amount, recips, note] = await readDist.getDistribution(i);
+          const date = new Date(Number(ts) * 1000).toLocaleDateString();
+          const amt = parseFloat(ethers.formatUnits(amount, 18)).toFixed(2);
+          html += '#' + i + ' | ' + date + ' | ' + note + ' | ' + amt + ' MTYLD | ' + recips + ' recipients\n';
+        }
+        distHistory.textContent = html || 'No distributions found.';
+      } catch(e) { distHistory.textContent = shortErr(e); }
+    };
+
+    // ===== Misc =====
+    el("btnExportCSV").onclick = () => {
       const rows = [["timestamp","iso","nav_usd"]];
       for (const p of navHistory) rows.push([p.t, new Date(p.t*1000).toISOString(), p.p.toFixed(8)]);
       const csv = rows.map(r => r.join(",")).join("\n");
@@ -808,9 +893,9 @@
       a.href = url; a.download = "mtyld_nav_history.csv"; a.click();
       URL.revokeObjectURL(url);
     };
-    document.getElementById("btnResetHistory").onclick = () => { if(confirm("Reset history?")) { navHistory=[]; saveHistory(); drawNavChart(); }};
-    document.getElementById("btnConnect").onclick = async () => { try { await ensureProvider(); await refresh(); await loadOwnerState(); } catch(e){} };
-    document.getElementById("btnRefresh").onclick = async () => { await refresh(); if (vaultOwner && signer) await loadOwnerState(); };
+    el("btnResetHistory").onclick = () => { if(confirm("Reset history?")) { navHistory=[]; saveHistory(); drawNavChart(); }};
+    el("btnConnect").onclick = async () => { try { await ensureProvider(); await refresh(); await loadOwnerState(); } catch(e){} };
+    el("btnRefresh").onclick = async () => { await refresh(); if (vaultOwner && signer) await loadOwnerState(); };
 
     loadHistory(); drawNavChart();
     setInterval(() => { refresh().catch(()=>{}); }, 10000);
