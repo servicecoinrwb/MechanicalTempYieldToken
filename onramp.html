@@ -118,10 +118,27 @@
           </div>
         </div>
 
-        <!-- Step 2 -->
+        <!-- Step 2: Network -->
         <div class="card p-5 fade-up delay-2">
           <div class="flex items-center gap-3 mb-4">
             <div class="step-dot active">2</div>
+            <div><div style="font-weight:700;font-size:15px">Network</div><div style="color:var(--muted);font-size:12px">Which blockchain?</div></div>
+          </div>
+          <select id="network-select" onchange="selectNetwork(this.value)"
+            style="width:100%;padding:12px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;outline:none;cursor:pointer">
+            <option value="ethereum">Ethereum Mainnet</option>
+            <option value="base">Base (Recommended — cheap gas)</option>
+            <option value="polygon">Polygon</option>
+            <option value="optimism">Optimism</option>
+            <option value="avalanche">Avalanche</option>
+          </select>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted)">Note: Arbitrum not yet supported by Stripe. Use Base or bridge after.</div>
+        </div>
+
+        <!-- Step 3: Destination -->
+        <div class="card p-5 fade-up delay-2">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="step-dot active">3</div>
             <div><div style="font-weight:700;font-size:15px">Destination</div><div style="color:var(--muted);font-size:12px">Where should it go?</div></div>
           </div>
           <div class="flex gap-2 mb-3">
@@ -146,7 +163,7 @@
         <!-- Step 3 -->
         <div class="card p-5 fade-up delay-3">
           <div class="flex items-center gap-3 mb-4">
-            <div class="step-dot active">3</div>
+            <div class="step-dot active">4</div>
             <div><div style="font-weight:700;font-size:15px">Amount</div><div style="color:var(--muted);font-size:12px">How much USD to spend?</div></div>
           </div>
           <div style="position:relative">
@@ -194,7 +211,7 @@
             </div>
             <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
               <span style="color:var(--muted);font-size:13px">Network</span>
-              <span class="mono" style="font-size:13px">Arbitrum One</span>
+              <span class="mono" style="font-size:13px" id="summary-network">Ethereum</span>
             </div>
             <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
               <span style="color:var(--muted);font-size:13px">Destination</span>
@@ -258,6 +275,12 @@
 
   let selectedAsset = 'ETH';
   let selectedDest  = 'wallet';
+  let selectedNetwork = 'ethereum';
+
+  function selectNetwork(network) {
+    selectedNetwork = network;
+    document.getElementById('summary-network').textContent = network.charAt(0).toUpperCase() + network.slice(1);
+  }
   let walletAddress = null;
   let amount = 100;
 
@@ -341,9 +364,9 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           asset: selectedAsset,
+          network: selectedNetwork,
           amount: amount,
-          dest: selectedDest,
-          walletAddress: walletAddress || '',
+          walletAddress: selectedDest === 'wallet' ? (walletAddress || '') : '',
         })
       });
 
@@ -352,20 +375,12 @@
         throw new Error(err.error || 'Server error');
       }
 
-      const { clientSecret, publishableKey } = await resp.json();
-      btn.textContent = 'Loading Stripe...';
+      const { redirectUrl } = await resp.json();
 
-      const stripe = Stripe(publishableKey);
-      const onramp = stripe.crypto.createOnramp(clientSecret, {
-        appearance: {
-          theme: 'dark',
-          variables: { colorBackground: '#0d1520', colorText: '#e8f4f8', colorPrimary: '#00d4ff', borderRadius: '12px' }
-        }
-      });
-
-      document.getElementById('pre-launch').style.display = 'none';
-      document.getElementById('stripe-widget').style.display = 'block';
-      await onramp.mount('#stripe-onramp-container');
+      // Redirect to Stripe hosted onramp
+      window.open(redirectUrl, '_blank');
+      btn.textContent = 'Launch Stripe Checkout →';
+      btn.disabled = false;
 
     } catch(e) {
       showError('Error: ' + (e.message || String(e)));
