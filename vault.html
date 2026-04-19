@@ -872,8 +872,7 @@
           return addr + ', ' + wholeTokens;
         });
 
-        distInput.value = lines.join('
-');
+        distInput.value = lines.join('\n');
 
         // Trigger input event to update stats
         distInput.dispatchEvent(new Event('input'));
