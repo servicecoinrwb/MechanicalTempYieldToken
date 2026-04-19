@@ -197,7 +197,13 @@
         <p class="text-xs text-slate-400 mb-3">Distribute MTYLD proportionally in one transaction. Fully recorded on Arbiscan with timestamp, note, and per-employee amounts. Step 1 approves the distributor, Step 2 executes.</p>
         
         <div class="mb-2">
-          <label class="text-xs text-slate-400">Recipients & Weights (address, weight — one per line)</label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs text-slate-400">Recipients & Weights (address, weight — one per line)</label>
+            <button id="btnAutoPopulate" class="text-xs px-3 py-1 rounded-lg bg-emerald-900/40 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-800 transition">
+              Auto-populate holders
+            </button>
+          </div>
+          <div id="autoPopulateStatus" class="text-xs text-slate-500 mb-1 hidden"></div>
           <textarea id="distInput" rows="4"
             placeholder="0xAddress1, 50&#10;0xAddress2, 30&#10;0xAddress3, 20"
             class="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 font-mono text-xs placeholder-slate-600 focus:outline-none focus:border-emerald-500"></textarea>
@@ -809,6 +815,82 @@
     };
 
     // ===== On-Chain Distributor =====
+    // ===== Auto-populate MTYLD holders from Transfer events =====
+    el('btnAutoPopulate').onclick = async () => {
+      const btn = el('btnAutoPopulate');
+      const status = el('autoPopulateStatus');
+      try {
+        if (!provider) await ensureProvider();
+        btn.textContent = 'Scanning chain...';
+        btn.disabled = true;
+        status.classList.remove('hidden');
+        status.textContent = 'Reading Transfer events from chain...';
+
+        const mtyldContract = new ethers.Contract(
+          VAULT,
+          ["event Transfer(address indexed from, address indexed to, uint256 amount)"],
+          provider
+        );
+
+        // Get all Transfer events
+        const filter = mtyldContract.filters.Transfer();
+        status.textContent = 'Fetching all Transfer events (this may take a moment)...';
+        const events = await mtyldContract.queryFilter(filter, 0, 'latest');
+
+        // Build balance map
+        const balances = {};
+        const ZERO = '0x0000000000000000000000000000000000000000';
+
+        for (const e of events) {
+          const from = e.args[0].toLowerCase();
+          const to = e.args[1].toLowerCase();
+          const amount = e.args[2];
+
+          if (from !== ZERO) {
+            balances[from] = (balances[from] || 0n) - amount;
+          }
+          if (to !== ZERO) {
+            balances[to] = (balances[to] || 0n) + amount;
+          }
+        }
+
+        // Filter out zero and negative balances, exclude contract itself
+        const holders = Object.entries(balances)
+          .filter(([addr, bal]) => bal > 0n && addr !== VAULT.toLowerCase())
+          .sort((a, b) => (b[1] > a[1] ? 1 : -1));
+
+        if (!holders.length) {
+          status.textContent = 'No holders found.';
+          btn.textContent = 'Auto-populate holders';
+          btn.disabled = false;
+          return;
+        }
+
+        // Format as address, balance (in whole MTYLD tokens as weight)
+        const lines = holders.map(([addr, bal]) => {
+          const wholeTokens = parseFloat(ethers.formatUnits(bal, 18)).toFixed(4);
+          return addr + ', ' + wholeTokens;
+        });
+
+        distInput.value = lines.join('
+');
+
+        // Trigger input event to update stats
+        distInput.dispatchEvent(new Event('input'));
+
+        const totalMtyld = holders.reduce((sum, [, bal]) => sum + bal, 0n);
+        status.textContent = holders.length + ' holders found. Total supply: ' + parseFloat(ethers.formatUnits(totalMtyld, 18)).toFixed(4) + ' MTYLD. Weights set to actual balances.';
+        btn.textContent = 'Auto-populate holders';
+        btn.disabled = false;
+
+      } catch(e) {
+        status.classList.remove('hidden');
+        status.textContent = 'Error: ' + (e.message || String(e)).slice(0, 100);
+        btn.textContent = 'Auto-populate holders';
+        btn.disabled = false;
+      }
+    };
+
     distInput.addEventListener('input', () => {
       const lines = distInput.value.split(/\r?\n/).filter(l => l.trim());
       let count = 0, totalWeight = 0;
