@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://js.stripe.com/dahlia/stripe.js"></script>
+  <script src="https://crypto-js.stripe.com/crypto-onramp-outer.js"></script>
   <style>
     :root {
       --bg: #060a12; --surface: #0d1520; --border: #1a2840;
@@ -84,13 +86,13 @@
   <!-- Header -->
   <header class="header content">
     <div style="max-width:1000px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between">
-      <a href="https://mechanicaltemp.com/" style="display:flex;align-items:center;gap:12px;text-decoration:none">
+      <a href="https://vault.mechanicaltemp.com/" style="display:flex;align-items:center;gap:12px;text-decoration:none">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" style="height:36px;width:auto">
-        <span style="font-weight:800;font-size:15px;color:var(--text)"></span>
+        <span style="font-weight:800;font-size:15px;color:var(--text)">Mechanical Temp</span>
       </a>
       <div style="display:flex;align-items:center;gap:8px">
-        <a href="https://mechanicaltemp.com/booking.html" style="padding:8px 12px;border-radius:8px;color:var(--muted);font-size:13px;text-decoration:none">Express Booking</a>
-        <a href="index.html" style="padding:8px 12px;border-radius:8px;color:var(--muted);font-size:13px;text-decoration:none">MTYLD</a>
+        <a href="vault.html" style="padding:8px 12px;border-radius:8px;color:var(--muted);font-size:13px;text-decoration:none">MTYLD</a>
+        <a href="conservator.html" style="padding:8px 12px;border-radius:8px;color:var(--muted);font-size:13px;text-decoration:none">Conservator</a>
         <span class="badge badge-stripe">Stripe Onramp</span>
       </div>
     </div>
@@ -215,8 +217,6 @@
   <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
 
-  const ONRAMP_SERVER = 'https://onramp-server-production.up.railway.app';
-
   let amount = 50;
   let selectedNetwork = 'ethereum';
 
@@ -262,7 +262,7 @@
     document.getElementById('error-box').style.display = 'none';
   }
 
-  async function launchStripe() {
+  function launchStripe() {
     clearError();
 
     if (!amount || amount < 20 || amount > 10000) {
@@ -270,35 +270,29 @@
       return;
     }
 
-    const btn = document.getElementById('launch-btn');
-    btn.textContent = 'Opening Stripe...';
-    btn.disabled = true;
-
     try {
-      const resp = await fetch(ONRAMP_SERVER + '/create-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          asset: 'ETH',
-          network: selectedNetwork,
-          amount: amount,
-          walletAddress: '',
-        })
+      const NETWORK_CURRENCY = {
+        ethereum: { network: 'ethereum', currency: 'eth' },
+        base:     { network: 'base',     currency: 'eth' },
+        polygon:  { network: 'polygon',  currency: 'usdc' },
+        optimism: { network: 'optimism', currency: 'eth' },
+      };
+      const nc = NETWORK_CURRENCY[selectedNetwork] || NETWORK_CURRENCY.ethereum;
+
+      const onramp = window.StripeOnramp.Standalone({
+        source_currency: 'usd',
+        amount: { source_amount: String(amount) },
+        destination_network: nc.network,
+        destination_currency: nc.currency,
+        destination_networks: [nc.network],
+        destination_currencies: [nc.currency],
       });
 
-      if (!resp.ok) {
-        const err = await resp.json();
-        throw new Error(err.error || 'Server error');
-      }
-
-      const { redirectUrl } = await resp.json();
+      const redirectUrl = onramp.getUrl();
       window.open(redirectUrl, '_blank');
 
     } catch(e) {
       showError('Error: ' + (e.message || String(e)));
-    } finally {
-      btn.textContent = 'Buy Crypto with Stripe →';
-      btn.disabled = false;
     }
   }
   </script>
