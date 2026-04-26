@@ -1373,13 +1373,18 @@
       } catch(e) { return []; }
     }
 
+    const NAV_SNAPSHOT_INTERVAL = 15 * 60 * 1000; // 15 minutes
+
     function saveNavSnapshot(nav) {
       const history = getNavHistory();
-      const now = new Date();
-      const label = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
-      history.push({ label, nav: parseFloat(nav.toFixed(6)), time: Date.now() });
-      // Keep last 48 snapshots (~12 hours at 15min intervals)
-      if (history.length > 48) history.shift();
+      const now = Date.now();
+      // Only save if 15 minutes have passed since last snapshot
+      if (history.length > 0 && now - history[history.length - 1].time < NAV_SNAPSHOT_INTERVAL) return;
+      const d = new Date(now);
+      const label = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+      history.push({ label, nav: parseFloat(nav.toFixed(6)), time: now });
+      // Keep last 96 snapshots (~24 hours at 15min intervals)
+      if (history.length > 96) history.shift();
       localStorage.setItem('mtvault_nav_history', JSON.stringify(history));
     }
 
@@ -1441,7 +1446,7 @@
             y: {
               ticks: { color: '#475569', font: { size: 10 }, callback: v => v.toFixed(4) },
               grid: { color: 'rgba(71,85,105,0.2)' },
-              min: 0.999
+              min: 0.995
             }
           }
         }
@@ -1509,7 +1514,9 @@
             navChart.data.labels = history.map(h => h.label);
             navChart.data.datasets[0].data = history.map(h => h.nav);
             const minNav = Math.min(...history.map(h => h.nav));
-            navChart.options.scales.y.min = Math.max(0.999, minNav - 0.001);
+            const maxNav = Math.max(...history.map(h => h.nav));
+            navChart.options.scales.y.min = Math.max(0, minNav - 0.0005);
+            navChart.options.scales.y.max = maxNav + 0.0005;
             navChart.update();
           }
         }
