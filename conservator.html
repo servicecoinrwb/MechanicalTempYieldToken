@@ -71,6 +71,7 @@
           <span id="stat-agent" class="text-sm font-mono text-emerald-400 truncate">Connecting...</span>
         </div>
         <p class="text-slate-600 text-xs mt-1">Active AI agent</p>
+        <p id="active-yield-rate" class="text-emerald-400 text-xs mt-1 font-mono">—</p>
       </div>
     </div>
 
@@ -112,6 +113,26 @@
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Idle in Vault</p>
           <p id="portfolio-idle" class="text-lg font-mono text-sky-400">—</p>
           <p class="text-slate-600 text-xs mt-1">WETH awaiting deploy</p>
+        </div>
+      </div>
+
+      <!-- Protocol Rates -->
+      <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-emerald-900/30">
+          <div class="flex items-center justify-between mb-1">
+            <p class="text-slate-500 text-xs uppercase tracking-wider">Aave V3 Supply Rate</p>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-900/50">Active</span>
+          </div>
+          <p id="aave-apy" class="text-xl font-mono text-emerald-400">—</p>
+          <p class="text-slate-600 text-xs mt-1">WETH supply APY on Arbitrum</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-purple-900/30">
+          <div class="flex items-center justify-between mb-1">
+            <p class="text-slate-500 text-xs uppercase tracking-wider">Compound V3 Supply Rate</p>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-purple-900/40 text-purple-400 border border-purple-900/50">Fallback</span>
+          </div>
+          <p id="compound-apy" class="text-xl font-mono text-purple-400">—</p>
+          <p class="text-slate-600 text-xs mt-1">WETH supply APY on Arbitrum</p>
         </div>
       </div>
 
@@ -650,6 +671,50 @@
     ];
 
     let isMtyldHolder = false;
+
+    // Protocol rate fetching
+    const AAVE_DATA_PROVIDER = "0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654";
+    const AAVE_DATA_ABI = [{"inputs":[{"name":"asset","type":"address"}],"name":"getReserveData","outputs":[{"components":[{"name":"unbacked","type":"uint128"},{"name":"accruedToTreasuryScaled","type":"uint128"},{"name":"totalAToken","type":"uint128"},{"name":"totalStableDebt","type":"uint128"},{"name":"totalVariableDebt","type":"uint128"},{"name":"liquidityRate","type":"uint128"},{"name":"variableBorrowRate","type":"uint128"},{"name":"stableBorrowRate","type":"uint128"},{"name":"averageStableBorrowRate","type":"uint128"},{"name":"liquidityIndex","type":"uint128"},{"name":"variableBorrowIndex","type":"uint128"},{"name":"lastUpdateTimestamp","type":"uint40"}],"type":"tuple"}],"stateMutability":"view","type":"function"}];
+    const COMPOUND_COMET_ABI = [{"inputs":[],"name":"getUtilization","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"name":"utilization","type":"uint256"}],"name":"getSupplyRate","outputs":[{"type":"uint64"}],"stateMutability":"view","type":"function"}];
+
+    async function fetchProtocolRates() {
+      try {
+        const rp = new ethers.BrowserProvider(window.ethereum);
+        
+        // Aave supply rate for WETH
+        const aaveData = new ethers.Contract(AAVE_DATA_PROVIDER, AAVE_DATA_ABI, rp);
+        const reserveData = await aaveData.getReserveData(WETH_ADDRESS);
+        const aaveRate = parseFloat(reserveData.liquidityRate.toString()) / 1e27 * 100;
+        
+        // Compound V3 supply rate
+        const comet = new ethers.Contract(COMPOUND_ADDRESS, COMPOUND_COMET_ABI, rp);
+        const utilization = await comet.getUtilization();
+        const supplyRate = await comet.getSupplyRate(utilization);
+        // Compound rate is per second, convert to APY
+        const secondsPerYear = 31536000;
+        const compoundAPY = (Math.pow(1 + parseFloat(supplyRate.toString()) / 1e18, secondsPerYear) - 1) * 100;
+
+        // Update display
+        const aaveEl = document.getElementById('aave-apy');
+        const compEl = document.getElementById('compound-apy');
+        if (aaveEl) aaveEl.textContent = aaveRate.toFixed(2) + '% APY';
+        if (compEl) compEl.textContent = compoundAPY.toFixed(2) + '% APY';
+
+        // Update active rate in header
+        const activeEl = document.getElementById('active-yield-rate');
+        if (activeEl) {
+          const aWethBal = await new ethers.Contract(AWETH_ADDRESS, AWETH_ABI, rp).balanceOf(VAULT_ADDRESS).catch(() => 0n);
+          const compBal = await new ethers.Contract(COMPOUND_ADDRESS, COMPOUND_ABI, rp).balanceOf(VAULT_ADDRESS).catch(() => 0n);
+          if (aWethBal > compBal) {
+            activeEl.textContent = 'Earning ' + aaveRate.toFixed(2) + '% on Aave';
+          } else if (compBal > 0n) {
+            activeEl.textContent = 'Earning ' + compoundAPY.toFixed(2) + '% on Compound';
+          } else {
+            activeEl.textContent = 'Deploying...';
+          }
+        }
+      } catch(e) { console.error('Rate fetch error:', e); }
+    }
 
     async function checkMtyldHolder(address) {
       try {
@@ -1456,6 +1521,7 @@
     setTimeout(() => {
       initCharts();
       refreshPortfolio();
+      fetchProtocolRates();
     }, 500);
 
     // ── Aave Calldata Generator ────────────────────────────────
@@ -1502,6 +1568,7 @@
 
     setInterval(refreshAll, 15000);
     setInterval(refreshPortfolio, 15000);
+    setInterval(fetchProtocolRates, 60000); // Rates refresh every minute
   </script>
 
   <!-- ── THE CONSERVATOR CHAT WIDGET ─────────────────────── -->
