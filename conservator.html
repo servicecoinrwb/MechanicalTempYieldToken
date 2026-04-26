@@ -1,4 +1,4 @@
-DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -266,7 +266,7 @@ DOCTYPE html>
           Check &amp; Withdraw
         </div>
         <div id="wd-btn-request" class="hidden w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition text-center cursor-pointer mt-3" onclick="requestFundsFromAgent()">
-          🏦 Request Agent Pull Funds from Aave
+          🏦 Request Agent Pull Funds from Vault
         </div>
         <div id="wd-btn-redeem" class="hidden w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition text-center cursor-pointer mt-3" onclick="executeRedeem()">
           ✓ Funds Ready — Complete Withdrawal
@@ -1049,7 +1049,7 @@ DOCTYPE html>
         } else {
           // Need to pull from Aave first
           const shortfall = (assetsNeeded - idleFloat).toFixed(4);
-          setWdStatus('warning', `⚠ Vault only has ${idleFloat.toFixed(4)} WETH idle. Need to pull ${shortfall} WETH from Aave first. Click the button below to request this — it takes about 1 minute.`);
+          setWdStatus('warning', `⚠ Vault only has ${idleFloat.toFixed(4)} WETH idle. Need to pull ${shortfall} WETH from the yield protocol first. Click below to request this — it takes about 1 minute.`);
           setWdStep(1);
           document.getElementById('wd-btn-check').style.display = 'none';
           document.getElementById('wd-btn-request').style.display = 'block';
