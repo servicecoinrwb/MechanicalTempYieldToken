@@ -38,7 +38,7 @@
     <!-- Title -->
     <div class="mb-8">
       <h1 class="text-3xl font-black text-white"><span class="text-sky-400">Agent of ETH</span></h1>
-      <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) • Arbitrum One • <a href="https://arbiscan.io/address/0xc9227b644285198646F9c75ceCf13F84bF419B78" target="_blank" class="text-sky-400 hover:underline">0x00Eb7367....e57D</a></p>
+      <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) • Arbitrum One • <a href="https://arbiscan.io/address/0x8DC0a095535DCFC82833E306B3661Ed53F19767e" target="_blank" class="text-sky-400 hover:underline">0x00Eb7367....e57D</a></p>
     </div>
 
     <!-- Network Warning -->
@@ -599,7 +599,7 @@
 
     <!-- Footer -->
     <div class="pt-6 border-t border-slate-800 flex items-center justify-between">
-      <p class="text-slate-600 text-xs font-mono truncate">0xc922...419b78 • Arbitrum One • 15s refresh</p>
+      <p class="text-slate-600 text-xs font-mono truncate">0x8DC0...9767e • Arbitrum One • 15s refresh</p>
       <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
     </div>
 
@@ -615,7 +615,7 @@
   </div>
 
   <script>
-    const VAULT_ADDRESS = "0xc9227b644285198646F9c75ceCf13F84bF419B78"; // v4
+    const VAULT_ADDRESS = "0x8DC0a095535DCFC82833E306B3661Ed53F19767e";
     const WETH_ADDRESS  = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
     const ARBITRUM_ID   = 42161n;
 
@@ -624,7 +624,7 @@
       {"inputs":[],"name":"totalSupply","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"aiAgent","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"owner","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
-
+      {"inputs":[],"name":"asset","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"MIN_DEPOSIT","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[],"name":"withdrawLockPeriod","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
       {"inputs":[{"name":"shares","type":"uint256"}],"name":"convertToAssets","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
@@ -838,10 +838,10 @@
       try {
         const rp = new ethers.BrowserProvider(window.ethereum);
         const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
-        const [assets, supply, agent, nav, minDep, lock, ownerAddr] = await Promise.all([
+        const [assets, supply, agent, nav, minDep, lock, assetAddr, ownerAddr] = await Promise.all([
           rc.totalAssets(), rc.totalSupply(), rc.aiAgent(),
           rc.convertToAssets(ethers.parseEther("1")).catch(() => ethers.parseEther("1")),
-          rc.MIN_DEPOSIT(), rc.withdrawLockPeriod(), rc.owner()
+          rc.MIN_DEPOSIT(), rc.withdrawLockPeriod(), rc.asset(), rc.owner()
         ]);
         // Fetch Aave + Compound + idle WETH balances
         const aweth = new ethers.Contract(AWETH_ADDRESS, AWETH_ABI, rp);
@@ -884,7 +884,7 @@
         document.getElementById('current-agent-display').textContent = agent;
         document.getElementById('info-min-deposit').textContent = ethers.formatEther(minDep) + ' WETH';
         document.getElementById('info-lock').textContent = (Number(lock) / 3600).toFixed(1) + ' hrs';
-        document.getElementById('info-asset').textContent = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'; // WETH
+        document.getElementById('info-asset').textContent = assetAddr;
         document.getElementById('info-owner').textContent = ownerAddr.slice(0,6) + '...' + ownerAddr.slice(-4);
 
         if (userAddress) {
@@ -1775,7 +1775,6 @@ User vault ownership: ${shares > 0 ? (mySharesFloat / shares * 100).toFixed(2) :
         return `LIVE VAULT DATA (Arbitrum One, fetched ${new Date().toLocaleTimeString()}):
 Vault contract: ${VAULT_ADDRESS}
 Agent wallet: 0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58
-Vault v4: 0xc9227b644285198646F9c75ceCf13F84bF419B78
 TVL: ${total.toFixed(6)} WETH ($${(total * ethPrice).toFixed(2)})
 Deployed to Aave: ${aave.toFixed(6)} WETH
 Idle buffer: ${idle.toFixed(6)} WETH
