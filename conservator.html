@@ -22,9 +22,9 @@
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
+      <a href="https://www.mechanicaltemp.com" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">The  <span class="text-sky-400">Conservator</span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MECHANICAL TEMP <span class="text-sky-400">DEFI</span></span>
       </a>
       <div class="flex items-center gap-3">
         <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
@@ -99,15 +99,15 @@
           <p id="portfolio-gas" class="text-lg font-mono text-white">—</p>
           <p id="portfolio-gas-status" class="text-xs mt-1">ETH on Arbitrum</p>
         </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
-          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Deployed to Aave</p>
-          <p id="portfolio-aave" class="text-lg font-mono text-emerald-400">—</p>
-          <p class="text-slate-600 text-xs mt-1">aWETH earning yield</p>
-        </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-emerald-900/30">
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Deployed to Compound</p>
-          <p id="portfolio-compound" class="text-lg font-mono text-purple-400">—</p>
+          <p id="portfolio-compound" class="text-lg font-mono text-emerald-400">—</p>
           <p class="text-slate-600 text-xs mt-1">cWETH earning yield</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-red-900/20 opacity-60">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Aave V3 (v3 vault — locked)</p>
+          <p id="portfolio-aave" class="text-lg font-mono text-red-400">—</p>
+          <p class="text-slate-600 text-xs mt-1">⚠ 100% utilization — monitoring</p>
         </div>
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Idle in Vault</p>
@@ -120,19 +120,19 @@
       <div class="grid md:grid-cols-2 gap-4 mb-6">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-emerald-900/30">
           <div class="flex items-center justify-between mb-1">
-            <p class="text-slate-500 text-xs uppercase tracking-wider">Aave V3 Supply Rate</p>
+            <p class="text-slate-500 text-xs uppercase tracking-wider">Compound V3 Supply Rate</p>
             <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-900/50">Active</span>
           </div>
-          <p id="aave-apy" class="text-xl font-mono text-emerald-400">—</p>
+          <p id="compound-apy" class="text-xl font-mono text-emerald-400">—</p>
           <p class="text-slate-600 text-xs mt-1">WETH supply APY on Arbitrum</p>
         </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-purple-900/30">
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-700/30 opacity-50">
           <div class="flex items-center justify-between mb-1">
-            <p class="text-slate-500 text-xs uppercase tracking-wider">Compound V3 Supply Rate</p>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-purple-900/40 text-purple-400 border border-purple-900/50">Fallback</span>
+            <p class="text-slate-500 text-xs uppercase tracking-wider">Aave V3 Supply Rate</p>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 border border-red-900/50">Paused — 100% utilization</span>
           </div>
-          <p id="compound-apy" class="text-xl font-mono text-purple-400">—</p>
-          <p class="text-slate-600 text-xs mt-1">WETH supply APY on Arbitrum</p>
+          <p id="aave-apy" class="text-xl font-mono text-slate-500">—</p>
+          <p class="text-slate-600 text-xs mt-1">Temporarily unavailable</p>
         </div>
       </div>
 
@@ -149,8 +149,8 @@
             </div>
           </div>
           <div class="flex items-center justify-center gap-4 mt-3 flex-wrap">
-            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span><span class="text-xs text-slate-400">Aave</span></div>
-            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span><span class="text-xs text-slate-400">Compound</span></div>
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span><span class="text-xs text-slate-400">Compound</span></div>
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span><span class="text-xs text-slate-400">Aave (locked)</span></div>
             <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span><span class="text-xs text-slate-400">Idle</span></div>
           </div>
         </div>
@@ -561,7 +561,7 @@
         </div>
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <div class="text-emerald-400 font-bold text-sm mb-2">② The Conservator (AI Agent)</div>
-          <p class="text-slate-400 text-sm">The AI running on your computer (ElizaOS + Claude). It watches the vault and can move funds into <strong class="text-white">approved yield strategies</strong> like Aave — but only ones you've whitelisted. It cannot steal funds.</p>
+          <p class="text-slate-400 text-sm">The AI running on your computer (ElizaOS + Claude). It watches the vault and can move funds into <strong class="text-white">approved yield strategies</strong> like Compound — but only ones you've whitelisted. It cannot steal funds.</p>
         </div>
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <div class="text-amber-400 font-bold text-sm mb-2">③ This Dashboard</div>
@@ -576,7 +576,7 @@
           <span class="text-slate-500">→</span>
           <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Vault mints mtETH-S</span>
           <span class="text-slate-500">→</span>
-          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">AI deploys to Aave</span>
+          <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">AI deploys to Compound</span>
           <span class="text-slate-500">→</span>
           <span class="bg-slate-800 px-3 py-1 rounded-lg text-amber-300">Yield grows NAV</span>
           <span class="text-slate-500">→</span>
@@ -587,7 +587,7 @@
       <div class="grid md:grid-cols-2 gap-4 mt-4">
         <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
           <div class="text-slate-300 font-semibold text-sm mb-2">🔐 What is NAV / Share Price?</div>
-          <p class="text-slate-400 text-sm">NAV = Net Asset Value. It represents how much WETH each mtETH-S share is worth. As Aave earns yield, NAV goes up. Your mtETH-S balance stays the same but each share is worth more WETH over time. Your position value = shares × NAV.</p>
+          <p class="text-slate-400 text-sm">NAV = Net Asset Value. It represents how much WETH each mtETH-S share is worth. As Compound earns yield, NAV goes up. Your mtETH-S balance stays the same but each share is worth more WETH over time. Your position value = shares × NAV.</p>
         </div>
         <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
           <div class="text-slate-300 font-semibold text-sm mb-2">⏱ What is the Withdraw Lock?</div>
@@ -703,11 +703,8 @@
         // Update active rate in header
         const activeEl = document.getElementById('active-yield-rate');
         if (activeEl) {
-          const aWethBal = await new ethers.Contract(AWETH_ADDRESS, AWETH_ABI, rp).balanceOf(VAULT_ADDRESS).catch(() => 0n);
           const compBal = await new ethers.Contract(COMPOUND_ADDRESS, COMPOUND_ABI, rp).balanceOf(VAULT_ADDRESS).catch(() => 0n);
-          if (aWethBal > compBal) {
-            activeEl.textContent = 'Earning ' + aaveRate.toFixed(2) + '% on Aave';
-          } else if (compBal > 0n) {
+          if (compBal > 0n) {
             activeEl.textContent = 'Earning ' + compoundAPY.toFixed(2) + '% on Compound';
           } else {
             activeEl.textContent = 'Deploying...';
@@ -1404,7 +1401,7 @@
           labels: ['Aave', 'Compound', 'Idle'],
           datasets: [{
             data: [0, 0, 1],
-            backgroundColor: ['#10b981', '#a855f7', '#0ea5e9'],
+            backgroundColor: ['#10b981', '#ef4444', '#0ea5e9'],
             borderColor: ['#0f172a'],
             borderWidth: 3,
             hoverOffset: 4
