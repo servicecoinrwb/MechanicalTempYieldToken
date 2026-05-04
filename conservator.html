@@ -1995,11 +1995,16 @@
           throw new Error('Chat service returned ' + resp.status + '. ' + errText.slice(0, 200));
         }
 
+        // Get JSON response (non-streaming)
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
+        const fullResponseText = data.text || '';
+        
         document.getElementById(typingId)?.remove();
         agentBubble = appendMessage('agent', '', false);
         bubbleEl = agentBubble.querySelector('.chat-msg-bubble');
-        bubbleEl.innerHTML = '<span class="chat-streaming-cursor"></span>';
-
+        bubbleEl.innerHTML = renderMarkdown(fullResponseText);
+        fullResponse = fullResponseText;
         const reader = resp.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
