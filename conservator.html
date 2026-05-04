@@ -1761,7 +1761,6 @@
     let chatOpen = false;
     let chatHistory = [];
     let isStreaming = false;
-    let abortController = null;
 
     function loadHistory() {
       try {
@@ -1897,8 +1896,6 @@
           clC.latestRoundData()
         ]);
 
-        const agentGas = await rp.getBalance(agentAddr).catch(() => 0n);
-
         const idle = parseFloat(ethers.formatEther(idleWeth));
         const aave = parseFloat(ethers.formatEther(aWeth));
         const comp = parseFloat(ethers.formatEther(compWeth));
@@ -1907,47 +1904,31 @@
         const nav = shares > 0 ? total / shares : 1.0;
         const ethPrice = parseFloat(clData[1].toString()) / 1e8;
         const tvlUsd = total * ethPrice;
-        const gasEth = parseFloat(ethers.formatEther(agentGas));
 
         let userSection = '\nUser wallet: not connected';
         if (typeof userAddress !== 'undefined' && userAddress) {
           const myShares = await rc.balanceOf(userAddress).catch(() => 0n);
-          const lastDep = await rc.lastDepositTime(userAddress).catch(() => 0n);
           const mySharesFloat = parseFloat(ethers.formatEther(myShares));
           const myValue = mySharesFloat * nav;
           const ownership = shares > 0 ? (mySharesFloat / shares * 100) : 0;
-          const now = BigInt(Math.floor(Date.now() / 1000));
-          let lockStatus = 'no lock active';
-          if (lastDep > 0n && lockPeriod > 0n) {
-            const unlockAt = lastDep + lockPeriod;
-            if (now < unlockAt) {
-              const minsLeft = Number(unlockAt - now) / 60;
-              lockStatus = 'locked for ' + minsLeft.toFixed(0) + ' more minutes';
-            }
-          }
           userSection = '\nUser wallet: ' + userAddress +
             '\nUser mtETH-S balance: ' + mySharesFloat.toFixed(6) +
             '\nUser WETH value: ' + myValue.toFixed(6) + ' WETH (~$' + (myValue * ethPrice).toFixed(2) + ')' +
-            '\nUser ownership: ' + ownership.toFixed(2) + '% of vault' +
-            '\nUser withdraw status: ' + lockStatus;
+            '\nUser ownership: ' + ownership.toFixed(2) + '% of vault';
         }
 
-        return '=== LIVE VAULT DATA (' + new Date().toLocaleTimeString() + ') ===\n\n' +
+        return '=== LIVE VAULT DATA (' + new Date().toLocaleTimeString() + ') ===\n' +
           'Contract: ' + VAULT_ADDRESS + ' (Arbitrum One)\n' +
           'Agent wallet: ' + agentAddr + '\n' +
-          'Owner wallet: ' + ownerAddr + '\n\n' +
           'TVL: ' + total.toFixed(6) + ' WETH (~$' + tvlUsd.toFixed(2) + ')\n' +
-          '  - Idle in vault: ' + idle.toFixed(6) + ' WETH\n' +
-          '  - Deployed to Compound V3: ' + comp.toFixed(6) + ' WETH\n' +
-          '  - Deployed to Aave V3: ' + aave.toFixed(6) + ' WETH ' + (aave > 0 ? '(LOCKED at 100% utilization)' : '') + '\n\n' +
-          'NAV per share: ' + nav.toFixed(6) + ' WETH per mtETH-S\n' +
-          'Total shares outstanding: ' + shares.toFixed(6) + ' mtETH-S\n' +
-          'ETH price (Chainlink): $' + ethPrice.toFixed(2) + '\n\n' +
-          'Min deposit: ' + ethers.formatEther(minDep) + ' WETH\n' +
-          'Withdraw lock period: ' + Number(lockPeriod) + ' seconds\n' +
-          'MTYLD required to deposit: 5 MTYLD\n' +
-          'Agent gas balance: ' + gasEth.toFixed(5) + ' ETH' + userSection +
-          '\n=== END VAULT DATA ===';
+          '  - Idle: ' + idle.toFixed(6) + ' WETH\n' +
+          '  - Compound V3: ' + comp.toFixed(6) + ' WETH\n' +
+          '  - Aave V3: ' + aave.toFixed(6) + ' WETH ' + (aave > 0 ? '(LOCKED)' : '') + '\n' +
+          'NAV per share: ' + nav.toFixed(6) + ' WETH\n' +
+          'Total shares: ' + shares.toFixed(6) + ' mtETH-S\n' +
+          'ETH price: $' + ethPrice.toFixed(2) +
+          userSection +
+          '\n=== END ===';
       } catch(e) {
         console.error('Vault context error:', e);
         return '=== VAULT DATA UNAVAILABLE ===\nError: ' + e.message + '\n=== END ===';
@@ -1971,9 +1952,6 @@
       chatHistory.push({ role: 'user', content: userMsg });
 
       const typingId = showTypingIndicator();
-      let agentBubble = null;
-      let bubbleEl = null;
-      let fullResponse = '';
 
       try {
         const vaultContext = await buildVaultContext();
@@ -1981,62 +1959,25 @@
           role: m.role, content: m.content,
         }));
 
-        abortController = new AbortController();
         const resp = await fetch(CHAT_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: messagesForServer, vaultContext: vaultContext }),
-          signal: abortController.signal,
         });
 
-        if (!resp.ok) {
-          const errText = await resp.text().catch(() => '');
-          if (resp.status === 429) throw new Error('Too many messages — try again in a bit.');
-          throw new Error('Chat service returned ' + resp.status + '. ' + errText.slice(0, 200));
-        }
-
-        // Get JSON response (non-streaming)
         const data = await resp.json();
-        if (data.error) throw new Error(data.error);
-        const fullResponseText = data.text || '';
-        
-        document.getElementById(typingId)?.remove();
-        agentBubble = appendMessage('agent', '', false);
-        bubbleEl = agentBubble.querySelector('.chat-msg-bubble');
-        bubbleEl.innerHTML = renderMarkdown(fullResponseText);
-        fullResponse = fullResponseText;
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-        let streamError = null;
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-          for (const line of lines) {
-            if (!line.startsWith('data: ')) continue;
-            const data = line.slice(6).trim();
-            if (!data) continue;
-            try {
-              const event = JSON.parse(data);
-              if (event.type === 'text') {
-                fullResponse += event.text;
-                bubbleEl.innerHTML = renderMarkdown(fullResponse) + '<span class="chat-streaming-cursor"></span>';
-                const msgs = document.getElementById('chat-messages');
-                msgs.scrollTop = msgs.scrollHeight;
-              } else if (event.type === 'error') {
-                streamError = event.error || 'Server error';
-              }
-            } catch(e) {}
-          }
+        if (!resp.ok || data.error) {
+          throw new Error(data.error || ('Chat service returned ' + resp.status));
         }
 
-        if (streamError && !fullResponse) throw new Error(streamError);
+        const fullResponse = data.text || '';
 
+        document.getElementById(typingId)?.remove();
+        const agentBubble = appendMessage('agent', '', false);
+        const bubbleEl = agentBubble.querySelector('.chat-msg-bubble');
         bubbleEl.innerHTML = renderMarkdown(fullResponse);
+
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'chat-msg-actions';
         actionsDiv.innerHTML = '<button class="chat-msg-action-btn" onclick="copyMessage(this)">Copy</button>';
@@ -2047,17 +1988,14 @@
 
       } catch(e) {
         document.getElementById(typingId)?.remove();
-        if (agentBubble) agentBubble.remove();
         if (chatHistory[chatHistory.length - 1]?.role === 'user') chatHistory.pop();
-        const errMsg = e.name === 'AbortError' ? 'Stopped.' : (e.message || 'Could not reach the chat service.');
-        showError(errMsg, e.name !== 'AbortError');
+        showError(e.message || 'Could not reach the chat service.', true);
         console.error('Chat error:', e);
       } finally {
         isStreaming = false;
         input.disabled = false;
         document.getElementById('chat-send').disabled = !input.value.trim();
         input.focus();
-        abortController = null;
       }
     }
 
@@ -2082,6 +2020,6 @@
     loadHistory();
     if (chatHistory.length > 0) renderHistory();
   </script>
-
+  
 </body>
 </html>
