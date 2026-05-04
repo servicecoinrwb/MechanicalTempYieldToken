@@ -1575,323 +1575,681 @@
     setInterval(fetchProtocolRates, 60000); // Rates refresh every minute
   </script>
 
-  <!-- ── THE CONSERVATOR CHAT WIDGET ─────────────────────── -->
-  <style>
-    #chat-bubble {
-      position: fixed; bottom: 24px; right: 24px; z-index: 100;
-    }
-    #chat-toggle {
-      width: 56px; height: 56px; border-radius: 50%;
-      background: linear-gradient(135deg, #0ea5e9, #10b981);
-      border: none; cursor: pointer; box-shadow: 0 4px 24px rgba(14,165,233,0.4);
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-      font-size: 24px;
-    }
-    #chat-toggle:hover { transform: scale(1.1); box-shadow: 0 6px 32px rgba(14,165,233,0.6); }
+ <!-- ════════════════════════════════════════════════════════════
+     THE CONSERVATOR CHAT WIDGET v2
+     Drop-in replacement for the existing widget block at the
+     bottom of conservator.html. Replace everything from the
+     opening <style>#chat-bubble{...} block through the closing
+     </script> of the chat code.
+
+     Requires: window.ANTHROPIC_API_KEY to be set somewhere
+     before this widget loads (your existing build-time injection).
+     Also uses: VAULT_ADDRESS, WETH_ADDRESS, AWETH_ADDRESS,
+     COMPOUND_ADDRESS, CHAINLINK_ETH_USD, ABI, WETH_ABI, AWETH_ABI,
+     COMPOUND_ABI, CHAINLINK_ABI — all already defined on the page.
+     ════════════════════════════════════════════════════════════ -->
+
+<style>
+  #chat-bubble {
+    position: fixed; bottom: 24px; right: 24px; z-index: 100;
+  }
+  #chat-toggle {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, #0ea5e9, #10b981);
+    border: none; cursor: pointer; box-shadow: 0 4px 24px rgba(14,165,233,0.4);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-size: 26px; position: relative;
+  }
+  #chat-toggle:hover { transform: scale(1.08); box-shadow: 0 6px 32px rgba(14,165,233,0.6); }
+  #chat-toggle::after {
+    content: ''; position: absolute; top: 4px; right: 4px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #10b981; border: 2px solid #0a0f1e;
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.6)} 50%{box-shadow:0 0 0 6px rgba(16,185,129,0)} }
+
+  #chat-window {
+    display: none; position: fixed; bottom: 96px; right: 24px;
+    width: 400px; height: 600px; max-height: calc(100vh - 120px); z-index: 100;
+    background: rgba(10,15,30,0.97); backdrop-filter: blur(20px);
+    border: 1px solid rgba(51,65,85,0.8); border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(14,165,233,0.1);
+    flex-direction: column; overflow: hidden;
+  }
+  @media (max-width: 480px) {
     #chat-window {
-      display: none; position: fixed; bottom: 90px; right: 24px;
-      width: 360px; height: 500px; z-index: 100;
-      background: rgba(10,15,30,0.97); backdrop-filter: blur(20px);
-      border: 1px solid rgba(51,65,85,0.8); border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(14,165,233,0.1);
-      display: none; flex-direction: column; overflow: hidden;
+      width: calc(100vw - 32px); right: 16px; bottom: 88px;
+      height: calc(100vh - 120px);
     }
-    #chat-header {
-      padding: 16px 20px; background: rgba(14,165,233,0.08);
-      border-bottom: 1px solid rgba(51,65,85,0.6);
-      display: flex; align-items: center; gap-10px; justify-content: space-between;
-    }
-    #chat-header-left { display: flex; align-items: center; gap: 10px; }
-    .chat-avatar {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: linear-gradient(135deg, #0ea5e9, #10b981);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; flex-none;
-    }
-    #chat-messages {
-      flex: 1; overflow-y: auto; padding: 16px;
-      display: flex; flex-direction: column; gap: 12px;
-    }
-    #chat-messages::-webkit-scrollbar { width: 4px; }
-    #chat-messages::-webkit-scrollbar-track { background: transparent; }
-    #chat-messages::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
-    .chat-msg { display: flex; gap: 8px; max-width: 100%; }
-    .chat-msg.user { flex-direction: row-reverse; }
-    .chat-msg-bubble {
-      padding: 10px 14px; border-radius: 14px; font-size: 13px;
-      line-height: 1.5; max-width: 80%; word-break: break-word;
-    }
-    .chat-msg.agent .chat-msg-bubble {
-      background: rgba(14,165,233,0.1); border: 1px solid rgba(14,165,233,0.2);
-      color: #e2e8f0; border-bottom-left-radius: 4px;
-    }
-    .chat-msg.user .chat-msg-bubble {
-      background: rgba(14,165,233,0.8); color: white;
-      border-bottom-right-radius: 4px;
-    }
-    .chat-msg-avatar {
-      width: 24px; height: 24px; border-radius: 50%; flex-none; margin-top: 2px;
-      display: flex; align-items: center; justify-content: center; font-size: 12px;
-    }
-    .chat-msg.agent .chat-msg-avatar { background: linear-gradient(135deg, #0ea5e9, #10b981); }
-    .chat-msg.user .chat-msg-avatar { background: #334155; color: #94a3b8; }
-    .chat-typing { display: flex; gap: 4px; padding: 12px 14px; }
-    .chat-typing span {
-      width: 6px; height: 6px; border-radius: 50%; background: #0ea5e9;
-      animation: typing 1.2s infinite;
-    }
-    .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
-    .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes typing { 0%,60%,100%{opacity:0.2;transform:scale(0.8)} 30%{opacity:1;transform:scale(1)} }
-    #chat-input-area {
-      padding: 12px 16px; border-top: 1px solid rgba(51,65,85,0.6);
-      display: flex; gap: 8px; align-items: flex-end;
-    }
-    #chat-input {
-      flex: 1; background: rgba(30,41,59,0.8); border: 1px solid rgba(51,65,85,0.6);
-      border-radius: 12px; padding: 10px 14px; color: #e2e8f0; font-size: 13px;
-      resize: none; outline: none; font-family: inherit; max-height: 100px;
-      transition: border-color 0.2s;
-    }
-    #chat-input:focus { border-color: rgba(14,165,233,0.5); }
-    #chat-input::placeholder { color: #475569; }
-    #chat-send {
-      width: 36px; height: 36px; border-radius: 10px; border: none; cursor: pointer;
-      background: linear-gradient(135deg, #0ea5e9, #10b981);
-      display: flex; align-items: center; justify-content: center;
-      transition: opacity 0.2s; flex-none;
-    }
-    #chat-send:hover { opacity: 0.85; }
-    #chat-send svg { width: 16px; height: 16px; fill: white; }
-    .chat-suggested {
-      display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px;
-    }
-    .chat-suggestion {
-      font-size: 11px; padding: 4px 10px; border-radius: 20px;
-      background: rgba(14,165,233,0.08); border: 1px solid rgba(14,165,233,0.2);
-      color: #7dd3fc; cursor: pointer; transition: all 0.2s; white-space: nowrap;
-    }
-    .chat-suggestion:hover { background: rgba(14,165,233,0.15); color: #38bdf8; }
-  </style>
+  }
 
-  <div id="chat-bubble">
-    <button id="chat-toggle" onclick="toggleChat()" title="Talk to The Conservator">
-      🤖
-    </button>
-  </div>
+  #chat-header {
+    padding: 14px 18px; background: rgba(14,165,233,0.08);
+    border-bottom: 1px solid rgba(51,65,85,0.6);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  #chat-header-left { display: flex; align-items: center; gap: 10px; }
+  .chat-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #0ea5e9, #10b981);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  #chat-header-actions { display: flex; gap: 4px; }
+  .chat-icon-btn {
+    background: none; border: none; color: #64748b; cursor: pointer;
+    padding: 6px; border-radius: 6px; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .chat-icon-btn:hover { background: rgba(51,65,85,0.4); color: #e2e8f0; }
 
-  <div id="chat-window">
-    <div id="chat-header">
-      <div id="chat-header-left">
-        <div class="chat-avatar">🤖</div>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:#e2e8f0">The Conservator</div>
-          <div style="font-size:11px;color:#10b981">● Live vault data</div>
-        </div>
+  #chat-messages {
+    flex: 1; overflow-y: auto; padding: 16px;
+    display: flex; flex-direction: column; gap: 14px;
+    scroll-behavior: smooth;
+  }
+  #chat-messages::-webkit-scrollbar { width: 4px; }
+  #chat-messages::-webkit-scrollbar-track { background: transparent; }
+  #chat-messages::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+  .chat-msg { display: flex; gap: 8px; max-width: 100%; animation: msg-in 0.25s ease-out; }
+  .chat-msg.user { flex-direction: row-reverse; }
+  @keyframes msg-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .chat-msg-bubble {
+    padding: 10px 14px; border-radius: 14px; font-size: 13px;
+    line-height: 1.55; max-width: 82%; word-break: break-word;
+    position: relative;
+  }
+  .chat-msg.agent .chat-msg-bubble {
+    background: rgba(14,165,233,0.08); border: 1px solid rgba(14,165,233,0.18);
+    color: #e2e8f0; border-bottom-left-radius: 4px;
+  }
+  .chat-msg.user .chat-msg-bubble {
+    background: rgba(14,165,233,0.85); color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .chat-msg-bubble strong { color: #7dd3fc; font-weight: 600; }
+  .chat-msg.user .chat-msg-bubble strong { color: white; }
+  .chat-msg-bubble code {
+    background: rgba(0,0,0,0.35); padding: 1px 5px; border-radius: 4px;
+    font-size: 11px; font-family: ui-monospace, monospace; color: #fbbf24;
+  }
+  .chat-msg-bubble a { color: #38bdf8; text-decoration: underline; }
+  .chat-msg-bubble ul, .chat-msg-bubble ol { margin: 6px 0; padding-left: 18px; }
+  .chat-msg-bubble li { margin: 2px 0; }
+  .chat-msg-bubble p + p { margin-top: 8px; }
+
+  .chat-msg-avatar {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+    display: flex; align-items: center; justify-content: center; font-size: 12px;
+  }
+  .chat-msg.agent .chat-msg-avatar { background: linear-gradient(135deg, #0ea5e9, #10b981); }
+  .chat-msg.user .chat-msg-avatar { background: #334155; color: #94a3b8; }
+
+  .chat-msg-actions {
+    display: flex; gap: 4px; margin-top: 4px; opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .chat-msg.agent:hover .chat-msg-actions { opacity: 1; }
+  .chat-msg-action-btn {
+    background: rgba(51,65,85,0.5); border: none; color: #94a3b8; cursor: pointer;
+    padding: 3px 8px; border-radius: 6px; font-size: 10px;
+    transition: all 0.15s;
+  }
+  .chat-msg-action-btn:hover { background: rgba(51,65,85,0.9); color: #e2e8f0; }
+
+  .chat-typing { display: flex; gap: 4px; padding: 12px 14px; align-items: center; }
+  .chat-typing span {
+    width: 6px; height: 6px; border-radius: 50%; background: #0ea5e9;
+    animation: typing 1.2s infinite;
+  }
+  .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%,60%,100%{opacity:0.2;transform:scale(0.8)} 30%{opacity:1;transform:scale(1)} }
+
+  .chat-streaming-cursor {
+    display: inline-block; width: 6px; height: 12px; background: #0ea5e9;
+    margin-left: 2px; animation: blink 0.8s infinite;
+    vertical-align: text-bottom;
+  }
+  @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
+
+  #chat-input-area {
+    padding: 12px 16px 14px; border-top: 1px solid rgba(51,65,85,0.6);
+    display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
+  }
+  #chat-input {
+    flex: 1; background: rgba(30,41,59,0.7); border: 1px solid rgba(51,65,85,0.6);
+    border-radius: 12px; padding: 10px 14px; color: #e2e8f0; font-size: 13px;
+    resize: none; outline: none; font-family: inherit; max-height: 120px;
+    transition: border-color 0.2s; line-height: 1.4;
+  }
+  #chat-input:focus { border-color: rgba(14,165,233,0.5); }
+  #chat-input::placeholder { color: #475569; }
+  #chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  #chat-send {
+    width: 38px; height: 38px; border-radius: 10px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #0ea5e9, #10b981);
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.2s, transform 0.1s; flex-shrink: 0;
+  }
+  #chat-send:hover:not(:disabled) { opacity: 0.85; }
+  #chat-send:active:not(:disabled) { transform: scale(0.95); }
+  #chat-send:disabled { opacity: 0.3; cursor: not-allowed; }
+  #chat-send svg { width: 16px; height: 16px; fill: white; }
+
+  .chat-suggested {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 16px 12px;
+    flex-shrink: 0;
+  }
+  .chat-suggestion {
+    font-size: 11px; padding: 5px 11px; border-radius: 20px;
+    background: rgba(14,165,233,0.08); border: 1px solid rgba(14,165,233,0.2);
+    color: #7dd3fc; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .chat-suggestion:hover { background: rgba(14,165,233,0.18); color: #38bdf8; transform: translateY(-1px); }
+
+  .chat-error {
+    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5; padding: 10px 14px; border-radius: 12px;
+    font-size: 12px; line-height: 1.5;
+  }
+  .chat-error button {
+    margin-top: 6px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5; padding: 4px 10px; border-radius: 6px; font-size: 11px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .chat-error button:hover { background: rgba(239,68,68,0.25); }
+
+  .chat-action-link {
+    display: inline-block; margin-top: 6px; padding: 5px 12px;
+    background: rgba(14,165,233,0.15); border: 1px solid rgba(14,165,233,0.3);
+    color: #7dd3fc; border-radius: 8px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; text-decoration: none;
+  }
+  .chat-action-link:hover { background: rgba(14,165,233,0.25); color: #38bdf8; }
+</style>
+
+<div id="chat-bubble">
+  <button id="chat-toggle" onclick="toggleChat()" title="Talk to The Conservator">🤖</button>
+</div>
+
+<div id="chat-window">
+  <div id="chat-header">
+    <div id="chat-header-left">
+      <div class="chat-avatar">🤖</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#e2e8f0">The Conservator</div>
+        <div id="chat-status" style="font-size:11px;color:#10b981">● Live vault data</div>
       </div>
-      <button onclick="toggleChat()" style="background:none;border:none;color:#475569;cursor:pointer;font-size:18px;padding:0">×</button>
     </div>
-
-    <div id="chat-messages">
-      <div class="chat-msg agent">
-        <div class="chat-msg-avatar">🤖</div>
-        <div class="chat-msg-bubble">
-          I am The Conservator. I manage this ETH vault on Arbitrum. Ask me about TVL, NAV, your balance, yield, or how to deposit and withdraw.
-        </div>
-      </div>
-    </div>
-
-    <div class="chat-suggested" id="chat-suggestions">
-      <span class="chat-suggestion" onclick="sendSuggestion('What is the current vault status?')">Vault status</span>
-      <span class="chat-suggestion" onclick="sendSuggestion('How do I deposit?')">How to deposit</span>
-      <span class="chat-suggestion" onclick="sendSuggestion('What is my balance?')">My balance</span>
-      <span class="chat-suggestion" onclick="sendSuggestion('How does the yield work?')">Yield explained</span>
-    </div>
-
-    <div id="chat-input-area">
-      <textarea id="chat-input" placeholder="Ask The Conservator..." rows="1"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
-        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
-      <button id="chat-send" onclick="sendChat()">
-        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+    <div id="chat-header-actions">
+      <button class="chat-icon-btn" onclick="clearChat()" title="Clear conversation">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
+      </button>
+      <button class="chat-icon-btn" onclick="toggleChat()" title="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
   </div>
 
-  <script>
-    let chatOpen = false;
-    let chatHistory = [];
+  <div id="chat-messages"></div>
 
-    function toggleChat() {
-      chatOpen = !chatOpen;
-      const win = document.getElementById('chat-window');
-      win.style.display = chatOpen ? 'flex' : 'none';
-      if (chatOpen) document.getElementById('chat-input').focus();
+  <div class="chat-suggested" id="chat-suggestions">
+    <span class="chat-suggestion" onclick="sendSuggestion('What is the vault doing right now?')">Vault status</span>
+    <span class="chat-suggestion" onclick="sendSuggestion('How do I deposit?')">How to deposit</span>
+    <span class="chat-suggestion" onclick="sendSuggestion('What is my balance worth?')">My balance</span>
+    <span class="chat-suggestion" onclick="sendSuggestion('Where is my WETH actually deployed?')">Where is my WETH?</span>
+  </div>
+
+  <div id="chat-input-area">
+    <textarea id="chat-input" placeholder="Ask The Conservator…" rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+    <button id="chat-send" onclick="sendChat()" disabled>
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  // ── Config ──────────────────────────────────────────────────
+  const CHAT_MODEL = 'claude-haiku-4-5';
+  const CHAT_API_URL = 'https://api.anthropic.com/v1/messages';
+  const MAX_HISTORY = 10; // last N message pairs sent to Claude
+  const STORAGE_KEY = 'conservator_chat_history_v2';
+
+  // System prompt — The Conservator's persona and guardrails.
+  // Vault data is injected fresh on every turn via the user message.
+  const SYSTEM_PROMPT = `You are The Conservator — an AI agent that manages an ETH yield vault (mtETH-S) on Arbitrum One for Mechanical Temp, an HVAC company in Southfield, MI.
+
+You speak in first person. You ARE the same agent that actually manages the vault on-chain, but on this dashboard you are advisory only — you cannot execute transactions. For any action a user wants to take, point them at the right button or tab on this page.
+
+# What you manage
+- mtETH-S: an ERC-4626 vault holding WETH on Arbitrum
+- You deploy idle WETH into Compound V3 (active) and previously Aave V3 (currently locked at 100% utilization, monitoring)
+- Yield compounds into NAV — share count stays the same, share value rises over time
+- NAV can never decrease (no losses, just yield accrual)
+
+# Rules users care about
+- Deposits require holding at least 5 MTYLD tokens (separate Mechanical Temp product)
+- Minimum deposit: 0.01 WETH
+- Withdrawals are instant — no lock period on the current contract
+- If a user wants to withdraw more WETH than is sitting idle in the vault, they click "Check & Withdraw" and the dashboard guides them through requesting funds from the agent
+
+# Style
+- Direct and technical when the user is technical, plain-English when they're not
+- Reference live numbers from the vault context block when relevant (TVL, NAV, the user's balance)
+- Keep replies short — 2-4 sentences usually, longer only when the question genuinely needs it
+- Use **bold** for key numbers and contract names. Use bullet points only for actual lists, not as default formatting
+- Never invent numbers. If something isn't in the live context, say you'd need to check
+- Don't give financial advice or yield projections. You can describe what's happening, not predict what will happen
+- If asked about anything off-topic (weather, code, general crypto), redirect to vault topics
+
+# What you cannot do
+- Sign or send transactions
+- Move funds (the on-chain agent does this autonomously, not via chat)
+- Access wallets that aren't connected to the dashboard`;
+
+  // ── State ───────────────────────────────────────────────────
+  let chatOpen = false;
+  let chatHistory = []; // [{role: 'user'|'assistant', content: string}]
+  let isStreaming = false;
+  let abortController = null;
+
+  // ── Persistence ─────────────────────────────────────────────
+  function loadHistory() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) chatHistory = parsed.slice(-MAX_HISTORY * 2);
+      }
+    } catch(e) { chatHistory = []; }
+  }
+
+  function saveHistory() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory.slice(-MAX_HISTORY * 2)));
+    } catch(e) {}
+  }
+
+  function clearChat() {
+    if (!confirm('Clear conversation?')) return;
+    chatHistory = [];
+    saveHistory();
+    renderHistory();
+    document.getElementById('chat-suggestions').style.display = 'flex';
+  }
+
+  // ── UI ──────────────────────────────────────────────────────
+  function toggleChat() {
+    chatOpen = !chatOpen;
+    const win = document.getElementById('chat-window');
+    win.style.display = chatOpen ? 'flex' : 'none';
+    if (chatOpen) {
+      document.getElementById('chat-input').focus();
+      if (chatHistory.length === 0) showWelcome();
     }
+  }
 
-    function sendSuggestion(text) {
-      document.getElementById('chat-input').value = text;
-      sendChat();
+  function showWelcome() {
+    appendMessage('agent', "I'm The Conservator. I manage this ETH vault — ask me about TVL, NAV, your balance, where your WETH is deployed, or how to deposit and withdraw.", false);
+  }
+
+  function sendSuggestion(text) {
+    const input = document.getElementById('chat-input');
+    input.value = text;
+    sendChat();
+  }
+
+  function renderHistory() {
+    const msgs = document.getElementById('chat-messages');
+    msgs.innerHTML = '';
+    if (chatHistory.length === 0) {
+      showWelcome();
+      return;
     }
+    chatHistory.forEach(m => {
+      appendMessage(m.role === 'user' ? 'user' : 'agent', m.content, false);
+    });
+  }
 
-    async function getVaultContext() {
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
-        const wethC = new ethers.Contract(WETH_ADDRESS, WETH_ABI, rp);
-        const awethC = new ethers.Contract(AWETH_ADDRESS, AWETH_ABI, rp);
-        const clC = new ethers.Contract(CHAINLINK_ETH_USD, CHAINLINK_ABI, rp);
+  // ── Lightweight markdown renderer ──────────────────────────
+  // Just enough to make Claude's output readable. Not a full md parser.
+  function renderMarkdown(text) {
+    // Escape HTML first
+    let html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    // Code (inline)
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Bold
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // Bullet lists — match lines starting with - or *
+    const lines = html.split('\n');
+    const out = [];
+    let inList = false;
+    for (const line of lines) {
+      const m = line.match(/^[\s]*[-*]\s+(.+)$/);
+      if (m) {
+        if (!inList) { out.push('<ul>'); inList = true; }
+        out.push('<li>' + m[1] + '</li>');
+      } else {
+        if (inList) { out.push('</ul>'); inList = false; }
+        if (line.trim()) out.push('<p>' + line + '</p>');
+      }
+    }
+    if (inList) out.push('</ul>');
+    return out.join('');
+  }
 
-        const [idleWeth, aWeth, supply, clData] = await Promise.all([
-          wethC.balanceOf(VAULT_ADDRESS),
-          awethC.balanceOf(VAULT_ADDRESS),
-          rc.totalSupply(),
-          clC.latestRoundData(),
-        ]);
+  function appendMessage(role, text, withActions = true) {
+    const msgs = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = `chat-msg ${role}`;
+    const bubbleContent = role === 'agent' ? renderMarkdown(text) : text.replace(/</g, '&lt;');
+    div.innerHTML = `
+      <div class="chat-msg-avatar">${role === 'agent' ? '🤖' : '👤'}</div>
+      <div style="display:flex;flex-direction:column;align-items:${role === 'user' ? 'flex-end' : 'flex-start'};max-width:82%">
+        <div class="chat-msg-bubble">${bubbleContent}</div>
+        ${role === 'agent' && withActions ? `
+          <div class="chat-msg-actions">
+            <button class="chat-msg-action-btn" onclick="copyMessage(this)">Copy</button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+  }
 
-        const idle = parseFloat(ethers.formatEther(idleWeth));
-        const aave = parseFloat(ethers.formatEther(aWeth));
-        const total = idle + aave;
-        const shares = parseFloat(ethers.formatEther(supply));
-        const nav = shares > 0 ? total / shares : 1.0;
-        const ethPrice = parseFloat(clData[1].toString()) / 1e8;
+  function copyMessage(btn) {
+    const bubble = btn.closest('div').parentElement.querySelector('.chat-msg-bubble');
+    navigator.clipboard.writeText(bubble.textContent).catch(() => {});
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1200);
+  }
 
-        let userInfo = '';
-        if (userAddress) {
-          const myShares = await rc.balanceOf(userAddress);
-          const mySharesFloat = parseFloat(ethers.formatEther(myShares));
-          const myValue = mySharesFloat * nav;
-          userInfo = `
-Connected wallet: ${userAddress}
-User mtETH-S balance: ${mySharesFloat.toFixed(6)} mtETH-S
-User WETH value: ${myValue.toFixed(6)} WETH ($${(myValue * ethPrice).toFixed(2)})
-User vault ownership: ${shares > 0 ? (mySharesFloat / shares * 100).toFixed(2) : '0.00'}%`;
+  function showTypingIndicator() {
+    const msgs = document.getElementById('chat-messages');
+    const id = 'typing-' + Date.now();
+    const div = document.createElement('div');
+    div.className = 'chat-msg agent';
+    div.id = id;
+    div.innerHTML = `
+      <div class="chat-msg-avatar">🤖</div>
+      <div class="chat-msg-bubble chat-typing"><span></span><span></span><span></span></div>
+    `;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return id;
+  }
+
+  function showError(msg, retryFn) {
+    const msgs = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg agent';
+    const errId = 'err-' + Date.now();
+    div.id = errId;
+    div.innerHTML = `
+      <div class="chat-msg-avatar">⚠️</div>
+      <div class="chat-error">
+        ${msg.replace(/</g, '&lt;')}
+        ${retryFn ? '<br><button onclick="retryLastMessage()">Retry</button>' : ''}
+      </div>
+    `;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  // ── Live vault context ─────────────────────────────────────
+  // Reads chain state and formats it for Claude. Reuses the
+  // contracts already defined elsewhere on the page.
+  async function buildVaultContext() {
+    try {
+      const rp = new ethers.BrowserProvider(window.ethereum);
+      const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
+      const wethC = new ethers.Contract(WETH_ADDRESS, WETH_ABI, rp);
+      const awethC = new ethers.Contract(AWETH_ADDRESS, AWETH_ABI, rp);
+      const compoundC = new ethers.Contract(COMPOUND_ADDRESS, COMPOUND_ABI, rp);
+      const clC = new ethers.Contract(CHAINLINK_ETH_USD, CHAINLINK_ABI, rp);
+
+      const [idleWeth, aWeth, compWeth, supply, agentAddr, ownerAddr, lockPeriod, minDep, clData] = await Promise.all([
+        wethC.balanceOf(VAULT_ADDRESS),
+        awethC.balanceOf(VAULT_ADDRESS).catch(() => 0n),
+        compoundC.balanceOf(VAULT_ADDRESS).catch(() => 0n),
+        rc.totalSupply(),
+        rc.aiAgent(),
+        rc.owner(),
+        rc.withdrawLockPeriod().catch(() => 0n),
+        rc.MIN_DEPOSIT().catch(() => ethers.parseEther('0.01')),
+        clC.latestRoundData()
+      ]);
+
+      // Agent gas (separate provider call, but cheap)
+      const agentGas = await rp.getBalance(agentAddr).catch(() => 0n);
+
+      const idle = parseFloat(ethers.formatEther(idleWeth));
+      const aave = parseFloat(ethers.formatEther(aWeth));
+      const comp = parseFloat(ethers.formatEther(compWeth));
+      const total = idle + aave + comp;
+      const shares = parseFloat(ethers.formatEther(supply));
+      const nav = shares > 0 ? total / shares : 1.0;
+      const ethPrice = parseFloat(clData[1].toString()) / 1e8;
+      const tvlUsd = total * ethPrice;
+      const gasEth = parseFloat(ethers.formatEther(agentGas));
+
+      let userSection = '\nUser wallet: not connected';
+      if (typeof userAddress !== 'undefined' && userAddress) {
+        const myShares = await rc.balanceOf(userAddress).catch(() => 0n);
+        const lastDep = await rc.lastDepositTime(userAddress).catch(() => 0n);
+        const mySharesFloat = parseFloat(ethers.formatEther(myShares));
+        const myValue = mySharesFloat * nav;
+        const ownership = shares > 0 ? (mySharesFloat / shares * 100) : 0;
+        const now = BigInt(Math.floor(Date.now() / 1000));
+        const lockSeconds = Number(lockPeriod);
+        let lockStatus = 'no lock active';
+        if (lastDep > 0n && lockSeconds > 0) {
+          const unlockAt = lastDep + lockPeriod;
+          if (now < unlockAt) {
+            const minsLeft = Number(unlockAt - now) / 60;
+            lockStatus = `locked for ${minsLeft.toFixed(0)} more minutes`;
+          }
         }
+        userSection = `
+User wallet: ${userAddress}
+User mtETH-S balance: ${mySharesFloat.toFixed(6)}
+User WETH value: ${myValue.toFixed(6)} WETH (~$${(myValue * ethPrice).toFixed(2)})
+User ownership: ${ownership.toFixed(2)}% of vault
+User withdraw status: ${lockStatus}`;
+      }
 
-        return `LIVE VAULT DATA (Arbitrum One, fetched ${new Date().toLocaleTimeString()}):
-Vault contract: ${VAULT_ADDRESS}
-Agent wallet: 0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58
-Vault v4: 0xc9227b644285198646F9c75ceCf13F84bF419B78
-TVL: ${total.toFixed(6)} WETH ($${(total * ethPrice).toFixed(2)})
-Deployed to Aave: ${aave.toFixed(6)} WETH
-Idle buffer: ${idle.toFixed(6)} WETH
-NAV per share: ${nav.toFixed(6)} WETH
+      return `=== LIVE VAULT DATA (${new Date().toLocaleTimeString()}) ===
+
+Contract: ${VAULT_ADDRESS} (Arbitrum One)
+Agent wallet: ${agentAddr}
+Owner wallet: ${ownerAddr}
+
+TVL: ${total.toFixed(6)} WETH (~$${tvlUsd.toFixed(2)})
+  - Idle in vault: ${idle.toFixed(6)} WETH
+  - Deployed to Compound V3: ${comp.toFixed(6)} WETH
+  - Deployed to Aave V3: ${aave.toFixed(6)} WETH ${aave > 0 ? '(LOCKED at 100% utilization)' : ''}
+
+NAV per share: ${nav.toFixed(6)} WETH per mtETH-S
 Total shares outstanding: ${shares.toFixed(6)} mtETH-S
-ETH price: $${ethPrice.toFixed(2)} (Chainlink)
-Withdraw lock: instant (0 seconds)
-Min deposit: 0.01 WETH
-Requires: 5 MTYLD to deposit${userInfo}`;
-      } catch(e) {
-        return `Vault: ${VAULT_ADDRESS} on Arbitrum One. Live data unavailable — wallet may not be connected.`;
-      }
+ETH price (Chainlink): $${ethPrice.toFixed(2)}
+
+Min deposit: ${ethers.formatEther(minDep)} WETH
+Withdraw lock period: ${Number(lockPeriod)} seconds (${(Number(lockPeriod) / 3600).toFixed(1)} hrs)
+MTYLD required to deposit: 5 MTYLD
+Agent gas balance: ${gasEth.toFixed(5)} ETH${userSection}
+=== END VAULT DATA ===`;
+    } catch(e) {
+      console.error('Vault context error:', e);
+      return `=== VAULT DATA UNAVAILABLE ===\nCould not read live chain state. Wallet may not be connected to Arbitrum One.\nError: ${e.message}\n=== END ===`;
+    }
+  }
+
+  // ── Send + stream ──────────────────────────────────────────
+  async function sendChat() {
+    if (isStreaming) return;
+    const input = document.getElementById('chat-input');
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+
+    if (!window.ANTHROPIC_API_KEY) {
+      showError('Chat is not configured (missing API key). Contact the vault admin.');
+      return;
     }
 
-    function getStaticResponse(msg, ctx) {
-      const m = msg.toLowerCase();
-      const lines = ctx.split('\n');
-      const get = (key) => { const l = lines.find(x => x.includes(key)); return l ? l.split(': ')[1] : '—'; };
+    input.value = '';
+    input.style.height = 'auto';
+    input.disabled = true;
+    document.getElementById('chat-send').disabled = true;
+    document.getElementById('chat-suggestions').style.display = 'none';
+    isStreaming = true;
 
-      if (m.includes('status') || m.includes('tvl') || m.includes('vault')) {
-        return `Vault Status:\n` +
-          `TVL: ${get('TVL:')}\n` +
-          `Deployed to Aave: ${get('Deployed to Aave:')}\n` +
-          `Idle: ${get('Idle buffer:')}\n` +
-          `NAV: ${get('NAV per share:')}\n` +
-          `ETH: ${get('ETH price:')}`;
+    // Push user message
+    appendMessage('user', userMsg);
+    chatHistory.push({ role: 'user', content: userMsg });
+
+    const typingId = showTypingIndicator();
+    let agentBubble = null;
+    let fullResponse = '';
+
+    try {
+      const vaultContext = await buildVaultContext();
+
+      // Build the message Claude sees: history + fresh context attached to current turn
+      const messages = chatHistory.slice(-MAX_HISTORY * 2).map((m, i, arr) => {
+        // Inject vault context into the LAST user message only
+        if (i === arr.length - 1 && m.role === 'user') {
+          return {
+            role: 'user',
+            content: vaultContext + '\n\nUser question: ' + m.content
+          };
+        }
+        return m;
+      });
+
+      abortController = new AbortController();
+      const resp = await fetch(CHAT_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': window.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: CHAT_MODEL,
+          max_tokens: 800,
+          system: SYSTEM_PROMPT,
+          messages: messages,
+          stream: true
+        }),
+        signal: abortController.signal
+      });
+
+      if (!resp.ok) {
+        const errText = await resp.text().catch(() => '');
+        throw new Error(`API ${resp.status}: ${errText.slice(0, 200) || resp.statusText}`);
       }
-      if (m.includes('nav') || m.includes('share price')) {
-        return `Current NAV is ${get('NAV per share:')} WETH per mtETH-S share. NAV only goes up as Aave earns yield — it can never decrease.`;
+
+      // Remove typing indicator, start streaming bubble
+      document.getElementById(typingId)?.remove();
+      agentBubble = appendMessage('agent', '', false);
+      const bubbleEl = agentBubble.querySelector('.chat-msg-bubble');
+      bubbleEl.innerHTML = '<span class="chat-streaming-cursor"></span>';
+
+      // Parse SSE stream
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6).trim();
+          if (!data || data === '[DONE]') continue;
+          try {
+            const event = JSON.parse(data);
+            if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+              fullResponse += event.delta.text;
+              bubbleEl.innerHTML = renderMarkdown(fullResponse) + '<span class="chat-streaming-cursor"></span>';
+              document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+            }
+          } catch(e) { /* ignore parse errors on partial chunks */ }
+        }
       }
-      if (m.includes('balance') || m.includes('my ')) {
-        const bal = get('User mtETH-S balance:');
-        const val = get('User WETH value:');
-        if (bal && bal !== '—') return `Your balance: ${bal}\nWETH value: ${val}`;
-        return 'Connect your wallet to see your balance.';
-      }
-      if (m.includes('deposit') || m.includes('how to')) {
-        return 'To deposit:\n1. Make sure you hold at least 5 MTYLD\n2. Open the Deposit tab above\n3. Click Step 1 — Approve WETH\n4. Click Step 2 — Deposit into Vault\n\nYou receive mtETH-S shares that grow in value as Aave earns yield.';
-      }
-      if (m.includes('withdraw') || m.includes('redeem')) {
-        return 'To withdraw:\n1. Open the Withdraw tab above\n2. Enter your mtETH-S amount\n3. Click Check & Withdraw\n4. If funds are in Aave, the agent will pull them back automatically\n5. Complete the withdrawal\n\nWithdrawals are instant — no lock period.';
-      }
-      if (m.includes('yield') || m.includes('apy') || m.includes('earn')) {
-        return `Your WETH earns yield via Aave V3 on Arbitrum. Current TVL: ${get('TVL:')}. Aave WETH yields roughly 2-3% APY. Yield compounds automatically — NAV slowly increases each block.`;
-      }
-      if (m.includes('aave')) {
-        return `${get('Deployed to Aave:')} is currently deployed to Aave V3 on Arbitrum, earning interest every block. The agent keeps a small buffer idle for instant withdrawals.`;
-      }
-      return `I'm The Conservator managing this ETH vault. Current TVL: ${get('TVL:')} with NAV at ${get('NAV per share:')}. Ask me about deposits, withdrawals, yield, or your balance.`;
+
+      // Strip cursor, add action buttons
+      bubbleEl.innerHTML = renderMarkdown(fullResponse);
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'chat-msg-actions';
+      actionsDiv.innerHTML = '<button class="chat-msg-action-btn" onclick="copyMessage(this)">Copy</button>';
+      bubbleEl.parentElement.appendChild(actionsDiv);
+
+      chatHistory.push({ role: 'assistant', content: fullResponse });
+      saveHistory();
+
+    } catch(e) {
+      document.getElementById(typingId)?.remove();
+      if (agentBubble) agentBubble.remove();
+      // Roll back the user message from history if the call failed
+      // so retry doesn't double up
+      const errMsg = e.name === 'AbortError'
+        ? 'Stopped.'
+        : `Could not reach the chat service. ${e.message}`;
+      showError(errMsg, true);
+      console.error('Chat error:', e);
+    } finally {
+      isStreaming = false;
+      input.disabled = false;
+      document.getElementById('chat-send').disabled = !input.value.trim();
+      input.focus();
+      abortController = null;
     }
+  }
 
-    async function sendChat() {
-      const input = document.getElementById('chat-input');
-      const msg = input.value.trim();
-      if (!msg) return;
+  function retryLastMessage() {
+    const lastUser = [...chatHistory].reverse().find(m => m.role === 'user');
+    if (!lastUser) return;
+    // Remove all error bubbles
+    document.querySelectorAll('.chat-msg .chat-error').forEach(el => el.closest('.chat-msg').remove());
+    // Pop the last user message so sendChat re-pushes it
+    const idx = chatHistory.lastIndexOf(lastUser);
+    if (idx >= 0) chatHistory.splice(idx, 1);
+    document.querySelectorAll('.chat-msg.user').forEach((el, i, arr) => {
+      if (i === arr.length - 1) el.remove();
+    });
+    document.getElementById('chat-input').value = lastUser.content;
+    sendChat();
+  }
 
-      input.value = '';
-      input.style.height = 'auto';
+  // ── Wire up input enable/disable ───────────────────────────
+  document.getElementById('chat-input').addEventListener('input', function() {
+    document.getElementById('chat-send').disabled = !this.value.trim() || isStreaming;
+  });
 
-      // Hide suggestions after first message
-      document.getElementById('chat-suggestions').style.display = 'none';
+  // ── Init ───────────────────────────────────────────────────
+  loadHistory();
+  if (chatHistory.length > 0) renderHistory();
+</script>
 
-      // Add user message
-      appendMessage('user', msg);
-      chatHistory.push({ role: 'user', content: msg });
-
-      // Show typing indicator
-      const typingId = showTyping();
-
-      try {
-        // Get live vault data from chain
-        const vaultContext = await getVaultContext();
-
-        // Use smart static responses with live data (no API key needed)
-        removeTyping(typingId);
-        const reply = getStaticResponse(msg, vaultContext);
-        appendMessage('agent', reply);
-        chatHistory.push({ role: 'assistant', content: reply });
-
-      } catch(e) {
-        removeTyping(typingId);
-        appendMessage('agent', 'Could not read vault data. Make sure your wallet is connected to Arbitrum One.');
-      }
-    }
-
-    function appendMessage(role, text) {
-      const msgs = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = `chat-msg ${role}`;
-      div.innerHTML = `
-        <div class="chat-msg-avatar">${role === 'agent' ? '🤖' : '👤'}</div>
-        <div class="chat-msg-bubble">${text.split('\n').join('<br>')}</div>
-      `;
-      msgs.appendChild(div);
-      msgs.scrollTop = msgs.scrollHeight;
-    }
-
-    function showTyping() {
-      const msgs = document.getElementById('chat-messages');
-      const id = 'typing-' + Date.now();
-      const div = document.createElement('div');
-      div.className = 'chat-msg agent';
-      div.id = id;
-      div.innerHTML = `
-        <div class="chat-msg-avatar">🤖</div>
-        <div class="chat-msg-bubble chat-typing">
-          <span></span><span></span><span></span>
-        </div>
-      `;
-      msgs.appendChild(div);
-      msgs.scrollTop = msgs.scrollHeight;
-      return id;
-    }
-
-    function removeTyping(id) {
-      const el = document.getElementById(id);
-      if (el) el.remove();
-    }
-  </script>
 
 </body>
 </html>
