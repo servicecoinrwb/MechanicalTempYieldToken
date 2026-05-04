@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Stripe crypto SDK — must load from Stripe domains -->
   <script src="https://js.stripe.com/dahlia/stripe.js"></script>
   <script src="https://crypto-js.stripe.com/crypto-onramp-outer.js"></script>
   <style>
@@ -37,12 +36,12 @@
     .quick-btn:hover, .quick-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.1); }
     .network-btn { flex: 1; padding: 12px 8px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-family: "Syne", sans-serif; font-size: 12px; font-weight: 600; transition: all 0.2s; text-align: center; }
     .network-btn:hover, .network-btn.selected { border-color: var(--accent); color: var(--text); background: rgba(0,212,255,0.1); }
+    .currency-btn { flex: 1; padding: 12px 8px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-family: "Syne", sans-serif; font-size: 12px; font-weight: 600; transition: all 0.2s; text-align: center; }
+    .currency-btn:hover, .currency-btn.selected { border-color: var(--accent2); color: var(--text); background: rgba(0,255,136,0.1); }
     .cta-btn { width: 100%; padding: 20px; border-radius: 16px; border: none; font-family: "Syne", sans-serif; font-size: 18px; font-weight: 800; cursor: pointer; transition: all 0.3s; background: linear-gradient(135deg, #00d4ff, #0088cc); color: white; box-shadow: 0 4px 40px rgba(0,212,255,0.3); }
     .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 50px rgba(0,212,255,0.5); }
     .cta-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
     .error-box { padding: 12px 16px; background: rgba(255,50,50,0.1); border: 1px solid rgba(255,50,50,0.3); border-radius: 12px; color: #ff6b6b; font-size: 13px; display: none; margin-bottom: 16px; }
-    #onramp-element { min-height: 600px; border-radius: 16px; overflow: hidden; }
-    #onramp-status { font-size: 13px; color: var(--muted); text-align: center; margin-top: 8px; min-height: 20px; }
   </style>
 </head>
 <body>
@@ -54,7 +53,6 @@
     <div style="max-width:1000px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between">
       <a href="https://mechanicaltemp.com/" style="display:flex;align-items:center;gap:12px;text-decoration:none">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" style="height:36px;width:auto">
-        <span style="font-weight:800;font-size:15px;color:var(--text)"></span>
       </a>
       <div style="display:flex;align-items:center;gap:8px">
         <a href="https://vault.mechanicaltemp.com/" style="padding:8px 12px;border-radius:8px;color:var(--muted);font-size:13px;text-decoration:none">MTYLD</a>
@@ -76,14 +74,13 @@
       <p style="color:var(--accent);font-size:13px;margin-top:12px">💬 New to crypto? Tap the chat bubble for help.</p>
     </div>
 
-    <!-- Config card — shown before launch -->
     <div class="card" id="config-card" style="padding:32px;margin-bottom:24px">
 
       <div style="margin-bottom:28px">
         <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;margin-bottom:16px;text-align:center">AMOUNT (USD)</div>
         <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:16px">
           <span style="font-family:'DM Mono',monospace;font-size:48px;font-weight:500;color:var(--muted)">$</span>
-          <input type="number" id="amount-input" placeholder="100" min="20" max="10000"
+          <input type="number" id="amount-input" placeholder="50" min="20" max="10000"
             style="background:transparent;border:none;outline:none;width:160px;font-family:'DM Mono',monospace;font-size:48px;font-weight:500;color:var(--text);text-align:left"
             oninput="updateAmount(this.value)">
         </div>
@@ -98,12 +95,21 @@
       <div style="height:1px;background:var(--border);margin-bottom:28px"></div>
 
       <div style="margin-bottom:28px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;margin-bottom:12px">NETWORK</div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;margin-bottom:12px">CURRENCY</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="network-btn selected" onclick="selectNetwork('ethereum', this)">Ethereum</button>
-          <button class="network-btn" onclick="selectNetwork('base', this)">Base</button>
-          <button class="network-btn" onclick="selectNetwork('polygon', this)">Polygon</button>
-          <button class="network-btn" onclick="selectNetwork('optimism', this)">Optimism</button>
+          <button class="currency-btn selected" onclick="selectCurrency('eth', this)">ETH</button>
+          <button class="currency-btn" onclick="selectCurrency('usdc', this)">USDC</button>
+          <button class="currency-btn" onclick="selectCurrency('btc', this)">BTC</button>
+          <button class="currency-btn" onclick="selectCurrency('sol', this)">SOL</button>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin-bottom:28px"></div>
+
+      <div style="margin-bottom:28px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.08em;margin-bottom:12px">NETWORK</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="network-row">
+          <!-- Populated by JS based on selected currency -->
         </div>
         <div style="margin-top:8px;font-size:11px;color:var(--muted)" id="network-hint">Receiving ETH on Ethereum mainnet</div>
       </div>
@@ -115,17 +121,9 @@
       <button class="cta-btn" id="launch-btn" onclick="launchOnramp()">
         Buy Crypto with Stripe →
       </button>
-      <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--muted)">Secured by Stripe • Bank-grade encryption</div>
+      <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--muted)">Opens in a new tab • Secured by Stripe</div>
     </div>
 
-    <!-- Onramp widget — shown after launch -->
-    <div id="onramp-widget" style="display:none">
-      <button onclick="resetOnramp()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0;margin-bottom:16px;font-family:'Syne',sans-serif">← Back</button>
-      <div id="onramp-element"></div>
-      <div id="onramp-status"></div>
-    </div>
-
-    <!-- Trust signals -->
     <div class="card" style="padding:24px;margin-top:16px">
       <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
         <span style="font-size:20px">💳</span>
@@ -157,20 +155,26 @@
   <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
 
-  const ONRAMP_SERVER = 'https://onramp-server-production.up.railway.app';
-
   let amount = 50;
+  let selectedCurrency = 'eth';
   let selectedNetwork = 'ethereum';
-  let stripeOnramp = null;
-  let session = null;
 
   document.getElementById('amount-input').value = 50;
 
-  const NETWORK_INFO = {
-    ethereum: { label: 'Ethereum mainnet', currency: 'ETH' },
-    base:     { label: 'Base', currency: 'ETH' },
-    polygon:  { label: 'Polygon', currency: 'USDC' },
-    optimism: { label: 'Optimism', currency: 'ETH' },
+  // Valid networks for each currency (per Stripe's supported list)
+  const CURRENCY_NETWORKS = {
+    eth:  ['ethereum', 'base'],
+    usdc: ['ethereum', 'base', 'polygon', 'solana'],
+    btc:  ['bitcoin'],
+    sol:  ['solana']
+  };
+
+  const NETWORK_LABELS = {
+    ethereum: 'Ethereum',
+    base:     'Base',
+    polygon:  'Polygon',
+    solana:   'Solana',
+    bitcoin:  'Bitcoin'
   };
 
   function setAmount(val, btn) {
@@ -185,12 +189,42 @@
     document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
   }
 
+  function selectCurrency(currency, btn) {
+    selectedCurrency = currency;
+    document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('selected'));
+    if (btn) btn.classList.add('selected');
+    rebuildNetworkOptions();
+  }
+
+  function rebuildNetworkOptions() {
+    const valid = CURRENCY_NETWORKS[selectedCurrency] || [];
+    const row = document.getElementById('network-row');
+    row.innerHTML = '';
+    valid.forEach((net, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'network-btn' + (i === 0 ? ' selected' : '');
+      btn.dataset.network = net;
+      btn.textContent = NETWORK_LABELS[net] || net;
+      btn.onclick = () => selectNetwork(net, btn);
+      row.appendChild(btn);
+    });
+    if (valid.length > 0) {
+      selectedNetwork = valid[0];
+      updateNetworkHint();
+    }
+  }
+
   function selectNetwork(network, btn) {
     selectedNetwork = network;
     document.querySelectorAll('.network-btn').forEach(b => b.classList.remove('selected'));
     if (btn) btn.classList.add('selected');
-    const info = NETWORK_INFO[network];
-    if (info) document.getElementById('network-hint').textContent = 'Receiving ' + info.currency + ' on ' + info.label;
+    updateNetworkHint();
+  }
+
+  function updateNetworkHint() {
+    const label = NETWORK_LABELS[selectedNetwork] || selectedNetwork;
+    document.getElementById('network-hint').textContent =
+      'Receiving ' + selectedCurrency.toUpperCase() + ' on ' + label;
   }
 
   function showError(msg) {
@@ -203,7 +237,7 @@
     document.getElementById('error-box').style.display = 'none';
   }
 
-  async function launchOnramp() {
+  function launchOnramp() {
     clearError();
 
     if (!amount || amount < 20 || amount > 10000) {
@@ -211,66 +245,38 @@
       return;
     }
 
-    const btn = document.getElementById('launch-btn');
-    btn.textContent = 'Creating session...';
-    btn.disabled = true;
+    if (!window.StripeOnramp) {
+      showError('Stripe SDK still loading. Wait a moment and try again.');
+      return;
+    }
 
     try {
-      const resp = await fetch(ONRAMP_SERVER + '/create-onramp-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ network: selectedNetwork, amount })
+      // Build the standalone onramp URL with prefilled params.
+      // No backend, no session — just generates a link to crypto.link.com
+      const standaloneOnramp = window.StripeOnramp.Standalone({
+        source_currency: 'usd',
+        amount: { source_amount: amount.toString() },
+        destination_currency: selectedCurrency,
+        destination_network: selectedNetwork,
+        destination_currencies: [selectedCurrency],
+        destination_networks: [selectedNetwork]
       });
+      const redirectUrl = standaloneOnramp.getUrl();
 
-      if (!resp.ok) {
-        const err = await resp.json();
-        throw new Error(err.error || 'Server error');
-      }
-
-      const { clientSecret, publishableKey } = await resp.json();
-
-      stripeOnramp = StripeOnramp(publishableKey);
-
-      document.getElementById('config-card').style.display = 'none';
-      document.getElementById('onramp-widget').style.display = 'block';
-
-      session = stripeOnramp
-        .createSession({
-          clientSecret,
-          appearance: { theme: 'dark' }
-        })
-        .addEventListener('onramp_session_updated', (e) => {
-          const status = e.payload.session.status;
-          document.getElementById('onramp-status').textContent = 'Status: ' + status;
-          if (status === 'fulfillment_complete') {
-            document.getElementById('onramp-status').textContent = '✅ Purchase complete! Crypto is on its way.';
-          }
-        })
-        .mount('#onramp-element');
-
+      // Open in a new tab so the user can come back to this page
+      window.open(redirectUrl, '_blank', 'noopener,noreferrer');
     } catch(e) {
-      showError('Error: ' + (e.message || String(e)));
-      btn.textContent = 'Buy Crypto with Stripe →';
-      btn.disabled = false;
+      console.error('Onramp launch error:', e);
+      showError('Could not open the onramp. ' + (e.message || 'Try again.'));
     }
   }
 
-  function resetOnramp() {
-    document.getElementById('config-card').style.display = 'block';
-    document.getElementById('onramp-widget').style.display = 'none';
-    document.getElementById('onramp-element').innerHTML = '';
-    document.getElementById('onramp-status').textContent = '';
-    document.getElementById('launch-btn').textContent = 'Buy Crypto with Stripe →';
-    document.getElementById('launch-btn').disabled = false;
-    session = null;
-  }
+  // Init network buttons on first load
+  rebuildNetworkOptions();
   </script>
 
   <!-- ════════════════════════════════════════════════════════
        ONRAMP HELPER CHAT WIDGET
-       Same Railway backend, different system context.
-       Helps first-timers pick a network, understand fees,
-       wallet setup, etc.
        ════════════════════════════════════════════════════════ -->
   <style>
     #chat-bubble { position: fixed; bottom: 24px; right: 24px; z-index: 100; }
@@ -564,34 +570,34 @@
       msgs.scrollTop = msgs.scrollHeight;
     }
 
-    // Build context from current page state — what amount/network the user has selected
     function buildOnrampContext() {
-      const info = NETWORK_INFO[selectedNetwork] || { label: selectedNetwork, currency: '?' };
       return '=== ONRAMP HELPER CONTEXT ===\n' +
         'You are a friendly assistant on the Mechanical Temp Stripe crypto onramp page.\n' +
         'You help first-time crypto buyers feel safe and informed. NOT a financial advisor.\n\n' +
-        'Page: onramp.html (the page where users buy crypto with their card)\n' +
-        'Backend: Stripe crypto onramp (regulated, KYC handled by Stripe)\n' +
+        'Page: onramp.html\n' +
+        'Backend: Stripe-hosted standalone onramp at crypto.link.com (Stripe handles KYC, payments, delivery)\n' +
+        'When user clicks Buy: a NEW TAB opens to crypto.link.com with their amount/currency/network prefilled. They enter card info on Stripe, crypto arrives in their wallet.\n' +
         'Min purchase: $20  |  Max: $10,000\n' +
-        'Supported networks:\n' +
-        '  - Ethereum mainnet → receive ETH (highest gas fees, most universally supported)\n' +
-        '  - Base → receive ETH (low gas fees, Coinbase L2, great for beginners)\n' +
-        '  - Polygon → receive USDC (low gas, good for stablecoin)\n' +
-        '  - Optimism → receive ETH (low gas, popular L2)\n\n' +
+        'Supported currency/network combos:\n' +
+        '  - ETH on Ethereum (highest gas, most universal)\n' +
+        '  - ETH on Base (low gas, Coinbase L2)\n' +
+        '  - USDC on Ethereum, Base, Polygon, or Solana (stablecoin)\n' +
+        '  - BTC on Bitcoin\n' +
+        '  - SOL on Solana\n\n' +
         'CURRENT USER SELECTIONS:\n' +
         '  - Amount: $' + amount + ' USD\n' +
-        '  - Network: ' + info.label + ' (will receive ' + info.currency + ')\n\n' +
-        'Other Mechanical Temp products you can mention if relevant:\n' +
+        '  - Currency: ' + selectedCurrency.toUpperCase() + '\n' +
+        '  - Network: ' + (NETWORK_LABELS[selectedNetwork] || selectedNetwork) + '\n\n' +
+        'Other Mechanical Temp products:\n' +
         '  - MTYLD: token backed by HVAC business revenue (vault.mechanicaltemp.com)\n' +
         '  - The Conservator: ETH yield vault for MTYLD holders (conservator.html)\n\n' +
         'Style:\n' +
         '  - Plain English, friendly, never condescending\n' +
         '  - Short answers (2-4 sentences usually)\n' +
-        '  - If they ask "which network should I pick", ask what they plan to do with the crypto first — different networks make sense for different goals\n' +
-        '  - Acknowledge concerns honestly (yes, gas fees are high on Ethereum; yes, you do need a wallet)\n' +
-        '  - For wallet recommendations: MetaMask is the most common, Coinbase Wallet for beginners, Rainbow for nice UX\n' +
+        '  - If they ask "which network", ask what they plan to do with the crypto first\n' +
+        '  - Acknowledge concerns honestly (yes Ethereum gas is high, yes you need a wallet)\n' +
+        '  - Wallets: MetaMask is most common, Coinbase Wallet for beginners, Rainbow for nice UX, Phantom for Solana\n' +
         '  - Never give price predictions or investment advice\n' +
-        '  - If asked about something off-topic, redirect to onramp/crypto basics\n' +
         '=== END CONTEXT ===';
     }
 
