@@ -8,6 +8,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://js.stripe.com/dahlia/stripe.js"></script>
+  <script src="https://crypto-js.stripe.com/crypto-onramp-outer.js"></script>
   <style>
     html { scroll-behavior: smooth; }
     .glass { background: rgba(15,23,42,.6); backdrop-filter: blur(8px); }
@@ -86,7 +88,7 @@
             <!-- Conservator ETH Vault TVL -->
             <div class="rounded-xl bg-slate-900/60 border border-emerald-900/30 p-4 relative overflow-hidden">
               <div class="absolute top-0 right-0 p-1.5"><span class="flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span></div>
-              <div class="text-slate-400 text-xs font-semibold">mtETH-S</div>
+              <div class="text-slate-400 text-xs font-semibold">ETH Vault (mtETH-S)</div>
               <div class="text-xl font-mono text-emerald-400" id="statConservator">$—</div>
               <div class="text-slate-500 text-[10px] mt-1">Conservator <span class="text-emerald-400 font-bold">TVL</span></div>
             </div>
@@ -377,16 +379,34 @@
       document.querySelectorAll('.quick-amt').forEach(b => b.className = 'quick-amt flex-1 py-2 rounded-lg border border-slate-700 text-slate-400 text-sm font-mono hover:border-purple-500 hover:text-purple-400 transition');
       if (btn) btn.className = 'quick-amt flex-1 py-2 rounded-lg border border-purple-500 bg-purple-900/20 text-purple-400 text-sm font-mono transition';
     }
-    async function quickLaunch() {
+    function quickLaunch() {
       const btn = document.getElementById('quick-launch-btn');
       const errEl = document.getElementById('quick-error');
-      errEl.classList.add('hidden'); btn.textContent = 'Opening Stripe...'; btn.disabled = true;
+      errEl.classList.add('hidden');
+
       try {
-        const resp = await fetch(ONRAMP_SERVER + '/create-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asset: 'ETH', network: document.getElementById('quick-network').value, amount: quickAmount, walletAddress: '' }) });
-        if (!resp.ok) { const e = await resp.json(); throw new Error(e.error || 'Server error'); }
-        window.open((await resp.json()).redirectUrl, '_blank');
-      } catch(e) { errEl.textContent = 'Error: ' + (e.message || String(e)); errEl.classList.remove('hidden'); }
-      finally { btn.textContent = 'Launch Stripe →'; btn.disabled = false; }
+        if (!window.StripeOnramp) {
+          throw new Error('Stripe SDK still loading — try again in a moment');
+        }
+
+        const network = document.getElementById('quick-network').value;
+        // Polygon → USDC, all other networks → ETH (matches the dropdown labels)
+        const currency = network === 'polygon' ? 'usdc' : 'eth';
+
+        const standaloneOnramp = window.StripeOnramp.Standalone({
+          source_currency: 'usd',
+          amount: { source_amount: quickAmount.toString() },
+          destination_currency: currency,
+          destination_network: network,
+          destination_currencies: [currency],
+          destination_networks: [network]
+        });
+
+        window.open(standaloneOnramp.getUrl(), '_blank', 'noopener,noreferrer');
+      } catch(e) {
+        errEl.textContent = 'Error: ' + (e.message || String(e));
+        errEl.classList.remove('hidden');
+      }
     }
 
     // ── Live On-Chain Stats ────────────────────────────────────
