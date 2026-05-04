@@ -436,13 +436,23 @@
           const se = $("statSupply");   if(se) se.textContent = numFmt(supply);
           const re = $("statService");  if(re) re.textContent = pending > 0 ? "+" + usd(pending) : "$—";
 
-          // Conservator TVL via Chainlink ETH price
+      // Conservator TVL via Chainlink ETH price
           try {
-            const wethC = new ethers.Contract(WETH_ADDR, BAL_ABI, provider);
-            const clC   = new ethers.Contract(CHAINLINK_FEED, CL_ABI, provider);
-            const [wethBal, clData] = await Promise.all([wethC.balanceOf(CONSERVATOR), clC.latestRoundData()]);
+            const AWETH_ADDR    = "0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8";
+            const COMPOUND_ADDR = "0x6f7D514bbD4aFf3BcD1140B7344b32f063dEe486";
+            const wethC     = new ethers.Contract(WETH_ADDR, BAL_ABI, provider);
+            const awethC    = new ethers.Contract(AWETH_ADDR, BAL_ABI, provider);
+            const compoundC = new ethers.Contract(COMPOUND_ADDR, BAL_ABI, provider);
+            const clC       = new ethers.Contract(CHAINLINK_FEED, CL_ABI, provider);
+            const [wethBal, awethBal, compoundBal, clData] = await Promise.all([
+              wethC.balanceOf(CONSERVATOR),
+              awethC.balanceOf(CONSERVATOR).catch(() => 0n),
+              compoundC.balanceOf(CONSERVATOR).catch(() => 0n),
+              clC.latestRoundData()
+            ]);
             const ethPrice = Number(clData[1]) / 1e8;
-            const tvl = (Number(wethBal) / 1e18) * ethPrice;
+            const totalEth = (Number(wethBal) + Number(awethBal) + Number(compoundBal)) / 1e18;
+            const tvl      = totalEth * ethPrice;
             const ce = $("statConservator"); if(ce) ce.textContent = tvl > 0 ? usd(tvl) : "$—";
           } catch(e) { console.error("Conservator TVL:", e); }
 
