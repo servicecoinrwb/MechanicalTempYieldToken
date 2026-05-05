@@ -8,8 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://js.stripe.com/dahlia/stripe.js"></script>
-  <script src="https://crypto-js.stripe.com/crypto-onramp-outer.js"></script>
   <style>
     html { scroll-behavior: smooth; }
     .glass { background: rgba(15,23,42,.6); backdrop-filter: blur(8px); }
@@ -93,6 +91,22 @@
               <div class="text-slate-500 text-[10px] mt-1">Conservator <span class="text-emerald-400 font-bold">TVL</span></div>
             </div>
 
+            <!-- Credit Line USDC Pool -->
+            <div class="col-span-2 rounded-xl bg-slate-900/60 border border-sky-900/30 p-4 relative overflow-hidden">
+              <div class="absolute top-0 right-0 p-1.5"><span class="flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-sky-400"></span></span></div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-slate-400 text-xs font-semibold">MT Credit Line</div>
+                  <div class="text-xl font-mono text-sky-400 mt-1" id="statCreditLine">$—</div>
+                  <div class="text-slate-500 text-[10px] mt-1">USDC lending pool • <a href="credit-line.html" class="text-sky-400 hover:underline">Lend USDC →</a></div>
+                </div>
+                <div class="text-right">
+                  <div class="text-slate-500 text-[10px]">8% APR • 70% LTV</div>
+                  <div class="text-slate-500 text-[10px]">Chainlink priced</div>
+                </div>
+              </div>
+            </div>
+
           </div>
           <div class="mt-4 text-xs text-slate-500">For live on-chain stats, visit the <a class="text-sky-300 hover:text-sky-200" href="vault.html">Vault</a>.</div>
         </div>
@@ -143,6 +157,65 @@
           </div>
           <a href="conservator.html" class="block w-full py-4 bg-sky-600 hover:bg-sky-500 text-white font-bold text-center rounded-xl transition shadow-lg shadow-sky-900/20">Open The Conservator Vault →</a>
           <p class="mt-3 text-xs text-slate-500 text-center">MTYLD balance required to deposit • Powered by Claude AI</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CREDIT LINE SECTION ── -->
+  <section class="border-b border-slate-800 bg-slate-900/20">
+    <div class="max-w-7xl mx-auto px-4 py-14">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-sky-400 uppercase bg-sky-900/20 rounded-full border border-sky-900/50">
+            <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse inline-block"></span>New — Business Credit Line
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-black text-white">MT <span class="text-sky-400">Credit Line</span></h2>
+          <p class="mt-4 text-lg text-slate-400">A real-world business credit line on-chain. Lend USDC to Mechanical Temp and earn interest. Or lock your mtETH-S as collateral and earn a share too — two ways to participate.</p>
+          <div class="mt-8 space-y-5">
+            <div class="flex gap-4">
+              <div class="flex-none w-12 h-12 rounded-xl bg-sky-900/20 border border-sky-900/50 flex items-center justify-center text-sky-400">💵</div>
+              <div>
+                <h3 class="text-lg font-bold text-white">USDC Lenders — Retail</h3>
+                <p class="text-slate-400 text-sm mt-1">Deposit USDC to fund HVAC operations. Earn <strong class="text-white">70% of loan interest</strong> — yield backed by a real business, not algorithms.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="flex-none w-12 h-12 rounded-xl bg-purple-900/20 border border-purple-900/50 flex items-center justify-center text-purple-400">🔐</div>
+              <div>
+                <h3 class="text-lg font-bold text-white">mtETH-S Holders — Institutional</h3>
+                <p class="text-slate-400 text-sm mt-1">Lock Conservator shares as collateral. Earn <strong class="text-white">30% of interest</strong> on top of existing Compound yield. Your ETH keeps growing while backing the credit line.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="flex-none w-12 h-12 rounded-xl bg-emerald-900/20 border border-emerald-900/50 flex items-center justify-center text-emerald-400">🏗️</div>
+              <div>
+                <h3 class="text-lg font-bold text-white">Transparent On-Chain Terms</h3>
+                <p class="text-slate-400 text-sm mt-1">8% APR, 70% LTV, max 90-day terms. Every loan open and repayment is recorded on Arbiscan. No hidden fees.</p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-8">
+            <a href="credit-line.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold transition shadow-lg shadow-sky-900/30">Open Credit Line →</a>
+          </div>
+        </div>
+        <div class="glass rounded-2xl p-8 border border-slate-800">
+          <div class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-5">How It Works</div>
+          <div class="space-y-3 mb-6">
+            <div class="flex items-center gap-3"><div class="w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center text-sky-400 text-xs font-bold flex-none">1</div><div class="text-slate-300 text-sm">USDC depositors fund the lending pool</div></div>
+            <div class="flex items-center gap-3"><div class="w-7 h-7 rounded-full bg-purple-900/40 border border-purple-800 flex items-center justify-center text-purple-400 text-xs font-bold flex-none">2</div><div class="text-slate-300 text-sm">mtETH-S holders lock collateral (70% LTV)</div></div>
+            <div class="flex items-center gap-3"><div class="w-7 h-7 rounded-full bg-emerald-900/40 border border-emerald-800 flex items-center justify-center text-emerald-400 text-xs font-bold flex-none">3</div><div class="text-slate-300 text-sm">Mechanical Temp draws USDC for operations</div></div>
+            <div class="flex items-center gap-3"><div class="w-7 h-7 rounded-full bg-amber-900/40 border border-amber-800 flex items-center justify-center text-amber-400 text-xs font-bold flex-none">4</div><div class="text-slate-300 text-sm">Repays principal + interest within 90 days</div></div>
+            <div class="flex items-center gap-3"><div class="w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center text-sky-400 text-xs font-bold flex-none">5</div><div class="text-slate-300 text-sm">Interest split 70/30 between both pools</div></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3 mb-5">
+            <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800"><div class="text-slate-500 text-xs mb-1">Interest Rate</div><div class="text-emerald-400 font-semibold text-sm">8% APR</div></div>
+            <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800"><div class="text-slate-500 text-xs mb-1">Max LTV</div><div class="text-white font-semibold text-sm">70%</div></div>
+            <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800"><div class="text-slate-500 text-xs mb-1">Max Term</div><div class="text-white font-semibold text-sm">90 days</div></div>
+            <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800"><div class="text-slate-500 text-xs mb-1">Oracle</div><div class="text-white font-semibold text-sm">Chainlink</div></div>
+          </div>
+          <a href="credit-line.html" class="block w-full py-4 bg-sky-600 hover:bg-sky-500 text-white font-bold text-center rounded-xl transition">Open Credit Line →</a>
+          <p class="mt-3 text-xs text-slate-500 text-center">Withdraw when no active loan • Interest paid on repayment</p>
         </div>
       </div>
     </div>
@@ -228,7 +301,7 @@
       </div>
       <div class="mt-8 flex flex-wrap gap-3">
         <a href="vault.html" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">See Live Vault</a>
-        <a href="lend.html" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Explore Credit Line</a>
+        <a href="credit-line.html" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Explore Credit Line</a>
       </div>
     </div>
   </section>
@@ -266,7 +339,7 @@
         <li>MTYLD Vault: <a href="https://arbiscan.io/address/0xdFD1C01678e713FDe1630c9db921e6206f3795b4" target="_blank" class="text-sky-300 hover:underline">0xdFD1C01678e713FDe1630c9db921e6206f3795b4</a></li>
         <li>mtETH-S Vault (Conservator v4): <a href="https://arbiscan.io/address/0xc9227b644285198646F9c75ceCf13F84bF419B78" target="_blank" class="text-sky-300 hover:underline">0xc9227b644285198646F9c75ceCf13F84bF419B78</a></li>
         <li>The Conservator (AI Agent): <a href="https://arbiscan.io/address/0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58" target="_blank" class="text-sky-300 hover:underline">0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58</a></li>
-        <li>Lending Contract: <a href="https://arbiscan.io/address/0x91B2dF57E6272C8652BEb9D2e32548B6ACbFAF56" target="_blank" class="text-sky-300 hover:underline">0x91B2dF57E6272C8652BEb9D2e32548B6ACbFAF56</a></li>
+        <li>MT Credit Line: <a href="https://arbiscan.io/address/0xb3D07f571bdF7725dd35748251c6868913300486" target="_blank" class="text-sky-300 hover:underline">0xb3D07f571bdF7725dd35748251c6868913300486</a></li>
         <li>Treasury Wallet: <a href="https://arbiscan.io/address/0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482" target="_blank" class="text-sky-300 hover:underline">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</a></li>
       </ul>
       <p class="mt-3 text-xs text-slate-500">Always verify official links and addresses.</p>
@@ -379,34 +452,16 @@
       document.querySelectorAll('.quick-amt').forEach(b => b.className = 'quick-amt flex-1 py-2 rounded-lg border border-slate-700 text-slate-400 text-sm font-mono hover:border-purple-500 hover:text-purple-400 transition');
       if (btn) btn.className = 'quick-amt flex-1 py-2 rounded-lg border border-purple-500 bg-purple-900/20 text-purple-400 text-sm font-mono transition';
     }
-    function quickLaunch() {
+    async function quickLaunch() {
       const btn = document.getElementById('quick-launch-btn');
       const errEl = document.getElementById('quick-error');
-      errEl.classList.add('hidden');
-
+      errEl.classList.add('hidden'); btn.textContent = 'Opening Stripe...'; btn.disabled = true;
       try {
-        if (!window.StripeOnramp) {
-          throw new Error('Stripe SDK still loading — try again in a moment');
-        }
-
-        const network = document.getElementById('quick-network').value;
-        // Polygon → USDC, all other networks → ETH (matches the dropdown labels)
-        const currency = network === 'polygon' ? 'usdc' : 'eth';
-
-        const standaloneOnramp = window.StripeOnramp.Standalone({
-          source_currency: 'usd',
-          amount: { source_amount: quickAmount.toString() },
-          destination_currency: currency,
-          destination_network: network,
-          destination_currencies: [currency],
-          destination_networks: [network]
-        });
-
-        window.open(standaloneOnramp.getUrl(), '_blank', 'noopener,noreferrer');
-      } catch(e) {
-        errEl.textContent = 'Error: ' + (e.message || String(e));
-        errEl.classList.remove('hidden');
-      }
+        const resp = await fetch(ONRAMP_SERVER + '/create-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asset: 'ETH', network: document.getElementById('quick-network').value, amount: quickAmount, walletAddress: '' }) });
+        if (!resp.ok) { const e = await resp.json(); throw new Error(e.error || 'Server error'); }
+        window.open((await resp.json()).redirectUrl, '_blank');
+      } catch(e) { errEl.textContent = 'Error: ' + (e.message || String(e)); errEl.classList.remove('hidden'); }
+      finally { btn.textContent = 'Launch Stripe →'; btn.disabled = false; }
     }
 
     // ── Live On-Chain Stats ────────────────────────────────────
@@ -456,25 +511,32 @@
           const se = $("statSupply");   if(se) se.textContent = numFmt(supply);
           const re = $("statService");  if(re) re.textContent = pending > 0 ? "+" + usd(pending) : "$—";
 
-      // Conservator TVL via Chainlink ETH price
+          // Conservator TVL — idle WETH + Compound position + Chainlink price
           try {
-            const AWETH_ADDR    = "0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8";
-            const COMPOUND_ADDR = "0x6f7D514bbD4aFf3BcD1140B7344b32f063dEe486";
-            const wethC     = new ethers.Contract(WETH_ADDR, BAL_ABI, provider);
-            const awethC    = new ethers.Contract(AWETH_ADDR, BAL_ABI, provider);
-            const compoundC = new ethers.Contract(COMPOUND_ADDR, BAL_ABI, provider);
-            const clC       = new ethers.Contract(CHAINLINK_FEED, CL_ABI, provider);
-            const [wethBal, awethBal, compoundBal, clData] = await Promise.all([
+            const COMPOUND = "0x6f7D514bbD4aFf3BcD1140B7344b32f063dEe486";
+            const wethC  = new ethers.Contract(WETH_ADDR, BAL_ABI, provider);
+            const compC  = new ethers.Contract(COMPOUND, BAL_ABI, provider);
+            const clC    = new ethers.Contract(CHAINLINK_FEED, CL_ABI, provider);
+            const [wethBal, compBal, clData] = await Promise.all([
               wethC.balanceOf(CONSERVATOR),
-              awethC.balanceOf(CONSERVATOR).catch(() => 0n),
-              compoundC.balanceOf(CONSERVATOR).catch(() => 0n),
+              compC.balanceOf(CONSERVATOR),
               clC.latestRoundData()
             ]);
             const ethPrice = Number(clData[1]) / 1e8;
-            const totalEth = (Number(wethBal) + Number(awethBal) + Number(compoundBal)) / 1e18;
-            const tvl      = totalEth * ethPrice;
+            const totalWeth = (Number(wethBal) + Number(compBal)) / 1e18;
+            const tvl = totalWeth * ethPrice;
             const ce = $("statConservator"); if(ce) ce.textContent = tvl > 0 ? usd(tvl) : "$—";
           } catch(e) { console.error("Conservator TVL:", e); }
+
+          // Credit Line USDC pool
+          try {
+            const CL_ADDR = "0xb3D07f571bdF7725dd35748251c6868913300486";
+            const CL_ABI  = ["function totalUsdcDeposited() view returns (uint256)"];
+            const clContract = new ethers.Contract(CL_ADDR, CL_ABI, provider);
+            const usdcPool = await clContract.totalUsdcDeposited();
+            const clEl = $("statCreditLine");
+            if(clEl) clEl.textContent = usd(Number(usdcPool) / 1e6);
+          } catch(e) { console.error("Credit line stats:", e); }
 
         } catch(e) { console.error("Stats:", e); }
       }
