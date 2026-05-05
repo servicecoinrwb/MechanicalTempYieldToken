@@ -4,398 +4,347 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MTYLD Vault • Mechanical Temp</title>
-
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
   <style>
-    canvas { background: transparent; }
     html { scroll-behavior: smooth; }
+    .glass { background: rgba(15,23,42,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(51,65,85,0.6); }
+    .pulse-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)} 50%{box-shadow:0 0 0 6px rgba(16,185,129,0)} }
+    canvas { background: transparent; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100">
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
 
-  <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800">
+  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
-        <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-10 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline"></span>
+        <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MTYLD <span class="text-sky-400">Vault</span></span>
       </a>
-      <nav class="flex items-center gap-2">
-        <a href="https://vault.mechanicaltemp.com" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Home</a>
-        <a href="lend.html" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Credit</a>
-        <a href="conservator.html" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">Conservator</a>
-        <button id="btnAbout" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">About</button>
+      <nav class="flex items-center gap-1">
+        <a href="index.html" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 text-sm transition">Home</a>
+        <a href="conservator.html" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 text-sm transition">Conservator</a>
+        <a href="credit-line.html" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 text-sm transition">Credit Line</a>
+        <button id="btnConnect" class="ml-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition">Connect Wallet</button>
+        <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition">↻</button>
       </nav>
     </div>
   </header>
 
-  <section class="bg-gradient-to-b from-slate-900 to-sky-900 border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 py-12 sm:py-16 text-center">
-      <h1 class="mt-1 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white">
-        MTYLD Vault
-      </h1>
-      <p class="mt-3 md:mt-4 text-base md:text-lg text-sky-200">
-        Yield backed by <span class="font-semibold text-sky-100">Mechanical Temp</span> revenue
+  <main class="max-w-7xl mx-auto px-4 py-10 space-y-6">
+
+    <!-- Title -->
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 mb-3 rounded-full bg-sky-900/20 border border-sky-900/50 text-sky-400 text-xs font-semibold">
+        <span class="pulse-dot"></span> Live on Arbitrum One
+      </div>
+      <h1 class="text-3xl font-black text-white">MTYLD <span class="text-sky-400">Vault</span></h1>
+      <p class="text-slate-400 mt-1 text-sm font-mono">
+        <span id="addr" class="text-slate-500">Not connected</span>
+        <span class="text-slate-700 mx-2">•</span>
+        <a href="https://arbiscan.io/address/0xdFD1C01678e713FDe1630c9db921e6206f3795b4" target="_blank" class="text-sky-400 hover:underline">0xdFD1...795b4 ↗</a>
+        <span class="text-slate-700 mx-2">•</span>
+        Owner: <span id="ownerLine" class="text-slate-500">—</span>
       </p>
+      <div id="tinyWarn" style="display:none" class="mt-2 text-xs text-amber-400 bg-amber-900/20 border border-amber-800 rounded-lg px-3 py-2 inline-block">Note: Treasury has sub-$0.001 dust — NAV may appear jumpy.</div>
     </div>
-  </section>
 
-  <main class="max-w-7xl mx-auto px-4 py-8 space-y-4">
-
-    <div class="grid md:grid-cols-3 gap-4 items-start">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-full">
-        <div class="flex items-center gap-2 mb-3">
-          <button id="btnConnect" class="px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold">Connect Wallet</button>
-          <button id="btnRefresh" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">↻</button>
-        </div>
-        <div class="text-slate-400 font-mono text-sm truncate" id="addr">Not connected</div>
-        <div class="mt-2 text-xs text-slate-500">Vault Contract:</div>
-        <div class="font-mono text-slate-300 truncate text-sm">0xdFD1C01678e713FDe1630c9db921e6206f3795b4</div>
-        <div class="mt-2 text-xs text-slate-500">Owner:</div>
-        <div class="font-mono text-slate-300 truncate text-sm" id="ownerLine">—</div>
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">MTYLD Price</p>
+        <p id="price" class="text-2xl font-mono text-white">$—</p>
+        <p class="text-slate-600 text-xs mt-1">Net Asset Value</p>
       </div>
-
-      <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center sm:text-left">
-          <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-            <div class="text-slate-400 text-xs">Price (NAV)</div>
-            <div class="font-mono text-lg text-slate-100" id="price">$–</div>
-          </div>
-          <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-            <div class="text-slate-400 text-xs">Active Treasury</div>
-            <div class="font-mono text-lg text-slate-100" id="treasuryActive">$–</div>
-          </div>
-          <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-            <div class="text-slate-400 text-xs">Pending Revenue</div>
-            <div class="font-mono text-lg text-slate-100" id="pending">$–</div>
-          </div>
-          <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-            <div class="text-slate-400 text-xs">Pending Release In</div>
-            <div class="font-mono text-lg text-slate-100" id="countdown">–</div>
-          </div>
-        </div>
-        <div class="mt-2 text-xs text-amber-300" id="tinyWarn" style="display:none">
-          Note: Treasury has sub-$0.001 "dust". With very low supply this can make NAV appear jumpy.
-        </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Active Treasury</p>
+        <p id="treasuryActive" class="text-2xl font-mono text-sky-400">$—</p>
+        <p class="text-slate-600 text-xs mt-1">USDC deployed</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Pending Revenue</p>
+        <p id="pending" class="text-2xl font-mono text-amber-400">$—</p>
+        <p class="text-slate-600 text-xs mt-1">Queued USDC</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Release In</p>
+        <p id="countdown" class="text-2xl font-mono text-emerald-400">—</p>
+        <p id="epochStateLine" class="text-slate-600 text-xs mt-1">Epoch open</p>
       </div>
     </div>
 
-    <div id="userPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
-      <div class="text-slate-300 font-semibold mb-2">Your Position</div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center sm:text-left">
-        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs">MTYLD Balance</div>
-          <div class="font-mono text-lg text-slate-100" id="userBal">—</div>
+    <!-- User Position -->
+    <div id="userPanel" class="hidden glass rounded-2xl p-6">
+      <h2 class="text-base font-bold text-white mb-4">Your Position</h2>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">MTYLD Balance</p>
+          <p id="userBal" class="text-lg font-mono text-white">—</p>
         </div>
-        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs">Value (USDC)</div>
-          <div class="font-mono text-lg text-slate-100" id="userVal">$—</div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Value (USDC)</p>
+          <p id="userVal" class="text-lg font-mono text-emerald-400">$—</p>
         </div>
-        <div class="p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-          <div class="text-slate-400 text-xs">Share of Vault</div>
-          <div class="font-mono text-lg text-slate-100" id="userShare">—</div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Share of Vault</p>
+          <p id="userShare" class="text-lg font-mono text-sky-400">—</p>
         </div>
       </div>
     </div>
 
-    <div class="border-t border-slate-800"></div>
-
-    <div class="grid md:grid-cols-2 gap-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="text-slate-300 font-semibold">USDC → MTYLD (Mint)</div>
-        <div class="mt-2 flex gap-2">
-          <input id="mintAmount" inputmode="decimal" placeholder="Amount (USDC)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-          <button id="btnMintMax" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Max</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2 mt-2">
-          <input id="mintSlippage" value="0.5" placeholder="Slippage %" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-          <button id="btnPreviewMint" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Preview</button>
-        </div>
-        <div class="font-mono text-slate-300 mt-2" id="mintPreview"></div>
-        <button id="btnMint" disabled class="mt-2 w-full px-4 py-2 rounded-lg bg-sky-500 disabled:bg-slate-700 hover:bg-sky-600 text-white font-semibold">Mint</button>
-      </div>
-
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-        <div class="text-slate-300 font-semibold">MTYLD → USDC (Redeem)</div>
-        <div class="mt-2 flex gap-2">
-          <input id="redeemAmount" inputmode="decimal" placeholder="Amount (MTYLD)" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-          <button id="btnRedeemMax" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Max</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2 mt-2">
-          <input id="redeemSlippage" value="0.5" placeholder="Slippage %" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-          <button id="btnPreviewRedeem" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Preview</button>
-        </div>
-        <div class="font-mono text-slate-300 mt-2" id="redeemPreview"></div>
-        <button id="btnRedeem" disabled class="mt-2 w-full px-4 py-2 rounded-lg bg-sky-500 disabled:bg-slate-700 hover:bg-sky-600 text-white font-semibold">Redeem</button>
-      </div>
-    </div>
-
-    <div id="ownerPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4">
-      
-      <div class="flex items-center justify-between gap-3">
-        <div class="font-semibold text-lg text-white">
-          Admin Command Center
-          <span class="ml-2 text-xs px-2 py-1 rounded-full bg-sky-900 text-sky-200 border border-sky-700">Owner</span>
-        </div>
-        <div class="text-right">
-             <div class="font-mono text-slate-300 text-sm" id="epochState">Epoch: —</div>
-             <div class="font-mono text-red-400 text-xs font-bold uppercase" id="pausedState" style="display:none">⚠ PAUSED ⚠</div>
-        </div>
-      </div>
-      <div class="h-px bg-slate-800 my-3"></div>
-
-      <div class="grid md:grid-cols-2 gap-4">
-        <div>
-          <div class="text-slate-300 font-medium">1. Revenue Injection</div>
-          <div class="text-xs text-slate-500 mb-2">Queues USDC. Does not affect NAV until Applied.</div>
+    <!-- Mint / Redeem -->
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="glass rounded-2xl p-6">
+        <h2 class="text-base font-bold text-white mb-1">↓ Mint MTYLD</h2>
+        <p class="text-slate-500 text-xs mb-4">Deposit USDC → receive MTYLD shares</p>
+        <div class="space-y-3">
           <div class="flex gap-2">
-              <input id="revAmount" placeholder="Amount (USDC)" inputmode="decimal" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400">
-              <button id="btnQueueRev" class="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold whitespace-nowrap">Queue</button>
+            <input id="mintAmount" inputmode="decimal" placeholder="Amount (USDC)" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            <button id="btnMintMax" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm">Max</button>
           </div>
-          <div class="font-mono text-xs text-slate-400 mt-1" id="revMsg"></div>
-        </div>
-
-        <div>
-          <div class="text-slate-300 font-medium">2. Epoch Controls</div>
-          <div class="text-xs text-slate-500 mb-2">Manage pending revenue and close windows.</div>
-          <div class="flex flex-wrap gap-2">
-            <button id="btnApply" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700">Apply Pending</button>
-            <button id="btnBeginClose" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700">Begin Close</button>
-            <button id="btnEndClose" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700">End Close</button>
-          </div>
-          <div id="pendingHint" class="font-mono text-xs text-slate-400 mt-1">—</div>
-        </div>
-      </div>
-
-      <div class="h-px bg-slate-800 my-4"></div>
-
-      <!-- Employee Payroll Batch Sender -->
-      <div class="bg-slate-800/30 border border-slate-700/50 rounded-xl p-3 mb-4">
-        <div class="text-slate-200 font-semibold mb-1">Employee Payroll (Batch Sender)</div>
-        <p class="text-xs text-slate-400 mb-2">Distribute MTYLD tokens to multiple wallets in one click. Mint tokens to yourself first.</p>
-        
-        <textarea id="batchInput" rows="3" 
-          placeholder="0xAddress1, 100&#10;0xAddress2, 50.5" 
-          class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 font-mono text-xs placeholder-slate-600 focus:outline-none focus:border-sky-500"></textarea>
-        
-        <div class="flex items-center justify-between mt-2">
-            <div class="text-xs text-slate-400" id="batchStats">Wait: 0 | Total: 0</div>
-            <button id="btnSendBatch" class="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs">Send Batch</button>
-        </div>
-        <div id="batchLog" class="mt-2 text-xs font-mono text-slate-300 max-h-24 overflow-y-auto whitespace-pre-wrap hidden"></div>
-      </div>
-
-      <!-- On-Chain Distributor -->
-      <div class="bg-emerald-900/10 border border-emerald-800/40 rounded-xl p-3 mb-4">
-        <div class="flex items-center gap-2 mb-1">
-          <div class="text-emerald-300 font-semibold">📋 On-Chain Quarterly Distribution</div>
-          <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-800">Transparent</span>
-        </div>
-        <p class="text-xs text-slate-400 mb-3">Distribute MTYLD proportionally in one transaction. Fully recorded on Arbiscan with timestamp, note, and per-employee amounts. Step 1 approves the distributor, Step 2 executes.</p>
-        
-        <div class="mb-2">
-          <div class="flex items-center justify-between mb-1">
-            <label class="text-xs text-slate-400">Recipients & Weights (address, weight — one per line)</label>
-            <button id="btnAutoPopulate" class="text-xs px-3 py-1 rounded-lg bg-emerald-900/40 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-800 transition">
-              Auto-populate holders
-            </button>
-          </div>
-          <div id="autoPopulateStatus" class="text-xs text-slate-500 mb-1 hidden"></div>
-          <textarea id="distInput" rows="4"
-            placeholder="0xAddress1, 50&#10;0xAddress2, 30&#10;0xAddress3, 20"
-            class="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 font-mono text-xs placeholder-slate-600 focus:outline-none focus:border-emerald-500"></textarea>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 mb-3">
-          <div>
-            <label class="text-xs text-slate-400">Total MTYLD to distribute</label>
-            <input id="distTotal" placeholder="e.g. 1000" class="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:border-emerald-500">
-          </div>
-          <div>
-            <label class="text-xs text-slate-400">Quarter label (stored on-chain)</label>
-            <input id="distNote" placeholder="e.g. Q1 2026" class="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:border-emerald-500">
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <div class="text-xs text-slate-400" id="distStats">Recipients: 0 | Total weight: 0</div>
           <div class="flex gap-2">
-            <button id="btnApproveDist" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold">Step 1: Approve</button>
-            <button id="btnDistribute" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">Step 2: Distribute</button>
+            <input id="mintSlippage" value="0.5" placeholder="Slippage %" class="w-28 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-sky-500">
+            <button id="btnPreviewMint" class="flex-1 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm">Preview</button>
           </div>
-        </div>
-        <div id="distLog" class="mt-2 text-xs font-mono text-emerald-300 hidden"></div>
-
-        <!-- Distribution History -->
-        <div class="mt-3 pt-3 border-t border-slate-700/50">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-xs text-slate-400 font-semibold">Distribution History</div>
-            <button id="btnLoadHistory" class="text-xs text-sky-400 hover:underline">Load from chain</button>
-          </div>
-          <div id="distHistory" class="text-xs font-mono text-slate-400">Click "Load from chain" to view past distributions.</div>
+          <p id="mintPreview" class="text-sm font-mono text-slate-400 min-h-[20px]"></p>
+          <button id="btnMint" disabled class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-bold text-sm transition">Mint MTYLD</button>
         </div>
       </div>
-
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="bg-slate-800/30 border border-slate-700/50 rounded-xl p-3">
-             <div class="text-slate-200 font-semibold text-sm">Supply Cap (TVL Limit)</div>
-             <div class="text-xs text-slate-500 mb-2">Max MTYLD tokens allowed.</div>
-             <div class="flex gap-2">
-                 <input id="maxSupplyIn" placeholder="e.g. 1000000" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-sm">
-                 <button id="btnSetCap" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs whitespace-nowrap">Set Cap</button>
-             </div>
-             <div id="capLine" class="text-xs font-mono text-slate-400 mt-1">Current Cap: —</div>
-        </div>
-
-        <div class="bg-red-900/10 border border-red-900/30 rounded-xl p-3 flex flex-col justify-between">
-             <div>
-                <div class="text-red-200 font-semibold text-sm">Emergency Controls</div>
-                <div class="text-xs text-red-300/60 mb-2">Freeze all Mint/Redeem actions.</div>
-             </div>
-             <div class="flex items-center gap-2">
-                 <button id="btnPause" class="flex-1 px-3 py-2 rounded-lg bg-red-600/20 hover:bg-red-600/40 text-red-200 border border-red-800 text-xs font-bold transition-colors">PAUSE CONTRACT</button>
-                 <button id="btnUnpause" class="flex-1 px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-200 border border-emerald-800 text-xs font-bold transition-colors">UNPAUSE</button>
-             </div>
-        </div>
-      </div>
-      
-      <div class="mt-4 bg-slate-800/30 border border-slate-700/50 rounded-xl p-3">
-          <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('rescueBody').classList.toggle('hidden')">
-             <div class="text-slate-200 font-semibold text-sm">Token Rescue</div>
-             <div class="text-xs text-slate-500">Recover lost tokens (accidental sends) ▼</div>
+      <div class="glass rounded-2xl p-6">
+        <h2 class="text-base font-bold text-white mb-1">↑ Redeem MTYLD</h2>
+        <p class="text-slate-500 text-xs mb-4">Burn MTYLD → receive USDC</p>
+        <div class="space-y-3">
+          <div class="flex gap-2">
+            <input id="redeemAmount" inputmode="decimal" placeholder="Amount (MTYLD)" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            <button id="btnRedeemMax" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm">Max</button>
           </div>
-          <div id="rescueBody" class="hidden mt-3 space-y-3">
-              <div class="p-2 bg-slate-900/50 rounded text-xs text-slate-400 border border-slate-800">
-                  <span class="text-amber-400">Status:</span> <span id="rescueStatus" class="font-mono">No active rescue</span>
-              </div>
-              <div id="rescueForm" class="grid grid-cols-2 gap-2">
-                  <input id="resToken" placeholder="Token Address (0x...)" class="col-span-2 px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-xs text-slate-100">
-                  <input id="resAmt" placeholder="Amount (Wei)" class="px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-xs text-slate-100">
-                  <input id="resTo" placeholder="Recipient (0x...)" class="px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-xs text-slate-100">
-                  <button id="btnAnnounceRescue" class="col-span-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-xs font-semibold">Announce Rescue</button>
-              </div>
-              <button id="btnExecuteRescue" disabled class="hidden w-full py-2 bg-amber-600 hover:bg-amber-500 text-white rounded text-xs font-bold">EXECUTE PENDING RESCUE</button>
+          <div class="flex gap-2">
+            <input id="redeemSlippage" value="0.5" placeholder="Slippage %" class="w-28 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-sky-500">
+            <button id="btnPreviewRedeem" class="flex-1 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm">Preview</button>
           </div>
-      </div>
-
-      <div class="h-px bg-slate-800 my-4"></div>
-
-      <div class="grid md:grid-cols-2 gap-4">
-        <div>
-          <div class="text-slate-300 font-medium text-sm">Configuration</div>
-          <div class="mt-2 flex items-center gap-2">
-            <input id="navDelay" placeholder="Delay (sec)" class="w-20 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-sm">
-            <button id="btnSetDelay" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs">Set Delay</button>
-          </div>
-          <div id="delayLine" class="text-xs text-slate-500 mt-1">Current: —</div>
-          <div class="mt-2 flex items-center gap-2">
-             <button id="btnGuardOn" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700">Guard On</button>
-             <button id="btnGuardOff" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700">Guard Off</button>
-             <span id="guardedLine" class="text-xs text-slate-500 ml-1">Avg: -</span>
-          </div>
-        </div>
-
-        <div>
-          <div class="text-slate-300 font-medium text-sm">Fees & Whitelist</div>
-          <div class="flex gap-2 mt-2">
-            <input id="mintFee" placeholder="Mint Bps" class="w-16 px-2 py-1.5 rounded bg-slate-800 border border-slate-700 text-slate-100 text-xs">
-            <input id="redeemFee" placeholder="Redeem Bps" class="w-16 px-2 py-1.5 rounded bg-slate-800 border border-slate-700 text-slate-100 text-xs">
-            <button id="btnSetFees" class="px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs">Update</button>
-          </div>
-          <div class="mt-2 flex gap-2">
-             <input id="wlAddr" placeholder="Whitelist Addr" class="flex-1 px-2 py-1.5 rounded bg-slate-800 border border-slate-700 text-slate-100 text-xs">
-             <button id="btnWhitelistOn" class="px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-green-400 text-xs">+</button>
-             <button id="btnWhitelistOff" class="px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-red-400 text-xs">-</button>
-          </div>
-          <div id="wlMsg" class="text-xs text-slate-500 mt-1"></div>
+          <p id="redeemPreview" class="text-sm font-mono text-slate-400 min-h-[20px]"></p>
+          <button id="btnRedeem" disabled class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-bold text-sm transition">Redeem USDC</button>
         </div>
       </div>
     </div>
 
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <!-- Performance Chart -->
+    <div class="glass rounded-2xl p-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
         <div>
-          <div class="text-slate-300">Performance</div>
-          <div id="apyLine" class="font-mono text-slate-200">APY (30d annualized): —</div>
-          <div id="changeLine" class="font-mono text-slate-400">24h: —  •  7d: —  •  30d: —</div>
+          <h2 class="text-base font-bold text-white">NAV Performance</h2>
+          <p id="apyLine" class="text-sm font-mono text-emerald-400 mt-1">APY (30d): —</p>
+          <p id="changeLine" class="text-xs font-mono text-slate-400">24h: —  •  7d: —  •  30d: —</p>
         </div>
         <div class="flex gap-2">
-          <button id="btnExportCSV" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Export NAV CSV</button>
-          <button id="btnResetHistory" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100">Reset History</button>
+          <button id="btnExportCSV" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">Export CSV</button>
+          <button id="btnResetHistory" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">Reset History</button>
         </div>
       </div>
-      <div class="mt-4">
-        <canvas id="navChart" height="120"></canvas>
+      <div style="height:160px"><canvas id="navChart"></canvas></div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="ownerPanel" class="hidden glass rounded-2xl overflow-hidden border border-red-900/30">
+      <div class="px-6 py-4 border-b border-slate-800 bg-red-900/10 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <h2 class="text-base font-bold text-white">Admin Command Center</h2>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-sky-900/40 text-sky-400 border border-sky-800">Owner</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="epochState" class="text-xs font-mono text-slate-400">Epoch: —</span>
+          <span id="pausedState" style="display:none" class="text-xs font-bold text-red-400 animate-pulse">⚠ PAUSED</span>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+            <h3 class="text-sm font-bold text-white mb-1">1. Revenue Injection</h3>
+            <p class="text-slate-500 text-xs mb-3">Queues USDC — does not affect NAV until Applied.</p>
+            <div class="flex gap-2">
+              <input id="revAmount" placeholder="Amount (USDC)" inputmode="decimal" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
+              <button id="btnQueueRev" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm">Queue</button>
+            </div>
+            <p id="revMsg" class="text-xs font-mono text-slate-400 mt-2"></p>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+            <h3 class="text-sm font-bold text-white mb-1">2. Epoch Controls</h3>
+            <p class="text-slate-500 text-xs mb-3">Manage pending revenue and close windows.</p>
+            <div class="flex flex-wrap gap-2">
+              <button id="btnApply" class="px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-800 text-emerald-400 text-xs font-semibold">Apply Pending</button>
+              <button id="btnBeginClose" class="px-3 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-800 text-amber-400 text-xs font-semibold">Begin Close</button>
+              <button id="btnEndClose" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold">End Close</button>
+            </div>
+            <p id="pendingHint" class="text-xs font-mono text-slate-400 mt-2">—</p>
+          </div>
+        </div>
+
+        <!-- Batch Sender -->
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <h3 class="text-sm font-bold text-white mb-1">Employee Payroll — Batch Sender</h3>
+          <p class="text-slate-500 text-xs mb-3">Distribute MTYLD tokens to multiple wallets in one click.</p>
+          <textarea id="batchInput" rows="3" placeholder="0xAddress1, 100&#10;0xAddress2, 50.5" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 font-mono text-xs placeholder-slate-600 focus:outline-none focus:border-sky-500"></textarea>
+          <div class="flex items-center justify-between mt-2">
+            <p id="batchStats" class="text-xs text-slate-400">Wait: 0 | Total: 0</p>
+            <button id="btnSendBatch" class="px-4 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs">Send Batch</button>
+          </div>
+          <div id="batchLog" class="mt-2 text-xs font-mono text-slate-300 max-h-24 overflow-y-auto whitespace-pre-wrap hidden bg-slate-900 rounded-lg p-2"></div>
+        </div>
+
+        <!-- On-Chain Distributor -->
+        <div class="bg-emerald-900/10 rounded-xl p-4 border border-emerald-900/30">
+          <div class="flex items-center gap-2 mb-1">
+            <h3 class="text-sm font-bold text-emerald-300">📋 On-Chain Quarterly Distribution</h3>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-800">Transparent</span>
+          </div>
+          <p class="text-slate-500 text-xs mb-3">Distribute MTYLD proportionally in one transaction. Fully recorded on Arbiscan.</p>
+          <div class="mb-3">
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs text-slate-400">Recipients & Weights (address, weight — one per line)</label>
+              <button id="btnAutoPopulate" class="text-xs px-3 py-1 rounded-lg bg-emerald-900/40 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-800">Auto-populate holders</button>
+            </div>
+            <p id="autoPopulateStatus" class="text-xs text-slate-500 mb-1 hidden"></p>
+            <textarea id="distInput" rows="4" placeholder="0xAddress1, 50&#10;0xAddress2, 30" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 font-mono text-xs placeholder-slate-600 focus:outline-none focus:border-emerald-500"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="text-xs text-slate-400">Total MTYLD to distribute</label>
+              <input id="distTotal" placeholder="e.g. 1000" class="w-full mt-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Quarter label (stored on-chain)</label>
+              <input id="distNote" placeholder="e.g. Q1 2026" class="w-full mt-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p id="distStats" class="text-xs text-slate-400">Recipients: 0 | Total weight: 0</p>
+            <div class="flex gap-2">
+              <button id="btnApproveDist" class="px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold">Step 1: Approve</button>
+              <button id="btnDistribute" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">Step 2: Distribute</button>
+            </div>
+          </div>
+          <p id="distLog" class="mt-2 text-xs font-mono text-emerald-300 hidden"></p>
+          <div class="mt-3 pt-3 border-t border-slate-700/50">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs text-slate-400 font-semibold">Distribution History</p>
+              <button id="btnLoadHistory" class="text-xs text-sky-400 hover:underline">Load from chain</button>
+            </div>
+            <p id="distHistory" class="text-xs font-mono text-slate-400 whitespace-pre-wrap">Click "Load from chain" to view past distributions.</p>
+          </div>
+        </div>
+
+        <!-- Config + Emergency -->
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800 space-y-3">
+            <h3 class="text-sm font-bold text-white">Configuration</h3>
+            <div>
+              <label class="text-xs text-slate-500">Supply Cap</label>
+              <div class="flex gap-2 mt-1">
+                <input id="maxSupplyIn" placeholder="Max supply" class="flex-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-xs">
+                <button id="btnSetCap" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs">Set Cap</button>
+              </div>
+              <p id="capLine" class="text-xs text-slate-500 mt-1">Current Cap: —</p>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500">NAV Delay (seconds)</label>
+              <div class="flex gap-2 mt-1">
+                <input id="navDelay" placeholder="Seconds" class="w-24 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-xs">
+                <button id="btnSetDelay" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs">Set Delay</button>
+              </div>
+              <p id="delayLine" class="text-xs text-slate-500 mt-1">Current: —</p>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500">Fees (BPS)</label>
+              <div class="flex gap-2 mt-1">
+                <input id="mintFee" placeholder="Mint" class="w-20 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-xs">
+                <input id="redeemFee" placeholder="Redeem" class="w-24 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-xs">
+                <button id="btnSetFees" class="px-2 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs">Update</button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500">Whitelist</label>
+              <div class="flex gap-2 mt-1">
+                <input id="wlAddr" placeholder="Address" class="flex-1 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-xs">
+                <button id="btnWhitelistOn" class="px-2 py-1.5 rounded-lg bg-emerald-900/40 text-emerald-400 text-xs border border-emerald-800">+</button>
+                <button id="btnWhitelistOff" class="px-2 py-1.5 rounded-lg bg-red-900/40 text-red-400 text-xs border border-red-800">-</button>
+              </div>
+              <p id="wlMsg" class="text-xs text-slate-500 mt-1"></p>
+            </div>
+            <div class="flex gap-2">
+              <button id="btnGuardOn" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700">Guard On</button>
+              <button id="btnGuardOff" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700">Guard Off</button>
+              <span id="guardedLine" class="text-xs text-slate-500 self-center">—</span>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="bg-red-900/10 rounded-xl p-4 border border-red-900/30">
+              <h3 class="text-sm font-bold text-red-300 mb-2">Emergency Controls</h3>
+              <div class="flex gap-2">
+                <button id="btnPause" class="flex-1 py-2 rounded-xl bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-800 text-xs font-bold">PAUSE</button>
+                <button id="btnUnpause" class="flex-1 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-800 text-xs font-bold">UNPAUSE</button>
+              </div>
+            </div>
+            <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+              <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('rescueBody').classList.toggle('hidden')">
+                <h3 class="text-sm font-bold text-white">Token Rescue</h3>
+                <span class="text-xs text-slate-500">▼</span>
+              </div>
+              <div id="rescueBody" class="hidden mt-3 space-y-2">
+                <p class="text-xs text-slate-500">Status: <span id="rescueStatus" class="font-mono text-slate-400">No active rescue</span></p>
+                <div id="rescueForm" class="space-y-2">
+                  <input id="resToken" placeholder="Token Address (0x...)" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
+                  <div class="flex gap-2">
+                    <input id="resAmt" placeholder="Amount (Wei)" class="flex-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
+                    <input id="resTo" placeholder="Recipient (0x...)" class="flex-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
+                  </div>
+                  <button id="btnAnnounceRescue" class="w-full py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-semibold">Announce Rescue</button>
+                </div>
+                <button id="btnExecuteRescue" disabled class="hidden w-full py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold">EXECUTE PENDING RESCUE</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-      <div class="text-slate-300">USDC (Arbitrum)</div>
-      <div class="font-mono text-slate-200">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</div>
+    <!-- About -->
+    <div class="glass rounded-2xl overflow-hidden">
+      <button onclick="toggleAbout()" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition">
+        <h2 class="text-base font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          About MTYLD
+        </h2>
+        <svg id="about-chevron" class="w-5 h-5 text-slate-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div id="about-body" style="display:none" class="px-6 pb-6 space-y-3">
+        <details class="group bg-slate-900/60 border border-slate-800 rounded-xl"><summary class="flex items-center justify-between p-4 cursor-pointer"><span class="text-sky-300 font-semibold text-sm">How does the yield work?</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg></summary><div class="px-4 pb-4 text-slate-400 text-sm">Mechanical Temp generates revenue from real-world HVAC contracts. A portion is converted to USDC and injected into the vault, increasing the NAV of every MTYLD token.</div></details>
+        <details class="group bg-slate-900/60 border border-slate-800 rounded-xl"><summary class="flex items-center justify-between p-4 cursor-pointer"><span class="text-sky-300 font-semibold text-sm">Is my deposit locked?</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg></summary><div class="px-4 pb-4 text-slate-400 text-sm">No. You can redeem MTYLD for USDC at any time, unless the vault is in Epoch Close mode.</div></details>
+        <details class="group bg-slate-900/60 border border-slate-800 rounded-xl"><summary class="flex items-center justify-between p-4 cursor-pointer"><span class="text-sky-300 font-semibold text-sm">What is the First Mint tax?</span><svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg></summary><div class="px-4 pb-4 text-slate-400 text-sm">To protect against inflation attacks, the first depositor burns a tiny amount of shares (1000 wei, less than $0.000001). Standard security practice.</div></details>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+      <p class="text-slate-600 text-xs font-mono">0xdFD1...795b4 • Arbitrum One</p>
+      <p class="text-slate-600 text-xs">© <span id="yr"></span> Mechanical Temp</p>
     </div>
 
   </main>
 
-  <section id="aboutMTYLD" class="bg-slate-950 border-t border-slate-800 py-12 px-4">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center mb-8">
-        <h2 class="text-3xl sm:text-4xl font-black text-white">About the MTYLD Vault</h2>
-        <p class="mt-2 text-sky-300 text-lg">Real yield, powered by Mechanical Temp HVAC revenue</p>
-      </div>
-      <div class="max-w-3xl mx-auto space-y-4">
-        <details class="group bg-slate-900 border border-slate-800 rounded-2xl">
-          <summary class="flex items-center justify-between p-4 cursor-pointer">
-            <h3 class="font-semibold text-slate-200">How does the yield work?</h3>
-            <span class="text-sky-500 group-open:rotate-180 transition-transform">▼</span>
-          </summary>
-          <div class="px-4 pb-4 text-slate-400">
-            Mechanical Temp generates revenue from real-world HVAC contracts. A portion of this revenue is converted to USDC and injected into the vault. This increases the <b>Net Asset Value (NAV)</b> of the vault, meaning every MTYLD token is worth more USDC.
-          </div>
-        </details>
-        <details class="group bg-slate-900 border border-slate-800 rounded-2xl">
-          <summary class="flex items-center justify-between p-4 cursor-pointer">
-            <h3 class="font-semibold text-slate-200">Is my deposit locked?</h3>
-            <span class="text-sky-500 group-open:rotate-180 transition-transform">▼</span>
-          </summary>
-          <div class="px-4 pb-4 text-slate-400">
-            No. You can redeem your MTYLD for USDC at any time, unless the vault is in "Epoch Close" mode (a brief window when revenue is being added to prevent front-running).
-          </div>
-        </details>
-        <details class="group bg-slate-900 border border-slate-800 rounded-2xl">
-          <summary class="flex items-center justify-between p-4 cursor-pointer">
-            <h3 class="font-semibold text-slate-200">What is the "First Mint" tax?</h3>
-            <span class="text-sky-500 group-open:rotate-180 transition-transform">▼</span>
-          </summary>
-          <div class="px-4 pb-4 text-slate-400">
-            To protect the protocol from "inflation attacks," the very first depositor burns a tiny amount of shares (1000 wei, less than $0.000001). This is a standard security practice.
-          </div>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <footer class="mt-10 border-t border-slate-800 bg-slate-900">
-    <div class="max-w-7xl mx-auto px-4 py-8 text-center">
-      <p class="text-slate-300">
-        Powered by <a href="https://www.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300 font-semibold">Mechanical Temp</a>
-        <span class="text-slate-500">•</span> Southfield, MI
-      </p>
-      <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
-    </div>
-  </footer>
-
   <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
-  const aboutBtn = document.getElementById("btnAbout");
-  const aboutSection = document.querySelector("#aboutMTYLD");
-  if (aboutBtn && aboutSection) {
-    aboutBtn.addEventListener("click", () => {
-      aboutSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      aboutSection.querySelectorAll("details").forEach(d => d.open = true);
-    });
+  function toggleAbout() {
+    const body = document.getElementById('about-body');
+    const chev = document.getElementById('about-chevron');
+    const hidden = body.style.display === 'none';
+    body.style.display = hidden ? 'block' : 'none';
+    chev.style.transform = hidden ? 'rotate(180deg)' : '';
   }
 
   (async () => {
@@ -404,582 +353,156 @@
     const DISTRIBUTOR = "0x787e7354d28F40E4418D07043E04be77F00f0a13";
     const CHAIN_ID_ARBITRUM = 42161;
 
-    const VAULT_ABI = [
-      "function MAX_FEE_BPS() view returns (uint16)",
-      "function RESCUE_DELAY() view returns (uint256)",
-      "function allowance(address,address) view returns (uint256)",
-      "function balanceOf(address) view returns (uint256)",
-      "function decimals() view returns (uint8)",
-      "function epochClosing() view returns (bool)",
-      "function feeRecipient() view returns (address)",
-      "function feeRoundUp() view returns (bool)",
-      "function guardedLaunch() view returns (bool)",
-      "function isWhitelistedMinter(address) view returns (bool)",
-      "function maxSupply() view returns (uint256)",
-      "function mintFeeBps() view returns (uint16)",
-      "function name() view returns (string)",
-      "function navDelaySec() view returns (uint256)",
-      "function owner() view returns (address)",
-      "function paused() view returns (bool)",
-      "function pendingReleaseAt() view returns (uint64)",
-      "function pendingReleaseReady() view returns (bool)",
-      "function pendingRevenueUSDC() view returns (uint256)",
-      "function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)",
-      "function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)",
-      "function pricePerToken() view returns (uint256)",
-      "function redeemFeeBps() view returns (uint16)",
-      "function rescuable(address) view returns (bool)",
-      "function rescueReq() view returns (address token, uint256 amount, address to, uint64 eta)",
-      "function stable() view returns (address)",
-      "function stableDecimals() view returns (uint8)",
-      "function symbol() view returns (string)",
-      "function totalSupply() view returns (uint256)",
-      "function treasury18() view returns (uint256)",
-      "function treasuryActiveUSDC() view returns (uint256)",
-      "function treasuryUSDC() view returns (uint256)",
-      "function approve(address s, uint256 a) returns (bool)",
-      "function announceRescue(address token, uint256 amount, address to)",
-      "function applyPendingRevenue()",
-      "function beginEpochClose()",
-      "function endEpochClose()",
-      "function executeRescue()",
-      "function injectRevenue(uint256 usdcAmount)",
-      "function mint(uint256 usdcAmount, uint256 minMtyldOut)",
-      "function pause()",
-      "function redeem(uint256 mtyldAmount, uint256 minUsdcOut)",
-      "function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)",
-      "function setGuardedLaunch(bool on)",
-      "function setMaxSupply(uint256 cap)",
-      "function setNavDelay(uint256 seconds_)",
-      "function setWhitelist(address user, bool allowed)",
-      "function transfer(address to, uint256 a) returns (bool)",
-      "function transferFrom(address f, address t, uint256 a) returns (bool)",
-      "function transferOwnership(address n)",
-      "function unpause()",
-      "function whitelistRescuable(address token, bool allowed)"
-    ];
+    const VAULT_ABI = ["function MAX_FEE_BPS() view returns (uint16)","function RESCUE_DELAY() view returns (uint256)","function allowance(address,address) view returns (uint256)","function balanceOf(address) view returns (uint256)","function decimals() view returns (uint8)","function epochClosing() view returns (bool)","function feeRecipient() view returns (address)","function feeRoundUp() view returns (bool)","function guardedLaunch() view returns (bool)","function isWhitelistedMinter(address) view returns (bool)","function maxSupply() view returns (uint256)","function mintFeeBps() view returns (uint16)","function name() view returns (string)","function navDelaySec() view returns (uint256)","function owner() view returns (address)","function paused() view returns (bool)","function pendingReleaseAt() view returns (uint64)","function pendingReleaseReady() view returns (bool)","function pendingRevenueUSDC() view returns (uint256)","function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)","function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)","function pricePerToken() view returns (uint256)","function redeemFeeBps() view returns (uint16)","function rescuable(address) view returns (bool)","function rescueReq() view returns (address token, uint256 amount, address to, uint64 eta)","function stable() view returns (address)","function stableDecimals() view returns (uint8)","function symbol() view returns (string)","function totalSupply() view returns (uint256)","function treasury18() view returns (uint256)","function treasuryActiveUSDC() view returns (uint256)","function treasuryUSDC() view returns (uint256)","function approve(address s, uint256 a) returns (bool)","function announceRescue(address token, uint256 amount, address to)","function applyPendingRevenue()","function beginEpochClose()","function endEpochClose()","function executeRescue()","function injectRevenue(uint256 usdcAmount)","function mint(uint256 usdcAmount, uint256 minMtyldOut)","function pause()","function redeem(uint256 mtyldAmount, uint256 minUsdcOut)","function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)","function setGuardedLaunch(bool on)","function setMaxSupply(uint256 cap)","function setNavDelay(uint256 seconds_)","function setWhitelist(address user, bool allowed)","function transfer(address to, uint256 a) returns (bool)","function transferFrom(address f, address t, uint256 a) returns (bool)","function transferOwnership(address n)","function unpause()","function whitelistRescuable(address token, bool allowed)"];
+    const DIST_ABI = ["function distribute(address[] recipients, uint256[] amounts, string note)","function distributeProportional(address[] recipients, uint256[] weights, uint256 totalAmount, string note)","function distributionCount() view returns (uint256)","function getDistribution(uint256 id) view returns (uint256 timestamp, uint256 totalAmount, uint256 recipientCount, string note)","function getAllDistributions() view returns (tuple(uint256 timestamp, uint256 totalAmount, uint256 recipientCount, string note)[])"];
+    const ERC20_ABI = ["function allowance(address owner, address spender) view returns (uint256)","function approve(address spender, uint256 amount) returns (bool)","function balanceOf(address account) view returns (uint256)"];
 
-    const DIST_ABI = [
-      "function distribute(address[] recipients, uint256[] amounts, string note)",
-      "function distributeProportional(address[] recipients, uint256[] weights, uint256 totalAmount, string note)",
-      "function distributionCount() view returns (uint256)",
-      "function getDistribution(uint256 id) view returns (uint256 timestamp, uint256 totalAmount, uint256 recipientCount, string note)",
-      "function getAllDistributions() view returns (tuple(uint256 timestamp, uint256 totalAmount, uint256 recipientCount, string note)[])"
-    ];
+    const el = id => document.getElementById(id);
+    const p6  = s => ethers.parseUnits(String(s||"0"), 6);
+    const p18 = s => ethers.parseUnits(String(s||"0"), 18);
+    const NAV_KEY = "mtyld_nav_history_" + VAULT;
+    let navHistory=[], navChart, provider, signer, acct, vault, usdc, dist, vaultOwner;
 
-    const ERC20_ABI = [
-      "function allowance(address owner, address spender) view returns (uint256)",
-      "function approve(address spender, uint256 amount) returns (bool)",
-      "function balanceOf(address account) view returns (uint256)",
-      "function decimals() view returns (uint8)",
-      "function symbol() view returns (string)"
-    ];
-
-    const el = (id) => document.getElementById(id);
-    const addrEl = el("addr"), priceEl = el("price"), actEl = el("treasuryActive"), pendEl = el("pending"), cdEl = el("countdown");
-    const tinyWarn = el("tinyWarn");
-    const userPanel = el("userPanel"), userBalEl = el("userBal"), userValEl = el("userVal"), userShareEl = el("userShare");
-    const mintAmt = el("mintAmount"), mintSlip = el("mintSlippage"), mintPrev = el("mintPreview"), mintBtn = el("btnMint");
-    const redAmt = el("redeemAmount"), redSlip = el("redeemSlippage"), redPrev = el("redeemPreview"), redBtn = el("btnRedeem");
-    const ownerPanel = el("ownerPanel"), ownerLine = el("ownerLine");
-    const revAmount = el("revAmount"), revMsg = el("revMsg");
-    const btnApply = el("btnApply"), btnBeginClose = el("btnBeginClose"), btnEndClose = el("btnEndClose"), epochState = el("epochState"), pendingHint = el("pendingHint");
-    const navDelay = el("navDelay"), delayLine = el("delayLine");
-    const mintFee = el("mintFee"), redeemFee = el("redeemFee"), btnSetFees = el("btnSetFees"), wlAddr = el("wlAddr"), wlMsg = el("wlMsg");
-    const btnGuardOn = el("btnGuardOn"), btnGuardOff = el("btnGuardOff"), guardedLine = el("guardedLine");
-    const btnMintMax = el("btnMintMax"), btnRedeemMax = el("btnRedeemMax");
-    const pausedState = el("pausedState"), btnPause = el("btnPause"), btnUnpause = el("btnUnpause");
-    const maxSupplyIn = el("maxSupplyIn"), btnSetCap = el("btnSetCap"), capLine = el("capLine");
-    const rescueStatus = el("rescueStatus"), btnAnnounceRescue = el("btnAnnounceRescue"), btnExecuteRescue = el("btnExecuteRescue");
-    const resToken = el("resToken"), resAmt = el("resAmt"), resTo = el("resTo"), rescueForm = el("rescueForm");
-    const batchInput = el("batchInput"), btnSendBatch = el("btnSendBatch"), batchStats = el("batchStats"), batchLog = el("batchLog");
-    const distInput = el("distInput"), distStats = el("distStats"), distLog = el("distLog"), distHistory = el("distHistory");
-
-    const f6  = (x) => ethers.formatUnits(x, 6);
-    const f18 = (x) => ethers.formatUnits(x, 18);
-    const p6  = (s) => ethers.parseUnits(String(s||"0"), 6);
-    const p18 = (s) => ethers.parseUnits(String(s||"0"), 18);
-
-    const NAV_HISTORY_KEY = "mtyld_nav_history_" + VAULT;
-    let navHistory = []; 
-    let navChart;
-
-    function loadHistory(){ try{ navHistory = JSON.parse(localStorage.getItem(NAV_HISTORY_KEY) || "[]"); }catch{ navHistory = []; } }
-    function saveHistory(){ try{ localStorage.setItem(NAV_HISTORY_KEY, JSON.stringify(navHistory)); }catch{} }
-    function pruneHistory(){ const cutoff = Math.floor(Date.now()/1000) - 370*24*3600; navHistory = navHistory.filter(pt => pt.t >= cutoff); }
-    function recordNavSample(price1e18){
-      const val = +ethers.formatUnits(price1e18, 18);
-      if (!isFinite(val) || val <= 0 || val > 10000) return;
-      const now = Math.floor(Date.now()/1000);
-      const last = navHistory[navHistory.length-1];
-      if (!last || now - last.t >= 300 || last.p !== val) {
-        navHistory.push({ t: now, p: val });
-        pruneHistory(); saveHistory(); drawNavChart();
-      }
+    function loadH(){ try{ navHistory=JSON.parse(localStorage.getItem(NAV_KEY)||"[]"); }catch{ navHistory=[]; } }
+    function saveH(){ try{ localStorage.setItem(NAV_KEY,JSON.stringify(navHistory)); }catch{} }
+    function pruneH(){ const c=Math.floor(Date.now()/1000)-370*24*3600; navHistory=navHistory.filter(p=>p.t>=c); }
+    function recordNav(p1e18){ const v=+ethers.formatUnits(p1e18,18); if(!isFinite(v)||v<=0||v>10000)return; const now=Math.floor(Date.now()/1000),last=navHistory[navHistory.length-1]; if(!last||now-last.t>=300||last.p!==v){ navHistory.push({t:now,p:v}); pruneH(); saveH(); drawChart(); } }
+    function lookupAgo(s){ const t=Math.floor(Date.now()/1000)-s; for(let i=navHistory.length-1;i>=0;i--) if(navHistory[i].t<=t)return navHistory[i].p; return navHistory[0]?.p??null; }
+    function pct(c,p){ if(!c||!p||p===0)return null; return ((c-p)/p)*100; }
+    function apy(c,p,s){ if(!c||!p||p===0)return null; return (Math.pow(c/p,1/(s/(365*24*3600)))-1)*100; }
+    function drawChart(){
+      const c=document.getElementById("navChart"); if(!c)return;
+      const labels=navHistory.map(p=>new Date(p.t*1000).toLocaleString()),data=navHistory.map(p=>p.p);
+      if(!navChart){ navChart=new Chart(c.getContext("2d"),{type:'line',data:{labels,datasets:[{label:"NAV",data,tension:0.25,fill:true,pointRadius:0,borderWidth:2,borderColor:'#0ea5e9',backgroundColor:'rgba(14,165,233,0.06)'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(71,85,105,0.2)'},ticks:{color:'#475569',font:{size:10}}},y:{beginAtZero:false,grid:{color:'rgba(71,85,105,0.2)'},ticks:{color:'#475569',callback:v=>'$'+v.toFixed(4)}}}}}); }
+      else{ navChart.data.labels=labels; navChart.data.datasets[0].data=data; navChart.update(); }
     }
-    function lookupPriceAgo(secondsBack){
-      const target = Math.floor(Date.now()/1000) - secondsBack;
-      if (!navHistory.length) return null;
-      for (let i=navHistory.length-1;i>=0;i--) if (navHistory[i].t <= target) return navHistory[i].p;
-      return navHistory[0]?.p ?? null;
-    }
-    function pctChange(curr, prev){ if (!curr || !prev || prev===0) return null; return ((curr - prev)/prev)*100; }
-    function annualizedFromWindow(curr, past, seconds){
-      if (!curr || !past || past===0) return null;
-      const ratio = curr/past, years = seconds / (365*24*3600);
-      return (Math.pow(ratio, 1/years) - 1) * 100;
-    }
-    function drawNavChart(){
-      const c = document.getElementById("navChart"); if (!c) return;
-      const labels = navHistory.map(p => new Date(p.t*1000).toLocaleString());
-      const data = navHistory.map(p => p.p);
-      if (!navChart){
-        navChart = new Chart(c.getContext("2d"), {
-          type: 'line',
-          data: { labels, datasets: [{ label: "NAV ($ per MTYLD)", data, tension: 0.25, fill: false, pointRadius: 0, borderWidth: 2 }]},
-          options: {
-            responsive: true,
-            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false }},
-            scales: {
-              x: { grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { color: '#94a3b8' } },
-              y: { beginAtZero: false, grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { color: '#94a3b8' } }
-            }
-          }
-        });
-      } else {
-        navChart.data.labels = labels;
-        navChart.data.datasets[0].data = data;
-        navChart.update();
-      }
-    }
-    function updatePerformanceLines(currentPrice1e18){
-      const curr = +ethers.formatUnits(currentPrice1e18, 18);
-      const p24h = lookupPriceAgo(24*3600);
-      const p7d  = lookupPriceAgo(7*24*3600);
-      const p30d = lookupPriceAgo(30*24*3600);
-      const fmt = v => (v===null ? "--" : ((v>=0?"+":"") + v.toFixed(2) + "%"));
-      const c24 = p24h ? pctChange(curr, p24h) : null;
-      const c7  = p7d  ? pctChange(curr, p7d)  : null;
-      const c30 = p30d ? pctChange(curr, p30d) : null;
-      const elChange = el("changeLine");
-      if (elChange) elChange.textContent = "24h: " + fmt(c24) + "  •  7d: " + fmt(c7) + "  •  30d: " + fmt(c30);
-      let apy = null;
-      if (p30d) apy = annualizedFromWindow(curr, p30d, 30*24*3600);
-      else if (p7d) apy = annualizedFromWindow(curr, p7d, 7*24*3600);
-      else if (p24h) apy = annualizedFromWindow(curr, p24h, 24*3600);
-      const elApy = el("apyLine");
-      if (elApy) elApy.textContent = "APY (30d annualized): " + (apy===null ? "--" : apy.toFixed(2) + "%");
+    function updatePerf(p1e18){
+      const curr=+ethers.formatUnits(p1e18,18),p24=lookupAgo(86400),p7=lookupAgo(7*86400),p30=lookupAgo(30*86400);
+      const fmt=v=>v===null?"--":((v>=0?"+":"")+v.toFixed(2)+"%");
+      el("changeLine").textContent="24h: "+fmt(p24?pct(curr,p24):null)+"  •  7d: "+fmt(p7?pct(curr,p7):null)+"  •  30d: "+fmt(p30?pct(curr,p30):null);
+      const a=p30?apy(curr,p30,30*86400):p7?apy(curr,p7,7*86400):p24?apy(curr,p24,86400):null;
+      el("apyLine").textContent="APY (30d annualized): "+(a===null?"--":a.toFixed(2)+"%");
     }
 
-    let provider, signer, acct, vault, usdc, dist, vaultOwner;
-
-    const trunc = (a) => a ? a.slice(0,6)+"..."+a.slice(-4) : "--";
-    const shortErr = (e) => {
-      const s = (e && (e.info?.error?.message || e.shortMessage || e.message)) || String(e);
-      return "Error: " + s.replace(/execution reverted: /i,'').slice(0,180);
-    };
-    function humanize(s){
-      const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
-      return (h?h+"h ":"") + (m?m+"m ":"") + sec+"s";
-    }
+    const trunc=a=>a?a.slice(0,6)+"..."+a.slice(-4):"--";
+    const shortErr=e=>{ const s=(e&&(e.info?.error?.message||e.shortMessage||e.message))||String(e); return "Error: "+s.replace(/execution reverted: /i,'').slice(0,180); };
+    function humanize(s){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60; return (h?h+"h ":"")+(m?m+"m ":"")+sec+"s"; }
 
     async function ensureProvider(){
-      if (!window.ethereum) { alert("No wallet found. Please install MetaMask."); throw new Error("no wallet"); }
-      provider = new ethers.BrowserProvider(window.ethereum);
-      const net = await provider.getNetwork();
-      if (Number(net.chainId) !== CHAIN_ID_ARBITRUM) {
-        try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xa4b1' }] }); }
-        catch (e) { alert("Please switch to Arbitrum One."); throw e; }
-      }
-      signer = await provider.getSigner();
-      acct = await signer.getAddress();
-      vault = new ethers.Contract(VAULT, VAULT_ABI, signer);
-      usdc  = new ethers.Contract(USDC, ERC20_ABI, signer);
-      dist  = new ethers.Contract(DISTRIBUTOR, DIST_ABI, signer);
-      addrEl.textContent = trunc(acct);
-      vaultOwner = await vault.owner();
-      ownerLine.textContent = trunc(vaultOwner);
-      ownerPanel.classList.toggle("hidden", vaultOwner.toLowerCase() !== acct.toLowerCase());
-      userPanel.classList.remove("hidden");
+      if(!window.ethereum){alert("No wallet found.");throw new Error("no wallet");}
+      provider=new ethers.BrowserProvider(window.ethereum);
+      const net=await provider.getNetwork();
+      if(Number(net.chainId)!==CHAIN_ID_ARBITRUM){ try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0xa4b1'}]});}catch(e){alert("Please switch to Arbitrum One.");throw e;} }
+      signer=await provider.getSigner(); acct=await signer.getAddress();
+      vault=new ethers.Contract(VAULT,VAULT_ABI,signer);
+      usdc=new ethers.Contract(USDC,ERC20_ABI,signer);
+      dist=new ethers.Contract(DISTRIBUTOR,DIST_ABI,signer);
+      el("addr").textContent=trunc(acct);
+      const btn=el("btnConnect"); btn.textContent=acct.slice(0,6)+"..."+acct.slice(-4); btn.className="ml-2 px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold";
+      vaultOwner=await vault.owner();
+      el("ownerLine").textContent=trunc(vaultOwner);
+      el("ownerPanel").classList.toggle("hidden",vaultOwner.toLowerCase()!==acct.toLowerCase());
+      el("userPanel").classList.remove("hidden");
     }
 
     async function loadOwnerState(){
-      if (!vault) return;
-      try {
-        const [mf, rf, gl, delay, closing, pending, relAt, isPaused, cap, res] = await Promise.all([
-          vault.mintFeeBps(), vault.redeemFeeBps(),
-          vault.guardedLaunch(), vault.navDelaySec(), vault.epochClosing(),
-          vault.pendingRevenueUSDC(), vault.pendingReleaseAt(),
-          vault.paused(), vault.maxSupply(), vault.rescueReq()
-        ]);
-        mintFee.value = Number(mf); redeemFee.value = Number(rf);
-        guardedLine.textContent = gl ? "Guarded: ON" : "Guarded: OFF";
-        delayLine.textContent = "Current: " + Number(delay) + "s";
-        epochState.textContent = "Epoch: " + (closing ? "Closing" : "Open");
-        pausedState.style.display = isPaused ? "block" : "none";
-        btnPause.style.display = isPaused ? "none" : "block";
-        btnUnpause.style.display = isPaused ? "block" : "none";
-        const now = Math.floor(Date.now()/1000);
-        const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
-        const ready = secs === 0 && BigInt(pending) > 0n;
-        pendingHint.textContent = ready ? "Ready to apply" : (BigInt(pending)>0n ? "Waiting..." : "No pending revenue");
-        capLine.textContent = "Current Cap: " + ethers.formatUnits(cap, 18);
-        const rAmt = res[1];
-        const rEta = Number(res[3]);
-        if (rAmt > 0n) {
-           rescueForm.classList.add("hidden");
-           btnExecuteRescue.classList.remove("hidden");
-           const wait = rEta - now;
-           if (wait > 0) {
-              rescueStatus.textContent = "Pending: " + humanize(wait) + " wait.";
-              btnExecuteRescue.disabled = true;
-           } else {
-              rescueStatus.textContent = "Rescue Ready!";
-              btnExecuteRescue.disabled = false;
-           }
-        } else {
-           rescueForm.classList.remove("hidden");
-           btnExecuteRescue.classList.add("hidden");
-           rescueStatus.textContent = "No active rescue.";
-        }
-      } catch (e) { console.error("Owner load err", e); }
+      if(!vault)return;
+      try{
+        const [mf,rf,gl,delay,closing,pending,relAt,isPaused,cap,res]=await Promise.all([vault.mintFeeBps(),vault.redeemFeeBps(),vault.guardedLaunch(),vault.navDelaySec(),vault.epochClosing(),vault.pendingRevenueUSDC(),vault.pendingReleaseAt(),vault.paused(),vault.maxSupply(),vault.rescueReq()]);
+        el("mintFee").value=Number(mf); el("redeemFee").value=Number(rf);
+        el("guardedLine").textContent=gl?"Guarded: ON":"Guarded: OFF";
+        el("delayLine").textContent="Current: "+Number(delay)+"s";
+        el("epochState").textContent="Epoch: "+(closing?"Closing":"Open");
+        el("epochStateLine").textContent=closing?"Epoch closing":"Epoch open";
+        el("pausedState").style.display=isPaused?"block":"none";
+        const now=Math.floor(Date.now()/1000),secs=Number(relAt)>now?Number(relAt)-now:0;
+        el("pendingHint").textContent=(secs===0&&BigInt(pending)>0n)?"Ready to apply":(BigInt(pending)>0n?"Waiting...":"No pending revenue");
+        el("capLine").textContent="Current Cap: "+ethers.formatUnits(cap,18);
+        const rAmt=res[1],rEta=Number(res[3]);
+        if(rAmt>0n){ el("rescueForm").classList.add("hidden"); el("btnExecuteRescue").classList.remove("hidden"); const wait=rEta-now; el("rescueStatus").textContent=wait>0?"Pending: "+humanize(wait)+" wait.":"Rescue Ready!"; el("btnExecuteRescue").disabled=wait>0; }
+        else{ el("rescueForm").classList.remove("hidden"); el("btnExecuteRescue").classList.add("hidden"); el("rescueStatus").textContent="No active rescue."; }
+      }catch(e){console.error(e);}
     }
 
     async function loadUserPanel(price){
-      if (!vault || !acct) return;
-      try{
-        const [bal, ts] = await Promise.all([ vault.balanceOf(acct), vault.totalSupply() ]);
-        const bal18 = +ethers.formatUnits(bal, 18);
-        userBalEl.textContent = bal18.toLocaleString(undefined,{maximumFractionDigits:6}) + " MTYLD";
-        const navUsd = +ethers.formatUnits(price, 18);
-        userValEl.textContent = "$" + (bal18 * navUsd).toFixed(2);
-        const supply = +ethers.formatUnits(ts, 18);
-        const share = supply > 0 ? (bal18 / supply) * 100 : 0;
-        userShareEl.textContent = (isFinite(share) ? share.toFixed(4) : "0.0000") + "%";
-      } catch(e){ console.error(e); }
+      if(!vault||!acct)return;
+      try{ const [bal,ts]=await Promise.all([vault.balanceOf(acct),vault.totalSupply()]); const b=+ethers.formatUnits(bal,18); el("userBal").textContent=b.toLocaleString(undefined,{maximumFractionDigits:6})+" MTYLD"; el("userVal").textContent="$"+(b*(+ethers.formatUnits(price,18))).toFixed(2); const s=+ethers.formatUnits(ts,18); el("userShare").textContent=(s>0?(b/s*100).toFixed(4):"0.0000")+"%"; }catch(e){console.error(e);}
     }
 
     async function refresh(){
       try{
-        if (!provider){
-          provider = window.ethereum ? new ethers.BrowserProvider(window.ethereum)
-                                     : new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
-        }
-        const readVault = new ethers.Contract(VAULT, VAULT_ABI, provider);
-        const [price, active, pending, relAt] = await Promise.all([
-          readVault.pricePerToken(),
-          readVault.treasuryActiveUSDC(),
-          readVault.pendingRevenueUSDC(),
-          readVault.pendingReleaseAt()
-        ]);
-        const priceUsd = +ethers.formatUnits(price, 18);
-        priceEl.textContent = "$" + priceUsd.toFixed(6);
-        const activeUsd = +ethers.formatUnits(active, 6);
-        const pendingUsd = +ethers.formatUnits(pending, 6);
-        actEl.textContent  = "$" + activeUsd.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits:6});
-        pendEl.textContent = "$" + pendingUsd.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits:6});
-        tinyWarn.style.display = (activeUsd > 0 && activeUsd < 0.001) ? '' : 'none';
-        const now = Math.floor(Date.now()/1000);
-        const secs = Number(relAt) > now ? (Number(relAt)-now) : 0;
-        cdEl.textContent = secs ? humanize(secs) : (BigInt(pending)>0n ? "Queued" : "--");
-        if (vault && signer && acct) { await loadUserPanel(price); }
-        if (vault && vaultOwner && signer && vaultOwner.toLowerCase() === (await signer.getAddress()).toLowerCase()) {
-          await loadOwnerState();
-        }
-        recordNavSample(price);
-        updatePerformanceLines(price);
-      }catch(e){ console.error(e); }
+        if(!provider){ provider=window.ethereum?new ethers.BrowserProvider(window.ethereum):new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc"); }
+        const rv=new ethers.Contract(VAULT,VAULT_ABI,provider);
+        const [price,active,pending,relAt]=await Promise.all([rv.pricePerToken(),rv.treasuryActiveUSDC(),rv.pendingRevenueUSDC(),rv.pendingReleaseAt()]);
+        const pUsd=+ethers.formatUnits(price,18);
+        el("price").textContent="$"+pUsd.toFixed(6);
+        const aUsd=+ethers.formatUnits(active,6),pnd=+ethers.formatUnits(pending,6);
+        el("treasuryActive").textContent="$"+aUsd.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:6});
+        el("pending").textContent="$"+pnd.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:6});
+        el("tinyWarn").style.display=(aUsd>0&&aUsd<0.001)?'':'none';
+        const now=Math.floor(Date.now()/1000),secs=Number(relAt)>now?Number(relAt)-now:0;
+        el("countdown").textContent=secs?humanize(secs):(BigInt(pending)>0n?"Queued":"—");
+        if(vault&&signer&&acct){await loadUserPanel(price);}
+        if(vault&&vaultOwner&&signer&&vaultOwner.toLowerCase()===(await signer.getAddress()).toLowerCase()){await loadOwnerState();}
+        recordNav(price); updatePerf(price);
+      }catch(e){console.error(e);}
     }
 
-    // ===== Mint/Redeem =====
-    el("btnPreviewMint").onclick = async () => {
-      try {
-        if (!provider) await ensureProvider();
-        const usdcAmt = p6(mintAmt.value);
-        if (usdcAmt <= 0n) { mintPrev.textContent = "Enter amount"; return; }
-        const [mtyldOut, price] = await vault.previewMint(usdcAmt);
-        mintPrev.textContent = "Est. MTYLD: " + ethers.formatUnits(mtyldOut,18) + " @ $" + (+ethers.formatUnits(price,18)).toFixed(6);
-        mintBtn.disabled = false;
-      } catch (e) { mintPrev.textContent = shortErr(e); }
+    el("btnPreviewMint").onclick=async()=>{ try{if(!provider)await ensureProvider();const u=p6(el("mintAmount").value);if(u<=0n){el("mintPreview").textContent="Enter amount";return;}const [out,price]=await vault.previewMint(u);el("mintPreview").textContent="Est. MTYLD: "+ethers.formatUnits(out,18)+" @ $"+(+ethers.formatUnits(price,18)).toFixed(6);el("btnMint").disabled=false;}catch(e){el("mintPreview").textContent=shortErr(e);} };
+    el("btnMint").onclick=async()=>{ try{el("btnMint").disabled=true;if(!provider)await ensureProvider();const u=p6(el("mintAmount").value);const sb=Math.round((+el("mintSlippage").value||0.5)*100);const [out]=await vault.previewMint(u);const mo=out-(out*BigInt(sb)/10000n);const al=await usdc.allowance(acct,VAULT);if(al<u){const ta=await usdc.approve(VAULT,u);await ta.wait();}const tx=await vault.mint(u,mo);await tx.wait();el("mintPreview").textContent="Minted!";await refresh();}catch(e){el("mintPreview").textContent=shortErr(e);}finally{el("btnMint").disabled=false;} };
+    el("btnPreviewRedeem").onclick=async()=>{ try{if(!provider)await ensureProvider();const m=p18(el("redeemAmount").value);if(m<=0n){el("redeemPreview").textContent="Enter amount";return;}const [out,price]=await vault.previewRedeem(m);el("redeemPreview").textContent="Est. USDC: "+ethers.formatUnits(out,6)+" @ $"+(+ethers.formatUnits(price,18)).toFixed(6);el("btnRedeem").disabled=false;}catch(e){el("redeemPreview").textContent=shortErr(e);} };
+    el("btnRedeem").onclick=async()=>{ try{el("btnRedeem").disabled=true;if(!provider)await ensureProvider();const m=p18(el("redeemAmount").value);const sb=Math.round((+el("redeemSlippage").value||0.5)*100);const [out]=await vault.previewRedeem(m);const mu=out-(out*BigInt(sb)/10000n);const tx=await vault.redeem(m,mu);await tx.wait();el("redeemPreview").textContent="Redeemed!";await refresh();}catch(e){el("redeemPreview").textContent=shortErr(e);}finally{el("btnRedeem").disabled=false;} };
+    el("btnMintMax").onclick=async()=>{ try{if(!provider)await ensureProvider();const b=await usdc.balanceOf(acct);el("mintAmount").value=ethers.formatUnits(b,6);}catch(e){} };
+    el("btnRedeemMax").onclick=async()=>{ try{if(!provider)await ensureProvider();const b=await vault.balanceOf(acct);el("redeemAmount").value=ethers.formatUnits(b,18);}catch(e){} };
+    el("btnQueueRev").onclick=async()=>{ try{el("revMsg").textContent="";if(!provider)await ensureProvider();const a=p6(el("revAmount").value);if(a<=0n){el("revMsg").textContent="Enter amount";return;}const al=await usdc.allowance(acct,VAULT);if(al<a){const ta=await usdc.approve(VAULT,a);await ta.wait();}const tx=await vault.injectRevenue(a);await tx.wait();el("revMsg").textContent="Queued!";await refresh();}catch(e){el("revMsg").textContent=shortErr(e);} };
+    el("btnApply").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.applyPendingRevenue()).wait();el("pendingHint").textContent="Applied!";await refresh();}catch(e){el("pendingHint").textContent=shortErr(e);} };
+    el("btnBeginClose").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.beginEpochClose()).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnEndClose").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.endEpochClose()).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnSetDelay").onclick=async()=>{ try{if(!provider)await ensureProvider();const s=Number(el("navDelay").value);if(!(s>0)){alert("Invalid");return;}await(await vault.setNavDelay(s)).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnSetFees").onclick=async()=>{ try{if(!provider)await ensureProvider();const m=Number(el("mintFee").value),r=Number(el("redeemFee").value);const rec=await vault.feeRecipient();const ru=await vault.feeRoundUp();await(await vault.setFees(m,r,rec,ru)).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnGuardOn").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.setGuardedLaunch(true)).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnGuardOff").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.setGuardedLaunch(false)).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnWhitelistOn").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.setWhitelist(el("wlAddr").value,true)).wait();el("wlMsg").textContent="Added";}catch(e){el("wlMsg").textContent=shortErr(e);} };
+    el("btnWhitelistOff").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.setWhitelist(el("wlAddr").value,false)).wait();el("wlMsg").textContent="Removed";}catch(e){el("wlMsg").textContent=shortErr(e);} };
+    el("btnSetCap").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.setMaxSupply(p18(el("maxSupplyIn").value))).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnPause").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.pause()).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnUnpause").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.unpause()).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnAnnounceRescue").onclick=async()=>{ try{if(!provider)await ensureProvider();const t=el("resToken").value.trim(),r=el("resTo").value.trim();if(!ethers.isAddress(t)||!ethers.isAddress(r))return alert("Invalid addresses");await(await vault.announceRescue(t,BigInt(el("resAmt").value.trim()),r)).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnExecuteRescue").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.executeRescue()).wait();await refresh();}catch(e){alert(shortErr(e));} };
+
+    el("batchInput").addEventListener("input",()=>{ const lines=el("batchInput").value.split(/\r?\n/);let c=0,t=0n;for(const l of lines){const p=l.split(",");if(p.length>=2&&ethers.isAddress(p[0].trim())&&!isNaN(p[1].trim())){c++;try{t+=ethers.parseUnits(p[1].trim(),18);}catch{}}} el("batchStats").textContent="Wait: "+c+" | Total: "+ethers.formatUnits(t,18); });
+    el("btnSendBatch").onclick=async()=>{ try{if(!provider)await ensureProvider();const lines=el("batchInput").value.split(/\r?\n/),recipients=[];for(const l of lines){const p=l.split(",");if(p.length>=2&&ethers.isAddress(p[0].trim())){try{recipients.push({to:p[0].trim(),amount:ethers.parseUnits(p[1].trim(),18)});}catch{}}}if(!recipients.length)return alert("No valid lines");if(!confirm("Send to "+recipients.length+" wallets?"))return;el("btnSendBatch").disabled=true;el("batchLog").classList.remove("hidden");el("batchLog").textContent="Starting...\n";for(const r of recipients){try{el("batchLog").textContent+="Sending to "+r.to.slice(0,6)+"... ";await(await vault.transfer(r.to,r.amount)).wait();el("batchLog").textContent+="OK\n";}catch{el("batchLog").textContent+="FAIL\n";}}await refresh();}catch(e){alert(shortErr(e));}finally{el("btnSendBatch").disabled=false;} };
+
+    el("btnAutoPopulate").onclick=async()=>{
+      const btn=el("btnAutoPopulate"),status=el("autoPopulateStatus");
+      try{ if(!provider)await ensureProvider(); btn.textContent="Scanning..."; btn.disabled=true; status.classList.remove("hidden"); status.textContent="Reading Transfer events...";
+        const mc=new ethers.Contract(VAULT,["event Transfer(address indexed from, address indexed to, uint256 amount)"],provider);
+        const events=await mc.queryFilter(mc.filters.Transfer(),0,"latest");
+        const balances={},ZERO="0x0000000000000000000000000000000000000000";
+        for(const e of events){const from=e.args[0].toLowerCase(),to=e.args[1].toLowerCase(),amount=e.args[2];if(from!==ZERO)balances[from]=(balances[from]||0n)-amount;if(to!==ZERO)balances[to]=(balances[to]||0n)+amount;}
+        const holders=Object.entries(balances).filter(([a,b])=>b>0n&&a!==VAULT.toLowerCase()).sort((a,b)=>b[1]>a[1]?1:-1);
+        if(!holders.length){status.textContent="No holders found.";return;}
+        el("distInput").value=holders.map(([a,b])=>a+", "+parseFloat(ethers.formatUnits(b,18)).toFixed(4)).join("\n");
+        el("distInput").dispatchEvent(new Event("input"));
+        const total=holders.reduce((s,[,b])=>s+b,0n);
+        status.textContent=holders.length+" holders found. Total supply: "+parseFloat(ethers.formatUnits(total,18)).toFixed(4)+" MTYLD. Weights set to actual balances.";
+      }catch(e){status.classList.remove("hidden");status.textContent="Error: "+(e.message||String(e)).slice(0,100);}
+      finally{btn.textContent="Auto-populate holders";btn.disabled=false;}
     };
-    el("btnMint").onclick = async () => {
-      try {
-        mintBtn.disabled = true;
-        if (!provider) await ensureProvider();
-        const usdcAmt = p6(mintAmt.value);
-        const slipBps = Math.round((+mintSlip.value || 0.5) * 100);
-        const [mtyldOut] = await vault.previewMint(usdcAmt);
-        const minOut = mtyldOut - (mtyldOut * BigInt(slipBps) / 10000n);
-        const allowance = await usdc.allowance(acct, VAULT);
-        if (allowance < usdcAmt) { const txa = await usdc.approve(VAULT, usdcAmt); await txa.wait(); }
-        const tx = await vault.mint(usdcAmt, minOut); await tx.wait();
-        mintPrev.textContent = "Minted!"; await refresh();
-      } catch (e) { mintPrev.textContent = shortErr(e); }
-      finally { mintBtn.disabled = false; }
+    el("distInput").addEventListener("input",()=>{ const lines=el("distInput").value.split(/\r?\n/).filter(l=>l.trim());let c=0,w=0;for(const l of lines){const p=l.split(",");if(p.length>=2&&ethers.isAddress(p[0].trim())){c++;w+=parseFloat(p[1].trim())||0;}} el("distStats").textContent="Recipients: "+c+" | Total weight: "+w; });
+    el("btnApproveDist").onclick=async()=>{ try{if(!provider)await ensureProvider();const total=el("distTotal").value;if(!total)return alert("Enter total MTYLD amount first");el("distLog").classList.remove("hidden");el("distLog").textContent="Approving...";await(await vault.approve(DISTRIBUTOR,ethers.parseUnits(total,18))).wait();el("distLog").textContent="Approved! Now click Step 2: Distribute.";}catch(e){el("distLog").classList.remove("hidden");el("distLog").textContent=shortErr(e);} };
+    el("btnDistribute").onclick=async()=>{
+      try{if(!provider)await ensureProvider();const lines=el("distInput").value.split(/\r?\n/).filter(l=>l.trim()),recipients=[],weights=[];for(const l of lines){const p=l.split(",");if(p.length>=2&&ethers.isAddress(p[0].trim())){recipients.push(p[0].trim());weights.push(BigInt(Math.round(parseFloat(p[1].trim())*100)));}}if(!recipients.length)return alert("No valid recipients");const total=el("distTotal").value,note=el("distNote").value||"Distribution";if(!total)return alert("Enter total MTYLD amount");if(!confirm("Distribute "+total+" MTYLD to "+recipients.length+" employees?"))return;el("distLog").classList.remove("hidden");el("distLog").textContent="Sending...";const tx=await dist.distributeProportional(recipients,weights,ethers.parseUnits(total,18),note);el("distLog").textContent="Submitted, waiting...";await tx.wait();el("distLog").textContent="Complete! "+recipients.length+" employees paid as '"+note+"'.";await refresh();}catch(e){el("distLog").classList.remove("hidden");el("distLog").textContent=shortErr(e);}
     };
-    el("btnPreviewRedeem").onclick = async () => {
-      try {
-        if (!provider) await ensureProvider();
-        const mtyldAmt = p18(redAmt.value);
-        if (mtyldAmt <= 0n) { redPrev.textContent = "Enter amount"; return; }
-        const [usdcOut, price] = await vault.previewRedeem(mtyldAmt);
-        redPrev.textContent = "Est. USDC: " + ethers.formatUnits(usdcOut,6) + " @ $" + (+ethers.formatUnits(price,18)).toFixed(6);
-        redBtn.disabled = false;
-      } catch (e) { redPrev.textContent = shortErr(e); }
-    };
-    el("btnRedeem").onclick = async () => {
-      try {
-        redBtn.disabled = true;
-        if (!provider) await ensureProvider();
-        const mtyldAmt = p18(redAmt.value);
-        const slipBps = Math.round((+redSlip.value || 0.5) * 100);
-        const [usdcOut] = await vault.previewRedeem(mtyldAmt);
-        const minUsdc  = usdcOut - (usdcOut * BigInt(slipBps) / 10000n);
-        const tx = await vault.redeem(mtyldAmt, minUsdc); await tx.wait();
-        redPrev.textContent = "Redeemed!"; await refresh();
-      } catch (e) { redPrev.textContent = shortErr(e); }
-      finally { redBtn.disabled = false; }
-    };
-    btnMintMax.onclick = async () => { try{ if (!provider) await ensureProvider(); const bal = await usdc.balanceOf(acct); mintAmt.value = ethers.formatUnits(bal, 6); }catch(e){} };
-    btnRedeemMax.onclick = async () => { try{ if (!provider) await ensureProvider(); const bal = await vault.balanceOf(acct); redAmt.value = ethers.formatUnits(bal, 18); }catch(e){} };
+    el("btnLoadHistory").onclick=async()=>{ try{if(!provider)await ensureProvider();el("distHistory").textContent="Loading...";const rd=new ethers.Contract(DISTRIBUTOR,DIST_ABI,provider);const count=await rd.distributionCount();if(count===0n){el("distHistory").textContent="No distributions yet.";return;}let html="";for(let i=Number(count)-1;i>=0;i--){const [ts,amount,recips,note]=await rd.getDistribution(i);html+="#"+i+" | "+new Date(Number(ts)*1000).toLocaleDateString()+" | "+note+" | "+parseFloat(ethers.formatUnits(amount,18)).toFixed(2)+" MTYLD | "+recips+" recipients\n";}el("distHistory").textContent=html||"No distributions found.";}catch(e){el("distHistory").textContent=shortErr(e);} };
 
-    // ===== Admin =====
-    el("btnQueueRev").onclick = async () => {
-      try {
-        revMsg.textContent = ""; if (!provider) await ensureProvider();
-        const amt = p6(revAmount.value); if (amt <= 0n) { revMsg.textContent = "Enter amount"; return; }
-        const allowance = await usdc.allowance(acct, VAULT);
-        if (allowance < amt) { const txa = await usdc.approve(VAULT, amt); await txa.wait(); }
-        const tx = await vault.injectRevenue(amt); await tx.wait();
-        revMsg.textContent = "Queued!"; await refresh();
-      } catch (e) { revMsg.textContent = shortErr(e); }
-    };
-    btnApply.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.applyPendingRevenue(); await tx.wait(); pendingHint.textContent="Applied!"; await refresh(); } catch (e) { pendingHint.textContent = shortErr(e); } };
-    btnBeginClose.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.beginEpochClose(); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-    btnEndClose.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.endEpochClose(); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-    el("btnSetDelay").onclick = async () => { try { if (!provider) await ensureProvider(); const s = Number(navDelay.value); if(!(s>0)){alert("Invalid");return;} const tx = await vault.setNavDelay(s); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); }};
-    btnSetFees.onclick = async () => { try { if (!provider) await ensureProvider(); const m = Number(mintFee.value), r = Number(redeemFee.value); const recip = await vault.feeRecipient(); const ru = await vault.feeRoundUp(); const tx = await vault.setFees(m, r, recip, ru); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); }};
-    btnGuardOn.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(true); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-    btnGuardOff.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setGuardedLaunch(false); await tx.wait(); await refresh(); } catch (e) { alert(shortErr(e)); } };
-    el("btnWhitelistOn").onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setWhitelist(wlAddr.value, true); await tx.wait(); wlMsg.textContent="Added"; } catch(e){ wlMsg.textContent=shortErr(e); }};
-    el("btnWhitelistOff").onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.setWhitelist(wlAddr.value, false); await tx.wait(); wlMsg.textContent="Removed"; } catch(e){ wlMsg.textContent=shortErr(e); }};
-    btnSetCap.onclick = async () => { try { if (!provider) await ensureProvider(); const c = p18(maxSupplyIn.value); const tx = await vault.setMaxSupply(c); await tx.wait(); await refresh(); } catch(e){ alert(shortErr(e)); }};
-    btnPause.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.pause(); await tx.wait(); await refresh(); } catch(e){ alert(shortErr(e)); }};
-    btnUnpause.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.unpause(); await tx.wait(); await refresh(); } catch(e){ alert(shortErr(e)); }};
-    btnAnnounceRescue.onclick = async () => {
-      try {
-        if (!provider) await ensureProvider();
-        const t = resToken.value.trim(), a = resAmt.value.trim(), recipient = resTo.value.trim();
-        if(!ethers.isAddress(t) || !ethers.isAddress(recipient)) return alert("Invalid addresses");
-        const tx = await vault.announceRescue(t, BigInt(a), recipient);
-        await tx.wait(); await refresh();
-      } catch(e) { alert(shortErr(e)); }
-    };
-    btnExecuteRescue.onclick = async () => { try { if (!provider) await ensureProvider(); const tx = await vault.executeRescue(); await tx.wait(); await refresh(); } catch(e) { alert(shortErr(e)); } };
+    el("btnExportCSV").onclick=()=>{ const rows=[["timestamp","iso","nav_usd"]];for(const p of navHistory)rows.push([p.t,new Date(p.t*1000).toISOString(),p.p.toFixed(8)]);const csv=rows.map(r=>r.join(",")).join("\n");const blob=new Blob([csv],{type:"text/csv"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="mtyld_nav_history.csv";a.click();URL.revokeObjectURL(url); };
+    el("btnResetHistory").onclick=()=>{ if(confirm("Reset history?")){navHistory=[];saveH();drawChart();} };
+    el("btnConnect").onclick=async()=>{ try{await ensureProvider();await refresh();await loadOwnerState();}catch(e){} };
+    el("btnRefresh").onclick=async()=>{ await refresh();if(vaultOwner&&signer)await loadOwnerState(); };
 
-    // ===== Batch Sender =====
-    batchInput.addEventListener("input", () => {
-      const lines = batchInput.value.split(/\r?\n/);
-      let count = 0, total = 0n;
-      for (let l of lines) {
-        const parts = l.split(",");
-        if (parts.length >= 2 && ethers.isAddress(parts[0].trim()) && !isNaN(parts[1].trim())) {
-          count++; try { total += ethers.parseUnits(parts[1].trim(), 18); } catch {}
-        }
-      }
-      batchStats.textContent = "Wait: " + count + " | Total: " + ethers.formatUnits(total, 18);
-    });
-    btnSendBatch.onclick = async () => {
-      try {
-        if (!provider) await ensureProvider();
-        const lines = batchInput.value.split(/\r?\n/), recipients = [];
-        for (let l of lines) {
-          const parts = l.split(",");
-          if (parts.length >= 2 && ethers.isAddress(parts[0].trim())) {
-            try { recipients.push({ to: parts[0].trim(), amount: ethers.parseUnits(parts[1].trim(), 18) }); } catch {}
-          }
-        }
-        if (!recipients.length) return alert("No valid lines");
-        if (!confirm("Send to " + recipients.length + " wallets?")) return;
-        btnSendBatch.disabled = true; batchLog.classList.remove("hidden");
-        batchLog.textContent = "Starting...\n";
-        for (let i = 0; i < recipients.length; i++) {
-          try {
-            batchLog.textContent += "Sending to " + recipients[i].to.slice(0,6) + "... ";
-            const tx = await vault.transfer(recipients[i].to, recipients[i].amount);
-            await tx.wait(); batchLog.textContent += "OK\n";
-          } catch (e) { batchLog.textContent += "FAIL\n"; }
-        }
-        await refresh();
-      } catch (e) { alert(shortErr(e)); } finally { btnSendBatch.disabled = false; }
-    };
-
-    // ===== On-Chain Distributor =====
-    // ===== Auto-populate MTYLD holders from Transfer events =====
-    el('btnAutoPopulate').onclick = async () => {
-      const btn = el('btnAutoPopulate');
-      const status = el('autoPopulateStatus');
-      try {
-        if (!provider) await ensureProvider();
-        btn.textContent = 'Scanning chain...';
-        btn.disabled = true;
-        status.classList.remove('hidden');
-        status.textContent = 'Reading Transfer events from chain...';
-
-        const mtyldContract = new ethers.Contract(
-          VAULT,
-          ["event Transfer(address indexed from, address indexed to, uint256 amount)"],
-          provider
-        );
-
-        // Get all Transfer events
-        const filter = mtyldContract.filters.Transfer();
-        status.textContent = 'Fetching all Transfer events (this may take a moment)...';
-        const events = await mtyldContract.queryFilter(filter, 0, 'latest');
-
-        // Build balance map
-        const balances = {};
-        const ZERO = '0x0000000000000000000000000000000000000000';
-
-        for (const e of events) {
-          const from = e.args[0].toLowerCase();
-          const to = e.args[1].toLowerCase();
-          const amount = e.args[2];
-
-          if (from !== ZERO) {
-            balances[from] = (balances[from] || 0n) - amount;
-          }
-          if (to !== ZERO) {
-            balances[to] = (balances[to] || 0n) + amount;
-          }
-        }
-
-        // Filter out zero and negative balances, exclude contract itself
-        const holders = Object.entries(balances)
-          .filter(([addr, bal]) => bal > 0n && addr !== VAULT.toLowerCase())
-          .sort((a, b) => (b[1] > a[1] ? 1 : -1));
-
-        if (!holders.length) {
-          status.textContent = 'No holders found.';
-          btn.textContent = 'Auto-populate holders';
-          btn.disabled = false;
-          return;
-        }
-
-        // Format as address, balance (in whole MTYLD tokens as weight)
-        const lines = holders.map(([addr, bal]) => {
-          const wholeTokens = parseFloat(ethers.formatUnits(bal, 18)).toFixed(4);
-          return addr + ', ' + wholeTokens;
-        });
-
-        distInput.value = lines.join('\n');
-
-        // Trigger input event to update stats
-        distInput.dispatchEvent(new Event('input'));
-
-        const totalMtyld = holders.reduce((sum, [, bal]) => sum + bal, 0n);
-        status.textContent = holders.length + ' holders found. Total supply: ' + parseFloat(ethers.formatUnits(totalMtyld, 18)).toFixed(4) + ' MTYLD. Weights set to actual balances.';
-        btn.textContent = 'Auto-populate holders';
-        btn.disabled = false;
-
-      } catch(e) {
-        status.classList.remove('hidden');
-        status.textContent = 'Error: ' + (e.message || String(e)).slice(0, 100);
-        btn.textContent = 'Auto-populate holders';
-        btn.disabled = false;
-      }
-    };
-
-    distInput.addEventListener('input', () => {
-      const lines = distInput.value.split(/\r?\n/).filter(l => l.trim());
-      let count = 0, totalWeight = 0;
-      for (const l of lines) {
-        const parts = l.split(',');
-        if (parts.length >= 2 && ethers.isAddress(parts[0].trim())) {
-          count++;
-          totalWeight += parseFloat(parts[1].trim()) || 0;
-        }
-      }
-      distStats.textContent = "Recipients: " + count + " | Total weight: " + totalWeight;
-    });
-
-    el('btnApproveDist').onclick = async () => {
-      try {
-        if (!provider) await ensureProvider();
-        const total = el('distTotal').value;
-        if (!total) return alert('Enter total MTYLD amount first');
-        const amount = ethers.parseUnits(total, 18);
-        distLog.classList.remove('hidden');
-        distLog.textContent = 'Approving distributor contract...';
-        const tx = await vault.approve(DISTRIBUTOR, amount);
-        await tx.wait();
-        distLog.textContent = 'Approved! Now click Step 2: Distribute.';
-      } catch(e) { distLog.classList.remove('hidden'); distLog.textContent = shortErr(e); }
-    };
-
-    el('btnDistribute').onclick = async () => {
-      try {
-        if (!provider) await ensureProvider();
-        const lines = distInput.value.split(/\r?\n/).filter(l => l.trim());
-        const recipients = [], weights = [];
-        for (const l of lines) {
-          const parts = l.split(',');
-          if (parts.length >= 2 && ethers.isAddress(parts[0].trim())) {
-            recipients.push(parts[0].trim());
-            weights.push(BigInt(Math.round(parseFloat(parts[1].trim()) * 100)));
-          }
-        }
-        if (!recipients.length) return alert('No valid recipients');
-        const total = el('distTotal').value;
-        const note = el('distNote').value || 'Distribution';
-        if (!total) return alert('Enter total MTYLD amount');
-        if (!confirm('Distribute ' + total + ' MTYLD to ' + recipients.length + ' employees via on-chain contract?')) return;
-        distLog.classList.remove('hidden');
-        distLog.textContent = 'Sending on-chain distribution...';
-        const totalWei = ethers.parseUnits(total, 18);
-        const tx = await dist.distributeProportional(recipients, weights, totalWei, note);
-        distLog.textContent = 'Transaction submitted... waiting for confirmation...';
-        await tx.wait();
-        distLog.textContent = 'Distribution complete! ' + recipients.length + ' employees paid. Recorded on Arbiscan as "' + note + '".';
-        await refresh();
-      } catch(e) { distLog.classList.remove('hidden'); distLog.textContent = shortErr(e); }
-    };
-
-    el('btnLoadHistory').onclick = async () => {
-      try {
-        if (!provider) await ensureProvider();
-        distHistory.textContent = 'Loading...';
-        const readDist = new ethers.Contract(DISTRIBUTOR, DIST_ABI, provider);
-        const count = await readDist.distributionCount();
-        if (count === 0n) { distHistory.textContent = 'No distributions yet.'; return; }
-        let html = '';
-        for (let i = Number(count) - 1; i >= 0; i--) {
-          const [ts, amount, recips, note] = await readDist.getDistribution(i);
-          const date = new Date(Number(ts) * 1000).toLocaleDateString();
-          const amt = parseFloat(ethers.formatUnits(amount, 18)).toFixed(2);
-          html += '#' + i + ' | ' + date + ' | ' + note + ' | ' + amt + ' MTYLD | ' + recips + ' recipients\n';
-        }
-        distHistory.textContent = html || 'No distributions found.';
-      } catch(e) { distHistory.textContent = shortErr(e); }
-    };
-
-    // ===== Misc =====
-    el("btnExportCSV").onclick = () => {
-      const rows = [["timestamp","iso","nav_usd"]];
-      for (const p of navHistory) rows.push([p.t, new Date(p.t*1000).toISOString(), p.p.toFixed(8)]);
-      const csv = rows.map(r => r.join(",")).join("\n");
-      const blob = new Blob([csv], {type:"text/csv"});
-      const url  = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = "mtyld_nav_history.csv"; a.click();
-      URL.revokeObjectURL(url);
-    };
-    el("btnResetHistory").onclick = () => { if(confirm("Reset history?")) { navHistory=[]; saveHistory(); drawNavChart(); }};
-    el("btnConnect").onclick = async () => { try { await ensureProvider(); await refresh(); await loadOwnerState(); } catch(e){} };
-    el("btnRefresh").onclick = async () => { await refresh(); if (vaultOwner && signer) await loadOwnerState(); };
-
-    loadHistory(); drawNavChart();
-    setInterval(() => { refresh().catch(()=>{}); }, 10000);
+    loadH(); drawChart();
+    setInterval(()=>{ refresh().catch(()=>{}); },10000);
     refresh().catch(()=>{});
   })();
   </script>
