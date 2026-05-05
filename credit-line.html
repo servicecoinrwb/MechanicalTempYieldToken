@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MT Credit Line • Mechanical Temp</title>
+  <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .glass { background: rgba(15,23,42,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(51,65,85,0.6); }
+    .pulse-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)} 50%{box-shadow:0 0 0 6px rgba(16,185,129,0)} }
+    .tab-btn { transition: all 0.2s; border-bottom: 2px solid transparent; }
+    .tab-btn.active { background: rgba(14,165,233,0.1); border-bottom-color: #0ea5e9; color: #38bdf8; }
+    .overdue-flash { animation: overdueFlash 1.5s infinite; }
+    @keyframes overdueFlash { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
+        <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MT <span class="text-sky-400">Credit Line</span></span>
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="conservator.html" class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-xs hover:text-sky-400 hover:border-sky-700 transition">← Conservator</a>
+        <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
+        <button id="btn-connect" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition">Connect Wallet</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-10">
+
+    <!-- Title -->
+    <div class="mb-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 mb-3 rounded-full bg-sky-900/20 border border-sky-900/50 text-sky-400 text-xs font-semibold">
+        <span class="pulse-dot"></span> Live on Arbitrum One
+      </div>
+      <h1 class="text-3xl font-black text-white">Mechanical Temp <span class="text-sky-400">Business Credit Line</span></h1>
+      <p class="text-slate-400 mt-2 text-sm max-w-2xl">A real-world business credit line backed by mtETH-S collateral. Deposit USDC to fund HVAC operations and earn interest. Deposit mtETH-S as collateral and earn a share of interest too.</p>
+    </div>
+
+    <!-- Network Warning -->
+    <div id="network-warning" class="hidden mb-6 px-4 py-3 rounded-xl bg-red-900/20 border border-red-800 text-red-400 text-sm font-semibold">
+      ⚠ Wrong Network — Switch MetaMask to Arbitrum One (Chain ID: 42161)
+    </div>
+
+    <!-- Active Loan Banner -->
+    <div id="loan-banner" class="hidden mb-6 glass rounded-2xl p-5 border-l-4 border-sky-500">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-900/30 flex items-center justify-center text-sky-400 text-xl">🏗️</div>
+          <div>
+            <p class="text-white font-bold">Active Loan</p>
+            <p class="text-slate-400 text-sm">Mechanical Temp has an active credit line</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-6 text-sm">
+          <div><p class="text-slate-500 text-xs">Principal</p><p id="loan-principal" class="text-white font-mono font-bold">—</p></div>
+          <div><p class="text-slate-500 text-xs">Interest Accrued</p><p id="loan-interest" class="text-amber-400 font-mono font-bold">—</p></div>
+          <div><p class="text-slate-500 text-xs">Amount Due</p><p id="loan-due" class="text-emerald-400 font-mono font-bold">—</p></div>
+          <div><p class="text-slate-500 text-xs">Days Remaining</p><p id="loan-days" class="text-sky-400 font-mono font-bold">—</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overdue Banner -->
+    <div id="overdue-banner" class="hidden mb-6 px-4 py-3 rounded-xl bg-red-900/20 border border-red-800 text-red-400 text-sm font-semibold overdue-flash">
+      ⚠ Loan is overdue — Mechanical Temp has exceeded the repayment term
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">USDC Pool</p>
+        <p id="stat-usdc-pool" class="text-2xl font-mono text-sky-400">—</p>
+        <p class="text-slate-600 text-xs mt-1">Available liquidity</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Collateral</p>
+        <p id="stat-collateral" class="text-2xl font-mono text-purple-400">—</p>
+        <p id="stat-collateral-usd" class="text-slate-600 text-xs mt-1">mtETH-S locked</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Max Borrowable</p>
+        <p id="stat-max-borrow" class="text-2xl font-mono text-emerald-400">—</p>
+        <p class="text-slate-600 text-xs mt-1">70% LTV</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Total Interest Paid</p>
+        <p id="stat-interest-paid" class="text-2xl font-mono text-amber-400">—</p>
+        <p class="text-slate-600 text-xs mt-1">Distributed to depositors</p>
+      </div>
+    </div>
+
+    <!-- Two columns -->
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+
+      <!-- USDC Depositor Panel -->
+      <div class="glass rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-800 bg-sky-900/10">
+          <div class="flex items-center gap-2">
+            <span class="text-sky-400 text-lg">💵</span>
+            <div>
+              <h2 class="text-base font-bold text-white">USDC Liquidity Pool</h2>
+              <p class="text-slate-500 text-xs">Earn <span class="text-sky-400 font-bold">70%</span> of loan interest • Withdraw when no active loan</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex border-b border-slate-800">
+          <button id="utab-deposit" onclick="switchUsdcTab('deposit')" class="tab-btn active flex-1 px-4 py-2.5 text-sm font-bold">↓ Deposit</button>
+          <button id="utab-withdraw" onclick="switchUsdcTab('withdraw')" class="tab-btn flex-1 px-4 py-2.5 text-sm font-bold">↑ Withdraw</button>
+          <button id="utab-claim" onclick="switchUsdcTab('claim')" class="tab-btn flex-1 px-4 py-2.5 text-sm font-bold">💰 Claim</button>
+        </div>
+
+        <!-- USDC Deposit -->
+        <div id="upanel-deposit" class="p-5">
+          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800 mb-4 text-xs text-slate-400">
+            Deposit USDC to fund Mechanical Temp's business operations. Earn 70% of all interest paid on loans.
+          </div>
+          <div class="mb-4">
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">USDC Amount</label>
+            <input id="usdc-deposit-amount" type="number" step="1" min="0" placeholder="100.00"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            <div class="flex justify-between mt-1">
+              <span class="text-xs text-slate-600">Balance: <span id="usdc-wallet-balance" class="text-slate-400">—</span></span>
+              <button onclick="setMaxUsdc()" class="text-xs text-sky-400 hover:underline">Use max →</button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Your deposited</span>
+              <span id="my-usdc-deposited" class="text-white font-mono">—</span>
+            </div>
+            <div class="flex justify-between text-sm mt-1">
+              <span class="text-slate-400">Pending rewards</span>
+              <span id="my-usdc-earned" class="text-amber-400 font-mono">—</span>
+            </div>
+            <div class="flex justify-between text-sm mt-1">
+              <span class="text-slate-400">Pool share</span>
+              <span id="my-usdc-share" class="text-slate-300 font-mono">—</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="approveUsdc()" class="py-2.5 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-700 text-sky-400 font-bold text-sm transition">Step 1 — Approve</button>
+            <button onclick="depositUsdc()" class="py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition">Step 2 — Deposit</button>
+          </div>
+        </div>
+
+        <!-- USDC Withdraw -->
+        <div id="upanel-withdraw" class="p-5 hidden">
+          <div id="usdc-loan-lock" class="hidden bg-amber-900/20 border border-amber-800 text-amber-400 text-xs rounded-xl p-3 mb-4">
+            ⚠ Cannot withdraw while a loan is active. Wait for Mechanical Temp to repay.
+          </div>
+          <div class="mb-4">
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Amount to Withdraw</label>
+            <input id="usdc-withdraw-amount" type="number" step="1" min="0" placeholder="100.00"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            <button onclick="setMaxUsdcWithdraw()" class="mt-1 text-xs text-sky-400 hover:underline">Use max →</button>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="withdrawUsdc()" class="py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm transition">Withdraw</button>
+            <button onclick="exitUsdc()" class="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition">Exit All ✓</button>
+          </div>
+          <p class="text-slate-600 text-xs mt-2">Exit All withdraws USDC + claims pending interest rewards.</p>
+        </div>
+
+        <!-- USDC Claim -->
+        <div id="upanel-claim" class="p-5 hidden">
+          <div class="bg-slate-900/60 rounded-xl p-5 border border-amber-900/30 mb-4 text-center">
+            <p class="text-slate-400 text-xs uppercase tracking-wider mb-2">USDC Interest Earned</p>
+            <p id="usdc-claim-amount" class="text-4xl font-mono text-amber-400">—</p>
+            <p class="text-slate-500 text-xs mt-1">From Mechanical Temp loan repayments</p>
+          </div>
+          <button onclick="claimUsdcRewards()" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition">💰 Claim USDC Interest</button>
+        </div>
+      </div>
+
+      <!-- mtETH-S Collateral Panel -->
+      <div class="glass rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-800 bg-purple-900/10">
+          <div class="flex items-center gap-2">
+            <span class="text-purple-400 text-lg">🔐</span>
+            <div>
+              <h2 class="text-base font-bold text-white">mtETH-S Collateral Pool</h2>
+              <p class="text-slate-500 text-xs">Earn <span class="text-purple-400 font-bold">30%</span> of loan interest + Compound yield • Withdraw when no active loan</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex border-b border-slate-800">
+          <button id="ctab-deposit" onclick="switchCollateralTab('deposit')" class="tab-btn active flex-1 px-4 py-2.5 text-sm font-bold">↓ Deposit</button>
+          <button id="ctab-withdraw" onclick="switchCollateralTab('withdraw')" class="tab-btn flex-1 px-4 py-2.5 text-sm font-bold">↑ Withdraw</button>
+          <button id="ctab-claim" onclick="switchCollateralTab('claim')" class="tab-btn flex-1 px-4 py-2.5 text-sm font-bold">💰 Claim</button>
+        </div>
+
+        <!-- Collateral Deposit -->
+        <div id="cpanel-deposit" class="p-5">
+          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800 mb-4 text-xs text-slate-400">
+            Lock mtETH-S to back the credit line. Earn 30% of interest. Your shares keep earning Compound yield while locked.
+          </div>
+          <div class="mb-4">
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">mtETH-S Amount</label>
+            <input id="col-deposit-amount" type="number" step="0.0001" min="0" placeholder="0.0000"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-purple-300 focus:outline-none focus:border-purple-500">
+            <div class="flex justify-between mt-1">
+              <span class="text-xs text-slate-600">Balance: <span id="mteths-wallet-balance" class="text-slate-400">—</span></span>
+              <button onclick="setMaxCollateral()" class="text-xs text-purple-400 hover:underline">Use max →</button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Your collateral</span>
+              <span id="my-col-deposited" class="text-white font-mono">—</span>
+            </div>
+            <div class="flex justify-between text-sm mt-1">
+              <span class="text-slate-400">Pending USDC rewards</span>
+              <span id="my-col-earned" class="text-amber-400 font-mono">—</span>
+            </div>
+            <div class="flex justify-between text-sm mt-1">
+              <span class="text-slate-400">Collateral pool share</span>
+              <span id="my-col-share" class="text-slate-300 font-mono">—</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="approveMtETHS()" class="py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-700 text-purple-400 font-bold text-sm transition">Step 1 — Approve</button>
+            <button onclick="depositCollateral()" class="py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm transition">Step 2 — Deposit</button>
+          </div>
+        </div>
+
+        <!-- Collateral Withdraw -->
+        <div id="cpanel-withdraw" class="p-5 hidden">
+          <div id="col-loan-lock" class="hidden bg-amber-900/20 border border-amber-800 text-amber-400 text-xs rounded-xl p-3 mb-4">
+            ⚠ Cannot withdraw collateral while a loan is active.
+          </div>
+          <div class="mb-4">
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Amount to Withdraw (mtETH-S)</label>
+            <input id="col-withdraw-amount" type="number" step="0.0001" min="0" placeholder="0.0000"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-purple-300 focus:outline-none focus:border-purple-500">
+            <button onclick="setMaxCollateralWithdraw()" class="mt-1 text-xs text-purple-400 hover:underline">Use max →</button>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="withdrawCollateral()" class="py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm transition">Withdraw</button>
+            <button onclick="exitCollateral()" class="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition">Exit All ✓</button>
+          </div>
+          <p class="text-slate-600 text-xs mt-2">Exit All returns your mtETH-S + claims all pending USDC rewards.</p>
+        </div>
+
+        <!-- Collateral Claim -->
+        <div id="cpanel-claim" class="p-5 hidden">
+          <div class="bg-slate-900/60 rounded-xl p-5 border border-amber-900/30 mb-4 text-center">
+            <p class="text-slate-400 text-xs uppercase tracking-wider mb-2">USDC Interest Earned</p>
+            <p id="col-claim-amount" class="text-4xl font-mono text-amber-400">—</p>
+            <p class="text-slate-500 text-xs mt-1">30% share of Mechanical Temp loan interest</p>
+          </div>
+          <button onclick="claimCollateralRewards()" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition">💰 Claim USDC Interest</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- How It Works + Contract Info -->
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+
+      <div class="glass rounded-2xl p-6">
+        <h3 class="text-base font-bold text-white mb-4">How the Credit Line Works</h3>
+        <div class="space-y-4">
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center text-sky-400 text-xs font-bold flex-none">1</div>
+            <div>
+              <p class="text-slate-300 text-sm font-semibold">USDC depositors fund the pool</p>
+              <p class="text-slate-500 text-xs mt-0.5">Anyone deposits USDC to create available credit for Mechanical Temp to draw from.</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-full bg-purple-900/40 border border-purple-800 flex items-center justify-center text-purple-400 text-xs font-bold flex-none">2</div>
+            <div>
+              <p class="text-slate-300 text-sm font-semibold">mtETH-S holders back it with collateral</p>
+              <p class="text-slate-500 text-xs mt-0.5">MTYLD holders lock Conservator shares (70% LTV via Chainlink). mtETH-S keeps earning Compound yield while locked.</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-full bg-emerald-900/40 border border-emerald-800 flex items-center justify-center text-emerald-400 text-xs font-bold flex-none">3</div>
+            <div>
+              <p class="text-slate-300 text-sm font-semibold">Mechanical Temp draws USDC</p>
+              <p class="text-slate-500 text-xs mt-0.5">Borrows up to 70% of collateral value for up to 90 days at 8% APR for operations, parts, and payroll.</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-full bg-amber-900/40 border border-amber-800 flex items-center justify-center text-amber-400 text-xs font-bold flex-none">4</div>
+            <div>
+              <p class="text-slate-300 text-sm font-semibold">Repayment distributes interest</p>
+              <p class="text-slate-500 text-xs mt-0.5">Principal + interest repaid on-chain. 70% of interest to USDC depositors, 30% to collateral providers.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl p-6">
+        <h3 class="text-base font-bold text-white mb-4">Contract Details</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">Contract</span>
+            <a href="https://arbiscan.io/address/0xb3D07f571bdF7725dd35748251c6868913300486" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xb3D0...0486 ↗</a>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">Collateral Token</span>
+            <span class="text-white text-xs font-mono">mtETH-S</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">Loan Currency</span>
+            <span class="text-white text-xs font-mono">USDC</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">Interest Rate</span>
+            <span id="info-rate" class="text-emerald-400 text-xs font-mono">—</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">Max Loan Term</span>
+            <span class="text-white text-xs">90 days</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">LTV Ratio</span>
+            <span class="text-white text-xs">70%</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">Interest Split</span>
+            <span class="text-white text-xs">70% USDC / 30% Collateral</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">Price Oracle</span>
+            <span class="text-white text-xs">Chainlink ETH/USD</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">Total Loans</span>
+            <span id="info-loans" class="text-white text-xs font-mono">—</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">ETH Price</span>
+            <span id="info-eth-price" class="text-white text-xs font-mono">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="pt-6 border-t border-slate-800 flex items-center justify-between">
+      <p class="text-slate-600 text-xs font-mono">0xb3D0...0486 • Arbitrum One • 15s refresh</p>
+      <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
+    </div>
+
+  </main>
+
+  <!-- TX Toast -->
+  <div id="tx-toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm w-full">
+    <div id="tx-card" class="bg-slate-900 border rounded-2xl p-4 shadow-2xl">
+      <div id="tx-title" class="text-xs font-mono font-bold uppercase tracking-wider mb-1"></div>
+      <div id="tx-msg" class="text-slate-400 text-sm"></div>
+      <div id="tx-hash" class="mt-2 text-xs font-mono"></div>
+    </div>
+  </div>
+
+  <script>
+    // ── Addresses ──────────────────────────────────────────────
+    const CONTRACT_ADDR = "0xb3D07f571bdF7725dd35748251c6868913300486";
+    const MTETHS_ADDR   = "0xc9227b644285198646F9c75ceCf13F84bF419B78";
+    const USDC_ADDR     = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+    const ARBITRUM_ID   = 42161n;
+
+    const ABI = [
+      "function totalUsdcDeposited() view returns (uint256)",
+      "function totalCollateralDeposited() view returns (uint256)",
+      "function totalInterestPaid() view returns (uint256)",
+      "function totalLoansOriginated() view returns (uint256)",
+      "function maxBorrowable() view returns (uint256)",
+      "function collateralValueUsdc() view returns (uint256)",
+      "function ethPriceUsd6() view returns (uint256)",
+      "function interestRateBps() view returns (uint256)",
+      "function accruedInterest() view returns (uint256)",
+      "function amountDue() view returns (uint256)",
+      "function daysRemaining() view returns (uint256)",
+      "function isOverdue() view returns (bool)",
+      "function currentLoan() view returns (uint256 principal, uint256 startTime, uint256 termSeconds, uint256 interestRateBps, bool active)",
+      "function usdcDeposited(address) view returns (uint256)",
+      "function collateralDeposited(address) view returns (uint256)",
+      "function earnedUsdc(address) view returns (uint256)",
+      "function earnedCollateral(address) view returns (uint256)",
+      "function usdcShareOf(address) view returns (uint256)",
+      "function collateralShareOf(address) view returns (uint256)",
+      "function depositUsdc(uint256) nonpayable",
+      "function withdrawUsdc(uint256) nonpayable",
+      "function exitUsdc() nonpayable",
+      "function claimUsdcRewards() nonpayable",
+      "function depositCollateral(uint256) nonpayable",
+      "function withdrawCollateral(uint256) nonpayable",
+      "function exitCollateral() nonpayable",
+      "function claimCollateralRewards() nonpayable",
+    ];
+
+    const ERC20_ABI = [
+      "function balanceOf(address) view returns (uint256)",
+      "function approve(address spender, uint256 amount) returns (bool)",
+      "function allowance(address owner, address spender) view returns (uint256)",
+    ];
+
+    let provider, signer, contract, usdcContract, mtethsContract;
+    let isConnected = false, userAddress = null;
+    let toastTimer;
+    let loanActive = false;
+
+    // ── Toast ──────────────────────────────────────────────────
+    function showToast(state, title, msg, hash) {
+      clearTimeout(toastTimer);
+      const colors = { pending: 'border-amber-600', success: 'border-emerald-600', error: 'border-red-600' };
+      const tc     = { pending: 'text-amber-400',   success: 'text-emerald-400',   error: 'text-red-400' };
+      document.getElementById('tx-card').className  = `bg-slate-900 border rounded-2xl p-4 shadow-2xl ${colors[state]}`;
+      document.getElementById('tx-title').className = `text-xs font-mono font-bold uppercase tracking-wider mb-1 ${tc[state]}`;
+      document.getElementById('tx-title').textContent = title;
+      document.getElementById('tx-msg').textContent   = msg;
+      document.getElementById('tx-hash').innerHTML = hash
+        ? `<a href="https://arbiscan.io/tx/${hash}" target="_blank" class="text-sky-400 hover:underline">${hash.slice(0,10)}...${hash.slice(-6)} ↗</a>` : '';
+      document.getElementById('tx-toast').style.display = 'block';
+      if (state !== 'pending') toastTimer = setTimeout(() => document.getElementById('tx-toast').style.display = 'none', 7000);
+    }
+
+    // ── Network ────────────────────────────────────────────────
+    async function checkNetwork() {
+      if (!window.ethereum) return false;
+      const chainId = BigInt(await window.ethereum.request({ method: 'eth_chainId' }));
+      const badge = document.getElementById('network-badge');
+      const warn  = document.getElementById('network-warning');
+      if (chainId === ARBITRUM_ID) {
+        badge.textContent = 'Arbitrum One';
+        badge.className   = 'px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-indigo-900/30 border-indigo-700 text-indigo-300';
+        badge.style.display = 'block'; warn.style.display = 'none';
+        return true;
+      }
+      badge.textContent = 'Wrong Network';
+      badge.className   = 'px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-red-900/30 border-red-700 text-red-400';
+      badge.style.display = 'block'; warn.style.display = 'block';
+      return false;
+    }
+
+    // ── Connect ────────────────────────────────────────────────
+    async function connect() {
+      if (!window.ethereum) return alert('Install MetaMask first.');
+      try {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        userAddress = await signer.getAddress();
+        contract      = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
+        usdcContract  = new ethers.Contract(USDC_ADDR, ERC20_ABI, signer);
+        mtethsContract = new ethers.Contract(MTETHS_ADDR, ERC20_ABI, signer);
+        isConnected = true;
+        const btn = document.getElementById('btn-connect');
+        btn.textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+        btn.className   = 'px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold';
+        await checkNetwork();
+        await refreshAll();
+      } catch(e) { console.error(e); }
+    }
+
+    async function req() {
+      if (!isConnected) { alert('Connect wallet first.'); return false; }
+      return await checkNetwork();
+    }
+
+    // ── Format helpers ─────────────────────────────────────────
+    const fmtUsdc  = (n) => '$' + (Number(n) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    const fmtEth   = (n) => (Number(n) / 1e18).toFixed(4) + ' mtETH-S';
+    const fmtPct   = (n) => (Number(n) / 1e16).toFixed(2) + '%';
+    const fmtRate  = (n) => (Number(n) / 100).toFixed(1) + '% APR';
+
+    // ── Refresh ────────────────────────────────────────────────
+    async function refreshAll() {
+      if (!window.ethereum) return;
+      try {
+        const rp = new ethers.BrowserProvider(window.ethereum);
+        const rc = new ethers.Contract(CONTRACT_ADDR, ABI, rp);
+
+        const [
+          totalUsdc, totalCol, totalInt, totalLoans,
+          maxBorrow, colValUsdc, ethPrice, rateBps,
+          loan, overdue, daysLeft
+        ] = await Promise.all([
+          rc.totalUsdcDeposited(),
+          rc.totalCollateralDeposited(),
+          rc.totalInterestPaid(),
+          rc.totalLoansOriginated(),
+          rc.maxBorrowable(),
+          rc.collateralValueUsdc(),
+          rc.ethPriceUsd6(),
+          rc.interestRateBps(),
+          rc.currentLoan(),
+          rc.isOverdue(),
+          rc.daysRemaining(),
+        ]);
+
+        loanActive = loan.active;
+
+        // Stats
+        document.getElementById('stat-usdc-pool').textContent      = fmtUsdc(totalUsdc);
+        document.getElementById('stat-collateral').textContent      = fmtEth(totalCol);
+        document.getElementById('stat-collateral-usd').textContent  = '≈ ' + fmtUsdc(colValUsdc) + ' USD value';
+        document.getElementById('stat-max-borrow').textContent      = fmtUsdc(maxBorrow);
+        document.getElementById('stat-interest-paid').textContent   = fmtUsdc(totalInt);
+        document.getElementById('info-rate').textContent            = fmtRate(rateBps);
+        document.getElementById('info-loans').textContent           = totalLoans.toString();
+        document.getElementById('info-eth-price').textContent       = '$' + (Number(ethPrice) / 1e6).toLocaleFixed !== undefined
+          ? '$' + (Number(ethPrice) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 })
+          : '$' + (Number(ethPrice) / 1e6).toFixed(2);
+
+        // Loan banner
+        document.getElementById('loan-banner').style.display   = loan.active ? 'block' : 'none';
+        document.getElementById('overdue-banner').style.display = overdue ? 'block' : 'none';
+
+        if (loan.active) {
+          const interest = await rc.accruedInterest();
+          const due      = await rc.amountDue();
+          document.getElementById('loan-principal').textContent = fmtUsdc(loan.principal);
+          document.getElementById('loan-interest').textContent  = fmtUsdc(interest);
+          document.getElementById('loan-due').textContent       = fmtUsdc(due);
+          document.getElementById('loan-days').textContent      = overdue ? '⚠ Overdue' : daysLeft.toString() + 'd';
+          if (overdue) document.getElementById('loan-days').className = 'text-red-400 font-mono font-bold overdue-flash';
+        }
+
+        // Lock warnings
+        document.getElementById('usdc-loan-lock').style.display = loan.active ? 'block' : 'none';
+        document.getElementById('col-loan-lock').style.display  = loan.active ? 'block' : 'none';
+
+        // User data
+        if (userAddress) {
+          const uc = new ethers.Contract(USDC_ADDR, ERC20_ABI, rp);
+          const mc = new ethers.Contract(MTETHS_ADDR, ERC20_ABI, rp);
+          const [
+            myUsdcDep, myColDep, myUsdcEarned, myColEarned,
+            myUsdcShare, myColShare, usdcBal, mtethsBal
+          ] = await Promise.all([
+            rc.usdcDeposited(userAddress),
+            rc.collateralDeposited(userAddress),
+            rc.earnedUsdc(userAddress),
+            rc.earnedCollateral(userAddress),
+            rc.usdcShareOf(userAddress),
+            rc.collateralShareOf(userAddress),
+            uc.balanceOf(userAddress),
+            mc.balanceOf(userAddress),
+          ]);
+
+          document.getElementById('my-usdc-deposited').textContent  = fmtUsdc(myUsdcDep);
+          document.getElementById('my-usdc-earned').textContent     = fmtUsdc(myUsdcEarned);
+          document.getElementById('my-usdc-share').textContent      = fmtPct(myUsdcShare);
+          document.getElementById('usdc-claim-amount').textContent  = fmtUsdc(myUsdcEarned);
+          document.getElementById('my-col-deposited').textContent   = fmtEth(myColDep);
+          document.getElementById('my-col-earned').textContent      = fmtUsdc(myColEarned);
+          document.getElementById('my-col-share').textContent       = fmtPct(myColShare);
+          document.getElementById('col-claim-amount').textContent   = fmtUsdc(myColEarned);
+          document.getElementById('usdc-wallet-balance').textContent  = fmtUsdc(usdcBal);
+          document.getElementById('mteths-wallet-balance').textContent = fmtEth(mtethsBal);
+        }
+      } catch(e) { console.error('Refresh error:', e); }
+    }
+
+    // ── Tab switching ──────────────────────────────────────────
+    function switchUsdcTab(tab) {
+      ['deposit','withdraw','claim'].forEach(t => {
+        document.getElementById('upanel-' + t).classList.toggle('hidden', t !== tab);
+        document.getElementById('utab-' + t).classList.toggle('active', t === tab);
+      });
+    }
+    function switchCollateralTab(tab) {
+      ['deposit','withdraw','claim'].forEach(t => {
+        document.getElementById('cpanel-' + t).classList.toggle('hidden', t !== tab);
+        document.getElementById('ctab-' + t).classList.toggle('active', t === tab);
+      });
+    }
+
+    // ── Max helpers ────────────────────────────────────────────
+    async function setMaxUsdc() {
+      if (!isConnected) return;
+      const rp = new ethers.BrowserProvider(window.ethereum);
+      const uc = new ethers.Contract(USDC_ADDR, ERC20_ABI, rp);
+      const bal = await uc.balanceOf(userAddress);
+      document.getElementById('usdc-deposit-amount').value = (Number(bal) / 1e6).toFixed(6);
+    }
+    async function setMaxUsdcWithdraw() {
+      if (!isConnected) return;
+      const rp = new ethers.BrowserProvider(window.ethereum);
+      const rc = new ethers.Contract(CONTRACT_ADDR, ABI, rp);
+      const dep = await rc.usdcDeposited(userAddress);
+      document.getElementById('usdc-withdraw-amount').value = (Number(dep) / 1e6).toFixed(6);
+    }
+    async function setMaxCollateral() {
+      if (!isConnected) return;
+      const rp = new ethers.BrowserProvider(window.ethereum);
+      const mc = new ethers.Contract(MTETHS_ADDR, ERC20_ABI, rp);
+      const bal = await mc.balanceOf(userAddress);
+      document.getElementById('col-deposit-amount').value = ethers.formatEther(bal);
+    }
+    async function setMaxCollateralWithdraw() {
+      if (!isConnected) return;
+      const rp = new ethers.BrowserProvider(window.ethereum);
+      const rc = new ethers.Contract(CONTRACT_ADDR, ABI, rp);
+      const dep = await rc.collateralDeposited(userAddress);
+      document.getElementById('col-withdraw-amount').value = ethers.formatEther(dep);
+    }
+
+    // ── USDC Actions ───────────────────────────────────────────
+    async function approveUsdc() {
+      if (!await req()) return;
+      const amt = document.getElementById('usdc-deposit-amount').value;
+      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Approve USDC in MetaMask...');
+        const tx = await usdcContract.approve(CONTRACT_ADDR, BigInt(Math.floor(parseFloat(amt) * 1e6)));
+        showToast('pending', 'TX Submitted', 'Approving USDC...', tx.hash);
+        await tx.wait();
+        showToast('success', 'USDC Approved ✓', 'Now click Step 2 — Deposit.', tx.hash);
+      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    async function depositUsdc() {
+      if (!await req()) return;
+      const amt = document.getElementById('usdc-deposit-amount').value;
+      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm depositUsdc()...');
+        const tx = await contract.depositUsdc(BigInt(Math.floor(parseFloat(amt) * 1e6)));
+        showToast('pending', 'TX Submitted', 'Depositing USDC...', tx.hash);
+        await tx.wait();
+        showToast('success', 'USDC Deposited ✓', 'You are now earning interest.', tx.hash);
+        document.getElementById('usdc-deposit-amount').value = '';
+        refreshAll();
+      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    async function withdrawUsdc() {
+      if (!await req()) return;
+      if (loanActive) return alert('Cannot withdraw while a loan is active.');
+      const amt = document.getElementById('usdc-withdraw-amount').value;
+      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm withdrawUsdc()...');
+        const tx = await contract.withdrawUsdc(BigInt(Math.floor(parseFloat(amt) * 1e6)));
+        showToast('pending', 'TX Submitted', 'Withdrawing USDC...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Withdrawn ✓', 'USDC returned to your wallet.', tx.hash);
+        refreshAll();
+      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    async function exitUsdc() {
+      if (!await req()) return;
+      if (loanActive) return alert('Cannot exit while a loan is active.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm exitUsdc()...');
+        const tx = await contract.exitUsdc();
+        showToast('pending', 'TX Submitted', 'Exiting USDC pool...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Exit Complete ✓', 'USDC and rewards returned.', tx.hash);
+        refreshAll();
+      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    async function claimUsdcRewards() {
+      if (!await req()) return;
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm claimUsdcRewards()...');
+        const tx = await contract.claimUsdcRewards();
+        showToast('pending', 'TX Submitted', 'Claiming USDC interest...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Claimed ✓', 'USDC interest sent to your wallet.', tx.hash);
+        refreshAll();
+      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    // ── Collateral Actions ─────────────────────────────────────
+    async function approveMtETHS() {
+      if (!await req()) return;
+      const amt = document.getElementById('col-deposit-amount').value;
+      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Approve mtETH-S in MetaMask...');
+        const tx = await mtethsContract.approve(CONTRACT_ADDR, ethers.parseEther(amt));
+        showToast('pending', 'TX Submitted', 'Approving mtETH-S...', tx.hash);
+        await tx.wait();
+        showToast('success', 'mtETH-S Approved ✓', 'Now click Step 2 — Deposit.', tx.hash);
+      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    async function depositCollateral() {
+      if (!await req()) return;
+      const amt = document.getElementById('col-deposit-amount').value;
+      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm depositCollateral()...');
+        const tx = await contract.depositCollateral(ethers.parseEther(amt));
+        showToast('pending', 'TX Submitted', 'Depositing mtETH-S collateral...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Collateral Deposited ✓', 'Your mtETH-S is backing the credit line.', tx.hash);
+        document.getElementById('col-deposit-amount').value = '';
+        refreshAll();
+      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    async function withdrawCollateral() {
+      if (!await req()) return;
+      if (loanActive) return alert('Cannot withdraw collateral while a loan is active.');
+      const amt = document.getElementById('col-withdraw-amount').value;
+      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm withdrawCollateral()...');
+        const tx = await contract.withdrawCollateral(ethers.parseEther(amt));
+        showToast('pending', 'TX Submitted', 'Withdrawing mtETH-S...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Withdrawn ✓', 'mtETH-S returned to your wallet.', tx.hash);
+        refreshAll();
+      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    async function exitCollateral() {
+      if (!await req()) return;
+      if (loanActive) return alert('Cannot exit while a loan is active.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm exitCollateral()...');
+        const tx = await contract.exitCollateral();
+        showToast('pending', 'TX Submitted', 'Exiting collateral pool...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Exit Complete ✓', 'mtETH-S and rewards returned.', tx.hash);
+        refreshAll();
+      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    async function claimCollateralRewards() {
+      if (!await req()) return;
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm claimCollateralRewards()...');
+        const tx = await contract.claimCollateralRewards();
+        showToast('pending', 'TX Submitted', 'Claiming USDC interest...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Claimed ✓', 'USDC interest sent to your wallet.', tx.hash);
+        refreshAll();
+      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    // ── Init ───────────────────────────────────────────────────
+    document.getElementById('btn-connect').onclick = connect;
+    if (window.ethereum) {
+      window.ethereum.on('chainChanged', () => checkNetwork());
+      window.ethereum.on('accountsChanged', () => location.reload());
+      checkNetwork();
+      refreshAll();
+    }
+    setInterval(refreshAll, 15000);
+  </script>
+</body>
+</html>
