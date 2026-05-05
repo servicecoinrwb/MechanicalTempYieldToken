@@ -3,354 +3,317 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MT Credit Line • Mechanical Temp</title>
+  <title>MT Credit Line v3 • Mechanical Temp</title>
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
   <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
   <style>
     html { scroll-behavior: smooth; }
-    .glass { background: rgba(15,23,42,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(51,65,85,0.6); }
-    .pulse-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; animation:pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)} 50%{box-shadow:0 0 0 6px rgba(16,185,129,0)} }
+    .glass { background: rgba(15,23,42,0.75); backdrop-filter: blur(12px); border: 1px solid rgba(51,65,85,0.6); }
+    .pulse-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; animation:pdot 2s infinite; }
+    @keyframes pdot { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)} 50%{box-shadow:0 0 0 6px rgba(16,185,129,0)} }
     .tab-btn { transition: all 0.2s; border-bottom: 2px solid transparent; }
     .tab-btn.active { background: rgba(14,165,233,0.1); border-bottom-color: #0ea5e9; color: #38bdf8; }
-    .overdue-flash { animation: overdueFlash 1.5s infinite; }
-    @keyframes overdueFlash { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .tab-btn.active-purple { background: rgba(168,85,247,0.1); border-bottom-color: #a855f7; color: #c084fc; }
+    .overdue-flash { animation: oflash 1.5s infinite; }
+    @keyframes oflash { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(14,165,233,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,0.025) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+    main { position: relative; z-index: 1; }
+    header { position: relative; z-index: 10; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
 
-  <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MT <span class="text-sky-400">Credit Line</span></span>
+        <div class="hidden sm:block">
+          <div class="font-bold tracking-wide text-slate-200">MT <span class="text-sky-400">Credit Line</span> <span class="text-xs font-mono text-slate-500 ml-1">v3</span></div>
+        </div>
       </a>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
         <a href="conservator.html" class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-xs hover:text-sky-400 hover:border-sky-700 transition">← Conservator</a>
-        <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
-        <button id="btn-connect" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition">Connect Wallet</button>
+        <div id="netBadge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
+        <button id="btnConnect" onclick="connect()" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition">Connect Wallet</button>
       </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 py-10">
+  <main class="max-w-7xl mx-auto px-4 py-10 space-y-6">
 
     <!-- Title -->
-    <div class="mb-8">
+    <div>
       <div class="inline-flex items-center gap-2 px-3 py-1 mb-3 rounded-full bg-sky-900/20 border border-sky-900/50 text-sky-400 text-xs font-semibold">
         <span class="pulse-dot"></span> Live on Arbitrum One
       </div>
       <h1 class="text-3xl font-black text-white">Mechanical Temp <span class="text-sky-400">Business Credit Line</span></h1>
-      <p class="text-slate-400 mt-2 text-sm max-w-2xl">A real-world business credit line backed by mtETH-S collateral. Deposit USDC to fund HVAC operations and earn interest. Deposit mtETH-S as collateral and earn a share of interest too.</p>
+      <p class="text-slate-400 mt-1 text-sm max-w-2xl">Dual-collateral credit line backed by mtETH-S (60% LTV) and MTYLD (70% LTV). Deposit USDC to fund operations and earn interest.</p>
+      <p class="text-slate-600 text-xs font-mono mt-1">
+        <a href="https://arbiscan.io/address/0xe442E46c4cbBa68bFE36196B9547392BAD0429eB" target="_blank" class="hover:text-sky-400 transition">0xe442...29eB ↗</a>
+        <span class="mx-2">•</span> Arbitrum One <span class="mx-2">•</span> <span id="refreshTimer">15s refresh</span>
+      </p>
     </div>
 
     <!-- Network Warning -->
-    <div id="network-warning" class="hidden mb-6 px-4 py-3 rounded-xl bg-red-900/20 border border-red-800 text-red-400 text-sm font-semibold">
-      ⚠ Wrong Network — Switch MetaMask to Arbitrum One (Chain ID: 42161)
+    <div id="netWarn" class="hidden px-4 py-3 rounded-xl bg-red-900/20 border border-red-800 text-red-400 text-sm font-semibold">
+      ⚠ Wrong Network — Please switch MetaMask to Arbitrum One (Chain ID: 42161)
     </div>
 
     <!-- Active Loan Banner -->
-    <div id="loan-banner" class="hidden mb-6 glass rounded-2xl p-5 border-l-4 border-sky-500">
+    <div id="loanBanner" class="hidden glass rounded-2xl p-5 border-l-4 border-sky-500">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-sky-900/30 flex items-center justify-center text-sky-400 text-xl">🏗️</div>
+          <div class="w-10 h-10 rounded-xl bg-sky-900/30 flex items-center justify-center text-xl">🏗️</div>
           <div>
             <p class="text-white font-bold">Active Loan</p>
             <p class="text-slate-400 text-sm">Mechanical Temp has an active credit line</p>
           </div>
         </div>
         <div class="flex flex-wrap gap-6 text-sm">
-          <div><p class="text-slate-500 text-xs">Principal</p><p id="loan-principal" class="text-white font-mono font-bold">—</p></div>
-          <div><p class="text-slate-500 text-xs">Interest Accrued</p><p id="loan-interest" class="text-amber-400 font-mono font-bold">—</p></div>
-          <div><p class="text-slate-500 text-xs">Amount Due</p><p id="loan-due" class="text-emerald-400 font-mono font-bold">—</p></div>
-          <div><p class="text-slate-500 text-xs">Days Remaining</p><p id="loan-days" class="text-sky-400 font-mono font-bold">—</p></div>
+          <div><p class="text-slate-500 text-xs">Principal</p><p id="bannerPrincipal" class="text-white font-mono font-bold">—</p></div>
+          <div><p class="text-slate-500 text-xs">Interest Accrued</p><p id="bannerInterest" class="text-amber-400 font-mono font-bold">—</p></div>
+          <div><p class="text-slate-500 text-xs">Total Due</p><p id="bannerDue" class="text-emerald-400 font-mono font-bold">—</p></div>
+          <div><p class="text-slate-500 text-xs">Days Remaining</p><p id="bannerDays" class="text-sky-400 font-mono font-bold">—</p></div>
         </div>
       </div>
     </div>
 
     <!-- Overdue Banner -->
-    <div id="overdue-banner" class="hidden mb-6 px-4 py-3 rounded-xl bg-red-900/20 border border-red-800 text-red-400 text-sm font-semibold overdue-flash">
-      ⚠ Loan is overdue — Mechanical Temp has exceeded the repayment term
+    <div id="overdueBanner" class="hidden px-4 py-3 rounded-xl bg-red-900/20 border border-red-800 text-red-400 text-sm font-semibold overdue-flash">
+      ⚠ Loan is OVERDUE — Mechanical Temp has exceeded the repayment term
     </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="glass rounded-2xl p-5">
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">USDC Pool</p>
-        <p id="stat-usdc-pool" class="text-2xl font-mono text-sky-400">—</p>
+        <p id="statUsdc" class="text-2xl font-mono text-sky-400">—</p>
         <p class="text-slate-600 text-xs mt-1">Available liquidity</p>
       </div>
       <div class="glass rounded-2xl p-5">
-        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Collateral</p>
-        <p id="stat-collateral" class="text-2xl font-mono text-purple-400">—</p>
-        <p id="stat-collateral-usd" class="text-slate-600 text-xs mt-1">mtETH-S locked</p>
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Total Borrow Power</p>
+        <p id="statBorrowPower" class="text-2xl font-mono text-emerald-400">—</p>
+        <p class="text-slate-600 text-xs mt-1">Combined LTV</p>
       </div>
       <div class="glass rounded-2xl p-5">
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Max Borrowable</p>
-        <p id="stat-max-borrow" class="text-2xl font-mono text-emerald-400">—</p>
-        <p class="text-slate-600 text-xs mt-1">70% LTV</p>
+        <p id="statMaxBorrow" class="text-2xl font-mono text-white">—</p>
+        <p class="text-slate-600 text-xs mt-1">vs pool liquidity</p>
       </div>
       <div class="glass rounded-2xl p-5">
-        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Total Interest Paid</p>
-        <p id="stat-interest-paid" class="text-2xl font-mono text-amber-400">—</p>
-        <p class="text-slate-600 text-xs mt-1">Distributed to depositors</p>
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Interest Paid</p>
+        <p id="statInterest" class="text-2xl font-mono text-amber-400">—</p>
+        <p class="text-slate-600 text-xs mt-1">Distributed total</p>
       </div>
     </div>
 
-    <!-- Two columns -->
-    <div class="grid md:grid-cols-2 gap-6 mb-6">
+    <!-- Collateral Breakdown -->
+    <div class="glass rounded-2xl p-5">
+      <h3 class="text-sm font-bold text-white mb-4">Collateral Summary</h3>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+            <span class="text-xs font-semibold text-sky-400 uppercase tracking-wider">mtETH-S — 60% LTV</span>
+          </div>
+          <div class="grid grid-cols-3 gap-3 text-xs">
+            <div><p class="text-slate-500">Deposited</p><p id="csumMtethsTokens" class="font-mono text-white">—</p></div>
+            <div><p class="text-slate-500">USD Value</p><p id="csumMtethsUsd" class="font-mono text-sky-400">—</p></div>
+            <div><p class="text-slate-500">Borrow Power</p><p id="csumMtethsBorrow" class="font-mono text-emerald-400">—</p></div>
+          </div>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+            <span class="text-xs font-semibold text-purple-400 uppercase tracking-wider">MTYLD — 70% LTV</span>
+          </div>
+          <div class="grid grid-cols-3 gap-3 text-xs">
+            <div><p class="text-slate-500">Deposited</p><p id="csumMtyldTokens" class="font-mono text-white">—</p></div>
+            <div><p class="text-slate-500">USD Value</p><p id="csumMtyldUsd" class="font-mono text-purple-400">—</p></div>
+            <div><p class="text-slate-500">Borrow Power</p><p id="csumMtyldBorrow" class="font-mono text-emerald-400">—</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <!-- USDC Depositor Panel -->
+    <!-- Three Panels -->
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <!-- USDC Panel -->
       <div class="glass rounded-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-800 bg-sky-900/10">
+        <div class="px-5 py-4 border-b border-slate-800 bg-sky-900/10">
           <div class="flex items-center gap-2">
             <span class="text-sky-400 text-lg">💵</span>
             <div>
-              <h2 class="text-base font-bold text-white">USDC Liquidity Pool</h2>
-              <p class="text-slate-500 text-xs">Earn <span class="text-sky-400 font-bold">70%</span> of loan interest • Withdraw when no active loan</p>
+              <h2 class="text-sm font-bold text-white">USDC Liquidity Pool</h2>
+              <p class="text-slate-500 text-xs">Earn <span class="text-sky-400 font-bold">70%</span> of interest</p>
             </div>
           </div>
         </div>
-
         <div class="flex border-b border-slate-800">
-          <button id="utab-deposit" onclick="switchUsdcTab('deposit')" class="tab-btn active flex-1 px-4 py-2.5 text-sm font-bold">↓ Deposit</button>
-          <button id="utab-withdraw" onclick="switchUsdcTab('withdraw')" class="tab-btn flex-1 px-4 py-2.5 text-sm font-bold">↑ Withdraw</button>
-          <button id="utab-claim" onclick="switchUsdcTab('claim')" class="tab-btn flex-1 px-4 py-2.5 text-sm font-bold">💰 Claim</button>
+          <button id="utab-deposit" onclick="switchTab('u','deposit')" class="tab-btn active flex-1 px-3 py-2.5 text-xs font-bold">↓ Deposit</button>
+          <button id="utab-withdraw" onclick="switchTab('u','withdraw')" class="tab-btn flex-1 px-3 py-2.5 text-xs font-bold">↑ Withdraw</button>
+          <button id="utab-claim" onclick="switchTab('u','claim')" class="tab-btn flex-1 px-3 py-2.5 text-xs font-bold">💰 Claim</button>
         </div>
 
-        <!-- USDC Deposit -->
         <div id="upanel-deposit" class="p-5">
-          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800 mb-4 text-xs text-slate-400">
-            Deposit USDC to fund Mechanical Temp's business operations. Earn 70% of all interest paid on loans.
+          <div class="mb-3 text-xs text-slate-500 bg-slate-900/60 rounded-xl p-3 border border-slate-800">Fund the pool → earn 70% of all loan interest paid.</div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider mb-1 block">USDC Amount</label>
+          <input id="uDepAmt" type="number" step="1" min="0" placeholder="100.00" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500 mb-1">
+          <div class="flex justify-between mb-3">
+            <span class="text-xs text-slate-600">Wallet: <span id="usdcWalletBal" class="text-slate-400">—</span></span>
+            <button onclick="maxUsdc()" class="text-xs text-sky-400 hover:underline">Max →</button>
           </div>
-          <div class="mb-4">
-            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">USDC Amount</label>
-            <input id="usdc-deposit-amount" type="number" step="1" min="0" placeholder="100.00"
-              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
-            <div class="flex justify-between mt-1">
-              <span class="text-xs text-slate-600">Balance: <span id="usdc-wallet-balance" class="text-slate-400">—</span></span>
-              <button onclick="setMaxUsdc()" class="text-xs text-sky-400 hover:underline">Use max →</button>
-            </div>
+          <div class="space-y-1 text-xs mb-3">
+            <div class="flex justify-between"><span class="text-slate-500">Your deposited</span><span id="myUsdcDep" class="font-mono text-white">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Pending rewards</span><span id="myUsdcEarned" class="font-mono text-amber-400">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Pool share</span><span id="myUsdcShare" class="font-mono text-slate-300">—</span></div>
           </div>
-          <div class="mb-3">
-            <div class="flex justify-between text-sm">
-              <span class="text-slate-400">Your deposited</span>
-              <span id="my-usdc-deposited" class="text-white font-mono">—</span>
-            </div>
-            <div class="flex justify-between text-sm mt-1">
-              <span class="text-slate-400">Pending rewards</span>
-              <span id="my-usdc-earned" class="text-amber-400 font-mono">—</span>
-            </div>
-            <div class="flex justify-between text-sm mt-1">
-              <span class="text-slate-400">Pool share</span>
-              <span id="my-usdc-share" class="text-slate-300 font-mono">—</span>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <button onclick="approveUsdc()" class="py-2.5 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-700 text-sky-400 font-bold text-sm transition">Step 1 — Approve</button>
-            <button onclick="depositUsdc()" class="py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition">Step 2 — Deposit</button>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="approveUsdc()" class="py-2 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-700 text-sky-400 font-bold text-xs">1 — Approve</button>
+            <button onclick="depositUsdc()" class="py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs">2 — Deposit</button>
           </div>
         </div>
 
-        <!-- USDC Withdraw -->
         <div id="upanel-withdraw" class="p-5 hidden">
-          <div id="usdc-loan-lock" class="hidden bg-amber-900/20 border border-amber-800 text-amber-400 text-xs rounded-xl p-3 mb-4">
-            ⚠ Cannot withdraw while a loan is active. Wait for Mechanical Temp to repay.
+          <div id="uLoanLock" class="hidden mb-3 text-xs bg-amber-900/20 border border-amber-800 text-amber-400 rounded-xl p-3">⚠ Cannot withdraw while a loan is active.</div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider mb-1 block">Amount to Withdraw</label>
+          <input id="uWithAmt" type="number" step="1" min="0" placeholder="100.00" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500 mb-1">
+          <button onclick="maxUsdcWithdraw()" class="text-xs text-sky-400 hover:underline mb-3 block">Max →</button>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="withdrawUsdc()" class="py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs">Withdraw</button>
+            <button onclick="exitUsdc()" class="py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">Exit All ✓</button>
           </div>
-          <div class="mb-4">
-            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Amount to Withdraw</label>
-            <input id="usdc-withdraw-amount" type="number" step="1" min="0" placeholder="100.00"
-              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
-            <button onclick="setMaxUsdcWithdraw()" class="mt-1 text-xs text-sky-400 hover:underline">Use max →</button>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <button onclick="withdrawUsdc()" class="py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm transition">Withdraw</button>
-            <button onclick="exitUsdc()" class="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition">Exit All ✓</button>
-          </div>
-          <p class="text-slate-600 text-xs mt-2">Exit All withdraws USDC + claims pending interest rewards.</p>
+          <p class="text-slate-600 text-xs mt-2">Exit withdraws USDC + claims interest.</p>
         </div>
 
-        <!-- USDC Claim -->
         <div id="upanel-claim" class="p-5 hidden">
-          <div class="bg-slate-900/60 rounded-xl p-5 border border-amber-900/30 mb-4 text-center">
-            <p class="text-slate-400 text-xs uppercase tracking-wider mb-2">USDC Interest Earned</p>
-            <p id="usdc-claim-amount" class="text-4xl font-mono text-amber-400">—</p>
-            <p class="text-slate-500 text-xs mt-1">From Mechanical Temp loan repayments</p>
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-amber-900/30 mb-4 text-center">
+            <p class="text-slate-400 text-xs uppercase tracking-wider mb-1">USDC Interest Earned</p>
+            <p id="uClaimAmt" class="text-3xl font-mono text-amber-400">—</p>
           </div>
-          <button onclick="claimUsdcRewards()" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition">💰 Claim USDC Interest</button>
+          <button onclick="claimUsdcRewards()" class="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm">💰 Claim Interest</button>
         </div>
       </div>
 
-      <!-- mtETH-S Collateral Panel -->
+      <!-- mtETH-S Panel -->
       <div class="glass rounded-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-800 bg-purple-900/10">
+        <div class="px-5 py-4 border-b border-slate-800 bg-sky-900/10">
           <div class="flex items-center gap-2">
-            <span class="text-purple-400 text-lg">🔐</span>
+            <span class="text-sky-300 text-lg">🔐</span>
             <div>
-              <h2 class="text-base font-bold text-white">mtETH-S Collateral Pool</h2>
-              <p class="text-slate-500 text-xs">Earn <span class="text-purple-400 font-bold">30%</span> of loan interest + Compound yield • Withdraw when no active loan</p>
+              <h2 class="text-sm font-bold text-white">mtETH-S Collateral</h2>
+              <p class="text-slate-500 text-xs"><span class="text-sky-400 font-bold">60% LTV</span> • Share of 30% interest</p>
             </div>
           </div>
         </div>
-
         <div class="flex border-b border-slate-800">
-          <button id="ctab-deposit" onclick="switchCollateralTab('deposit')" class="tab-btn active flex-1 px-4 py-2.5 text-sm font-bold">↓ Deposit</button>
-          <button id="ctab-withdraw" onclick="switchCollateralTab('withdraw')" class="tab-btn flex-1 px-4 py-2.5 text-sm font-bold">↑ Withdraw</button>
-          <button id="ctab-claim" onclick="switchCollateralTab('claim')" class="tab-btn flex-1 px-4 py-2.5 text-sm font-bold">💰 Claim</button>
+          <button id="ctab-deposit" onclick="switchTab('c','deposit')" class="tab-btn active flex-1 px-3 py-2.5 text-xs font-bold">↓ Deposit</button>
+          <button id="ctab-withdraw" onclick="switchTab('c','withdraw')" class="tab-btn flex-1 px-3 py-2.5 text-xs font-bold">↑ Withdraw</button>
+          <button id="ctab-claim" onclick="switchTab('c','claim')" class="tab-btn flex-1 px-3 py-2.5 text-xs font-bold">💰 Claim</button>
         </div>
 
-        <!-- Collateral Deposit -->
         <div id="cpanel-deposit" class="p-5">
-          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800 mb-4 text-xs text-slate-400">
-            Lock mtETH-S to back the credit line. Earn 30% of interest. Your shares keep earning Compound yield while locked.
+          <div class="mb-3 text-xs text-slate-500 bg-slate-900/60 rounded-xl p-3 border border-slate-800">Lock mtETH-S to back the credit line. Earns share of 30% interest weighted by USD value.</div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider mb-1 block">mtETH-S Amount</label>
+          <input id="cDepAmt" type="number" step="0.0001" min="0" placeholder="0.0000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500 mb-1">
+          <div class="flex justify-between mb-3">
+            <span class="text-xs text-slate-600">Wallet: <span id="mtethsWalletBal" class="text-slate-400">—</span></span>
+            <button onclick="maxMteths()" class="text-xs text-sky-400 hover:underline">Max →</button>
           </div>
-          <div class="mb-4">
-            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">mtETH-S Amount</label>
-            <input id="col-deposit-amount" type="number" step="0.0001" min="0" placeholder="0.0000"
-              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-purple-300 focus:outline-none focus:border-purple-500">
-            <div class="flex justify-between mt-1">
-              <span class="text-xs text-slate-600">Balance: <span id="mteths-wallet-balance" class="text-slate-400">—</span></span>
-              <button onclick="setMaxCollateral()" class="text-xs text-purple-400 hover:underline">Use max →</button>
-            </div>
+          <div class="space-y-1 text-xs mb-3">
+            <div class="flex justify-between"><span class="text-slate-500">Your collateral</span><span id="myMtethsDep" class="font-mono text-white">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Pending USDC</span><span id="myMtethsEarned" class="font-mono text-amber-400">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Pool share</span><span id="myMtethsShare" class="font-mono text-slate-300">—</span></div>
           </div>
-          <div class="mb-3">
-            <div class="flex justify-between text-sm">
-              <span class="text-slate-400">Your collateral</span>
-              <span id="my-col-deposited" class="text-white font-mono">—</span>
-            </div>
-            <div class="flex justify-between text-sm mt-1">
-              <span class="text-slate-400">Pending USDC rewards</span>
-              <span id="my-col-earned" class="text-amber-400 font-mono">—</span>
-            </div>
-            <div class="flex justify-between text-sm mt-1">
-              <span class="text-slate-400">Collateral pool share</span>
-              <span id="my-col-share" class="text-slate-300 font-mono">—</span>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <button onclick="approveMtETHS()" class="py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-700 text-purple-400 font-bold text-sm transition">Step 1 — Approve</button>
-            <button onclick="depositCollateral()" class="py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm transition">Step 2 — Deposit</button>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="approveMteths()" class="py-2 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-700 text-sky-400 font-bold text-xs">1 — Approve</button>
+            <button onclick="depositMteths()" class="py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs">2 — Deposit</button>
           </div>
         </div>
 
-        <!-- Collateral Withdraw -->
         <div id="cpanel-withdraw" class="p-5 hidden">
-          <div id="col-loan-lock" class="hidden bg-amber-900/20 border border-amber-800 text-amber-400 text-xs rounded-xl p-3 mb-4">
-            ⚠ Cannot withdraw collateral while a loan is active.
+          <div id="cLoanLock" class="hidden mb-3 text-xs bg-amber-900/20 border border-amber-800 text-amber-400 rounded-xl p-3">⚠ Cannot withdraw while a loan is active.</div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider mb-1 block">mtETH-S to Withdraw</label>
+          <input id="cWithAmt" type="number" step="0.0001" min="0" placeholder="0.0000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500 mb-1">
+          <button onclick="maxMtethsWithdraw()" class="text-xs text-sky-400 hover:underline mb-3 block">Max →</button>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="withdrawMteths()" class="py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs">Withdraw</button>
+            <button onclick="exitMteths()" class="py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">Exit All ✓</button>
           </div>
-          <div class="mb-4">
-            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Amount to Withdraw (mtETH-S)</label>
-            <input id="col-withdraw-amount" type="number" step="0.0001" min="0" placeholder="0.0000"
-              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-purple-300 focus:outline-none focus:border-purple-500">
-            <button onclick="setMaxCollateralWithdraw()" class="mt-1 text-xs text-purple-400 hover:underline">Use max →</button>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <button onclick="withdrawCollateral()" class="py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm transition">Withdraw</button>
-            <button onclick="exitCollateral()" class="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition">Exit All ✓</button>
-          </div>
-          <p class="text-slate-600 text-xs mt-2">Exit All returns your mtETH-S + claims all pending USDC rewards.</p>
         </div>
 
-        <!-- Collateral Claim -->
         <div id="cpanel-claim" class="p-5 hidden">
-          <div class="bg-slate-900/60 rounded-xl p-5 border border-amber-900/30 mb-4 text-center">
-            <p class="text-slate-400 text-xs uppercase tracking-wider mb-2">USDC Interest Earned</p>
-            <p id="col-claim-amount" class="text-4xl font-mono text-amber-400">—</p>
-            <p class="text-slate-500 text-xs mt-1">30% share of Mechanical Temp loan interest</p>
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-amber-900/30 mb-4 text-center">
+            <p class="text-slate-400 text-xs uppercase tracking-wider mb-1">USDC Interest Earned</p>
+            <p id="cClaimAmt" class="text-3xl font-mono text-amber-400">—</p>
+            <p class="text-slate-500 text-xs mt-1">Proportional to mtETH-S USD value</p>
           </div>
-          <button onclick="claimCollateralRewards()" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition">💰 Claim USDC Interest</button>
+          <button onclick="claimMtethsRewards()" class="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm">💰 Claim Interest</button>
+        </div>
+      </div>
+
+      <!-- MTYLD Panel -->
+      <div class="glass rounded-2xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-800 bg-purple-900/10">
+          <div class="flex items-center gap-2">
+            <span class="text-purple-400 text-lg">🏭</span>
+            <div>
+              <h2 class="text-sm font-bold text-white">MTYLD Collateral</h2>
+              <p class="text-slate-500 text-xs"><span class="text-purple-400 font-bold">70% LTV</span> • Share of 30% interest</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex border-b border-slate-800">
+          <button id="mtab-deposit" onclick="switchTab('m','deposit')" class="tab-btn active-purple active flex-1 px-3 py-2.5 text-xs font-bold">↓ Deposit</button>
+          <button id="mtab-withdraw" onclick="switchTab('m','withdraw')" class="tab-btn flex-1 px-3 py-2.5 text-xs font-bold">↑ Withdraw</button>
+          <button id="mtab-claim" onclick="switchTab('m','claim')" class="tab-btn flex-1 px-3 py-2.5 text-xs font-bold">💰 Claim</button>
+        </div>
+
+        <div id="mpanel-deposit" class="p-5">
+          <div class="mb-3 text-xs text-slate-500 bg-slate-900/60 rounded-xl p-3 border border-slate-800">Lock MTYLD for <span class="text-purple-400">70% LTV</span> — USDC-stable NAV, highest borrow efficiency.</div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider mb-1 block">MTYLD Amount</label>
+          <input id="mDepAmt" type="number" step="0.0001" min="0" placeholder="0.0000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-purple-300 focus:outline-none focus:border-purple-500 mb-1">
+          <div class="flex justify-between mb-3">
+            <span class="text-xs text-slate-600">Wallet: <span id="mtyldWalletBal" class="text-slate-400">—</span></span>
+            <button onclick="maxMtyld()" class="text-xs text-purple-400 hover:underline">Max →</button>
+          </div>
+          <div class="space-y-1 text-xs mb-3">
+            <div class="flex justify-between"><span class="text-slate-500">Your collateral</span><span id="myMtyldDep" class="font-mono text-white">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Pending USDC</span><span id="myMtyldEarned" class="font-mono text-amber-400">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Pool share</span><span id="myMtyldShare" class="font-mono text-slate-300">—</span></div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="approveMtyld()" class="py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-700 text-purple-400 font-bold text-xs">1 — Approve</button>
+            <button onclick="depositMtyld()" class="py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs">2 — Deposit</button>
+          </div>
+        </div>
+
+        <div id="mpanel-withdraw" class="p-5 hidden">
+          <div id="mLoanLock" class="hidden mb-3 text-xs bg-amber-900/20 border border-amber-800 text-amber-400 rounded-xl p-3">⚠ Cannot withdraw while a loan is active.</div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider mb-1 block">MTYLD to Withdraw</label>
+          <input id="mWithAmt" type="number" step="0.0001" min="0" placeholder="0.0000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-purple-300 focus:outline-none focus:border-purple-500 mb-1">
+          <button onclick="maxMtyldWithdraw()" class="text-xs text-purple-400 hover:underline mb-3 block">Max →</button>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="withdrawMtyld()" class="py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs">Withdraw</button>
+            <button onclick="exitMtyld()" class="py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">Exit All ✓</button>
+          </div>
+        </div>
+
+        <div id="mpanel-claim" class="p-5 hidden">
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-amber-900/30 mb-4 text-center">
+            <p class="text-slate-400 text-xs uppercase tracking-wider mb-1">USDC Interest Earned</p>
+            <p id="mClaimAmt" class="text-3xl font-mono text-amber-400">—</p>
+            <p class="text-slate-500 text-xs mt-1">Proportional to MTYLD USD value</p>
+          </div>
+          <button onclick="claimMtyldRewards()" class="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm">💰 Claim Interest</button>
         </div>
       </div>
     </div>
 
-    <!-- How It Works + Contract Info -->
-    <div class="grid md:grid-cols-2 gap-6 mb-6">
-
-      <div class="glass rounded-2xl p-6">
-        <h3 class="text-base font-bold text-white mb-4">How the Credit Line Works</h3>
-        <div class="space-y-4">
-          <div class="flex gap-3">
-            <div class="w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center text-sky-400 text-xs font-bold flex-none">1</div>
-            <div>
-              <p class="text-slate-300 text-sm font-semibold">USDC depositors fund the pool</p>
-              <p class="text-slate-500 text-xs mt-0.5">Anyone deposits USDC to create available credit for Mechanical Temp to draw from.</p>
-            </div>
-          </div>
-          <div class="flex gap-3">
-            <div class="w-7 h-7 rounded-full bg-purple-900/40 border border-purple-800 flex items-center justify-center text-purple-400 text-xs font-bold flex-none">2</div>
-            <div>
-              <p class="text-slate-300 text-sm font-semibold">mtETH-S holders back it with collateral</p>
-              <p class="text-slate-500 text-xs mt-0.5">MTYLD holders lock Conservator shares (70% LTV via Chainlink). mtETH-S keeps earning Compound yield while locked.</p>
-            </div>
-          </div>
-          <div class="flex gap-3">
-            <div class="w-7 h-7 rounded-full bg-emerald-900/40 border border-emerald-800 flex items-center justify-center text-emerald-400 text-xs font-bold flex-none">3</div>
-            <div>
-              <p class="text-slate-300 text-sm font-semibold">Mechanical Temp draws USDC</p>
-              <p class="text-slate-500 text-xs mt-0.5">Borrows up to 70% of collateral value for up to 90 days at 8% APR for operations, parts, and payroll.</p>
-            </div>
-          </div>
-          <div class="flex gap-3">
-            <div class="w-7 h-7 rounded-full bg-amber-900/40 border border-amber-800 flex items-center justify-center text-amber-400 text-xs font-bold flex-none">4</div>
-            <div>
-              <p class="text-slate-300 text-sm font-semibold">Repayment distributes interest</p>
-              <p class="text-slate-500 text-xs mt-0.5">Principal + interest repaid on-chain. 70% of interest to USDC depositors, 30% to collateral providers.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass rounded-2xl p-6">
-        <h3 class="text-base font-bold text-white mb-4">Contract Details</h3>
-        <div class="space-y-3">
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-400">Contract</span>
-            <a href="https://arbiscan.io/address/0xb3D07f571bdF7725dd35748251c6868913300486" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xb3D0...0486 ↗</a>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-400">Collateral Token</span>
-            <span class="text-white text-xs font-mono">mtETH-S</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-400">Loan Currency</span>
-            <span class="text-white text-xs font-mono">USDC</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-400">Interest Rate</span>
-            <span id="info-rate" class="text-emerald-400 text-xs font-mono">—</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-400">Max Loan Term</span>
-            <span class="text-white text-xs">90 days</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-400">LTV Ratio</span>
-            <span class="text-white text-xs">70%</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-400">Interest Split</span>
-            <span class="text-white text-xs">70% USDC / 30% Collateral</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-400">Price Oracle</span>
-            <span class="text-white text-xs">Chainlink ETH/USD</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-400">Total Loans</span>
-            <span id="info-loans" class="text-white text-xs font-mono">—</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-400">ETH Price</span>
-            <span id="info-eth-price" class="text-white text-xs font-mono">—</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── BORROWER PANEL (only visible to Mechanical Temp wallet) ── -->
-    <div id="borrower-section" class="hidden glass rounded-2xl mb-6 overflow-hidden border border-sky-900/40">
+    <!-- Borrower Panel -->
+    <div id="borrowerSection" class="hidden glass rounded-2xl overflow-hidden border border-sky-900/40">
       <div class="px-6 py-4 border-b border-slate-800 bg-sky-900/10 flex items-center gap-3">
         <span class="text-sky-400 text-lg">🏗️</span>
         <div>
@@ -358,659 +321,620 @@
           <p class="text-slate-500 text-xs">Only visible to the borrower wallet</p>
         </div>
       </div>
-
       <div class="p-6 grid md:grid-cols-2 gap-6">
 
         <!-- Open Loan -->
         <div class="bg-slate-900/60 rounded-xl p-5 border border-slate-800">
-          <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
-            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Open New Loan
-          </h3>
-          <p class="text-slate-500 text-xs mb-4">Borrow USDC from the pool. Requires collateral to be deposited first.</p>
-
-          <div class="space-y-3 mb-4">
-            <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800 grid grid-cols-2 gap-3 text-xs">
-              <div><p class="text-slate-500">Available USDC</p><p id="borrow-avail-usdc" class="text-sky-400 font-mono font-bold">—</p></div>
-              <div><p class="text-slate-500">Max Borrowable</p><p id="borrow-max" class="text-emerald-400 font-mono font-bold">—</p></div>
-              <div><p class="text-slate-500">Collateral Value</p><p id="borrow-col-val" class="text-purple-400 font-mono font-bold">—</p></div>
-              <div><p class="text-slate-500">Interest Rate</p><p id="borrow-rate" class="text-amber-400 font-mono font-bold">—</p></div>
-            </div>
-
-            <div>
-              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Borrow Amount (USDC)</label>
-              <input id="borrow-amount" type="number" step="10" min="0" placeholder="500.00"
-                class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
-            </div>
-            <div>
-              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Term (days, max 90)</label>
-              <input id="borrow-term" type="number" step="1" min="1" max="90" placeholder="30"
-                class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
-            </div>
-            <div id="borrow-preview" class="hidden bg-slate-900/80 rounded-xl p-3 border border-emerald-900/30 text-xs">
-              <div class="flex justify-between mb-1"><span class="text-slate-400">Interest at maturity</span><span id="borrow-interest-preview" class="text-amber-400 font-mono">—</span></div>
-              <div class="flex justify-between"><span class="text-slate-400">Total repayment</span><span id="borrow-total-preview" class="text-emerald-400 font-mono font-bold">—</span></div>
-            </div>
+          <h3 class="text-sm font-bold text-white mb-1">Open New Loan</h3>
+          <p class="text-slate-500 text-xs mb-4">Borrow USDC against deposited collateral.</p>
+          <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800 grid grid-cols-2 gap-3 text-xs mb-4">
+            <div><p class="text-slate-500">Available USDC</p><p id="bAvailUsdc" class="text-sky-400 font-mono font-bold">—</p></div>
+            <div><p class="text-slate-500">Max Borrowable</p><p id="bMaxBorrow" class="text-emerald-400 font-mono font-bold">—</p></div>
+            <div><p class="text-slate-500">mtETH-S Power</p><p id="bMtethsPower" class="text-sky-400 font-mono font-bold">—</p></div>
+            <div><p class="text-slate-500">MTYLD Power</p><p id="bMtyldPower" class="text-purple-400 font-mono font-bold">—</p></div>
+            <div><p class="text-slate-500">Interest Rate</p><p id="bRate" class="text-amber-400 font-mono font-bold">—</p></div>
+            <div><p class="text-slate-500">Total Loans</p><p id="bTotalLoans" class="text-white font-mono font-bold">—</p></div>
           </div>
-
-          <button onclick="openLoan()" class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition">
-            Open Loan →
-          </button>
+          <label class="text-xs text-slate-400 uppercase tracking-wider mb-1 block">Borrow Amount (USDC)</label>
+          <input id="bAmount" type="number" step="10" min="0" placeholder="500.00" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500 mb-3">
+          <label class="text-xs text-slate-400 uppercase tracking-wider mb-1 block">Term (days, max 90)</label>
+          <input id="bTerm" type="number" step="1" min="1" max="90" placeholder="30" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500 mb-3">
+          <div id="bPreview" class="hidden bg-slate-900/80 rounded-xl p-3 border border-emerald-900/30 text-xs mb-3">
+            <div class="flex justify-between mb-1"><span class="text-slate-400">Interest at maturity</span><span id="bInterestPreview" class="text-amber-400 font-mono">—</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Total repayment</span><span id="bTotalPreview" class="text-emerald-400 font-mono font-bold">—</span></div>
+          </div>
+          <button onclick="openLoan()" class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm">Open Loan →</button>
         </div>
 
-        <!-- Active Loan Management -->
+        <!-- Repay -->
         <div class="bg-slate-900/60 rounded-xl p-5 border border-slate-800">
-          <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
-            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
-            Repay Loan
-          </h3>
-          <p class="text-slate-500 text-xs mb-4">Approve USDC first, then repay full or partial amount.</p>
-
-          <div id="no-loan-msg" class="text-center py-6 text-slate-500 text-sm">No active loan</div>
-
-          <div id="repay-panel" class="hidden space-y-3">
+          <h3 class="text-sm font-bold text-white mb-1">Repay Loan</h3>
+          <p class="text-slate-500 text-xs mb-4">Approve USDC first, then repay full or partial.</p>
+          <div id="noLoanMsg" class="text-center py-8 text-slate-500 text-sm">No active loan</div>
+          <div id="repayPanel" class="hidden space-y-3">
             <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800 grid grid-cols-2 gap-3 text-xs">
-              <div><p class="text-slate-500">Principal</p><p id="repay-principal" class="text-white font-mono font-bold">—</p></div>
-              <div><p class="text-slate-500">Interest Accrued</p><p id="repay-interest" class="text-amber-400 font-mono font-bold">—</p></div>
-              <div><p class="text-slate-500">Total Due</p><p id="repay-due" class="text-emerald-400 font-mono font-bold">—</p></div>
-              <div><p class="text-slate-500">Days Remaining</p><p id="repay-days" class="text-sky-400 font-mono font-bold">—</p></div>
+              <div><p class="text-slate-500">Principal</p><p id="rPrincipal" class="text-white font-mono font-bold">—</p></div>
+              <div><p class="text-slate-500">Interest Accrued</p><p id="rInterest" class="text-amber-400 font-mono font-bold">—</p></div>
+              <div><p class="text-slate-500">Total Due</p><p id="rDue" class="text-emerald-400 font-mono font-bold">—</p></div>
+              <div><p class="text-slate-500">Days Remaining</p><p id="rDays" class="text-sky-400 font-mono font-bold">—</p></div>
             </div>
-
-            <!-- Approve USDC -->
+            <button onclick="approveRepay()" class="w-full py-2.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-700 text-amber-400 font-bold text-sm">Step 1 — Approve USDC</button>
+            <button onclick="repayFull()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm">✓ Repay Full Amount</button>
             <div>
-              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Step 1 — Approve USDC</label>
-              <button onclick="approveRepayUsdc()" class="w-full py-2.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-700 text-amber-400 font-bold text-sm transition">
-                Approve USDC for Repayment
-              </button>
-            </div>
-
-            <!-- Full Repay -->
-            <button onclick="repayFull()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition">
-              ✓ Repay Full Amount
-            </button>
-
-            <!-- Partial Repay -->
-            <div>
-              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Partial Repayment</label>
+              <label class="text-xs text-slate-400 uppercase tracking-wider mb-1 block">Partial Repayment</label>
               <div class="flex gap-2">
-                <input id="partial-amount" type="number" step="10" min="0" placeholder="Amount USDC"
-                  class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
-                <button onclick="repayPartial()" class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm transition whitespace-nowrap">
-                  Pay Partial
-                </button>
+                <input id="partialAmt" type="number" step="10" min="0" placeholder="Amount USDC" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+                <button onclick="repayPartial()" class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm">Partial</button>
               </div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
+    <!-- How It Works + Contract Info -->
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="glass rounded-2xl p-6">
+        <h3 class="text-base font-bold text-white mb-4">How It Works</h3>
+        <div class="space-y-4">
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center text-sky-400 text-xs font-bold flex-none">1</div>
+            <div><p class="text-slate-300 text-sm font-semibold">USDC depositors fund the pool</p><p class="text-slate-500 text-xs mt-0.5">Anyone deposits USDC to create available credit. Earn 70% of interest.</p></div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center text-sky-400 text-xs font-bold flex-none">2</div>
+            <div><p class="text-slate-300 text-sm font-semibold">Collateral backs the credit line</p><p class="text-slate-500 text-xs mt-0.5">mtETH-S at 60% LTV or MTYLD at 70% LTV. Both earn share of 30% interest weighted by USD value.</p></div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-full bg-emerald-900/40 border border-emerald-800 flex items-center justify-center text-emerald-400 text-xs font-bold flex-none">3</div>
+            <div><p class="text-slate-300 text-sm font-semibold">Mechanical Temp draws USDC</p><p class="text-slate-500 text-xs mt-0.5">Up to combined borrow power for operations, parts, and payroll. Max 90 days.</p></div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-full bg-amber-900/40 border border-amber-800 flex items-center justify-center text-amber-400 text-xs font-bold flex-none">4</div>
+            <div><p class="text-slate-300 text-sm font-semibold">Repayment distributes interest</p><p class="text-slate-500 text-xs mt-0.5">Principal + interest repaid on-chain. Interest split 70/30 then collateral split by USD weight.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl p-6">
+        <h3 class="text-base font-bold text-white mb-4">Contract Details</h3>
+        <div class="space-y-2.5 text-sm">
+          <div class="flex justify-between"><span class="text-slate-400">Contract</span><a href="https://arbiscan.io/address/0xe442E46c4cbBa68bFE36196B9547392BAD0429eB" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xe442...29eB ↗</a></div>
+          <div class="flex justify-between"><span class="text-slate-400">mtETH-S Token</span><a href="https://arbiscan.io/address/0xc9227b644285198646F9c75ceCf13F84bF419B78" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xc922...9B78 ↗</a></div>
+          <div class="flex justify-between"><span class="text-slate-400">MTYLD Token</span><a href="https://arbiscan.io/address/0xdFD1C01678e713FDe1630c9db921e6206f3795b4" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xdFD1...95b4 ↗</a></div>
+          <div class="flex justify-between"><span class="text-slate-400">mtETH-S LTV</span><span class="text-white text-xs">60%</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">MTYLD LTV</span><span class="text-white text-xs">70%</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Interest Rate</span><span id="infoRate" class="text-emerald-400 text-xs font-mono">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Max Loan Term</span><span class="text-white text-xs">90 days</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Interest Split</span><span class="text-white text-xs">70% USDC / 30% Collateral</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">ETH Oracle</span><span class="text-white text-xs">Chainlink ETH/USD</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">MTYLD Oracle</span><span class="text-white text-xs">pricePerToken() NAV</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">ETH Price</span><span id="infoEthPrice" class="text-white text-xs font-mono">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">MTYLD Price</span><span id="infoMtyldPrice" class="text-white text-xs font-mono">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Total Loans</span><span id="infoLoans" class="text-white text-xs font-mono">—</span></div>
+        </div>
       </div>
     </div>
 
     <!-- Footer -->
     <div class="pt-6 border-t border-slate-800 flex items-center justify-between">
-      <p class="text-slate-600 text-xs font-mono">0xb3D0...0486 • Arbitrum One • 15s refresh</p>
+      <p class="text-slate-600 text-xs font-mono">0xe442...29eB • Arbitrum One • v3.0</p>
       <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
     </div>
-
   </main>
 
-  <!-- TX Toast -->
-  <div id="tx-toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm w-full">
-    <div id="tx-card" class="bg-slate-900 border rounded-2xl p-4 shadow-2xl">
-      <div id="tx-title" class="text-xs font-mono font-bold uppercase tracking-wider mb-1"></div>
-      <div id="tx-msg" class="text-slate-400 text-sm"></div>
-      <div id="tx-hash" class="mt-2 text-xs font-mono"></div>
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm w-full">
+    <div id="toastCard" class="bg-slate-900 border rounded-2xl p-4 shadow-2xl">
+      <div id="toastTitle" class="text-xs font-mono font-bold uppercase tracking-wider mb-1"></div>
+      <div id="toastMsg" class="text-slate-400 text-sm"></div>
+      <div id="toastHash" class="mt-2 text-xs font-mono"></div>
     </div>
   </div>
 
-  <script>
-    // ── Addresses ──────────────────────────────────────────────
-    const CONTRACT_ADDR = "0xb3D07f571bdF7725dd35748251c6868913300486";
-    const MTETHS_ADDR   = "0xc9227b644285198646F9c75ceCf13F84bF419B78";
-    const USDC_ADDR     = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
-    const ARBITRUM_ID   = 42161n;
+<script>
+  const CONTRACT  = "0xe442E46c4cbBa68bFE36196B9547392BAD0429eB";
+  const MTETHS    = "0xc9227b644285198646F9c75ceCf13F84bF419B78";
+  const MTYLD_TOK = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
+  const USDC_ADDR = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+  const BORROWER  = "0xcfe077e6f7554B1724546E02624a0832D1f4557a";
+  const ARB_ID    = 42161n;
 
-    const ABI = [
-      "function totalUsdcDeposited() view returns (uint256)",
-      "function totalCollateralDeposited() view returns (uint256)",
-      "function totalInterestPaid() view returns (uint256)",
-      "function totalLoansOriginated() view returns (uint256)",
-      "function maxBorrowable() view returns (uint256)",
-      "function collateralValueUsdc() view returns (uint256)",
-      "function ethPriceUsd6() view returns (uint256)",
-      "function interestRateBps() view returns (uint256)",
-      "function accruedInterest() view returns (uint256)",
-      "function amountDue() view returns (uint256)",
-      "function daysRemaining() view returns (uint256)",
-      "function isOverdue() view returns (bool)",
-      "function currentLoan() view returns (uint256 principal, uint256 startTime, uint256 termSeconds, uint256 interestRateBps, bool active)",
-      "function usdcDeposited(address) view returns (uint256)",
-      "function collateralDeposited(address) view returns (uint256)",
-      "function earnedUsdc(address) view returns (uint256)",
-      "function earnedCollateral(address) view returns (uint256)",
-      "function usdcShareOf(address) view returns (uint256)",
-      "function collateralShareOf(address) view returns (uint256)",
-      "function depositUsdc(uint256)",
-      "function withdrawUsdc(uint256)",
-      "function exitUsdc()",
-      "function claimUsdcRewards()",
-      "function depositCollateral(uint256)",
-      "function withdrawCollateral(uint256)",
-      "function exitCollateral()",
-      "function claimCollateralRewards()",
-    ];
+  const ABI = [
+    "function totalUsdcDeposited() view returns (uint256)",
+    "function totalCollateralDeposited() view returns (uint256)",
+    "function totalMtyldCollateral() view returns (uint256)",
+    "function totalInterestPaid() view returns (uint256)",
+    "function totalLoansOriginated() view returns (uint256)",
+    "function maxBorrowable() view returns (uint256)",
+    "function collateralValueUsdc() view returns (uint256)",
+    "function mtyldCollateralValueUsdc() view returns (uint256)",
+    "function totalCollateralValueUsdc() view returns (uint256)",
+    "function ethPriceUsd6() view returns (uint256)",
+    "function mtyldPriceUsd6() view returns (uint256)",
+    "function interestRateBps() view returns (uint256)",
+    "function accruedInterest() view returns (uint256)",
+    "function amountDue() view returns (uint256)",
+    "function daysRemaining() view returns (uint256)",
+    "function isOverdue() view returns (bool)",
+    "function currentLoan() view returns (uint256 principal, uint256 startTime, uint256 termSeconds, uint256 interestRateBps, bool active)",
+    "function usdcDeposited(address) view returns (uint256)",
+    "function collateralDeposited(address) view returns (uint256)",
+    "function mtyldCollateralDeposited(address) view returns (uint256)",
+    "function earnedUsdc(address) view returns (uint256)",
+    "function earnedCollateral(address) view returns (uint256)",
+    "function earnedMtyldCollateral(address) view returns (uint256)",
+    "function usdcShareOf(address) view returns (uint256)",
+    "function collateralShareOf(address) view returns (uint256)",
+    "function mtyldCollateralShareOf(address) view returns (uint256)",
+    "function collateralSummary() view returns (uint256 mtethsTokens, uint256 mtethsUsd, uint256 mtethsBorrowPower, uint256 mtyldTokens, uint256 mtyldUsd, uint256 mtyldBorrowPower, uint256 totalBorrowPower)",
+    "function borrower() view returns (address)",
+    "function depositUsdc(uint256)",
+    "function withdrawUsdc(uint256)",
+    "function exitUsdc()",
+    "function claimUsdcRewards()",
+    "function depositCollateral(uint256)",
+    "function withdrawCollateral(uint256)",
+    "function exitCollateral()",
+    "function claimCollateralRewards()",
+    "function depositMtyldCollateral(uint256)",
+    "function withdrawMtyldCollateral(uint256)",
+    "function exitMtyldCollateral()",
+    "function claimMtyldCollateralRewards()",
+    "function openLoan(uint256 amount, uint256 termDays)",
+    "function repayLoan()",
+    "function repayPartial(uint256 amount)",
+  ];
 
-    const ERC20_ABI = [
-      "function balanceOf(address) view returns (uint256)",
-      "function approve(address spender, uint256 amount) returns (bool)",
-      "function allowance(address owner, address spender) view returns (uint256)",
-    ];
+  const ERC20_ABI = [
+    "function balanceOf(address) view returns (uint256)",
+    "function approve(address, uint256) returns (bool)",
+    "function allowance(address, address) view returns (uint256)",
+  ];
 
-    let provider, signer, contract, usdcContract, mtethsContract;
-    let isConnected = false, userAddress = null;
-    let toastTimer;
-    let loanActive = false;
+  const el = id => document.getElementById(id);
+  const fU = (n, dp=2) => '$' + (Number(n) / 1e6).toLocaleString(undefined, { minimumFractionDigits: dp, maximumFractionDigits: dp });
+  const fE = (n, dp=4) => parseFloat(ethers.formatEther(n)).toFixed(dp);
+  const fP = (n) => (Number(n) / 1e16).toFixed(2) + '%';
+  const fR = (n) => (Number(n) / 100).toFixed(1) + '% APR';
+  const shortErr = e => (e?.info?.error?.message || e?.shortMessage || e?.message || String(e)).replace(/execution reverted: /i,'').slice(0, 200);
 
-    // ── Toast ──────────────────────────────────────────────────
-    function showToast(state, title, msg, hash) {
-      clearTimeout(toastTimer);
-      const colors = { pending: 'border-amber-600', success: 'border-emerald-600', error: 'border-red-600' };
-      const tc     = { pending: 'text-amber-400',   success: 'text-emerald-400',   error: 'text-red-400' };
-      document.getElementById('tx-card').className  = `bg-slate-900 border rounded-2xl p-4 shadow-2xl ${colors[state]}`;
-      document.getElementById('tx-title').className = `text-xs font-mono font-bold uppercase tracking-wider mb-1 ${tc[state]}`;
-      document.getElementById('tx-title').textContent = title;
-      document.getElementById('tx-msg').textContent   = msg;
-      document.getElementById('tx-hash').innerHTML = hash
-        ? `<a href="https://arbiscan.io/tx/${hash}" target="_blank" class="text-sky-400 hover:underline">${hash.slice(0,10)}...${hash.slice(-6)} ↗</a>` : '';
-      document.getElementById('tx-toast').style.display = 'block';
-      if (state !== 'pending') toastTimer = setTimeout(() => document.getElementById('tx-toast').style.display = 'none', 7000);
+  let provider, signer, contract, usdcC, mtethsC, mtyldC;
+  let userAddr = null;
+  let loanActive = false;
+  let toastTimer;
+
+  // ── Toast ──────────────────────────────────────────────────
+  function toast(state, title, msg, hash) {
+    clearTimeout(toastTimer);
+    const colors = { pending:'border-amber-600', success:'border-emerald-600', error:'border-red-600' };
+    const tc     = { pending:'text-amber-400',   success:'text-emerald-400',   error:'text-red-400' };
+    el('toastCard').className  = `bg-slate-900 border rounded-2xl p-4 shadow-2xl ${colors[state]}`;
+    el('toastTitle').className = `text-xs font-mono font-bold uppercase tracking-wider mb-1 ${tc[state]}`;
+    el('toastTitle').textContent = title;
+    el('toastMsg').textContent   = msg;
+    el('toastHash').innerHTML = hash
+      ? `<a href="https://arbiscan.io/tx/${hash}" target="_blank" class="text-sky-400 hover:underline">${hash.slice(0,12)}…${hash.slice(-6)} ↗</a>` : '';
+    el('toast').style.display = 'block';
+    if (state !== 'pending') toastTimer = setTimeout(() => el('toast').style.display = 'none', 7000);
+  }
+
+  // ── Network check ──────────────────────────────────────────
+  async function checkNet() {
+    if (!window.ethereum) return false;
+    const chainId = BigInt(await window.ethereum.request({ method: 'eth_chainId' }));
+    const badge = el('netBadge'), warn = el('netWarn');
+    if (chainId === ARB_ID) {
+      badge.textContent = 'Arbitrum One';
+      badge.className = 'px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-indigo-900/30 border-indigo-700 text-indigo-300';
+      badge.style.display = 'block'; warn.style.display = 'none';
+      return true;
     }
+    badge.textContent = 'Wrong Network';
+    badge.className = 'px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-red-900/30 border-red-700 text-red-400';
+    badge.style.display = 'block'; warn.style.display = 'block';
+    return false;
+  }
 
-    // ── Network ────────────────────────────────────────────────
-    async function checkNetwork() {
-      if (!window.ethereum) return false;
-      const chainId = BigInt(await window.ethereum.request({ method: 'eth_chainId' }));
-      const badge = document.getElementById('network-badge');
-      const warn  = document.getElementById('network-warning');
-      if (chainId === ARBITRUM_ID) {
-        badge.textContent = 'Arbitrum One';
-        badge.className   = 'px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-indigo-900/30 border-indigo-700 text-indigo-300';
-        badge.style.display = 'block'; warn.style.display = 'none';
-        return true;
+  // ── Connect ────────────────────────────────────────────────
+  async function connect() {
+    if (!window.ethereum) return alert('Install MetaMask first.');
+    try {
+      provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send('eth_requestAccounts', []);
+      if (!await checkNet()) {
+        try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xa4b1' }] }); }
+        catch(e) { return; }
       }
-      badge.textContent = 'Wrong Network';
-      badge.className   = 'px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-red-900/30 border-red-700 text-red-400';
-      badge.style.display = 'block'; warn.style.display = 'block';
-      return false;
-    }
+      signer   = await provider.getSigner();
+      userAddr = await signer.getAddress();
+      contract = new ethers.Contract(CONTRACT, ABI, signer);
+      usdcC    = new ethers.Contract(USDC_ADDR, ERC20_ABI, signer);
+      mtethsC  = new ethers.Contract(MTETHS,    ERC20_ABI, signer);
+      mtyldC   = new ethers.Contract(MTYLD_TOK, ERC20_ABI, signer);
+      const btn = el('btnConnect');
+      btn.textContent = userAddr.slice(0,6) + '…' + userAddr.slice(-4);
+      btn.className   = 'px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold';
+      if (userAddr.toLowerCase() === BORROWER.toLowerCase()) el('borrowerSection').style.display = 'block';
+      await refreshAll();
+    } catch(e) { console.error(e); }
+  }
 
-    // ── Connect ────────────────────────────────────────────────
-    async function connect() {
-      if (!window.ethereum) return alert('Install MetaMask first.');
-      try {
-        provider = new ethers.BrowserProvider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        signer = await provider.getSigner();
-        userAddress = await signer.getAddress();
-        contract      = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
-        usdcContract  = new ethers.Contract(USDC_ADDR, ERC20_ABI, signer);
-        mtethsContract = new ethers.Contract(MTETHS_ADDR, ERC20_ABI, signer);
-        isConnected = true;
-        const btn = document.getElementById('btn-connect');
-        btn.textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
-        btn.className   = 'px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold';
-        await checkNetwork();
-        await refreshAll();
-        await refreshBorrowerPanel();
-      } catch(e) { console.error(e); }
-    }
+  async function ensureConn() {
+    if (!userAddr) await connect();
+    return !!userAddr;
+  }
 
-    async function req() {
-      if (!isConnected) {
-        await connect();
-        if (!isConnected) return false;
-      }
-      return await checkNetwork();
-    }
-
-    // ── Format helpers ─────────────────────────────────────────
-    const fmtUsdc  = (n) => '$' + (Number(n) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 });
-    const fmtEth   = (n) => (Number(n) / 1e18).toFixed(4) + ' mtETH-S';
-    const fmtPct   = (n) => (Number(n) / 1e16).toFixed(2) + '%';
-    const fmtRate  = (n) => (Number(n) / 100).toFixed(1) + '% APR';
-
-    // ── Refresh ────────────────────────────────────────────────
-    async function refreshAll() {
-      if (!window.ethereum) return;
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const rc = new ethers.Contract(CONTRACT_ADDR, ABI, rp);
-
-        const [
-          totalUsdc, totalCol, totalInt, totalLoans,
-          maxBorrow, colValUsdc, ethPrice, rateBps,
-          loan, overdue, daysLeft
-        ] = await Promise.all([
-          rc.totalUsdcDeposited(),
-          rc.totalCollateralDeposited(),
-          rc.totalInterestPaid(),
-          rc.totalLoansOriginated(),
-          rc.maxBorrowable(),
-          rc.collateralValueUsdc(),
-          rc.ethPriceUsd6(),
-          rc.interestRateBps(),
-          rc.currentLoan(),
-          rc.isOverdue(),
-          rc.daysRemaining(),
-        ]);
-
-        loanActive = loan.active;
-
-        // Stats
-        document.getElementById('stat-usdc-pool').textContent      = fmtUsdc(totalUsdc);
-        document.getElementById('stat-collateral').textContent      = fmtEth(totalCol);
-        document.getElementById('stat-collateral-usd').textContent  = '≈ ' + fmtUsdc(colValUsdc) + ' USD value';
-        document.getElementById('stat-max-borrow').textContent      = fmtUsdc(maxBorrow);
-        document.getElementById('stat-interest-paid').textContent   = fmtUsdc(totalInt);
-        document.getElementById('info-rate').textContent            = fmtRate(rateBps);
-        document.getElementById('info-loans').textContent           = totalLoans.toString();
-        document.getElementById('info-eth-price').textContent = '$' + (Number(ethPrice) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 });
-
-        // Loan banner
-        document.getElementById('loan-banner').style.display   = loan.active ? 'block' : 'none';
-        document.getElementById('overdue-banner').style.display = overdue ? 'block' : 'none';
-
-        if (loan.active) {
-          const interest = await rc.accruedInterest();
-          const due      = await rc.amountDue();
-          document.getElementById('loan-principal').textContent = fmtUsdc(loan.principal);
-          document.getElementById('loan-interest').textContent  = fmtUsdc(interest);
-          document.getElementById('loan-due').textContent       = fmtUsdc(due);
-          document.getElementById('loan-days').textContent      = overdue ? '⚠ Overdue' : daysLeft.toString() + 'd';
-          if (overdue) document.getElementById('loan-days').className = 'text-red-400 font-mono font-bold overdue-flash';
-        }
-
-        // Lock warnings
-        document.getElementById('usdc-loan-lock').style.display = loan.active ? 'block' : 'none';
-        document.getElementById('col-loan-lock').style.display  = loan.active ? 'block' : 'none';
-
-        // User data
-        if (userAddress) {
-          const uc = new ethers.Contract(USDC_ADDR, ERC20_ABI, rp);
-          const mc = new ethers.Contract(MTETHS_ADDR, ERC20_ABI, rp);
-          const [
-            myUsdcDep, myColDep, myUsdcEarned, myColEarned,
-            myUsdcShare, myColShare, usdcBal, mtethsBal
-          ] = await Promise.all([
-            rc.usdcDeposited(userAddress),
-            rc.collateralDeposited(userAddress),
-            rc.earnedUsdc(userAddress),
-            rc.earnedCollateral(userAddress),
-            rc.usdcShareOf(userAddress),
-            rc.collateralShareOf(userAddress),
-            uc.balanceOf(userAddress),
-            mc.balanceOf(userAddress),
-          ]);
-
-          document.getElementById('my-usdc-deposited').textContent  = fmtUsdc(myUsdcDep);
-          document.getElementById('my-usdc-earned').textContent     = fmtUsdc(myUsdcEarned);
-          document.getElementById('my-usdc-share').textContent      = fmtPct(myUsdcShare);
-          document.getElementById('usdc-claim-amount').textContent  = fmtUsdc(myUsdcEarned);
-          document.getElementById('my-col-deposited').textContent   = fmtEth(myColDep);
-          document.getElementById('my-col-earned').textContent      = fmtUsdc(myColEarned);
-          document.getElementById('my-col-share').textContent       = fmtPct(myColShare);
-          document.getElementById('col-claim-amount').textContent   = fmtUsdc(myColEarned);
-          document.getElementById('usdc-wallet-balance').textContent  = fmtUsdc(usdcBal);
-          document.getElementById('mteths-wallet-balance').textContent = fmtEth(mtethsBal);
-        }
-      } catch(e) { console.error('Refresh error:', e); }
-    }
-
-    // ── Tab switching ──────────────────────────────────────────
-    function switchUsdcTab(tab) {
-      ['deposit','withdraw','claim'].forEach(t => {
-        document.getElementById('upanel-' + t).classList.toggle('hidden', t !== tab);
-        document.getElementById('utab-' + t).classList.toggle('active', t === tab);
-      });
-    }
-    function switchCollateralTab(tab) {
-      ['deposit','withdraw','claim'].forEach(t => {
-        document.getElementById('cpanel-' + t).classList.toggle('hidden', t !== tab);
-        document.getElementById('ctab-' + t).classList.toggle('active', t === tab);
-      });
-    }
-
-    // ── Max helpers ────────────────────────────────────────────
-    async function setMaxUsdc() {
-      if (!isConnected) return;
-      const rp = new ethers.BrowserProvider(window.ethereum);
-      const uc = new ethers.Contract(USDC_ADDR, ERC20_ABI, rp);
-      const bal = await uc.balanceOf(userAddress);
-      document.getElementById('usdc-deposit-amount').value = (Number(bal) / 1e6).toFixed(6);
-    }
-    async function setMaxUsdcWithdraw() {
-      if (!isConnected) return;
-      const rp = new ethers.BrowserProvider(window.ethereum);
-      const rc = new ethers.Contract(CONTRACT_ADDR, ABI, rp);
-      const dep = await rc.usdcDeposited(userAddress);
-      document.getElementById('usdc-withdraw-amount').value = (Number(dep) / 1e6).toFixed(6);
-    }
-    async function setMaxCollateral() {
-      if (!isConnected) return;
-      const rp = new ethers.BrowserProvider(window.ethereum);
-      const mc = new ethers.Contract(MTETHS_ADDR, ERC20_ABI, rp);
-      const bal = await mc.balanceOf(userAddress);
-      document.getElementById('col-deposit-amount').value = ethers.formatEther(bal);
-    }
-    async function setMaxCollateralWithdraw() {
-      if (!isConnected) return;
-      const rp = new ethers.BrowserProvider(window.ethereum);
-      const rc = new ethers.Contract(CONTRACT_ADDR, ABI, rp);
-      const dep = await rc.collateralDeposited(userAddress);
-      document.getElementById('col-withdraw-amount').value = ethers.formatEther(dep);
-    }
-
-    // ── USDC Actions ───────────────────────────────────────────
-    async function approveUsdc() {
-      if (!await req()) return;
-      const amt = document.getElementById('usdc-deposit-amount').value;
-      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Approve USDC in MetaMask...');
-        const tx = await usdcContract.approve(CONTRACT_ADDR, BigInt(Math.floor(parseFloat(amt) * 1e6)));
-        showToast('pending', 'TX Submitted', 'Approving USDC...', tx.hash);
-        await tx.wait();
-        showToast('success', 'USDC Approved ✓', 'Now click Step 2 — Deposit.', tx.hash);
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
-
-    async function depositUsdc() {
-      if (!await req()) return;
-      const amt = document.getElementById('usdc-deposit-amount').value;
-      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm depositUsdc()...');
-        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
-        const tx = await c.depositUsdc(BigInt(Math.floor(parseFloat(amt) * 1e6)));
-        showToast('pending', 'TX Submitted', 'Depositing USDC...', tx.hash);
-        await tx.wait();
-        showToast('success', 'USDC Deposited ✓', 'You are now earning interest.', tx.hash);
-        document.getElementById('usdc-deposit-amount').value = '';
-        refreshAll();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
-
-    async function withdrawUsdc() {
-      if (!await req()) return;
-      if (loanActive) return alert('Cannot withdraw while a loan is active.');
-      const amt = document.getElementById('usdc-withdraw-amount').value;
-      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm withdrawUsdc()...');
-        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
-        const tx = await c.withdrawUsdc(BigInt(Math.floor(parseFloat(amt) * 1e6)));
-        showToast('pending', 'TX Submitted', 'Withdrawing USDC...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Withdrawn ✓', 'USDC returned to your wallet.', tx.hash);
-        refreshAll();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
-
-    async function exitUsdc() {
-      if (!await req()) return;
-      if (loanActive) return alert('Cannot exit while a loan is active.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm exitUsdc()...');
-        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
-        const tx = await c.exitUsdc();
-        showToast('pending', 'TX Submitted', 'Exiting USDC pool...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Exit Complete ✓', 'USDC and rewards returned.', tx.hash);
-        refreshAll();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
-
-    async function claimUsdcRewards() {
-      if (!await req()) return;
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm claimUsdcRewards()...');
-        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
-        const tx = await c.claimUsdcRewards();
-        showToast('pending', 'TX Submitted', 'Claiming USDC interest...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Claimed ✓', 'USDC interest sent to your wallet.', tx.hash);
-        refreshAll();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
-
-    // ── Collateral Actions ─────────────────────────────────────
-    async function approveMtETHS() {
-      if (!await req()) return;
-      const amt = document.getElementById('col-deposit-amount').value;
-      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Approve mtETH-S in MetaMask...');
-        const tx = await mtethsContract.approve(CONTRACT_ADDR, ethers.parseEther(amt));
-        showToast('pending', 'TX Submitted', 'Approving mtETH-S...', tx.hash);
-        await tx.wait();
-        showToast('success', 'mtETH-S Approved ✓', 'Now click Step 2 — Deposit.', tx.hash);
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
-
-    async function depositCollateral() {
-      if (!await req()) return;
-      const amt = document.getElementById('col-deposit-amount').value;
-      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm depositCollateral()...');
-        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
-        const tx = await c.depositCollateral(ethers.parseEther(amt));
-        showToast('pending', 'TX Submitted', 'Depositing mtETH-S collateral...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Collateral Deposited ✓', 'Your mtETH-S is backing the credit line.', tx.hash);
-        document.getElementById('col-deposit-amount').value = '';
-        refreshAll();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
-
-    async function withdrawCollateral() {
-      if (!await req()) return;
-      if (loanActive) return alert('Cannot withdraw collateral while a loan is active.');
-      const amt = document.getElementById('col-withdraw-amount').value;
-      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm withdrawCollateral()...');
-        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
-        const tx = await c.withdrawCollateral(ethers.parseEther(amt));
-        showToast('pending', 'TX Submitted', 'Withdrawing mtETH-S...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Withdrawn ✓', 'mtETH-S returned to your wallet.', tx.hash);
-        refreshAll();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
-
-    async function exitCollateral() {
-      if (!await req()) return;
-      if (loanActive) return alert('Cannot exit while a loan is active.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm exitCollateral()...');
-        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
-        const tx = await c.exitCollateral();
-        showToast('pending', 'TX Submitted', 'Exiting collateral pool...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Exit Complete ✓', 'mtETH-S and rewards returned.', tx.hash);
-        refreshAll();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
-
-    async function claimCollateralRewards() {
-      if (!await req()) return;
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm claimCollateralRewards()...');
-        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
-        const tx = await c.claimCollateralRewards();
-        showToast('pending', 'TX Submitted', 'Claiming USDC interest...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Claimed ✓', 'USDC interest sent to your wallet.', tx.hash);
-        refreshAll();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
-
-    // ── Borrower panel ────────────────────────────────────────
-    const BORROWER_ADDR = "0xcfe077e6f7554B1724546E02624a0832D1f4557a";
-
-    const BORROW_ABI = [
-      "function openLoan(uint256 amount, uint256 termDays)",
-      "function repayLoan()",
-      "function repayPartial(uint256 amount)",
-      "function borrower() view returns (address)",
-      "function totalUsdcDeposited() view returns (uint256)",
-      "function maxBorrowable() view returns (uint256)",
-      "function collateralValueUsdc() view returns (uint256)",
-      "function interestRateBps() view returns (uint256)",
-      "function accruedInterest() view returns (uint256)",
-      "function amountDue() view returns (uint256)",
-      "function daysRemaining() view returns (uint256)",
-      "function currentLoan() view returns (uint256 principal, uint256 startTime, uint256 termSeconds, uint256 interestRateBps, bool active)",
-    ];
-
-    async function refreshBorrowerPanel() {
-      if (!userAddress) return;
-      const isBorrower = userAddress.toLowerCase() === BORROWER_ADDR.toLowerCase();
-      document.getElementById('borrower-section').style.display = isBorrower ? 'block' : 'none';
-      if (!isBorrower) return;
-
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const rc = new ethers.Contract(CONTRACT_ADDR, BORROW_ABI, rp);
-        const [totalUsdc, maxBorrow, colVal, rateBps, loan, interest, due, days] = await Promise.all([
-          rc.totalUsdcDeposited(),
-          rc.maxBorrowable(),
-          rc.collateralValueUsdc(),
-          rc.interestRateBps(),
-          rc.currentLoan(),
-          rc.accruedInterest(),
-          rc.amountDue(),
-          rc.daysRemaining(),
-        ]);
-
-        document.getElementById('borrow-avail-usdc').textContent = fmtUsdc(totalUsdc);
-        document.getElementById('borrow-max').textContent        = fmtUsdc(maxBorrow);
-        document.getElementById('borrow-col-val').textContent    = fmtUsdc(colVal);
-        document.getElementById('borrow-rate').textContent       = (Number(rateBps) / 100).toFixed(1) + '% APR';
-
-        // Loan repay panel
-        const noLoanMsg  = document.getElementById('no-loan-msg');
-        const repayPanel = document.getElementById('repay-panel');
-        if (loan.active) {
-          noLoanMsg.style.display  = 'none';
-          repayPanel.style.display = 'block';
-          document.getElementById('repay-principal').textContent = fmtUsdc(loan.principal);
-          document.getElementById('repay-interest').textContent  = fmtUsdc(interest);
-          document.getElementById('repay-due').textContent       = fmtUsdc(due);
-          const daysLeft = Number(days);
-          document.getElementById('repay-days').textContent = daysLeft === 0 ? '⚠ Overdue' : daysLeft + 'd';
-        } else {
-          noLoanMsg.style.display  = 'block';
-          repayPanel.style.display = 'none';
-        }
-      } catch(e) { console.error('Borrower panel refresh:', e); }
-    }
-
-    // Loan preview calculator
-    document.addEventListener('input', function(e) {
-      if (e.target.id === 'borrow-amount' || e.target.id === 'borrow-term') {
-        const amt  = parseFloat(document.getElementById('borrow-amount').value) || 0;
-        const days = parseFloat(document.getElementById('borrow-term').value) || 0;
-        const rate = 0.08; // 8% APR
-        if (amt > 0 && days > 0) {
-          const interest = amt * rate * days / 365;
-          const total    = amt + interest;
-          document.getElementById('borrow-interest-preview').textContent = '$' + interest.toFixed(4);
-          document.getElementById('borrow-total-preview').textContent    = '$' + total.toFixed(4);
-          document.getElementById('borrow-preview').classList.remove('hidden');
-        } else {
-          document.getElementById('borrow-preview').classList.add('hidden');
-        }
-      }
+  // ── Tab switching ──────────────────────────────────────────
+  function switchTab(prefix, tab) {
+    const panels = ['deposit','withdraw','claim'];
+    const isM = prefix === 'm';
+    panels.forEach(t => {
+      el(`${prefix}panel-${t}`).classList.toggle('hidden', t !== tab);
+      const btn = el(`${prefix}tab-${t}`);
+      btn.classList.remove('active', 'active-purple');
+      if (t === tab) btn.classList.add(isM ? 'active-purple' : 'active');
     });
+  }
 
-    async function openLoan() {
-      if (!await req()) return;
-      const amt  = parseFloat(document.getElementById('borrow-amount').value);
-      const term = parseInt(document.getElementById('borrow-term').value);
-      if (!amt || amt <= 0) return alert('Enter borrow amount.');
-      if (!term || term < 1 || term > 90) return alert('Term must be 1-90 days.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm openLoan() in MetaMask...');
-        const bc = new ethers.Contract(CONTRACT_ADDR, BORROW_ABI, signer);
-        const tx = await bc.openLoan(BigInt(Math.floor(amt * 1e6)), BigInt(term));
-        showToast('pending', 'TX Submitted', 'Opening loan...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Loan Opened ✓', `$${amt} USDC sent to your wallet.`, tx.hash);
-        document.getElementById('borrow-amount').value = '';
-        document.getElementById('borrow-term').value = '';
-        refreshAll();
-        refreshBorrowerPanel();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
+  // ── Main refresh ───────────────────────────────────────────
+  async function refreshAll() {
+    try {
+      const rp = provider || new ethers.JsonRpcProvider('https://arb1.arbitrum.io/rpc');
+      const rc = new ethers.Contract(CONTRACT, ABI, rp);
 
-    async function approveRepayUsdc() {
-      if (!await req()) return;
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const rc = new ethers.Contract(CONTRACT_ADDR, BORROW_ABI, rp);
-        const due = await rc.amountDue();
-        // Approve 10% more than due to cover any extra interest accrual
-        const approveAmt = due * 110n / 100n;
-        showToast('pending', 'Awaiting Signature', 'Approve USDC for repayment...');
-        const tx = await usdcContract.approve(CONTRACT_ADDR, approveAmt);
-        showToast('pending', 'TX Submitted', 'Approving USDC...', tx.hash);
-        await tx.wait();
-        showToast('success', 'USDC Approved ✓', 'Now click Repay Full Amount.', tx.hash);
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
+      const [
+        totalUsdc, totalInt, totalLoans,
+        maxBorrow, loan, overdue, days,
+        rateBps, ethPrice, mtyldPrice,
+        csum
+      ] = await Promise.all([
+        rc.totalUsdcDeposited(),
+        rc.totalInterestPaid(),
+        rc.totalLoansOriginated(),
+        rc.maxBorrowable(),
+        rc.currentLoan(),
+        rc.isOverdue(),
+        rc.daysRemaining(),
+        rc.interestRateBps(),
+        rc.ethPriceUsd6(),
+        rc.mtyldPriceUsd6(),
+        rc.collateralSummary(),
+      ]);
 
-    async function repayFull() {
-      if (!await req()) return;
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm repayLoan()...');
-        const bc = new ethers.Contract(CONTRACT_ADDR, BORROW_ABI, signer);
-        const tx = await bc.repayLoan();
-        showToast('pending', 'TX Submitted', 'Repaying loan...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Loan Repaid ✓', 'Interest distributed to depositors.', tx.hash);
-        refreshAll();
-        refreshBorrowerPanel();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
+      loanActive = loan.active;
 
-    async function repayPartial() {
-      if (!await req()) return;
-      const amt = parseFloat(document.getElementById('partial-amount').value);
-      if (!amt || amt <= 0) return alert('Enter partial amount.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm repayPartial()...');
-        const bc = new ethers.Contract(CONTRACT_ADDR, BORROW_ABI, signer);
-        const tx = await bc.repayPartial(BigInt(Math.floor(amt * 1e6)));
-        showToast('pending', 'TX Submitted', 'Partial repayment...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Partial Repaid ✓', 'Interest portion distributed to depositors.', tx.hash);
-        refreshAll();
-        refreshBorrowerPanel();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    }
+      // Stats
+      el('statUsdc').textContent       = fU(totalUsdc);
+      el('statBorrowPower').textContent = fU(csum.totalBorrowPower);
+      el('statMaxBorrow').textContent   = fU(maxBorrow);
+      el('statInterest').textContent    = fU(totalInt);
+      el('infoRate').textContent        = fR(rateBps);
+      el('infoLoans').textContent       = totalLoans.toString();
+      el('infoEthPrice').textContent    = '$' + (Number(ethPrice) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 });
+      el('infoMtyldPrice').textContent  = '$' + (Number(mtyldPrice) / 1e6).toFixed(6);
 
-    // ── Init ───────────────────────────────────────────────────
-    document.getElementById('btn-connect').onclick = connect;
-    if (window.ethereum) {
-      window.ethereum.on('chainChanged', () => checkNetwork());
-      window.ethereum.on('accountsChanged', () => location.reload());
-      checkNetwork();
-      refreshAll();
+      // Collateral summary
+      el('csumMtethsTokens').textContent = fE(csum.mtethsTokens) + ' mtETH-S';
+      el('csumMtethsUsd').textContent    = fU(csum.mtethsUsd);
+      el('csumMtethsBorrow').textContent = fU(csum.mtethsBorrowPower);
+      el('csumMtyldTokens').textContent  = fE(csum.mtyldTokens) + ' MTYLD';
+      el('csumMtyldUsd').textContent     = fU(csum.mtyldUsd);
+      el('csumMtyldBorrow').textContent  = fU(csum.mtyldBorrowPower);
+
+      // Loan banners
+      el('loanBanner').style.display    = loan.active ? 'block' : 'none';
+      el('overdueBanner').style.display = overdue ? 'block' : 'none';
+      el('uLoanLock').style.display     = loan.active ? 'block' : 'none';
+      el('cLoanLock').style.display     = loan.active ? 'block' : 'none';
+      el('mLoanLock').style.display     = loan.active ? 'block' : 'none';
+
+      if (loan.active) {
+        const [interest, due] = await Promise.all([rc.accruedInterest(), rc.amountDue()]);
+        el('bannerPrincipal').textContent = fU(loan.principal);
+        el('bannerInterest').textContent  = fU(interest);
+        el('bannerDue').textContent       = fU(due);
+        const dLabel = overdue ? '⚠ Overdue' : days.toString() + 'd';
+        el('bannerDays').textContent = dLabel;
+        if (overdue) el('bannerDays').className = 'text-red-400 font-mono font-bold overdue-flash';
+      }
+
+      // Borrower panel
+      if (userAddr?.toLowerCase() === BORROWER.toLowerCase()) {
+        el('bAvailUsdc').textContent    = fU(totalUsdc);
+        el('bMaxBorrow').textContent    = fU(maxBorrow);
+        el('bMtethsPower').textContent  = fU(csum.mtethsBorrowPower);
+        el('bMtyldPower').textContent   = fU(csum.mtyldBorrowPower);
+        el('bRate').textContent         = fR(rateBps);
+        el('bTotalLoans').textContent   = totalLoans.toString();
+
+        if (loan.active) {
+          const [interest, due] = await Promise.all([rc.accruedInterest(), rc.amountDue()]);
+          el('noLoanMsg').style.display  = 'none';
+          el('repayPanel').style.display = 'block';
+          el('rPrincipal').textContent = fU(loan.principal);
+          el('rInterest').textContent  = fU(interest);
+          el('rDue').textContent       = fU(due);
+          el('rDays').textContent      = overdue ? '⚠ Overdue' : days.toString() + 'd';
+        } else {
+          el('noLoanMsg').style.display  = 'block';
+          el('repayPanel').style.display = 'none';
+        }
+      }
+
+      // User positions
+      if (userAddr) {
+        const [
+          myUsdcDep, myColDep, myMtyldDep,
+          myUsdcEarned, myColEarned, myMtyldEarned,
+          myUsdcShare, myColShare, myMtyldShare,
+          usdcBal, mtethsBal, mtyldBal
+        ] = await Promise.all([
+          rc.usdcDeposited(userAddr),
+          rc.collateralDeposited(userAddr),
+          rc.mtyldCollateralDeposited(userAddr),
+          rc.earnedUsdc(userAddr),
+          rc.earnedCollateral(userAddr),
+          rc.earnedMtyldCollateral(userAddr),
+          rc.usdcShareOf(userAddr),
+          rc.collateralShareOf(userAddr),
+          rc.mtyldCollateralShareOf(userAddr),
+          new ethers.Contract(USDC_ADDR, ERC20_ABI, rp).balanceOf(userAddr),
+          new ethers.Contract(MTETHS,    ERC20_ABI, rp).balanceOf(userAddr),
+          new ethers.Contract(MTYLD_TOK, ERC20_ABI, rp).balanceOf(userAddr),
+        ]);
+
+        el('usdcWalletBal').textContent  = fU(usdcBal);
+        el('mtethsWalletBal').textContent = fE(mtethsBal) + ' mtETH-S';
+        el('mtyldWalletBal').textContent  = fE(mtyldBal) + ' MTYLD';
+
+        el('myUsdcDep').textContent     = fU(myUsdcDep);
+        el('myUsdcEarned').textContent  = fU(myUsdcEarned);
+        el('myUsdcShare').textContent   = fP(myUsdcShare);
+        el('uClaimAmt').textContent     = fU(myUsdcEarned);
+
+        el('myMtethsDep').textContent   = fE(myColDep) + ' mtETH-S';
+        el('myMtethsEarned').textContent = fU(myColEarned);
+        el('myMtethsShare').textContent  = fP(myColShare);
+        el('cClaimAmt').textContent      = fU(myColEarned);
+
+        el('myMtyldDep').textContent    = fE(myMtyldDep) + ' MTYLD';
+        el('myMtyldEarned').textContent = fU(myMtyldEarned);
+        el('myMtyldShare').textContent  = fP(myMtyldShare);
+        el('mClaimAmt').textContent     = fU(myMtyldEarned);
+      }
+    } catch(e) { console.error('Refresh error:', e); }
+  }
+
+  // ── Loan preview calculator ────────────────────────────────
+  document.addEventListener('input', e => {
+    if (e.target.id === 'bAmount' || e.target.id === 'bTerm') {
+      const amt  = parseFloat(el('bAmount').value) || 0;
+      const days = parseFloat(el('bTerm').value)   || 0;
+      if (amt > 0 && days > 0) {
+        const interest = amt * 0.08 * days / 365;
+        el('bInterestPreview').textContent = '$' + interest.toFixed(4);
+        el('bTotalPreview').textContent    = '$' + (amt + interest).toFixed(4);
+        el('bPreview').classList.remove('hidden');
+      } else {
+        el('bPreview').classList.add('hidden');
+      }
     }
-    setInterval(refreshAll, 15000);
-    setInterval(refreshBorrowerPanel, 15000);
-  </script>
+  });
+
+  // ── Generic TX handler ─────────────────────────────────────
+  async function sendTx(label, fn) {
+    try {
+      toast('pending', 'Awaiting Signature', `Confirm ${label} in MetaMask…`);
+      const tx = await fn();
+      toast('pending', 'TX Submitted', `${label} processing…`, tx.hash);
+      await tx.wait();
+      toast('success', `${label} ✓`, 'Transaction confirmed.', tx.hash);
+      await refreshAll();
+    } catch(e) {
+      toast('error', 'Failed', shortErr(e));
+    }
+  }
+
+  async function approveERC20(tokenC, spender, amount) {
+    const al = await tokenC.allowance(userAddr, spender);
+    if (al >= amount) return;
+    toast('pending', 'Awaiting Approval', 'Approve token in MetaMask…');
+    const tx = await tokenC.approve(spender, amount);
+    toast('pending', 'Approving…', 'Waiting for approval confirmation…', tx.hash);
+    await tx.wait();
+    toast('success', 'Approved ✓', 'Now submit the deposit.', tx.hash);
+  }
+
+  // ── USDC actions ───────────────────────────────────────────
+  async function approveUsdc() {
+    if (!await ensureConn()) return;
+    const amt = el('uDepAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await approveERC20(usdcC, CONTRACT, BigInt(Math.floor(+amt * 1e6)));
+  }
+
+  async function depositUsdc() {
+    if (!await ensureConn()) return;
+    const amt = el('uDepAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await sendTx('Deposit USDC', () => contract.depositUsdc(BigInt(Math.floor(+amt * 1e6))));
+    el('uDepAmt').value = '';
+  }
+
+  async function withdrawUsdc() {
+    if (!await ensureConn()) return;
+    if (loanActive) return alert('Cannot withdraw while loan is active.');
+    const amt = el('uWithAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await sendTx('Withdraw USDC', () => contract.withdrawUsdc(BigInt(Math.floor(+amt * 1e6))));
+  }
+
+  async function exitUsdc() {
+    if (!await ensureConn()) return;
+    if (loanActive) return alert('Cannot exit while loan is active.');
+    await sendTx('Exit USDC Pool', () => contract.exitUsdc());
+  }
+
+  async function claimUsdcRewards() {
+    if (!await ensureConn()) return;
+    await sendTx('Claim USDC Rewards', () => contract.claimUsdcRewards());
+  }
+
+  async function maxUsdc() {
+    if (!await ensureConn()) return;
+    const bal = await usdcC.balanceOf(userAddr);
+    el('uDepAmt').value = (Number(bal) / 1e6).toFixed(6);
+  }
+
+  async function maxUsdcWithdraw() {
+    if (!await ensureConn()) return;
+    const rp = new ethers.BrowserProvider(window.ethereum);
+    const rc = new ethers.Contract(CONTRACT, ABI, rp);
+    const dep = await rc.usdcDeposited(userAddr);
+    el('uWithAmt').value = (Number(dep) / 1e6).toFixed(6);
+  }
+
+  // ── mtETH-S actions ────────────────────────────────────────
+  async function approveMteths() {
+    if (!await ensureConn()) return;
+    const amt = el('cDepAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await approveERC20(mtethsC, CONTRACT, ethers.parseEther(amt));
+  }
+
+  async function depositMteths() {
+    if (!await ensureConn()) return;
+    const amt = el('cDepAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await sendTx('Deposit mtETH-S', () => contract.depositCollateral(ethers.parseEther(amt)));
+    el('cDepAmt').value = '';
+  }
+
+  async function withdrawMteths() {
+    if (!await ensureConn()) return;
+    if (loanActive) return alert('Cannot withdraw while loan is active.');
+    const amt = el('cWithAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await sendTx('Withdraw mtETH-S', () => contract.withdrawCollateral(ethers.parseEther(amt)));
+  }
+
+  async function exitMteths() {
+    if (!await ensureConn()) return;
+    if (loanActive) return alert('Cannot exit while loan is active.');
+    await sendTx('Exit mtETH-S Pool', () => contract.exitCollateral());
+  }
+
+  async function claimMtethsRewards() {
+    if (!await ensureConn()) return;
+    await sendTx('Claim mtETH-S Rewards', () => contract.claimCollateralRewards());
+  }
+
+  async function maxMteths() {
+    if (!await ensureConn()) return;
+    const bal = await mtethsC.balanceOf(userAddr);
+    el('cDepAmt').value = ethers.formatEther(bal);
+  }
+
+  async function maxMtethsWithdraw() {
+    if (!await ensureConn()) return;
+    const rp = new ethers.BrowserProvider(window.ethereum);
+    const dep = await new ethers.Contract(CONTRACT, ABI, rp).collateralDeposited(userAddr);
+    el('cWithAmt').value = ethers.formatEther(dep);
+  }
+
+  // ── MTYLD actions ──────────────────────────────────────────
+  async function approveMtyld() {
+    if (!await ensureConn()) return;
+    const amt = el('mDepAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await approveERC20(mtyldC, CONTRACT, ethers.parseEther(amt));
+  }
+
+  async function depositMtyld() {
+    if (!await ensureConn()) return;
+    const amt = el('mDepAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await sendTx('Deposit MTYLD', () => contract.depositMtyldCollateral(ethers.parseEther(amt)));
+    el('mDepAmt').value = '';
+  }
+
+  async function withdrawMtyld() {
+    if (!await ensureConn()) return;
+    if (loanActive) return alert('Cannot withdraw while loan is active.');
+    const amt = el('mWithAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await sendTx('Withdraw MTYLD', () => contract.withdrawMtyldCollateral(ethers.parseEther(amt)));
+  }
+
+  async function exitMtyld() {
+    if (!await ensureConn()) return;
+    if (loanActive) return alert('Cannot exit while loan is active.');
+    await sendTx('Exit MTYLD Pool', () => contract.exitMtyldCollateral());
+  }
+
+  async function claimMtyldRewards() {
+    if (!await ensureConn()) return;
+    await sendTx('Claim MTYLD Rewards', () => contract.claimMtyldCollateralRewards());
+  }
+
+  async function maxMtyld() {
+    if (!await ensureConn()) return;
+    const bal = await mtyldC.balanceOf(userAddr);
+    el('mDepAmt').value = ethers.formatEther(bal);
+  }
+
+  async function maxMtyldWithdraw() {
+    if (!await ensureConn()) return;
+    const rp = new ethers.BrowserProvider(window.ethereum);
+    const dep = await new ethers.Contract(CONTRACT, ABI, rp).mtyldCollateralDeposited(userAddr);
+    el('mWithAmt').value = ethers.formatEther(dep);
+  }
+
+  // ── Borrower actions ───────────────────────────────────────
+  async function openLoan() {
+    if (!await ensureConn()) return;
+    const amt  = parseFloat(el('bAmount').value);
+    const term = parseInt(el('bTerm').value);
+    if (!amt || amt <= 0) return alert('Enter borrow amount.');
+    if (!term || term < 1 || term > 90) return alert('Term must be 1–90 days.');
+    await sendTx('Open Loan', () => contract.openLoan(BigInt(Math.floor(amt * 1e6)), BigInt(term)));
+    el('bAmount').value = '';
+    el('bTerm').value = '';
+  }
+
+  async function approveRepay() {
+    if (!await ensureConn()) return;
+    try {
+      const rp  = new ethers.BrowserProvider(window.ethereum);
+      const rc  = new ethers.Contract(CONTRACT, ABI, rp);
+      const due = await rc.amountDue();
+      const approveAmt = due * 110n / 100n; // 10% buffer for accrual
+      await approveERC20(usdcC, CONTRACT, approveAmt);
+    } catch(e) { toast('error', 'Failed', shortErr(e)); }
+  }
+
+  async function repayFull() {
+    if (!await ensureConn()) return;
+    await sendTx('Repay Full Loan', () => contract.repayLoan());
+  }
+
+  async function repayPartial() {
+    if (!await ensureConn()) return;
+    const amt = parseFloat(el('partialAmt').value);
+    if (!amt || amt <= 0) return alert('Enter partial amount.');
+    await sendTx('Partial Repayment', () => contract.repayPartial(BigInt(Math.floor(amt * 1e6))));
+  }
+
+  // ── Init ───────────────────────────────────────────────────
+  if (window.ethereum) {
+    window.ethereum.on('chainChanged',    () => location.reload());
+    window.ethereum.on('accountsChanged', () => location.reload());
+    checkNet();
+  }
+
+  refreshAll();
+  setInterval(refreshAll, 15000);
+</script>
 </body>
 </html>
