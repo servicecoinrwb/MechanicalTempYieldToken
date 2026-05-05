@@ -566,7 +566,10 @@
     }
 
     async function req() {
-      if (!isConnected) { alert('Connect wallet first.'); return false; }
+      if (!isConnected) {
+        await connect();
+        if (!isConnected) return false;
+      }
       return await checkNetwork();
     }
 
@@ -611,9 +614,7 @@
         document.getElementById('stat-interest-paid').textContent   = fmtUsdc(totalInt);
         document.getElementById('info-rate').textContent            = fmtRate(rateBps);
         document.getElementById('info-loans').textContent           = totalLoans.toString();
-        document.getElementById('info-eth-price').textContent       = '$' + (Number(ethPrice) / 1e6).toLocaleFixed !== undefined
-          ? '$' + (Number(ethPrice) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 })
-          : '$' + (Number(ethPrice) / 1e6).toFixed(2);
+        document.getElementById('info-eth-price').textContent = '$' + (Number(ethPrice) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 });
 
         // Loan banner
         document.getElementById('loan-banner').style.display   = loan.active ? 'block' : 'none';
@@ -729,7 +730,8 @@
       if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm depositUsdc()...');
-        const tx = await contract.depositUsdc(BigInt(Math.floor(parseFloat(amt) * 1e6)));
+        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
+        const tx = await c.depositUsdc(BigInt(Math.floor(parseFloat(amt) * 1e6)));
         showToast('pending', 'TX Submitted', 'Depositing USDC...', tx.hash);
         await tx.wait();
         showToast('success', 'USDC Deposited ✓', 'You are now earning interest.', tx.hash);
@@ -745,7 +747,8 @@
       if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm withdrawUsdc()...');
-        const tx = await contract.withdrawUsdc(BigInt(Math.floor(parseFloat(amt) * 1e6)));
+        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
+        const tx = await c.withdrawUsdc(BigInt(Math.floor(parseFloat(amt) * 1e6)));
         showToast('pending', 'TX Submitted', 'Withdrawing USDC...', tx.hash);
         await tx.wait();
         showToast('success', 'Withdrawn ✓', 'USDC returned to your wallet.', tx.hash);
@@ -758,7 +761,8 @@
       if (loanActive) return alert('Cannot exit while a loan is active.');
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm exitUsdc()...');
-        const tx = await contract.exitUsdc();
+        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
+        const tx = await c.exitUsdc();
         showToast('pending', 'TX Submitted', 'Exiting USDC pool...', tx.hash);
         await tx.wait();
         showToast('success', 'Exit Complete ✓', 'USDC and rewards returned.', tx.hash);
@@ -770,7 +774,8 @@
       if (!await req()) return;
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm claimUsdcRewards()...');
-        const tx = await contract.claimUsdcRewards();
+        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
+        const tx = await c.claimUsdcRewards();
         showToast('pending', 'TX Submitted', 'Claiming USDC interest...', tx.hash);
         await tx.wait();
         showToast('success', 'Claimed ✓', 'USDC interest sent to your wallet.', tx.hash);
@@ -798,7 +803,8 @@
       if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm depositCollateral()...');
-        const tx = await contract.depositCollateral(ethers.parseEther(amt));
+        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
+        const tx = await c.depositCollateral(ethers.parseEther(amt));
         showToast('pending', 'TX Submitted', 'Depositing mtETH-S collateral...', tx.hash);
         await tx.wait();
         showToast('success', 'Collateral Deposited ✓', 'Your mtETH-S is backing the credit line.', tx.hash);
@@ -814,7 +820,8 @@
       if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm withdrawCollateral()...');
-        const tx = await contract.withdrawCollateral(ethers.parseEther(amt));
+        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
+        const tx = await c.withdrawCollateral(ethers.parseEther(amt));
         showToast('pending', 'TX Submitted', 'Withdrawing mtETH-S...', tx.hash);
         await tx.wait();
         showToast('success', 'Withdrawn ✓', 'mtETH-S returned to your wallet.', tx.hash);
@@ -827,7 +834,8 @@
       if (loanActive) return alert('Cannot exit while a loan is active.');
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm exitCollateral()...');
-        const tx = await contract.exitCollateral();
+        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
+        const tx = await c.exitCollateral();
         showToast('pending', 'TX Submitted', 'Exiting collateral pool...', tx.hash);
         await tx.wait();
         showToast('success', 'Exit Complete ✓', 'mtETH-S and rewards returned.', tx.hash);
@@ -839,7 +847,8 @@
       if (!await req()) return;
       try {
         showToast('pending', 'Awaiting Signature', 'Confirm claimCollateralRewards()...');
-        const tx = await contract.claimCollateralRewards();
+        const c = new ethers.Contract(CONTRACT_ADDR, ABI, signer);
+        const tx = await c.claimCollateralRewards();
         showToast('pending', 'TX Submitted', 'Claiming USDC interest...', tx.hash);
         await tx.wait();
         showToast('success', 'Claimed ✓', 'USDC interest sent to your wallet.', tx.hash);
