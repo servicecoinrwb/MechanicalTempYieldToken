@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>mtETH-S Lending • Mechanical Temp</title>
+  <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .glass { background: rgba(15,23,42,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(51,65,85,0.6); }
+    .pulse-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)} 50%{box-shadow:0 0 0 6px rgba(16,185,129,0)} }
+    .tab-btn { transition: all 0.2s; }
+    .tab-btn.active { background: rgba(14,165,233,0.15); border-color: #0ea5e9; color: #38bdf8; }
+    .reward-glow { box-shadow: 0 0 30px rgba(16,185,129,0.15); }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
+        <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">The <span class="text-emerald-400">Conservator</span> <span class="text-slate-500">•</span> <span class="text-sky-400">Lending</span></span>
+      </a>
+      <div class="flex items-center gap-3">
+        <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
+        <button id="btn-connect" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition">Connect Wallet</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-10">
+
+    <!-- Title -->
+    <div class="mb-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-emerald-900/20 border border-emerald-900/50 text-emerald-400 text-xs font-semibold">
+        <span class="pulse-dot"></span> Live on Arbitrum One
+      </div>
+      <h1 class="text-3xl font-black text-white">mtETH-S <span class="text-emerald-400">Lending Pool</span></h1>
+      <p class="text-slate-400 mt-2 text-sm max-w-2xl">Deposit your mtETH-S shares to earn USDC rewards from Mechanical Temp HVAC revenue. Your mtETH-S continues earning Compound yield while deposited — two income streams simultaneously.</p>
+    </div>
+
+    <!-- Network Warning -->
+    <div id="network-warning" class="hidden mb-6 px-4 py-3 rounded-xl bg-red-900/20 border border-red-800 text-red-400 text-sm font-semibold">
+      ⚠ Wrong Network — Switch MetaMask to Arbitrum One (Chain ID: 42161)
+    </div>
+
+    <!-- Live Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Pool TVL</p>
+        <p id="stat-tvl" class="text-2xl font-mono text-sky-400">—</p>
+        <p class="text-slate-600 text-xs mt-1">mtETH-S deposited</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Your Deposit</p>
+        <p id="stat-my-deposit" class="text-2xl font-mono text-emerald-400">—</p>
+        <p class="text-slate-600 text-xs mt-1" id="stat-my-share">Connect wallet</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Pending USDC</p>
+        <p id="stat-earned" class="text-2xl font-mono text-amber-400">—</p>
+        <p class="text-slate-600 text-xs mt-1">Claimable rewards</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Total Distributed</p>
+        <p id="stat-distributed" class="text-2xl font-mono text-white">—</p>
+        <p class="text-slate-600 text-xs mt-1">USDC paid out</p>
+      </div>
+    </div>
+
+    <!-- Dual Yield Banner -->
+    <div class="reward-glow glass rounded-2xl p-5 mb-6 border border-emerald-900/40">
+      <div class="flex flex-wrap items-center gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-900/30 flex items-center justify-center text-emerald-400 text-xl">⚡</div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Stream 1</p>
+            <p class="text-white font-semibold">Compound Yield</p>
+            <p class="text-emerald-400 text-xs font-mono" id="compound-apy">— APY on mtETH-S</p>
+          </div>
+        </div>
+        <div class="text-slate-600 text-2xl font-thin">+</div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-900/30 flex items-center justify-center text-sky-400 text-xl">🏗️</div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Stream 2</p>
+            <p class="text-white font-semibold">HVAC Revenue</p>
+            <p class="text-sky-400 text-xs font-mono">USDC rewards from real jobs</p>
+          </div>
+        </div>
+        <div class="ml-auto text-right hidden md:block">
+          <p class="text-slate-500 text-xs">Deposited mtETH-S grows in value</p>
+          <p class="text-slate-500 text-xs">while earning USDC on top</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+
+      <!-- Deposit / Withdraw / Claim -->
+      <div class="glass rounded-2xl overflow-hidden">
+        <div class="flex gap-0 border-b border-slate-800">
+          <button id="tab-deposit" onclick="switchTab('deposit')" class="tab-btn active flex-1 px-4 py-3 text-sm font-bold border-b-2 border-sky-500">↓ Deposit</button>
+          <button id="tab-withdraw" onclick="switchTab('withdraw')" class="tab-btn flex-1 px-4 py-3 text-sm font-bold border-b-2 border-transparent">↑ Withdraw</button>
+          <button id="tab-claim" onclick="switchTab('claim')" class="tab-btn flex-1 px-4 py-3 text-sm font-bold border-b-2 border-transparent">💰 Claim</button>
+        </div>
+
+        <!-- DEPOSIT -->
+        <div id="panel-deposit" class="p-6">
+          <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-800 mb-4">
+            <p class="text-slate-400 text-sm">Deposit mtETH-S → earn USDC from HVAC revenue. Your shares keep growing in NAV from Compound yield.</p>
+          </div>
+          <div class="mb-4">
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Amount (mtETH-S)</label>
+            <input id="deposit-amount" type="number" step="0.0001" min="0" placeholder="0.0000"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            <div class="flex justify-between mt-1">
+              <span class="text-xs text-slate-600">Your mtETH-S: <span id="mteths-balance" class="text-slate-400">—</span></span>
+              <button onclick="setMaxDeposit()" class="text-xs text-sky-400 hover:underline">Use max →</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button id="btn-approve-mteths" onclick="approveMtETHS()" class="py-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-700 text-emerald-400 font-bold text-sm transition">
+              Step 1 — Approve
+            </button>
+            <button id="btn-deposit" onclick="depositMtETHS()" class="py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition shadow-lg shadow-sky-900/30">
+              Step 2 — Deposit
+            </button>
+          </div>
+          <p class="text-slate-600 text-xs mt-3 font-mono">Approve grants the lending pool permission to pull your mtETH-S.</p>
+        </div>
+
+        <!-- WITHDRAW -->
+        <div id="panel-withdraw" class="p-6 hidden">
+          <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-800 mb-4">
+            <p class="text-slate-400 text-sm">Withdraw your mtETH-S. Pending USDC rewards stay claimable. Use Exit to do both at once.</p>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800 mb-4">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Deposited</span>
+              <span id="wd-deposited" class="text-white font-mono">—</span>
+            </div>
+            <div class="flex justify-between text-sm mt-2">
+              <span class="text-slate-400">Pending USDC</span>
+              <span id="wd-earned" class="text-amber-400 font-mono">—</span>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Amount to Withdraw (mtETH-S)</label>
+            <input id="withdraw-amount" type="number" step="0.0001" min="0" placeholder="0.0000"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            <button onclick="setMaxWithdraw()" class="mt-1 text-xs text-sky-400 hover:underline">Use max →</button>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="withdrawMtETHS()" class="py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm transition">
+              Withdraw
+            </button>
+            <button onclick="exitAll()" class="py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition shadow-lg shadow-emerald-900/30">
+              Exit All ✓
+            </button>
+          </div>
+          <p class="text-slate-600 text-xs mt-3 font-mono">"Exit All" withdraws your mtETH-S and claims all USDC in one transaction.</p>
+        </div>
+
+        <!-- CLAIM -->
+        <div id="panel-claim" class="p-6 hidden">
+          <div class="bg-slate-900/60 rounded-xl p-6 border border-amber-900/30 mb-4 text-center reward-glow">
+            <p class="text-slate-400 text-xs uppercase tracking-wider mb-2">Available to Claim</p>
+            <p id="claim-amount" class="text-4xl font-mono text-amber-400">—</p>
+            <p class="text-slate-500 text-xs mt-1">USDC from HVAC revenue</p>
+          </div>
+          <button onclick="claimRewards()" class="w-full py-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition shadow-lg shadow-amber-900/30">
+            💰 Claim USDC Rewards
+          </button>
+          <p class="text-slate-600 text-xs mt-3 font-mono text-center">Rewards accrue every time Mechanical Temp distributes HVAC revenue to the pool.</p>
+        </div>
+      </div>
+
+      <!-- Pool Info + How It Works -->
+      <div class="space-y-6">
+
+        <!-- Pool Stats -->
+        <div class="glass rounded-2xl p-6">
+          <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Pool Details
+          </h3>
+          <div class="space-y-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Contract</span>
+              <a href="https://arbiscan.io/address/0x5ad0025086423092c06C480BfBC9e3Fe317C394f" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0x5ad0...394f ↗</a>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Deposit Token</span>
+              <span class="text-white font-mono text-xs">mtETH-S</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Reward Token</span>
+              <span class="text-white font-mono text-xs">USDC</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Network</span>
+              <span class="text-white text-xs">Arbitrum One</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Withdraw Lock</span>
+              <span class="text-emerald-400 text-xs">None — instant</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Your Pool Share</span>
+              <span id="pool-share" class="text-white font-mono text-xs">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="glass rounded-2xl p-6">
+          <h3 class="text-base font-bold text-white mb-4">How It Works</h3>
+          <div class="space-y-4">
+            <div class="flex gap-3">
+              <div class="w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center text-sky-400 text-xs font-bold flex-none">1</div>
+              <div>
+                <p class="text-slate-300 text-sm font-semibold">Deposit mtETH-S</p>
+                <p class="text-slate-500 text-xs mt-0.5">Your Conservator vault shares go into the lending pool. They keep growing in NAV from Compound yield.</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="w-7 h-7 rounded-full bg-emerald-900/40 border border-emerald-800 flex items-center justify-center text-emerald-400 text-xs font-bold flex-none">2</div>
+              <div>
+                <p class="text-slate-300 text-sm font-semibold">HVAC Revenue Flows In</p>
+                <p class="text-slate-500 text-xs mt-0.5">Mechanical Temp converts service revenue to USDC and distributes it to the pool proportionally.</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="w-7 h-7 rounded-full bg-amber-900/40 border border-amber-800 flex items-center justify-center text-amber-400 text-xs font-bold flex-none">3</div>
+              <div>
+                <p class="text-slate-300 text-sm font-semibold">Claim USDC Anytime</p>
+                <p class="text-slate-500 text-xs mt-0.5">Your USDC rewards accrue continuously. Claim whenever you want — no lock period.</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="w-7 h-7 rounded-full bg-purple-900/40 border border-purple-800 flex items-center justify-center text-purple-400 text-xs font-bold flex-none">4</div>
+              <div>
+                <p class="text-slate-300 text-sm font-semibold">Withdraw Anytime</p>
+                <p class="text-slate-500 text-xs mt-0.5">Exit the pool at any time. Get back your mtETH-S (now worth more WETH) plus all pending USDC.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="pt-8 border-t border-slate-800 flex items-center justify-between mt-8">
+      <p class="text-slate-600 text-xs font-mono">0x5ad0...394f • Arbitrum One</p>
+      <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
+    </div>
+
+  </main>
+
+  <!-- TX Toast -->
+  <div id="tx-toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm w-full">
+    <div id="tx-card" class="bg-slate-900 border rounded-2xl p-4 shadow-2xl">
+      <div id="tx-title" class="text-xs font-mono font-bold uppercase tracking-wider mb-1"></div>
+      <div id="tx-msg" class="text-slate-400 text-sm"></div>
+      <div id="tx-hash" class="mt-2 text-xs font-mono"></div>
+    </div>
+  </div>
+
+  <script>
+    // ── Addresses ──────────────────────────────────────────────
+    const LENDING_ADDR   = "0x5ad0025086423092c06C480BfBC9e3Fe317C394f";
+    const MTETHS_ADDR    = "0xc9227b644285198646F9c75ceCf13F84bF419B78"; // mtETH-S (Conservator v4)
+    const USDC_ADDR      = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+    const COMPOUND_ADDR  = "0x6f7D514bbD4aFf3BcD1140B7344b32f063dEe486";
+    const ARBITRUM_ID    = 42161n;
+
+    const LENDING_ABI = [
+      {"inputs":[],"name":"totalDeposited","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"name":"user","type":"address"}],"name":"depositedBalance","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"name":"user","type":"address"}],"name":"earned","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"name":"user","type":"address"}],"name":"shareOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"totalRewardDistributed","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"name":"amount","type":"uint256"}],"name":"deposit","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"name":"amount","type":"uint256"}],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"claimRewards","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"exit","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    ];
+
+    const ERC20_ABI = [
+      {"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"name":"owner","type":"address"},{"name":"spender","type":"address"}],"name":"allowance","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+    ];
+
+    const COMPOUND_COMET_ABI = [
+      {"inputs":[],"name":"getUtilization","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"name":"utilization","type":"uint256"}],"name":"getSupplyRate","outputs":[{"type":"uint64"}],"stateMutability":"view","type":"function"}
+    ];
+
+    let provider, signer, lendingContract, mtethsContract, isConnected = false, userAddress = null;
+    let toastTimer;
+
+    // ── Toast ──────────────────────────────────────────────────
+    function showToast(state, title, msg, hash) {
+      clearTimeout(toastTimer);
+      const colors = { pending: 'border-amber-600', success: 'border-emerald-600', error: 'border-red-600' };
+      const tc     = { pending: 'text-amber-400',   success: 'text-emerald-400',   error: 'text-red-400' };
+      document.getElementById('tx-card').className  = `bg-slate-900 border rounded-2xl p-4 shadow-2xl ${colors[state]}`;
+      document.getElementById('tx-title').className = `text-xs font-mono font-bold uppercase tracking-wider mb-1 ${tc[state]}`;
+      document.getElementById('tx-title').textContent = title;
+      document.getElementById('tx-msg').textContent   = msg;
+      document.getElementById('tx-hash').innerHTML = hash
+        ? `<a href="https://arbiscan.io/tx/${hash}" target="_blank" class="text-sky-400 hover:underline">${hash.slice(0,10)}...${hash.slice(-6)} ↗</a>` : '';
+      document.getElementById('tx-toast').style.display = 'block';
+      if (state !== 'pending') toastTimer = setTimeout(() => document.getElementById('tx-toast').style.display = 'none', 7000);
+    }
+
+    // ── Network ────────────────────────────────────────────────
+    async function checkNetwork() {
+      if (!window.ethereum) return false;
+      const chainId = BigInt(await window.ethereum.request({ method: 'eth_chainId' }));
+      const badge   = document.getElementById('network-badge');
+      const warning = document.getElementById('network-warning');
+      if (chainId === ARBITRUM_ID) {
+        badge.textContent = 'Arbitrum One';
+        badge.className   = 'px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-indigo-900/30 border-indigo-700 text-indigo-300';
+        badge.style.display = 'block';
+        warning.style.display = 'none';
+        return true;
+      }
+      badge.textContent = 'Wrong Network';
+      badge.className   = 'px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-red-900/30 border-red-700 text-red-400';
+      badge.style.display = 'block';
+      warning.style.display = 'block';
+      return false;
+    }
+
+    // ── Connect ────────────────────────────────────────────────
+    async function connect() {
+      if (!window.ethereum) return alert('Install MetaMask to use this dashboard.');
+      try {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        userAddress = await signer.getAddress();
+        lendingContract = new ethers.Contract(LENDING_ADDR, LENDING_ABI, signer);
+        mtethsContract  = new ethers.Contract(MTETHS_ADDR, ERC20_ABI, signer);
+        isConnected = true;
+        const btn = document.getElementById('btn-connect');
+        btn.textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+        btn.className   = 'px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold';
+        await checkNetwork();
+        await refreshAll();
+      } catch(e) { console.error(e); }
+    }
+
+    async function requireConnected() {
+      if (!isConnected) { alert('Connect your wallet first.'); return false; }
+      return await checkNetwork();
+    }
+
+    // ── Read data ──────────────────────────────────────────────
+    async function refreshAll() {
+      if (!window.ethereum) return;
+      try {
+        const rp = new ethers.BrowserProvider(window.ethereum);
+        const lc = new ethers.Contract(LENDING_ADDR, LENDING_ABI, rp);
+        const mc = new ethers.Contract(MTETHS_ADDR, ERC20_ABI, rp);
+
+        const [totalDep, totalDist] = await Promise.all([
+          lc.totalDeposited(),
+          lc.totalRewardDistributed(),
+        ]);
+
+        const totalDepFloat  = parseFloat(ethers.formatEther(totalDep));
+        const totalDistFloat = parseFloat(ethers.formatUnits(totalDist, 6));
+
+        document.getElementById('stat-tvl').textContent         = totalDepFloat.toFixed(4) + ' mtETH-S';
+        document.getElementById('stat-distributed').textContent = '$' + totalDistFloat.toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+        // Compound APY
+        try {
+          const comet = new ethers.Contract(COMPOUND_ADDR, COMPOUND_COMET_ABI, rp);
+          const util  = await comet.getUtilization();
+          const rate  = await comet.getSupplyRate(util);
+          const apy   = (Math.pow(1 + parseFloat(rate.toString()) / 1e18, 31536000) - 1) * 100;
+          document.getElementById('compound-apy').textContent = apy.toFixed(2) + '% APY on mtETH-S';
+        } catch(e) {}
+
+        if (userAddress) {
+          const [myDep, myEarned, myShare, myBal] = await Promise.all([
+            lc.depositedBalance(userAddress),
+            lc.earned(userAddress),
+            lc.shareOf(userAddress),
+            mc.balanceOf(userAddress),
+          ]);
+
+          const myDepFloat    = parseFloat(ethers.formatEther(myDep));
+          const myEarnedFloat = parseFloat(ethers.formatUnits(myEarned, 6));
+          const mySharePct    = parseFloat(myShare.toString()) / 1e16;
+          const myBalFloat    = parseFloat(ethers.formatEther(myBal));
+
+          document.getElementById('stat-my-deposit').textContent = myDepFloat.toFixed(4) + ' mtETH-S';
+          document.getElementById('stat-my-share').textContent   = mySharePct.toFixed(2) + '% of pool';
+          document.getElementById('stat-earned').textContent     = '$' + myEarnedFloat.toFixed(4);
+          document.getElementById('pool-share').textContent      = mySharePct.toFixed(2) + '%';
+          document.getElementById('mteths-balance').textContent  = myBalFloat.toFixed(6) + ' mtETH-S';
+          document.getElementById('wd-deposited').textContent    = myDepFloat.toFixed(6) + ' mtETH-S';
+          document.getElementById('wd-earned').textContent       = '$' + myEarnedFloat.toFixed(4);
+          document.getElementById('claim-amount').textContent    = '$' + myEarnedFloat.toFixed(4);
+        }
+      } catch(e) { console.error('Refresh error:', e); }
+    }
+
+    // ── Tab switching ──────────────────────────────────────────
+    function switchTab(tab) {
+      ['deposit','withdraw','claim'].forEach(t => {
+        document.getElementById('panel-' + t).classList.toggle('hidden', t !== tab);
+        document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+        document.getElementById('tab-' + t).classList.toggle('border-sky-500', t === tab);
+        document.getElementById('tab-' + t).classList.toggle('border-transparent', t !== tab);
+      });
+    }
+
+    // ── Max buttons ────────────────────────────────────────────
+    async function setMaxDeposit() {
+      if (!isConnected || !userAddress) return;
+      const rp = new ethers.BrowserProvider(window.ethereum);
+      const mc = new ethers.Contract(MTETHS_ADDR, ERC20_ABI, rp);
+      const bal = await mc.balanceOf(userAddress);
+      document.getElementById('deposit-amount').value = ethers.formatEther(bal);
+    }
+
+    async function setMaxWithdraw() {
+      if (!isConnected || !userAddress) return;
+      const rp = new ethers.BrowserProvider(window.ethereum);
+      const lc = new ethers.Contract(LENDING_ADDR, LENDING_ABI, rp);
+      const dep = await lc.depositedBalance(userAddress);
+      document.getElementById('withdraw-amount').value = ethers.formatEther(dep);
+    }
+
+    // ── Approve ────────────────────────────────────────────────
+    async function approveMtETHS() {
+      if (!await requireConnected()) return;
+      const amt = document.getElementById('deposit-amount').value;
+      if (!amt || parseFloat(amt) <= 0) return alert('Enter an amount first.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Approve mtETH-S in MetaMask...');
+        const tx = await mtethsContract.approve(LENDING_ADDR, ethers.parseEther(amt));
+        showToast('pending', 'TX Submitted', 'Approving mtETH-S...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Approved ✓', 'Now click Step 2 — Deposit.', tx.hash);
+      } catch(e) { showToast('error', 'Approval Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    // ── Deposit ────────────────────────────────────────────────
+    async function depositMtETHS() {
+      if (!await requireConnected()) return;
+      const amt = document.getElementById('deposit-amount').value;
+      if (!amt || parseFloat(amt) <= 0) return alert('Enter an amount first.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm deposit() in MetaMask...');
+        const tx = await lendingContract.deposit(ethers.parseEther(amt));
+        showToast('pending', 'TX Submitted', 'Depositing mtETH-S...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Deposited ✓', 'Your mtETH-S is now earning USDC rewards.', tx.hash);
+        document.getElementById('deposit-amount').value = '';
+        refreshAll();
+      } catch(e) { showToast('error', 'Deposit Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    // ── Withdraw ───────────────────────────────────────────────
+    async function withdrawMtETHS() {
+      if (!await requireConnected()) return;
+      const amt = document.getElementById('withdraw-amount').value;
+      if (!amt || parseFloat(amt) <= 0) return alert('Enter an amount first.');
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm withdraw() in MetaMask...');
+        const tx = await lendingContract.withdraw(ethers.parseEther(amt));
+        showToast('pending', 'TX Submitted', 'Withdrawing mtETH-S...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Withdrawn ✓', 'mtETH-S returned to your wallet.', tx.hash);
+        refreshAll();
+      } catch(e) { showToast('error', 'Withdraw Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    // ── Exit ───────────────────────────────────────────────────
+    async function exitAll() {
+      if (!await requireConnected()) return;
+      if (!confirm('Exit the pool? This will withdraw all your mtETH-S and claim all pending USDC in one transaction.')) return;
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm exit() in MetaMask...');
+        const tx = await lendingContract.exit();
+        showToast('pending', 'TX Submitted', 'Exiting pool...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Exit Complete ✓', 'mtETH-S and USDC returned to your wallet.', tx.hash);
+        refreshAll();
+      } catch(e) { showToast('error', 'Exit Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    // ── Claim ──────────────────────────────────────────────────
+    async function claimRewards() {
+      if (!await requireConnected()) return;
+      try {
+        showToast('pending', 'Awaiting Signature', 'Confirm claimRewards() in MetaMask...');
+        const tx = await lendingContract.claimRewards();
+        showToast('pending', 'TX Submitted', 'Claiming USDC rewards...', tx.hash);
+        await tx.wait();
+        showToast('success', 'Rewards Claimed ✓', 'USDC sent to your wallet.', tx.hash);
+        refreshAll();
+      } catch(e) { showToast('error', 'Claim Failed', e.reason || e.message || 'Rejected.'); }
+    }
+
+    // ── Init ───────────────────────────────────────────────────
+    document.getElementById('btn-connect').onclick = connect;
+    if (window.ethereum) {
+      window.ethereum.on('chainChanged', () => checkNetwork());
+      window.ethereum.on('accountsChanged', () => location.reload());
+      checkNetwork();
+      refreshAll();
+    }
+    setInterval(refreshAll, 15000);
+  </script>
+
+</body>
+</html>
