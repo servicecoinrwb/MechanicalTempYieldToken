@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MT Credit Line • Mechanical Temp</title>
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
   <style>
     html { scroll-behavior: smooth; }
@@ -490,14 +490,14 @@
       "function earnedCollateral(address) view returns (uint256)",
       "function usdcShareOf(address) view returns (uint256)",
       "function collateralShareOf(address) view returns (uint256)",
-      "function depositUsdc(uint256) nonpayable",
-      "function withdrawUsdc(uint256) nonpayable",
-      "function exitUsdc() nonpayable",
-      "function claimUsdcRewards() nonpayable",
-      "function depositCollateral(uint256) nonpayable",
-      "function withdrawCollateral(uint256) nonpayable",
-      "function exitCollateral() nonpayable",
-      "function claimCollateralRewards() nonpayable",
+      "function depositUsdc(uint256)",
+      "function withdrawUsdc(uint256)",
+      "function exitUsdc()",
+      "function claimUsdcRewards()",
+      "function depositCollateral(uint256)",
+      "function withdrawCollateral(uint256)",
+      "function exitCollateral()",
+      "function claimCollateralRewards()",
     ];
 
     const ERC20_ABI = [
@@ -860,9 +860,9 @@
     const BORROWER_ADDR = "0xcfe077e6f7554B1724546E02624a0832D1f4557a";
 
     const BORROW_ABI = [
-      "function openLoan(uint256 amount, uint256 termDays) nonpayable",
-      "function repayLoan() nonpayable",
-      "function repayPartial(uint256 amount) nonpayable",
+      "function openLoan(uint256 amount, uint256 termDays)",
+      "function repayLoan()",
+      "function repayPartial(uint256 amount)",
       "function borrower() view returns (address)",
       "function totalUsdcDeposited() view returns (uint256)",
       "function maxBorrowable() view returns (uint256)",
