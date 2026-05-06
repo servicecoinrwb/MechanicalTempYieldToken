@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MTYLD Whitepaper • Mechanical Temp</title>
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <style>
     html { scroll-behavior: smooth; }
     .glass { background: rgba(15,23,42,.6); backdrop-filter: blur(8px); }
@@ -19,47 +19,269 @@
       <a href="index.html" class="flex items-center gap-2 text-white font-bold hover:text-sky-400 transition">
         ← Back to Home
       </a>
-      <div class="text-xs font-mono text-slate-500">DOC-2025-002</div>
+      <div class="text-xs font-mono text-slate-500">DOC-2026-003 • v3.0</div>
     </div>
   </header>
 
-  <!-- Document Content -->
   <main class="max-w-3xl mx-auto px-4 py-12">
-    
+
     <!-- Title Block -->
     <div class="text-center mb-12">
       <h1 class="text-4xl sm:text-5xl font-black text-white tracking-tight">MTYLD</h1>
       <p class="mt-4 text-xl text-sky-400 font-medium">Employee & Partner Asset Program</p>
       <p class="mt-2 text-sm text-slate-500 uppercase tracking-widest">Profit Sharing • Active Treasury • Private Credit • ETH Yield</p>
+      <div class="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/20 border border-emerald-900/50 text-emerald-400 text-xs font-semibold">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> Live on Arbitrum One
+      </div>
     </div>
 
     <!-- Executive Summary -->
     <section class="mb-12">
       <h2 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-slate-800">Executive Summary</h2>
       <p class="mb-4">
-        <strong class="text-white">MTYLD</strong> (Mechanical Temp Yield) is a digital asset designed exclusively for the stakeholders of Mechanical Temp. Unlike traditional cash bonuses which lose purchasing power over time, MTYLD is a backed asset that grows in value daily through the company's active treasury management and revenue injection strategies.
+        <strong class="text-white">MTYLD</strong> (Mechanical Temp Yield) is a digital asset designed exclusively for the stakeholders of Mechanical Temp. Unlike traditional cash bonuses which lose purchasing power over time, MTYLD is a backed asset that grows in value through the company's active treasury management and revenue injection strategies.
       </p>
       <p class="mb-4">
-        MTYLD holders also gain exclusive access to <strong class="text-white">The Conservator</strong> — an AI-powered ETH savings vault that autonomously deploys capital into yield strategies on Arbitrum. This gives holders a second way to grow their wealth, denominated in ETH.
+        MTYLD holders gain exclusive access to <strong class="text-white">The Conservator</strong> — an AI-powered ETH savings vault that autonomously deploys capital into yield strategies on Arbitrum. This gives holders a second way to grow their wealth, denominated in ETH.
+      </p>
+      <p class="mb-4">
+        MTYLD holders also gain access to the <strong class="text-white">MT Business Credit Line</strong> — an on-chain private credit facility where both MTYLD and mtETH-S can be used as collateral to back business operations and earn a share of interest.
       </p>
       <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-xl">
-        <p class="italic text-slate-400">Think of MTYLD as a <span class="text-sky-300 font-semibold">high-yield savings account</span> combined with <span class="text-sky-300 font-semibold">company stock</span>, but with instant liquidity. Think of The Conservator as your <span class="text-emerald-300 font-semibold">AI-managed ETH savings account</span>.</p>
+        <p class="italic text-slate-400">Think of MTYLD as a <span class="text-sky-300 font-semibold">high-yield savings account</span> combined with <span class="text-sky-300 font-semibold">company stock</span>, but with instant liquidity. Think of The Conservator as your <span class="text-emerald-300 font-semibold">AI-managed ETH savings account</span>. Think of the Credit Line as the <span class="text-purple-300 font-semibold">company's on-chain bank</span>.</p>
       </div>
     </section>
 
     <!-- Product Suite -->
     <section class="mb-12">
       <h2 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-slate-800">The Product Suite</h2>
-      <div class="grid sm:grid-cols-2 gap-4">
+      <div class="grid sm:grid-cols-3 gap-4">
         <div class="p-5 bg-slate-900 border border-sky-900/50 rounded-xl">
-          <div class="text-sky-400 font-bold text-sm uppercase tracking-wider mb-2">Product 1</div>
-          <h3 class="text-white font-bold text-lg">MTYLD Token</h3>
-          <p class="text-slate-400 text-sm mt-1">USDC-backed token. Grows from HVAC revenue and DeFi treasury yield. Redeemable 1:1 NAV for USDC at any time.</p>
+          <div class="text-sky-400 font-bold text-xs uppercase tracking-wider mb-2">Product 1</div>
+          <h3 class="text-white font-bold text-base">MTYLD Token</h3>
+          <p class="text-slate-400 text-sm mt-1">USDC-backed token. Grows from HVAC revenue and DeFi treasury yield. Redeemable at NAV for USDC at any time.</p>
         </div>
         <div class="p-5 bg-slate-900 border border-emerald-900/50 rounded-xl">
-          <div class="text-emerald-400 font-bold text-sm uppercase tracking-wider mb-2">Product 2</div>
-          <h3 class="text-white font-bold text-lg">The Conservator (mtETH-S)</h3>
-          <p class="text-slate-400 text-sm mt-1">ETH vault exclusively for MTYLD holders. AI agent autonomously deploys ETH to Aave V3. Returns grow NAV of mtETH-S shares.</p>
+          <div class="text-emerald-400 font-bold text-xs uppercase tracking-wider mb-2">Product 2</div>
+          <h3 class="text-white font-bold text-base">The Conservator (mtETH-S)</h3>
+          <p class="text-slate-400 text-sm mt-1">ETH vault for MTYLD holders. AI agent deploys WETH to Aave V3. Yield grows NAV of mtETH-S shares.</p>
+        </div>
+        <div class="p-5 bg-slate-900 border border-purple-900/50 rounded-xl">
+          <div class="text-purple-400 font-bold text-xs uppercase tracking-wider mb-2">Product 3</div>
+          <h3 class="text-white font-bold text-base">MT Credit Line v3</h3>
+          <p class="text-slate-400 text-sm mt-1">Dual-collateral business credit line. MTYLD (70% LTV) or mtETH-S (60% LTV) backs USDC loans. Earn interest as a depositor.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How MTYLD Works -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-white mb-6 pb-2 border-b border-slate-800">How MTYLD Works</h2>
+      <p class="mb-6">The value of MTYLD is derived from <strong>multiple revenue streams</strong>, ensuring growth even when HVAC seasonality varies.</p>
+
+      <div class="space-y-6">
+        <div class="flex gap-4">
+          <div class="flex-none w-8 h-8 rounded-full bg-sky-900/30 text-sky-400 flex items-center justify-center font-bold border border-sky-900">1</div>
+          <div>
+            <h3 class="text-lg font-semibold text-white">Real Revenue (HVAC)</h3>
+            <p class="text-slate-400">A portion of Mechanical Temp's physical service revenue is converted into USDC and injected into the vault regularly, directly increasing every token's value.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-none w-8 h-8 rounded-full bg-sky-900/30 text-sky-400 flex items-center justify-center font-bold border border-sky-900">2</div>
+          <div>
+            <h3 class="text-lg font-semibold text-white">Treasury Yield (DeFi)</h3>
+            <p class="text-slate-400 mb-2">Idle treasury funds are actively deployed into diverse, high-grade strategies:</p>
+            <ul class="list-disc pl-5 text-sm text-slate-500 space-y-1">
+              <li><strong>xGRAIL Dividends:</strong> Daily yield from Camelot DEX ecosystem participation.</li>
+              <li><strong>USUAL Rewards:</strong> Weekly rewards from stablecoin infrastructure.</li>
+              <li><strong>Cypher Streaming:</strong> Continuous yield from protocol streaming incentives.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-none w-8 h-8 rounded-full bg-sky-900/30 text-sky-400 flex items-center justify-center font-bold border border-sky-900">3</div>
+          <div>
+            <h3 class="text-lg font-semibold text-white">Credit Line Interest</h3>
+            <p class="text-slate-400">When Mechanical Temp draws on the business credit line, interest accrues at 8% APR. 30% of that interest flows to collateral depositors (MTYLD and mtETH-S holders) proportional to their USD collateral value.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-none w-8 h-8 rounded-full bg-sky-900/30 text-sky-400 flex items-center justify-center font-bold border border-sky-900">4</div>
+          <div>
+            <h3 class="text-lg font-semibold text-white">NAV Injection</h3>
+            <p class="text-slate-400">Combined earnings are injected into the vault, increasing the <strong>Net Asset Value (NAV)</strong> of every MTYLD token. The token can only go up relative to USDC.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-emerald-900/10 border border-emerald-900/30 rounded-lg text-emerald-200 text-sm text-center">
+        <strong>The Result:</strong> Your MTYLD grows from HVAC work, DeFi treasury management, <em>and</em> credit line interest — simultaneously.
+      </div>
+    </section>
+
+    <!-- THE CONSERVATOR SECTION -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-emerald-900/50">The Conservator — mtETH-S</h2>
+
+      <div class="mb-6 p-4 bg-emerald-900/10 border border-emerald-900/30 rounded-xl">
+        <p class="text-emerald-200 text-sm">Exclusively available to MTYLD holders. Your MTYLD token is your key to access.</p>
+      </div>
+
+      <p class="mb-4">The Conservator is an autonomous AI agent managing an ERC-4626 ETH vault on Arbitrum One. It monitors the vault around the clock and deploys idle WETH into Aave V3 to earn yield — without any manual intervention required.</p>
+
+      <div class="space-y-6 mb-6">
+        <div class="flex gap-4">
+          <div class="flex-none w-8 h-8 rounded-full bg-emerald-900/30 text-emerald-400 flex items-center justify-center font-bold border border-emerald-900">1</div>
+          <div>
+            <h3 class="text-lg font-semibold text-white">Deposit WETH</h3>
+            <p class="text-slate-400">Connect your wallet to the Conservator dashboard at <a href="https://vault.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300">vault.mechanicaltemp.com</a>. Approve and deposit WETH. Minimum deposit is 0.01 WETH.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-none w-8 h-8 rounded-full bg-emerald-900/30 text-emerald-400 flex items-center justify-center font-bold border border-emerald-900">2</div>
+          <div>
+            <h3 class="text-lg font-semibold text-white">Receive mtETH-S Shares</h3>
+            <p class="text-slate-400">The vault mints mtETH-S tokens to your wallet representing your ownership share. Share count stays fixed — but each share becomes worth more WETH as yield accrues.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-none w-8 h-8 rounded-full bg-emerald-900/30 text-emerald-400 flex items-center justify-center font-bold border border-emerald-900">3</div>
+          <div>
+            <h3 class="text-lg font-semibold text-white">AI Deploys to Aave</h3>
+            <p class="text-slate-400">The Conservator agent automatically detects idle WETH and deploys it to Aave V3, keeping a small buffer for liquidity. Yield accrues every block.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-none w-8 h-8 rounded-full bg-emerald-900/30 text-emerald-400 flex items-center justify-center font-bold border border-emerald-900">4</div>
+          <div>
+            <h3 class="text-lg font-semibold text-white">Use mtETH-S as Collateral</h3>
+            <p class="text-slate-400">While earning Aave yield, your mtETH-S can also be deposited into the MT Credit Line as collateral at 60% LTV — earning a share of loan interest on top of the existing Aave yield.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4 mb-6">
+        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+          <div class="text-emerald-400 font-semibold text-sm mb-1">What is NAV?</div>
+          <p class="text-slate-400 text-sm">Net Asset Value — how much WETH each mtETH-S share is worth. Starts near 1.0 and grows as yield accrues. Your position = shares × NAV.</p>
+        </div>
+        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+          <div class="text-emerald-400 font-semibold text-sm mb-1">What is mtETH-S?</div>
+          <p class="text-slate-400 text-sm">Your share token. Received when depositing WETH. Burned when withdrawing. Holds your claim to vault assets including accumulated yield.</p>
+        </div>
+        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+          <div class="text-emerald-400 font-semibold text-sm mb-1">Withdraw Lock</div>
+          <p class="text-slate-400 text-sm">A 24-hour lock applies after each deposit to prevent flash loan attacks. Plan withdrawals accordingly.</p>
+        </div>
+        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+          <div class="text-emerald-400 font-semibold text-sm mb-1">AI Agent Safety</div>
+          <p class="text-slate-400 text-sm">The agent can only interact with whitelisted contracts approved by the owner. It cannot send funds to arbitrary addresses.</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">Conservator On-Chain Addresses (Arbitrum One)</div>
+        <ul class="space-y-2 font-mono text-xs">
+          <li><span class="text-slate-500">Conservator Vault (mtETH-S):</span> <span class="text-emerald-400">0xc9227b644285198646F9c75ceCf13F84bF419B78</span></li>
+          <li><span class="text-slate-500">AI Agent Wallet:</span> <span class="text-emerald-400">0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58</span></li>
+          <li><span class="text-slate-500">Aave V3 Pool:</span> <span class="text-emerald-400">0x794a61358D6845594F94dc1DB02A252b5b4814aD</span></li>
+          <li><span class="text-slate-500">WETH (Arbitrum):</span> <span class="text-emerald-400">0x82aF49447D8a07e3bd95BD0d56f35241523fBab1</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Credit Line -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-purple-900/50">MT Business Credit Line v3</h2>
+
+      <div class="mb-6 p-4 bg-purple-900/10 border border-purple-900/30 rounded-xl">
+        <p class="text-purple-200 text-sm">The on-chain bank of Mechanical Temp. Three roles — USDC depositor, collateral provider, or borrower.</p>
+      </div>
+
+      <p class="mb-6">The credit line is a three-sided market. USDC depositors fund the pool. MTYLD and mtETH-S holders post collateral to back loans. Mechanical Temp borrows USDC for real business operations and repays with interest — which flows back to all participants.</p>
+
+      <div class="space-y-4 mb-6">
+        <div class="bg-slate-900 border border-sky-900/40 rounded-xl p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-6 h-6 rounded-full bg-sky-900/50 text-sky-400 flex items-center justify-center text-xs font-bold border border-sky-800">A</span>
+            <h3 class="text-white font-bold text-sm">USDC Depositors — Earn 70% of Interest</h3>
+          </div>
+          <p class="text-slate-400 text-sm">Anyone can deposit USDC to fund the lending pool. When a loan is repaid, 70% of interest distributes proportionally to USDC depositors. Withdraw freely when no loan is active.</p>
+        </div>
+
+        <div class="bg-slate-900 border border-sky-900/40 rounded-xl p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-6 h-6 rounded-full bg-sky-900/50 text-sky-400 flex items-center justify-center text-xs font-bold border border-sky-800">B</span>
+            <h3 class="text-white font-bold text-sm">mtETH-S Collateral — 60% LTV • Share of 30% Interest</h3>
+          </div>
+          <p class="text-slate-400 text-sm">Deposit mtETH-S vault shares as collateral. Each mtETH-S contributes 60% of its ETH value to the borrowing power. While locked, it continues earning Aave yield inside the Conservator vault. Earn a proportional share of the 30% collateral interest split.</p>
+        </div>
+
+        <div class="bg-slate-900 border border-purple-900/40 rounded-xl p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-6 h-6 rounded-full bg-purple-900/50 text-purple-400 flex items-center justify-center text-xs font-bold border border-purple-800">C</span>
+            <h3 class="text-white font-bold text-sm">MTYLD Collateral — 70% LTV • Share of 30% Interest</h3>
+          </div>
+          <p class="text-slate-400 text-sm">MTYLD receives the highest LTV (70%) because its price is USDC-stable — backed by real HVAC revenue, not crypto market movements. MTYLD collateral earns the same proportional share of the 30% interest pool. The 30% split between mtETH-S and MTYLD is weighted by each pool's USD value at repayment time.</p>
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4 mb-6">
+        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+          <div class="text-slate-400 text-xs uppercase tracking-wider mb-2">Loan Terms</div>
+          <ul class="text-sm text-slate-400 space-y-1">
+            <li><span class="text-white font-semibold">Rate:</span> 8% APR</li>
+            <li><span class="text-white font-semibold">Max Term:</span> 90 days</li>
+            <li><span class="text-white font-semibold">mtETH-S LTV:</span> 60%</li>
+            <li><span class="text-white font-semibold">MTYLD LTV:</span> 70%</li>
+            <li><span class="text-white font-semibold">Partial Repay:</span> Supported</li>
+          </ul>
+        </div>
+        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+          <div class="text-slate-400 text-xs uppercase tracking-wider mb-2">Oracles</div>
+          <ul class="text-sm text-slate-400 space-y-1">
+            <li><span class="text-white font-semibold">mtETH-S Price:</span> Chainlink ETH/USD</li>
+            <li><span class="text-white font-semibold">MTYLD Price:</span> <code class="text-purple-400 text-xs">pricePerToken()</code> NAV</li>
+            <li><span class="text-white font-semibold">Staleness Check:</span> 1 hour max</li>
+            <li><span class="text-white font-semibold">Interest:</span> Ceiling division, never truncates to zero</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">Credit Line On-Chain Addresses (Arbitrum One)</div>
+        <ul class="space-y-2 font-mono text-xs">
+          <li><span class="text-slate-500">Credit Line Contract v3:</span> <span class="text-purple-400">0xe442E46c4cbBa68bFE36196B9547392BAD0429eB</span></li>
+          <li><span class="text-slate-500">USDC (Arbitrum):</span> <span class="text-purple-400">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</span></li>
+          <li><span class="text-slate-500">Chainlink ETH/USD:</span> <span class="text-purple-400">0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Why Participate -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-white mb-6 pb-2 border-b border-slate-800">Why Participate?</h2>
+      <div class="grid gap-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+          <h3 class="text-lg font-semibold text-white mb-2">1. Superior Growth</h3>
+          <p class="text-slate-400 text-sm">MTYLD is backed by an actively managed treasury fed by real HVAC revenue, DeFi yield, and credit line interest. The goal is to significantly outperform traditional bank rates.</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+          <h3 class="text-lg font-semibold text-white mb-2">2. Instant Liquidity</h3>
+          <p class="text-slate-400 text-sm">You are never locked in. Redeem MTYLD for USDC instantly, 24/7. Bridge to Base or Ethereum in seconds using Relay.</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+          <h3 class="text-lg font-semibold text-white mb-2">3. ETH Yield via The Conservator</h3>
+          <p class="text-slate-400 text-sm">MTYLD holders unlock the Conservator vault — a second yield stream denominated in ETH. Deposit WETH, earn Aave yield automatically, withdraw more WETH than you put in.</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+          <h3 class="text-lg font-semibold text-white mb-2">4. Earn Interest as a Collateral Provider</h3>
+          <p class="text-slate-400 text-sm">Lock MTYLD or mtETH-S in the credit line and earn a share of every loan repayment. MTYLD earns at the highest LTV (70%) because its USDC-stable price makes it the strongest collateral type.</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+          <h3 class="text-lg font-semibold text-white mb-2">5. USDC-Stable by Design</h3>
+          <p class="text-slate-400 text-sm">MTYLD is not a volatile cryptocurrency. It is backed by stable USDC assets and designed to go <strong>up only</strong> relative to the treasury backing. No market crashes, no liquidation risk for MTYLD holders.</p>
         </div>
       </div>
     </section>
@@ -67,8 +289,7 @@
     <!-- Partner Portal -->
     <section class="mb-12">
       <h2 class="text-2xl font-bold text-white mb-6 pb-2 border-b border-slate-800">The Partner Portal</h2>
-      <p class="mb-6">We have removed the complexity of traditional crypto tools. Accessing your assets is now as simple as logging into your email.</p>
-      
+      <p class="mb-6">We have removed the complexity of traditional crypto tools. Accessing your assets is as simple as logging into your email.</p>
       <div class="grid sm:grid-cols-2 gap-4">
         <div class="p-5 bg-slate-900 border border-slate-800 rounded-xl">
           <h3 class="font-bold text-white mb-1 flex items-center gap-2">
@@ -87,208 +308,89 @@
       </div>
     </section>
 
-    <!-- How MTYLD Works -->
-    <section class="mb-12">
-      <h2 class="text-2xl font-bold text-white mb-6 pb-2 border-b border-slate-800">How MTYLD Works</h2>
-      <p class="mb-6">The value of MTYLD is derived from <strong>multiple revenue streams</strong>, ensuring growth even when HVAC seasonality varies.</p>
-      
-      <div class="space-y-6">
-        <div class="flex gap-4">
-          <div class="flex-none w-8 h-8 rounded-full bg-sky-900/30 text-sky-400 flex items-center justify-center font-bold border border-sky-900">1</div>
-          <div>
-            <h3 class="text-lg font-semibold text-white">Real Revenue (HVAC)</h3>
-            <p class="text-slate-400">A portion of Mechanical Temp's physical service revenue is converted into USDC and injected into the vault monthly.</p>
-          </div>
-        </div>
-        
-        <div class="flex gap-4">
-          <div class="flex-none w-8 h-8 rounded-full bg-sky-900/30 text-sky-400 flex items-center justify-center font-bold border border-sky-900">2</div>
-          <div>
-            <h3 class="text-lg font-semibold text-white">Treasury Yield (DeFi)</h3>
-            <p class="text-slate-400 mb-2">Idle treasury funds are actively deployed into diverse, high-grade strategies to generate additional revenue:</p>
-            <ul class="list-disc pl-5 text-sm text-slate-500 space-y-1">
-              <li><strong>xGRAIL Dividends:</strong> Daily yield from Camelot DEX ecosystem participation.</li>
-              <li><strong>USUAL Rewards:</strong> Weekly rewards from stablecoin infrastructure.</li>
-              <li><strong>Cypher Streaming:</strong> Continuous yield from protocol streaming incentives.</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div class="flex-none w-8 h-8 rounded-full bg-sky-900/30 text-sky-400 flex items-center justify-center font-bold border border-sky-900">3</div>
-          <div>
-            <h3 class="text-lg font-semibold text-white">Daily NAV Injection</h3>
-            <p class="text-slate-400">Combined earnings are injected into the vault daily, increasing the <strong>Net Asset Value (NAV)</strong> of every MTYLD token in circulation.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-6 p-4 bg-emerald-900/10 border border-emerald-900/30 rounded-lg text-emerald-200 text-sm text-center">
-        <strong>The Result:</strong> If you hold MTYLD, your balance grows from both HVAC work <em>and</em> sophisticated treasury management.
-      </div>
-    </section>
-
-    <!-- THE CONSERVATOR SECTION -->
-    <section class="mb-12">
-      <h2 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-emerald-900/50">The Conservator — mtETH-S</h2>
-      
-      <div class="mb-6 p-4 bg-emerald-900/10 border border-emerald-900/30 rounded-xl">
-        <p class="text-emerald-200 text-sm">Exclusively available to MTYLD holders. Your MTYLD token is your key to access.</p>
-      </div>
-
-      <p class="mb-4">The Conservator is an autonomous AI agent managing an ERC-4626 ETH vault on Arbitrum One. It monitors the vault around the clock and deploys idle WETH into Aave V3 to earn yield — without any manual intervention required.</p>
-
-      <div class="space-y-6 mb-6">
-        <div class="flex gap-4">
-          <div class="flex-none w-8 h-8 rounded-full bg-emerald-900/30 text-emerald-400 flex items-center justify-center font-bold border border-emerald-900">1</div>
-          <div>
-            <h3 class="text-lg font-semibold text-white">Deposit WETH</h3>
-            <p class="text-slate-400">Connect your wallet to the Conservator dashboard at <a href="https://vault.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300">vault.mechanicaltemp.com</a>. Approve and deposit WETH. Minimum deposit is 0.01 WETH.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div class="flex-none w-8 h-8 rounded-full bg-emerald-900/30 text-emerald-400 flex items-center justify-center font-bold border border-emerald-900">2</div>
-          <div>
-            <h3 class="text-lg font-semibold text-white">Receive mtETH-S Shares</h3>
-            <p class="text-slate-400">When you deposit, the vault mints mtETH-S tokens to your wallet. These tokens represent your ownership share of the vault. The number of shares you receive depends on the current NAV — not 1:1 with WETH.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div class="flex-none w-8 h-8 rounded-full bg-emerald-900/30 text-emerald-400 flex items-center justify-center font-bold border border-emerald-900">3</div>
-          <div>
-            <h3 class="text-lg font-semibold text-white">AI Deploys to Aave</h3>
-            <p class="text-slate-400">The Conservator agent automatically detects idle WETH in the vault and deploys it to Aave V3, keeping a small buffer for liquidity. Yield accrues every block.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div class="flex-none w-8 h-8 rounded-full bg-emerald-900/30 text-emerald-400 flex items-center justify-center font-bold border border-emerald-900">4</div>
-          <div>
-            <h3 class="text-lg font-semibold text-white">NAV Grows Over Time</h3>
-            <p class="text-slate-400">As Aave earns yield, the total assets in the vault grow. Your mtETH-S shares stay the same count but each share becomes worth more WETH. When you withdraw, you receive more WETH than you deposited.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Key concepts -->
-      <div class="grid sm:grid-cols-2 gap-4 mb-6">
-        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
-          <div class="text-emerald-400 font-semibold text-sm mb-1">What is NAV?</div>
-          <p class="text-slate-400 text-sm">Net Asset Value — how much WETH each mtETH-S share is worth. Starts near 1.0 and grows as yield accrues. Your position value = shares × NAV.</p>
-        </div>
-        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
-          <div class="text-emerald-400 font-semibold text-sm mb-1">What is mtETH-S?</div>
-          <p class="text-slate-400 text-sm">Your share token. Received when depositing WETH. Burned when withdrawing. Holds your claim to vault assets including all accumulated yield.</p>
-        </div>
-        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
-          <div class="text-emerald-400 font-semibold text-sm mb-1">Withdraw Lock</div>
-          <p class="text-slate-400 text-sm">A 24-hour lock applies after each deposit. This prevents flash loan attacks. Plan withdrawals accordingly.</p>
-        </div>
-        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
-          <div class="text-emerald-400 font-semibold text-sm mb-1">AI Agent Safety</div>
-          <p class="text-slate-400 text-sm">The agent can only interact with whitelisted contracts approved by the owner. It cannot send funds to arbitrary addresses or steal deposits.</p>
-        </div>
-      </div>
-
-      <!-- Addresses -->
-      <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
-        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">On-Chain Addresses (Arbitrum One)</div>
-        <ul class="space-y-2 font-mono text-xs">
-          <li><span class="text-slate-500">Vault Contract:</span> <span class="text-emerald-400">0x0b5873fFfDD786F3A807C7c875370d3266600183</span></li>
-          <li><span class="text-slate-500">AI Agent Wallet:</span> <span class="text-emerald-400">0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58</span></li>
-          <li><span class="text-slate-500">Aave V3 Pool:</span> <span class="text-emerald-400">0x794a61358D6845594F94dc1DB02A252b5b4814aD</span></li>
-          <li><span class="text-slate-500">WETH (Arbitrum):</span> <span class="text-emerald-400">0x82aF49447D8a07e3bd95BD0d56f35241523fBab1</span></li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- Why Participate -->
-    <section class="mb-12">
-      <h2 class="text-2xl font-bold text-white mb-6 pb-2 border-b border-slate-800">Why Participate?</h2>
-      
-      <div class="grid gap-6">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-          <h3 class="text-lg font-semibold text-white mb-2">1. Superior Growth</h3>
-          <p class="text-slate-400 text-sm">Your MTYLD tokens are backed by an actively managed treasury. The goal is to outperform traditional bank interest rates significantly, allowing your bonus to work as hard as you do.</p>
-        </div>
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-          <h3 class="text-lg font-semibold text-white mb-2">2. Instant Liquidity</h3>
-          <p class="text-slate-400 text-sm">You are never locked in. Unlike a 401k or stock options that vest over years, you can redeem your MTYLD for USDC instantly, 24/7, through our secure web portal.</p>
-        </div>
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-          <h3 class="text-lg font-semibold text-white mb-2">3. ETH Yield via The Conservator</h3>
-          <p class="text-slate-400 text-sm">MTYLD holders unlock exclusive access to the Conservator vault — a second yield stream denominated in ETH. Deposit WETH, earn Aave yield automatically, withdraw more WETH than you put in.</p>
-        </div>
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-          <h3 class="text-lg font-semibold text-white mb-2">4. Stability</h3>
-          <p class="text-slate-400 text-sm">MTYLD is not a volatile cryptocurrency like Bitcoin. It is backed by stable assets (USDC). The mechanism is designed to go <strong>up only</strong> relative to the treasury backing.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Credit Line -->
-    <section class="mb-12">
-      <h2 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-slate-800">The "Bank of Mechanical Temp"</h2>
-      <p class="mb-4 italic text-sky-200">Don't sell your upside just because you need cash.</p>
-      <p class="mb-4">We have built an internal <strong>Private Credit Line</strong> for our partners.</p>
-      <ul class="list-disc pl-5 space-y-2 text-slate-400">
-        <li><strong>Borrow Against Your Bonus:</strong> Deposit your MTYLD as collateral and borrow USDC instantly.</li>
-        <li><strong>Keep Earning:</strong> While your MTYLD is deposited as collateral, it <strong>continues to grow in value</strong>.</li>
-        <li><strong>Simple Terms:</strong> No credit checks. No paperwork. The blockchain handles collateralization automatically.</li>
-      </ul>
-    </section>
-
     <!-- Transparency -->
     <section class="mb-12">
-      <h2 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-slate-800">Transparency</h2>
-      <ul class="space-y-2 text-slate-300 font-mono text-sm">
-        <li><span class="text-slate-500">USDC (Arbitrum):</span> <span class="text-sky-300">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</span></li>
-        <li><span class="text-slate-500">MTYLD Contract:</span> <span class="text-sky-300">0xdFD1C01678e713FDe1630c9db921e6206f3795b4</span></li>
-        <li><span class="text-slate-500">Lending Contract:</span> <span class="text-sky-300">0x91B2dF57E6272C8652BEb9D2e32548B6ACbFAF56</span></li>
-        <li><span class="text-slate-500">Treasury Wallet:</span> <span class="text-sky-300">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</span></li>
-        <li><span class="text-slate-500">Conservator Vault:</span> <span class="text-emerald-400">0x0b5873fFfDD786F3A807C7c875370d3266600183</span></li>
-        <li><span class="text-slate-500">Conservator Agent:</span> <span class="text-emerald-400">0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58</span></li>
-      </ul>
-      <p class="mt-3 text-xs text-slate-500">Always verify official links and addresses.</p>
+      <h2 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-slate-800">Transparency — All Addresses</h2>
+      <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-5 space-y-4">
+        <div>
+          <div class="text-slate-500 text-xs uppercase tracking-wider mb-2 font-semibold">MTYLD</div>
+          <ul class="space-y-1.5 font-mono text-xs">
+            <li><span class="text-slate-500">MTYLD Token & Vault:</span> <span class="text-sky-300">0xdFD1C01678e713FDe1630c9db921e6206f3795b4</span></li>
+            <li><span class="text-slate-500">Treasury Wallet:</span> <span class="text-sky-300">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</span></li>
+          </ul>
+        </div>
+        <div class="border-t border-slate-800 pt-4">
+          <div class="text-slate-500 text-xs uppercase tracking-wider mb-2 font-semibold">The Conservator (mtETH-S)</div>
+          <ul class="space-y-1.5 font-mono text-xs">
+            <li><span class="text-slate-500">Conservator Vault:</span> <span class="text-emerald-400">0xc9227b644285198646F9c75ceCf13F84bF419B78</span></li>
+            <li><span class="text-slate-500">AI Agent Wallet:</span> <span class="text-emerald-400">0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58</span></li>
+            <li><span class="text-slate-500">Aave V3 Pool:</span> <span class="text-emerald-400">0x794a61358D6845594F94dc1DB02A252b5b4814aD</span></li>
+          </ul>
+        </div>
+        <div class="border-t border-slate-800 pt-4">
+          <div class="text-slate-500 text-xs uppercase tracking-wider mb-2 font-semibold">MT Credit Line v3</div>
+          <ul class="space-y-1.5 font-mono text-xs">
+            <li><span class="text-slate-500">Credit Line Contract:</span> <span class="text-purple-400">0xe442E46c4cbBa68bFE36196B9547392BAD0429eB</span></li>
+            <li><span class="text-slate-500">Chainlink ETH/USD:</span> <span class="text-purple-400">0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612</span></li>
+          </ul>
+        </div>
+        <div class="border-t border-slate-800 pt-4">
+          <div class="text-slate-500 text-xs uppercase tracking-wider mb-2 font-semibold">Shared</div>
+          <ul class="space-y-1.5 font-mono text-xs">
+            <li><span class="text-slate-500">USDC (Arbitrum):</span> <span class="text-slate-300">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</span></li>
+            <li><span class="text-slate-500">WETH (Arbitrum):</span> <span class="text-slate-300">0x82aF49447D8a07e3bd95BD0d56f35241523fBab1</span></li>
+          </ul>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-slate-500">Always verify official links and addresses. All contracts are deployed on Arbitrum One.</p>
     </section>
 
     <!-- Getting Started -->
     <section class="mb-16">
       <h2 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-slate-800">Getting Started</h2>
       <p class="mb-4">Access the full suite of tools:</p>
-      
+
       <a href="partner_portal.html" class="block w-full text-center py-4 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl transition mb-4">
         Launch Partner Portal
       </a>
-      
+
       <div class="grid grid-cols-2 gap-4 text-sm text-center">
         <a href="vault.html" class="p-3 bg-slate-900 border border-slate-800 rounded-lg hover:border-sky-700 transition">
           <span class="block text-white font-semibold">MTYLD Vault</span>
-          <span class="text-slate-500">View Balance & Redeem</span>
+          <span class="text-slate-500 text-xs">View Balance & Redeem</span>
         </a>
-        <a href="https://vault.mechanicaltemp.com/conservator.html" class="p-3 bg-slate-900 border border-emerald-900/50 rounded-lg hover:border-emerald-700 transition">
+        <a href="conservator.html" class="p-3 bg-slate-900 border border-emerald-900/50 rounded-lg hover:border-emerald-700 transition">
           <span class="block text-emerald-400 font-semibold">The Conservator</span>
-          <span class="text-slate-500">ETH Yield Vault</span>
+          <span class="text-slate-500 text-xs">ETH Yield Vault</span>
         </a>
-        <a href="lend.html" class="p-3 bg-slate-900 border border-slate-800 rounded-lg hover:border-sky-700 transition">
-          <span class="block text-white font-semibold">Credit Line</span>
-          <span class="text-slate-500">Coming Soon</span>
-        </a>
-        <a href="index.html" class="p-3 bg-slate-900 border border-slate-800 rounded-lg hover:border-sky-700 transition">
-          <span class="block text-white font-semibold">Home</span>
-          <span class="text-slate-500">Join Waitlist</span>
+        <a href="credit-line.html" class="p-3 bg-slate-900 border border-purple-900/50 rounded-lg hover:border-purple-700 transition col-span-2">
+          <span class="block text-purple-400 font-semibold">MT Credit Line v3</span>
+          <span class="text-slate-500 text-xs">Dual Collateral • MTYLD 70% LTV • mtETH-S 60% LTV</span>
         </a>
       </div>
     </section>
 
-    <!-- Disclaimer -->
+    <!-- Footer -->
     <footer class="border-t border-slate-800 pt-8 text-center">
+      <div class="mb-6">
+        <p class="text-slate-500 text-xs mb-3">Bridge USDC to another chain after redeeming</p>
+        <div class="flex justify-center gap-3 flex-wrap">
+          <a href="https://www.relay.link/bridge/base?fromChainId=42161&toCurrency=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&fromCurrency=0xaf88d065e77c8cc2239327c5edb3a432268e5831"
+             target="_blank"
+             class="px-4 py-2 rounded-xl bg-sky-600/20 border border-sky-700 text-sky-400 text-xs font-semibold hover:bg-sky-600/30 transition">
+            USDC → Base via Relay ↗
+          </a>
+          <a href="https://www.relay.link/bridge/ethereum?fromChainId=42161&toCurrency=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&fromCurrency=0xaf88d065e77c8cc2239327c5edb3a432268e5831"
+             target="_blank"
+             class="px-4 py-2 rounded-xl bg-slate-700 border border-slate-600 text-slate-400 text-xs font-semibold hover:bg-slate-600 transition">
+            USDC → Ethereum via Relay ↗
+          </a>
+        </div>
+      </div>
       <p class="text-xs text-slate-500 max-w-xl mx-auto">
         <strong>Disclaimer:</strong> MTYLD is an internal rewards program. While backed by stable assets, all digital assets carry technical risks including smart contract risk and market volatility. The Conservator vault involves ETH which is a volatile asset. Mechanical Temp reserves the right to manage the whitelist and treasury parameters to ensure protocol health.
       </p>
-      <p class="mt-4 text-xs text-slate-600">© <span id="yr"></span> Mechanical Temp</p>
+      <p class="mt-4 text-xs text-slate-600">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
     </footer>
 
   </main>
