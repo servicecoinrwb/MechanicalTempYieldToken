@@ -4,27 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Partner Portal • Mechanical Temp</title>
-
-  <!-- Favicon Link -->
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Ethers.js -->
+  <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <!-- QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-  <!-- Web3Auth (Updated to v9.4.4) -->
   <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@9.4.4/dist/modal.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@web3auth/ethereum-provider@9.4.4/dist/ethereumProvider.umd.min.js"></script>
-  
   <style>
     canvas { background: transparent; }
     html { scroll-behavior: smooth; }
-    /* Hide scrollbar for clean UI */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #0f172a; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
@@ -32,70 +21,75 @@
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans">
 
-  <!-- LOGIN SCREEN (Shown by default) -->
+  <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900 text-white transition-opacity duration-500">
     <div class="w-full max-w-md p-8 text-center">
-      <!-- ORIGINAL LOGO for Login Screen -->
       <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-16 mx-auto mb-6">
       <h1 class="text-3xl font-bold mb-2">Partner Portal</h1>
       <p class="text-slate-400 mb-8">Secure access to your MTYLD assets.</p>
-      
       <button id="btnLogin" class="w-full py-4 px-6 bg-sky-500 hover:bg-sky-400 text-white rounded-xl font-bold text-lg shadow-lg shadow-sky-500/20 transition-all transform hover:scale-[1.02]">
         Log In with Email
       </button>
-
       <div class="my-6 flex items-center justify-between">
         <hr class="w-full border-slate-700 opacity-50">
         <span class="px-3 text-slate-500 text-xs font-semibold uppercase">OR</span>
         <hr class="w-full border-slate-700 opacity-50">
       </div>
-
       <button id="btnConnectExternal" class="w-full py-3 px-6 bg-transparent border border-slate-600 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-        Connect External Wallet (Rabby/Metamask)
+        Connect External Wallet (Rabby/MetaMask)
       </button>
-      
       <p class="mt-8 text-xs text-slate-500">Powered by Web3Auth & Arbitrum</p>
     </div>
   </div>
 
-  <!-- APP INTERFACE (Hidden until logged in) -->
+  <!-- WHITELIST GATE SCREEN -->
+  <div id="gateScreen" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900 px-4">
+    <div class="w-full max-w-md text-center">
+      <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-14 mx-auto mb-6">
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-8">
+        <div class="text-5xl mb-4">🔒</div>
+        <h2 class="text-2xl font-bold text-white mb-2">Access Restricted</h2>
+        <p class="text-slate-400 text-sm mb-2">This wallet is not on the MTYLD whitelist.</p>
+        <p class="text-slate-500 text-xs font-mono mb-6 break-all" id="gateAddr"></p>
+        <p class="text-slate-400 text-sm mb-6">Partner Portal access is invite-only. Join the waitlist to request access.</p>
+        <a href="index.html" class="block w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold transition mb-3">
+          Return to Home & Join Waitlist
+        </a>
+        <button id="btnGateRetry" class="block w-full py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm font-semibold transition">
+          Try a Different Wallet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP INTERFACE -->
   <div id="appInterface" class="hidden min-h-screen flex flex-col relative">
-    
+
     <!-- Navbar -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
       <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <!-- NEW LOGO for Portal Header -->
-          <img src="https://imageview.replit.app/objects/uploads/d16ab63e-1d1e-4b8f-863c-67e66e4894fc" alt="Logo" class="h-10 w-auto object-contain"> 
+          <img src="https://imageview.replit.app/objects/uploads/d16ab63e-1d1e-4b8f-863c-67e66e4894fc" alt="Logo" class="h-10 w-auto object-contain">
           <span class="font-bold text-slate-800 hidden sm:inline">Partner Portal</span>
         </div>
         <div class="flex items-center gap-3">
-          
-          <!-- Gas Indicator -->
           <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200" id="gasTank">
             <span class="text-xs font-bold text-slate-500 uppercase">Gas</span>
             <div class="flex items-center gap-1">
-                <div class="w-2 h-2 rounded-full bg-red-500" id="gasLight"></div>
-                <span class="text-xs font-mono text-slate-700" id="gasBal">— ETH</span>
+              <div class="w-2 h-2 rounded-full bg-red-500" id="gasLight"></div>
+              <span class="text-xs font-mono text-slate-700" id="gasBal">— ETH</span>
             </div>
           </div>
-
           <div class="text-right hidden sm:block">
             <div class="text-xs text-slate-500">Logged in as</div>
             <div class="text-sm font-semibold text-slate-800" id="userEmail">—</div>
-            <!-- Header Address Display -->
             <div class="text-xs font-mono text-slate-400 mt-0.5 cursor-pointer hover:text-sky-600 transition-colors" id="headerAddress" title="Click to copy">0x...</div>
           </div>
-          
-          <!-- Export Key Button (Hidden for External Wallets) -->
           <button id="btnExportKey" class="hidden p-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-800" title="Export Private Key">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
           </button>
-
-          <button id="btnLogout" class="text-sm px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-600">
-            Log Out
-          </button>
+          <button id="btnLogout" class="text-sm px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-600">Log Out</button>
         </div>
       </div>
     </header>
@@ -118,22 +112,19 @@
               Yield Active
             </div>
           </div>
-
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="p-5 bg-slate-900 text-white rounded-xl shadow-lg shadow-slate-200">
               <div class="text-slate-400 text-sm mb-1">Total Value (USD)</div>
               <div class="text-4xl font-mono font-bold tracking-tight" id="userVal">$0.00</div>
               <div class="mt-4 text-xs text-slate-400 flex justify-between">
-                 <span>1 MTYLD = <span id="price" class="text-white">$—</span></span>
+                <span>1 MTYLD = <span id="price" class="text-white">$—</span></span>
               </div>
             </div>
-
             <div class="p-5 bg-white border border-slate-100 rounded-xl">
               <div class="text-slate-500 text-sm mb-1">Token Balance</div>
               <div class="text-2xl font-mono font-semibold text-slate-800" id="userBal">0.00</div>
               <div class="text-xs text-slate-400 mt-1">MTYLD Tokens</div>
             </div>
-
             <div class="p-5 bg-white border border-slate-100 rounded-xl">
               <div class="text-slate-500 text-sm mb-1">Growth</div>
               <div class="text-2xl font-mono font-semibold text-green-600" id="apyLine">—%</div>
@@ -144,15 +135,13 @@
 
         <!-- Action Cards -->
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          
+
           <!-- Deposit (Mint) -->
           <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col">
             <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
               <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
               Deposit Cash
             </h3>
-            
-            <!-- Address Box -->
             <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-4 relative overflow-hidden">
               <div class="flex justify-between items-center mb-1 relative z-10">
                 <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Your Funding Address</span>
@@ -160,40 +149,26 @@
               </div>
               <div class="flex items-center gap-2 bg-white border border-slate-200 rounded px-2 py-1.5 relative z-10">
                 <code class="text-xs font-mono text-slate-600 truncate flex-1" id="fundingAddress">Loading...</code>
-                <button id="btnCopyAddress" class="text-xs font-bold text-sky-600 hover:text-sky-700 px-2 py-0.5 rounded hover:bg-sky-50 transition-colors">
-                  Copy
-                </button>
+                <button id="btnCopyAddress" class="text-xs font-bold text-sky-600 hover:text-sky-700 px-2 py-0.5 rounded hover:bg-sky-50 transition-colors">Copy</button>
               </div>
-              <!-- Low Gas Warning -->
               <div id="gasWarningOverlay" class="hidden absolute inset-0 bg-amber-50/90 z-20 flex flex-col items-center justify-center text-center p-2">
-                 <span class="text-xs font-bold text-amber-600">⚠️ Low Gas (ETH)</span>
-                 <button id="btnReqGas" class="mt-1 text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded border border-amber-200 hover:bg-amber-200">
-                   Copy Addr to Request Gas
-                 </button>
+                <span class="text-xs font-bold text-amber-600">⚠️ Low Gas (ETH)</span>
+                <button id="btnReqGas" class="mt-1 text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded border border-amber-200 hover:bg-amber-200">Copy Addr to Request Gas</button>
               </div>
             </div>
-
             <p class="text-sm text-slate-500 mb-2">Convert USDC into MTYLD.</p>
-            
             <div class="space-y-4 flex-grow">
               <div class="relative">
                 <input id="mintAmount" type="number" placeholder="0.00" class="w-full pl-4 pr-16 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none transition-all">
                 <div class="absolute right-3 top-3 text-slate-400 font-medium">USDC</div>
               </div>
-              
               <div class="flex justify-between text-xs text-slate-500 px-1">
                 <span>Wallet: <span id="usdcBal">—</span> USDC</span>
                 <button id="btnMintMax" class="text-sky-600 hover:text-sky-700 font-medium">Use Max</button>
               </div>
-
               <div id="mintPreview" class="text-sm text-center text-slate-600 h-5"></div>
-
-              <button id="btnMint" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                Confirm Deposit
-              </button>
+              <button id="btnMint" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed">Confirm Deposit</button>
             </div>
-
-            <!-- Buy with Card (New) -->
             <div class="mt-4 pt-4 border-t border-slate-100">
               <button id="btnOpenRamp" class="w-full py-2.5 px-4 bg-white border border-slate-200 hover:border-sky-300 text-slate-600 hover:text-sky-600 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
@@ -209,95 +184,73 @@
               Withdraw Cash
             </h3>
             <p class="text-sm text-slate-500 mb-4">Redeem your MTYLD back to USDC instantly.</p>
-            
             <div class="space-y-4">
               <div class="relative">
                 <input id="redeemAmount" type="number" placeholder="0.00" class="w-full pl-4 pr-16 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-slate-500 outline-none transition-all">
                 <div class="absolute right-3 top-3 text-slate-400 font-medium">MTYLD</div>
               </div>
-
               <div class="flex justify-between text-xs text-slate-500 px-1">
                 <span>Available: <span id="mtyldBalDisplay">—</span></span>
                 <button id="btnRedeemMax" class="text-sky-600 hover:text-sky-700 font-medium">Use Max</button>
               </div>
-
               <div id="redeemPreview" class="text-sm text-center text-slate-600 h-5"></div>
-
-              <button id="btnRedeem" class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-900 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                Confirm Withdrawal
-              </button>
+              <button id="btnRedeem" class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-900 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed">Confirm Withdrawal</button>
             </div>
           </div>
 
-          <!-- Send USDC (Transfer) -->
+          <!-- Send USDC -->
           <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
             <h3 class="text-lg font-bold text-slate-600 mb-4 flex items-center gap-2">
               <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
               Send USDC
             </h3>
             <p class="text-sm text-slate-500 mb-4">Send USDC to an external wallet (Coinbase, Rabby).</p>
-            
             <div class="space-y-4">
               <div class="relative">
                 <input id="sendDest" type="text" placeholder="0x..." class="w-full pl-4 pr-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-slate-500 outline-none transition-all font-mono text-sm">
                 <div class="absolute right-3 top-3 text-slate-400 font-medium text-xs">Addr</div>
               </div>
-              
               <div class="relative">
                 <input id="sendAmount" type="number" placeholder="0.00" class="w-full pl-4 pr-16 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-slate-500 outline-none transition-all">
                 <div class="absolute right-3 top-3 text-slate-400 font-medium">USDC</div>
               </div>
-
               <div class="flex justify-between text-xs text-slate-500 px-1">
                 <span>Available: <span id="usdcSendBal">—</span> USDC</span>
                 <button id="btnSendMax" class="text-sky-600 hover:text-sky-700 font-medium">Use Max</button>
               </div>
-              
-              <div class="h-5"></div> <!-- Spacer -->
-
-              <button id="btnSend" class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-900 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                Confirm Transfer
-              </button>
+              <div class="h-5"></div>
+              <button id="btnSend" class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-900 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed">Confirm Transfer</button>
             </div>
           </div>
-
         </div>
 
         <!-- Performance Chart -->
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
           <h3 class="text-lg font-bold text-slate-900 mb-4">Asset Performance</h3>
-          <div class="h-64">
-            <canvas id="navChart"></canvas>
-          </div>
+          <div class="h-64"><canvas id="navChart"></canvas></div>
         </div>
 
       </div>
     </main>
 
-    <!-- Ramp Modal (Hidden by default) -->
+    <!-- Ramp Modal -->
     <div id="rampModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-bold text-slate-900">Fund Wallet</h3>
           <button id="btnCloseRamp" class="text-slate-400 hover:text-slate-600">✕</button>
         </div>
-        
         <div class="mb-4">
-           <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Option 1: Manual Transfer (Best)</div>
-           <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col items-center text-center">
-              <div id="qrcode" class="mb-3"></div>
-              <div class="text-xs text-slate-500 mb-2">Scan or copy to send USDC (Arbitrum One)</div>
-              <button id="btnModalCopy" class="text-xs bg-white border border-slate-300 px-3 py-1.5 rounded shadow-sm hover:bg-slate-50 font-mono">
-                Click to Copy Address
-              </button>
-           </div>
+          <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Option 1: Manual Transfer (Best)</div>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col items-center text-center">
+            <div id="qrcode" class="mb-3"></div>
+            <div class="text-xs text-slate-500 mb-2">Scan or copy to send USDC (Arbitrum One)</div>
+            <button id="btnModalCopy" class="text-xs bg-white border border-slate-300 px-3 py-1.5 rounded shadow-sm hover:bg-slate-50 font-mono">Click to Copy Address</button>
+          </div>
         </div>
-
         <div class="border-t border-slate-100 my-4"></div>
-
         <div class="space-y-3">
           <div class="text-xs font-semibold text-slate-500 uppercase">Option 2: Buy with Card (MoonPay)</div>
-          
           <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-800 mb-2">
             <p class="font-bold mb-1">⚠️ Before you pay:</p>
             <ol class="list-decimal pl-4 space-y-1">
@@ -306,8 +259,6 @@
               <li>After clicking below, <b>check the "Delivery Address"</b> matches your Portal Address.</li>
             </ol>
           </div>
-
-          <!-- MoonPay -->
           <button id="btnRealMoonpay" class="w-full p-3 border border-slate-200 rounded-xl flex items-center justify-between hover:border-purple-500 hover:bg-purple-50 transition-all group">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-xs">M</div>
@@ -319,11 +270,9 @@
             <svg class="w-5 h-5 text-slate-300 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
           </button>
         </div>
-        
         <div class="mt-6 pt-4 border-t border-slate-100 text-center text-[10px] text-slate-400">
           <a href="https://support.moonpay.com/" target="_blank" class="text-slate-400 hover:text-sky-600 underline">Trouble with transaction? Contact Support</a>
         </div>
-        
       </div>
     </div>
 
@@ -337,23 +286,13 @@
           </h3>
           <button id="btnCloseKey" class="text-slate-400 hover:text-slate-600">✕</button>
         </div>
-        <p class="text-sm text-slate-600 mb-4">
-          Your Private Key gives <b>full control</b> over your funds. Never share it with anyone, not even support.
-        </p>
-        
+        <p class="text-sm text-slate-600 mb-4">Your Private Key gives <b>full control</b> over your funds. Never share it with anyone, not even support.</p>
         <div id="keyRevealSection" class="text-center py-4">
-           <button id="btnRevealKey" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors">
-             Reveal Private Key
-           </button>
+          <button id="btnRevealKey" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors">Reveal Private Key</button>
         </div>
-
         <div id="keyDisplaySection" class="hidden">
-           <div class="bg-slate-900 text-slate-200 p-3 rounded-lg font-mono text-xs break-all mb-3 select-all" id="privateKeyText">
-             Loading...
-           </div>
-           <button id="btnCopyKey" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium">
-             Copy to Clipboard
-           </button>
+          <div class="bg-slate-900 text-slate-200 p-3 rounded-lg font-mono text-xs break-all mb-3 select-all" id="privateKeyText">Loading...</div>
+          <button id="btnCopyKey" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium">Copy to Clipboard</button>
         </div>
       </div>
     </div>
@@ -361,34 +300,19 @@
   </div>
 
   <script>
-    // ==========================================
-    // CONFIGURATION
-    // ==========================================
-    
-    // 1. Get your Client ID from https://dashboard.web3auth.io (Free)
-    const WEB3AUTH_CLIENT_ID = "BOp1I844CnOw4gAPJXft8hk0r1z8OiwiquU9-qOtY3xedheGn13tykbaJa6xty2dGtOpCE2vnOZsFxYwKhM8w58"; 
-    
-    // Chain Config: Arbitrum One (Mainnet)
-    const CHAIN_ID = "0xa4b1"; // 42161
-    const RPC_URL = "https://arb1.arbitrum.io/rpc";
-    
+    // ── Config ────────────────────────────────────────────────
+    const WEB3AUTH_CLIENT_ID = "BOp1I844CnOw4gAPJXft8hk0r1z8OiwiquU9-qOtY3xedheGn13tykbaJa6xty2dGtOpCE2vnOZsFxYwKhM8w58";
+    const CHAIN_ID   = "0xa4b1";
+    const RPC_URL    = "https://arb1.arbitrum.io/rpc";
     const VAULT_ADDR = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
     const USDC_ADDR  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
 
-    // ==========================================
-    // LOGIC
-    // ==========================================
+    // ── State ─────────────────────────────────────────────────
+    let web3auth = null, provider = null, signer = null;
+    let vaultContract = null, usdcContract = null;
+    let userAddress = "", isExternalWallet = false, gasBalance = 0n;
 
-    let web3auth = null;
-    let provider = null;
-    let signer = null;
-    let vaultContract = null;
-    let usdcContract = null;
-    let userAddress = "";
-    let isExternalWallet = false;
-    let gasBalance = 0n;
-
-    // ABIs (Simplified for Portal)
+    // ── ABIs ──────────────────────────────────────────────────
     const VAULT_ABI = [
       "function balanceOf(address) view returns (uint256)",
       "function totalSupply() view returns (uint256)",
@@ -397,566 +321,385 @@
       "function previewMint(uint256) view returns (uint256, uint256)",
       "function previewRedeem(uint256) view returns (uint256, uint256)",
       "function mint(uint256, uint256)",
-      "function redeem(uint256, uint256)"
+      "function redeem(uint256, uint256)",
+      "function isWhitelistedMinter(address) view returns (bool)",
     ];
     const ERC20_ABI = [
       "function balanceOf(address) view returns (uint256)",
       "function approve(address, uint256) returns (bool)",
       "function allowance(address, address) view returns (uint256)",
-      "function transfer(address to, uint256 amount) returns (bool)"
+      "function transfer(address to, uint256 amount) returns (bool)",
     ];
 
-    // DOM Elements
+    // ── DOM helpers ───────────────────────────────────────────
+    const g = id => document.getElementById(id);
     const els = {
-      loginScreen: document.getElementById("loginScreen"),
-      appInterface: document.getElementById("appInterface"),
-      btnLogin: document.getElementById("btnLogin"),
-      btnConnectExternal: document.getElementById("btnConnectExternal"),
-      btnLogout: document.getElementById("btnLogout"),
-      userEmail: document.getElementById("userEmail"),
-      headerAddress: document.getElementById("headerAddress"),
-      fundingAddress: document.getElementById("fundingAddress"),
-      btnCopyAddress: document.getElementById("btnCopyAddress"),
-      btnReqGas: document.getElementById("btnReqGas"),
-      gasWarningOverlay: document.getElementById("gasWarningOverlay"),
-      gasLight: document.getElementById("gasLight"),
-      gasBal: document.getElementById("gasBal"),
-      userVal: document.getElementById("userVal"),
-      userBal: document.getElementById("userBal"),
-      price: document.getElementById("price"),
-      usdcBal: document.getElementById("usdcBal"),
-      usdcSendBal: document.getElementById("usdcSendBal"),
-      mtyldBalDisplay: document.getElementById("mtyldBalDisplay"),
-      apyLine: document.getElementById("apyLine"),
-      mintBtn: document.getElementById("btnMint"),
-      redeemBtn: document.getElementById("btnRedeem"),
-      sendBtn: document.getElementById("btnSend"),
-      mintInput: document.getElementById("mintAmount"),
-      redeemInput: document.getElementById("redeemAmount"),
-      sendInput: document.getElementById("sendAmount"),
-      sendDest: document.getElementById("sendDest"),
-      // Ramp Elements
-      btnOpenRamp: document.getElementById("btnOpenRamp"),
-      rampModal: document.getElementById("rampModal"),
-      btnCloseRamp: document.getElementById("btnCloseRamp"),
-      btnRealMoonpay: document.getElementById("btnRealMoonpay"),
-      btnModalCopy: document.getElementById("btnModalCopy"),
-      qrcode: document.getElementById("qrcode"),
-      // Export Key Elements
-      btnExportKey: document.getElementById("btnExportKey"),
-      keyModal: document.getElementById("keyModal"),
-      btnCloseKey: document.getElementById("btnCloseKey"),
-      btnRevealKey: document.getElementById("btnRevealKey"),
-      keyDisplaySection: document.getElementById("keyDisplaySection"),
-      keyRevealSection: document.getElementById("keyRevealSection"),
-      privateKeyText: document.getElementById("privateKeyText"),
-      btnCopyKey: document.getElementById("btnCopyKey"),
-      apyLabel: document.getElementById("apyLabel")
+      loginScreen: g("loginScreen"), gateScreen: g("gateScreen"),
+      appInterface: g("appInterface"), btnLogin: g("btnLogin"),
+      btnConnectExternal: g("btnConnectExternal"), btnLogout: g("btnLogout"),
+      btnGateRetry: g("btnGateRetry"), gateAddr: g("gateAddr"),
+      userEmail: g("userEmail"), headerAddress: g("headerAddress"),
+      fundingAddress: g("fundingAddress"), btnCopyAddress: g("btnCopyAddress"),
+      btnReqGas: g("btnReqGas"), gasWarningOverlay: g("gasWarningOverlay"),
+      gasLight: g("gasLight"), gasBal: g("gasBal"),
+      userVal: g("userVal"), userBal: g("userBal"), price: g("price"),
+      usdcBal: g("usdcBal"), usdcSendBal: g("usdcSendBal"),
+      mtyldBalDisplay: g("mtyldBalDisplay"), apyLine: g("apyLine"),
+      mintBtn: g("btnMint"), redeemBtn: g("btnRedeem"), sendBtn: g("btnSend"),
+      mintInput: g("mintAmount"), redeemInput: g("redeemAmount"),
+      sendInput: g("sendAmount"), sendDest: g("sendDest"),
+      btnOpenRamp: g("btnOpenRamp"), rampModal: g("rampModal"),
+      btnCloseRamp: g("btnCloseRamp"), btnRealMoonpay: g("btnRealMoonpay"),
+      btnModalCopy: g("btnModalCopy"), qrcode: g("qrcode"),
+      btnExportKey: g("btnExportKey"), keyModal: g("keyModal"),
+      btnCloseKey: g("btnCloseKey"), btnRevealKey: g("btnRevealKey"),
+      keyDisplaySection: g("keyDisplaySection"), keyRevealSection: g("keyRevealSection"),
+      privateKeyText: g("privateKeyText"), btnCopyKey: g("btnCopyKey"),
+      apyLabel: g("apyLabel"),
     };
 
-    // --- Init Web3Auth ---
+    // ── Screens ───────────────────────────────────────────────
+    function showLogin() {
+      els.loginScreen.classList.remove("hidden");
+      els.gateScreen.classList.add("hidden");
+      els.appInterface.classList.add("hidden");
+    }
+    function showGate(addr) {
+      els.loginScreen.classList.add("hidden");
+      els.appInterface.classList.add("hidden");
+      els.gateScreen.classList.remove("hidden");
+      els.gateAddr.textContent = addr;
+    }
+    function showApp() {
+      els.loginScreen.classList.add("hidden");
+      els.gateScreen.classList.add("hidden");
+      els.appInterface.classList.remove("hidden");
+    }
+
+    // ── Web3Auth init ─────────────────────────────────────────
     async function initWeb3Auth() {
       try {
         const { Web3Auth } = window.Modal;
         const { EthereumPrivateKeyProvider } = window.EthereumProvider;
-        
-        // 1. Config Object (Arbitrum Mainnet)
         const chainConfig = {
-          chainNamespace: "eip155",
-          chainId: CHAIN_ID, // 0xa4b1
-          rpcTarget: RPC_URL,
-          displayName: "Arbitrum One",
-          blockExplorerUrl: "https://arbiscan.io",
-          ticker: "ETH",
-          tickerName: "Ethereum",
+          chainNamespace: "eip155", chainId: CHAIN_ID, rpcTarget: RPC_URL,
+          displayName: "Arbitrum One", blockExplorerUrl: "https://arbiscan.io",
+          ticker: "ETH", tickerName: "Ethereum",
         };
-
-        // 2. Init Private Key Provider (Required for v8+)
-        const privateKeyProvider = new EthereumPrivateKeyProvider({ 
-          config: { chainConfig } 
-        });
-
-        // 3. Init Main Instance
-        web3auth = new Web3Auth({
-          clientId: WEB3AUTH_CLIENT_ID,
-          web3AuthNetwork: "sapphire_mainnet", // Auth Network
-          privateKeyProvider
-        });
-
+        const privateKeyProvider = new EthereumPrivateKeyProvider({ config: { chainConfig } });
+        web3auth = new Web3Auth({ clientId: WEB3AUTH_CLIENT_ID, web3AuthNetwork: "sapphire_mainnet", privateKeyProvider });
         await web3auth.initModal();
-
-        if (web3auth.connected) {
-          showApp();
-        } else {
-          showLogin();
-        }
-      } catch (error) {
-        console.error("Web3Auth Init Error:", error);
-      }
+        if (web3auth.connected) { isExternalWallet = false; await setupApp(); }
+        else showLogin();
+      } catch (e) { console.error("Web3Auth Init Error:", e); showLogin(); }
     }
 
-    // --- Auth Actions ---
+    // ── Login buttons ─────────────────────────────────────────
     els.btnLogin.onclick = async () => {
       if (!web3auth) return;
-      try {
-        await web3auth.connect();
-        isExternalWallet = false;
-        showApp();
-      } catch (e) {
-        console.error("Login failed", e);
-      }
+      try { await web3auth.connect(); isExternalWallet = false; await setupApp(); }
+      catch (e) { console.error("Login failed", e); }
     };
-    
-    // --- External Wallet Logic ---
+
     els.btnConnectExternal.onclick = async () => {
-       if (!window.ethereum) {
-           alert("No wallet found. Please install Metamask or Rabby.");
-           return;
-       }
-       try {
-           // Request accounts
-           await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-           // Switch chain to Arbitrum
-           try {
-               await window.ethereum.request({
-                   method: 'wallet_switchEthereumChain',
-                   params: [{ chainId: CHAIN_ID }],
-               });
-           } catch (switchError) {
-               if (switchError.code === 4902) {
-                   alert("Please add Arbitrum One to your wallet.");
-                   return;
-               }
-           }
-           
-           isExternalWallet = true;
-           showApp();
-
-       } catch (e) {
-           console.error("External wallet connect failed", e);
-       }
+      if (!window.ethereum) return alert("No wallet found. Please install MetaMask or Rabby.");
+      try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        try {
+          await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_ID }] });
+        } catch (sw) {
+          if (sw.code === 4902) return alert("Please add Arbitrum One to your wallet.");
+        }
+        isExternalWallet = true;
+        await setupApp();
+      } catch (e) { console.error("External wallet connect failed", e); }
     };
 
     els.btnLogout.onclick = async () => {
-      if (!isExternalWallet && web3auth) {
-         await web3auth.logout();
-      }
+      if (!isExternalWallet && web3auth) await web3auth.logout();
       showLogin();
       window.location.reload();
     };
 
-    async function showApp() {
-      els.loginScreen.classList.add("hidden");
-      els.appInterface.classList.remove("hidden");
-      
-      // Initialize Provider based on Login Method
+    els.btnGateRetry.onclick = () => {
+      if (!isExternalWallet && web3auth) web3auth.logout().catch(() => {});
+      showLogin();
+      window.location.reload();
+    };
+
+    // ── Core setup + WHITELIST CHECK ──────────────────────────
+    async function setupApp() {
+      // Build provider & signer
       if (isExternalWallet) {
-          provider = new ethers.BrowserProvider(window.ethereum);
-          els.userEmail.textContent = "External Wallet";
-          els.btnExportKey.classList.add("hidden"); // Hide key export for ext wallet
+        provider = new ethers.BrowserProvider(window.ethereum);
+        els.userEmail.textContent = "External Wallet";
+        els.btnExportKey.classList.add("hidden");
       } else {
-          const web3authProvider = web3auth.provider;
-          provider = new ethers.BrowserProvider(web3authProvider);
-          // Get user info (email) from Web3Auth
-          try {
-            const user = await web3auth.getUserInfo();
-            els.userEmail.textContent = user.email || user.name || "Partner";
-            els.btnExportKey.classList.remove("hidden"); // Show key export for email wallet
-          } catch(e) { els.userEmail.textContent = "Partner"; }
+        provider = new ethers.BrowserProvider(web3auth.provider);
+        try {
+          const user = await web3auth.getUserInfo();
+          els.userEmail.textContent = user.email || user.name || "Partner";
+          els.btnExportKey.classList.remove("hidden");
+        } catch { els.userEmail.textContent = "Partner"; }
       }
 
       signer = await provider.getSigner();
       userAddress = await signer.getAddress();
 
-      // Display Address
+      // ── WHITELIST CHECK ───────────────────────────────────
+      try {
+        const roVault = new ethers.Contract(VAULT_ADDR, VAULT_ABI, provider);
+        const whitelisted = await roVault.isWhitelistedMinter(userAddress);
+        if (!whitelisted) {
+          showGate(userAddress);
+          return; // Stop here — do not load the portal
+        }
+      } catch (e) {
+        console.error("Whitelist check failed:", e);
+        showGate(userAddress);
+        return;
+      }
+      // ─────────────────────────────────────────────────────
+
+      // Whitelisted — show portal and continue
+      showApp();
+
       const shortAddr = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
       els.headerAddress.textContent = shortAddr;
       els.fundingAddress.textContent = userAddress;
-      els.btnModalCopy.textContent = userAddress; // Fill modal copy btn
+      els.btnModalCopy.textContent   = userAddress;
 
-      // Generate QR
+      // QR Code
       els.qrcode.innerHTML = "";
-      new QRCode(els.qrcode, {
-        text: userAddress,
-        width: 128,
-        height: 128
-      });
+      new QRCode(els.qrcode, { text: userAddress, width: 128, height: 128 });
 
-      // Copy Logic
-      const copyFn = () => {
+      // Copy helpers
+      const copyAddr = () => {
         navigator.clipboard.writeText(userAddress);
-        const originalText = els.btnCopyAddress.textContent;
         els.btnCopyAddress.textContent = "Copied!";
-        els.headerAddress.textContent = "Copied!";
+        els.headerAddress.textContent  = "Copied!";
         setTimeout(() => {
-           els.btnCopyAddress.textContent = originalText;
-           els.headerAddress.textContent = shortAddr;
+          els.btnCopyAddress.textContent = "Copy";
+          els.headerAddress.textContent  = shortAddr;
         }, 2000);
       };
-      
-      els.btnCopyAddress.onclick = copyFn;
-      els.headerAddress.onclick = copyFn;
-      
+      els.btnCopyAddress.onclick = copyAddr;
+      els.headerAddress.onclick  = copyAddr;
       els.btnModalCopy.onclick = () => {
-         navigator.clipboard.writeText(userAddress);
-         els.btnModalCopy.textContent = "Copied!";
-         setTimeout(() => els.btnModalCopy.textContent = userAddress, 2000);
+        navigator.clipboard.writeText(userAddress);
+        els.btnModalCopy.textContent = "Copied!";
+        setTimeout(() => els.btnModalCopy.textContent = userAddress, 2000);
       };
-
       els.btnReqGas.onclick = () => {
-         navigator.clipboard.writeText(userAddress);
-         alert("Address copied! Send a small amount of ETH (Arb1) to this address to pay for gas.");
+        navigator.clipboard.writeText(userAddress);
+        alert("Address copied! Send a small amount of ETH (Arb1) to this address to pay for gas.");
       };
 
-      // Init Contracts
+      // Init contracts
       vaultContract = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
-      usdcContract = new ethers.Contract(USDC_ADDR, ERC20_ABI, signer);
+      usdcContract  = new ethers.Contract(USDC_ADDR, ERC20_ABI, signer);
 
-      // Load Cached Chart Data immediately so it appears before refresh
       loadCachedChart();
-
-      // Start Data Loop
-      // Add delay to ensure DOM is painted before chart rendering
-      setTimeout(() => {
-        refreshData();
-      }, 100); 
+      setTimeout(() => refreshData(), 100);
       setInterval(refreshData, 15000);
     }
 
-    function showLogin() {
-      els.loginScreen.classList.remove("hidden");
-      els.appInterface.classList.add("hidden");
-    }
-
-    // --- Ramp Logic (UI) ---
-    els.btnOpenRamp.onclick = () => {
-      els.rampModal.classList.remove("hidden");
-    };
-    els.btnCloseRamp.onclick = () => {
-      els.rampModal.classList.add("hidden");
-    };
-    // Close on backdrop click
-    els.rampModal.onclick = (e) => {
-      if (e.target === els.rampModal) els.rampModal.classList.add("hidden");
-    };
-
-    // SAFE Ramp Buttons with alerts
-    const openRampLink = (url, providerName) => {
-      if(!userAddress) return alert("Please log in first.");
-      const confirmMsg = `Opening ${providerName} to buy USDC.\n\nIMPORTANT: Ensure the destination address is set to YOUR wallet:\n\n${userAddress}\n\nClick OK to proceed.`;
-      if(confirm(confirmMsg)) {
-        window.open(url, '_blank');
+    // ── Ramp ─────────────────────────────────────────────────
+    els.btnOpenRamp.onclick  = () => els.rampModal.classList.remove("hidden");
+    els.btnCloseRamp.onclick = () => els.rampModal.classList.add("hidden");
+    els.rampModal.onclick    = e => { if (e.target === els.rampModal) els.rampModal.classList.add("hidden"); };
+    els.btnRealMoonpay.onclick = () => {
+      if (!userAddress) return alert("Please log in first.");
+      if (confirm(`Opening MoonPay to buy USDC.\n\nIMPORTANT: Ensure the destination address is set to YOUR wallet:\n\n${userAddress}\n\nClick OK to proceed.`)) {
+        window.open(`https://buy.moonpay.com?currencyCode=usdc_arbitrum&walletAddress=${userAddress}`, '_blank');
       }
     };
 
-    els.btnRealMoonpay.onclick = () => {
-      const url = `https://buy.moonpay.com?currencyCode=usdc_arbitrum&walletAddress=${userAddress}`;
-      openRampLink(url, "MoonPay");
-    };
-
-    // --- Export Private Key Logic ---
+    // ── Export Key ────────────────────────────────────────────
     els.btnExportKey.onclick = () => {
       els.keyModal.classList.remove("hidden");
       els.keyRevealSection.classList.remove("hidden");
       els.keyDisplaySection.classList.add("hidden");
     };
-    
     els.btnCloseKey.onclick = () => {
       els.keyModal.classList.add("hidden");
-      els.privateKeyText.textContent = "Loading..."; // Clear on close for security
+      els.privateKeyText.textContent = "Loading...";
     };
-
     els.btnRevealKey.onclick = async () => {
       if (!web3auth) return;
       try {
-        // Request private key from Web3Auth provider
         const pk = await web3auth.provider.request({ method: "eth_private_key" });
         els.privateKeyText.textContent = pk;
         els.keyRevealSection.classList.add("hidden");
         els.keyDisplaySection.classList.remove("hidden");
-      } catch(e) {
-        console.error(e);
-        alert("Failed to retrieve private key. Please try logging in again.");
-      }
+      } catch { alert("Failed to retrieve private key. Please try logging in again."); }
     };
-
     els.btnCopyKey.onclick = () => {
-      const key = els.privateKeyText.textContent;
-      navigator.clipboard.writeText(key);
+      navigator.clipboard.writeText(els.privateKeyText.textContent);
       els.btnCopyKey.textContent = "Copied to Clipboard";
       setTimeout(() => els.btnCopyKey.textContent = "Copy to Clipboard", 2000);
     };
 
-
-    // --- Data Logic ---
+    // ── Data refresh ──────────────────────────────────────────
     async function refreshData() {
       if (!vaultContract) return;
-
       try {
         const [price, bal, usdcBal, ethBal] = await Promise.all([
           vaultContract.pricePerToken(),
           vaultContract.balanceOf(userAddress),
           usdcContract.balanceOf(userAddress),
-          provider.getBalance(userAddress)
+          provider.getBalance(userAddress),
         ]);
 
         gasBalance = ethBal;
         const ethFmt = +ethers.formatUnits(ethBal, 18);
-        
-        // Gas UI Logic
         els.gasBal.textContent = ethFmt.toFixed(4) + " ETH";
-        if (ethFmt < 0.0002) { // Low Gas Warning Threshold (~$0.50)
-            els.gasLight.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse";
-            els.gasWarningOverlay.classList.remove("hidden");
-            els.mintBtn.disabled = true;
-            els.mintBtn.textContent = "Insufficient Gas (ETH)";
-            els.mintBtn.classList.add("bg-slate-400", "cursor-not-allowed");
-            els.mintBtn.classList.remove("bg-slate-900", "hover:bg-slate-800");
-            
-            els.sendBtn.disabled = true;
-            els.sendBtn.textContent = "Insufficient Gas (ETH)";
+
+        if (ethFmt < 0.0002) {
+          els.gasLight.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse";
+          els.gasWarningOverlay.classList.remove("hidden");
+          els.mintBtn.disabled = true; els.mintBtn.textContent = "Insufficient Gas (ETH)";
+          els.mintBtn.classList.add("bg-slate-400","cursor-not-allowed");
+          els.mintBtn.classList.remove("bg-slate-900","hover:bg-slate-800");
+          els.sendBtn.disabled = true; els.sendBtn.textContent = "Insufficient Gas (ETH)";
         } else {
-            els.gasLight.className = "w-2 h-2 rounded-full bg-green-500";
-            els.gasWarningOverlay.classList.add("hidden");
-            els.mintBtn.disabled = false;
-            els.mintBtn.textContent = "Confirm Deposit";
-            els.mintBtn.classList.remove("bg-slate-400", "cursor-not-allowed");
-            els.mintBtn.classList.add("bg-slate-900", "hover:bg-slate-800");
-            
-            els.sendBtn.disabled = false;
-            els.sendBtn.textContent = "Confirm Transfer";
+          els.gasLight.className = "w-2 h-2 rounded-full bg-green-500";
+          els.gasWarningOverlay.classList.add("hidden");
+          els.mintBtn.disabled = false; els.mintBtn.textContent = "Confirm Deposit";
+          els.mintBtn.classList.remove("bg-slate-400","cursor-not-allowed");
+          els.mintBtn.classList.add("bg-slate-900","hover:bg-slate-800");
+          els.sendBtn.disabled = false; els.sendBtn.textContent = "Confirm Transfer";
         }
 
         const priceNum = +ethers.formatUnits(price, 18);
-        const balNum = +ethers.formatUnits(bal, 18);
-        const usdcNum = +ethers.formatUnits(usdcBal, 6);
+        const balNum   = +ethers.formatUnits(bal, 18);
+        const usdcNum  = +ethers.formatUnits(usdcBal, 6);
         const valueNum = balNum * priceNum;
 
-        // Update UI
         els.price.textContent = "$" + priceNum.toFixed(6);
-        els.userBal.textContent = balNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        els.userVal.textContent = "$" + valueNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        els.userBal.textContent = balNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        els.userVal.textContent = "$" + valueNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         els.usdcBal.textContent = usdcNum.toFixed(2);
-        if(els.usdcSendBal) els.usdcSendBal.textContent = usdcNum.toFixed(2);
+        if (els.usdcSendBal) els.usdcSendBal.textContent = usdcNum.toFixed(2);
         els.mtyldBalDisplay.textContent = balNum.toFixed(2);
 
-        // Store history for chart
         recordNavSample(priceNum);
-
       } catch (e) { console.error("Data refresh error", e); }
     }
 
-    // --- Transactions ---
-    
-    // Deposit (Mint)
+    // ── Transactions ──────────────────────────────────────────
     els.mintBtn.onclick = async () => {
-      if(gasBalance < 100000000000000n) return alert("You need ETH for gas fees."); // Double check
-      
+      if (gasBalance < 100000000000000n) return alert("You need ETH for gas fees.");
       try {
         const amt = els.mintInput.value;
-        if(!amt || amt <= 0) return alert("Please enter an amount");
-        
-        els.mintBtn.textContent = "Processing...";
-        els.mintBtn.disabled = true;
-
+        if (!amt || amt <= 0) return alert("Please enter an amount");
+        els.mintBtn.textContent = "Processing..."; els.mintBtn.disabled = true;
         const weiAmt = ethers.parseUnits(amt, 6);
-        
-        // Check Allowance
         const allowance = await usdcContract.allowance(userAddress, VAULT_ADDR);
         if (allowance < weiAmt) {
-           els.mintBtn.textContent = "Approving USDC...";
-           const txApp = await usdcContract.approve(VAULT_ADDR, weiAmt);
-           await txApp.wait();
+          els.mintBtn.textContent = "Approving USDC...";
+          await (await usdcContract.approve(VAULT_ADDR, weiAmt)).wait();
         }
-
-        // Mint (0.5% slippage hardcoded for simplicity)
         els.mintBtn.textContent = "Depositing...";
         const [expectedOut] = await vaultContract.previewMint(weiAmt);
-        const minOut = expectedOut - (expectedOut * 50n / 10000n); // 0.5%
-        
-        const tx = await vaultContract.mint(weiAmt, minOut);
-        await tx.wait();
-        
+        const minOut = expectedOut - (expectedOut * 50n / 10000n);
+        await (await vaultContract.mint(weiAmt, minOut)).wait();
         alert("Deposit Successful!");
         els.mintInput.value = "";
         refreshData();
-      } catch(e) {
-        console.error(e);
-        alert("Transaction Failed: " + (e.reason || e.message));
-      } finally {
-        els.mintBtn.textContent = "Confirm Deposit";
-        els.mintBtn.disabled = false;
-      }
+      } catch (e) { alert("Transaction Failed: " + (e.reason || e.message)); }
+      finally { els.mintBtn.textContent = "Confirm Deposit"; els.mintBtn.disabled = false; }
     };
 
-    // Withdraw (Redeem)
     els.redeemBtn.onclick = async () => {
-      if(gasBalance < 100000000000000n) return alert("You need ETH for gas fees.");
-
+      if (gasBalance < 100000000000000n) return alert("You need ETH for gas fees.");
       try {
         const amt = els.redeemInput.value;
-        if(!amt || amt <= 0) return alert("Please enter an amount");
-        
-        els.redeemBtn.textContent = "Processing...";
-        els.redeemBtn.disabled = true;
-
+        if (!amt || amt <= 0) return alert("Please enter an amount");
+        els.redeemBtn.textContent = "Processing..."; els.redeemBtn.disabled = true;
         const weiAmt = ethers.parseUnits(amt, 18);
-        
-        // Redeem (0.5% slippage)
         const [expectedOut] = await vaultContract.previewRedeem(weiAmt);
-        const minOut = expectedOut - (expectedOut * 50n / 10000n); 
-
-        const tx = await vaultContract.redeem(weiAmt, minOut);
-        await tx.wait();
-        
+        const minOut = expectedOut - (expectedOut * 50n / 10000n);
+        await (await vaultContract.redeem(weiAmt, minOut)).wait();
         alert("Withdrawal Successful!");
         els.redeemInput.value = "";
         refreshData();
-      } catch(e) {
-        console.error(e);
-        alert("Transaction Failed: " + (e.reason || e.message));
-      } finally {
-        els.redeemBtn.textContent = "Confirm Withdrawal";
-        els.redeemBtn.disabled = false;
-      }
+      } catch (e) { alert("Transaction Failed: " + (e.reason || e.message)); }
+      finally { els.redeemBtn.textContent = "Confirm Withdrawal"; els.redeemBtn.disabled = false; }
     };
 
-    // Send (Transfer)
     els.sendBtn.onclick = async () => {
-      if(gasBalance < 100000000000000n) return alert("You need ETH for gas fees.");
-
+      if (gasBalance < 100000000000000n) return alert("You need ETH for gas fees.");
       try {
-        const dest = els.sendDest.value;
-        const amt = els.sendInput.value;
-        
-        if(!dest || !ethers.isAddress(dest)) return alert("Invalid destination address");
-        if(!amt || amt <= 0) return alert("Please enter an amount");
-        
-        els.sendBtn.textContent = "Processing...";
-        els.sendBtn.disabled = true;
-
-        const weiAmt = ethers.parseUnits(amt, 6);
-        
-        const tx = await usdcContract.transfer(dest, weiAmt);
-        await tx.wait();
-        
+        const dest = els.sendDest.value, amt = els.sendInput.value;
+        if (!dest || !ethers.isAddress(dest)) return alert("Invalid destination address");
+        if (!amt || amt <= 0) return alert("Please enter an amount");
+        els.sendBtn.textContent = "Processing..."; els.sendBtn.disabled = true;
+        await (await usdcContract.transfer(dest, ethers.parseUnits(amt, 6))).wait();
         alert("Transfer Successful!");
-        els.sendInput.value = "";
-        els.sendDest.value = "";
+        els.sendInput.value = ""; els.sendDest.value = "";
         refreshData();
-      } catch(e) {
-        console.error(e);
-        alert("Transfer Failed: " + (e.reason || e.message));
-      } finally {
-        els.sendBtn.textContent = "Confirm Transfer";
-        els.sendBtn.disabled = false;
-      }
+      } catch (e) { alert("Transfer Failed: " + (e.reason || e.message)); }
+      finally { els.sendBtn.textContent = "Confirm Transfer"; els.sendBtn.disabled = false; }
     };
 
-    // Max Buttons
-    document.getElementById("btnMintMax").onclick = () => els.mintInput.value = els.usdcBal.textContent;
-    document.getElementById("btnRedeemMax").onclick = () => els.redeemInput.value = els.mtyldBalDisplay.textContent;
-    document.getElementById("btnSendMax").onclick = () => els.sendInput.value = els.usdcBal.textContent;
+    g("btnMintMax").onclick   = () => els.mintInput.value   = els.usdcBal.textContent;
+    g("btnRedeemMax").onclick = () => els.redeemInput.value = els.mtyldBalDisplay.textContent;
+    g("btnSendMax").onclick   = () => els.sendInput.value   = els.usdcBal.textContent;
 
-    // --- Simple Chart Logic (Local Storage) ---
+    // ── Chart ─────────────────────────────────────────────────
     const NAV_KEY = "mtyld_portal_nav";
     let chartInstance = null;
 
-    // NEW FUNCTION: Loads chart immediately from cache
     function loadCachedChart() {
       try {
         const history = JSON.parse(localStorage.getItem(NAV_KEY) || "[]");
-        if (history.length > 0) {
-          updateChart(history);
-          calculateAPY(history);
-        }
-      } catch(e) { console.error("Cache load error", e); }
+        if (history.length > 0) { updateChart(history); calculateAPY(history); }
+      } catch {}
     }
 
     function recordNavSample(price) {
       const history = JSON.parse(localStorage.getItem(NAV_KEY) || "[]");
-      const now = Math.floor(Date.now()/1000);
-      // Only save once per hour to keep it light
-      // MODIFIED: Allow faster updates for the first few points to visualize the chart
-      const minInterval = history.length < 5 ? 10 : 3600; 
-      if(history.length > 0 && (now - history[history.length-1].t) < minInterval) return; 
-      
-      history.push({t: now, p: price});
-      // Keep last 30 days
-      const cutoff = now - (30*24*3600);
-      const cleanHistory = history.filter(x => x.t > cutoff);
-      localStorage.setItem(NAV_KEY, JSON.stringify(cleanHistory));
-      updateChart(cleanHistory);
-      calculateAPY(cleanHistory);
+      const now = Math.floor(Date.now() / 1000);
+      const minInterval = history.length < 5 ? 10 : 3600;
+      if (history.length > 0 && (now - history[history.length - 1].t) < minInterval) return;
+      history.push({ t: now, p: price });
+      const clean = history.filter(x => x.t > now - 30 * 24 * 3600);
+      localStorage.setItem(NAV_KEY, JSON.stringify(clean));
+      updateChart(clean); calculateAPY(clean);
     }
 
     function updateChart(data) {
-      const ctx = document.getElementById('navChart').getContext('2d');
-      const labels = data.map(d => new Date(d.t*1000).toLocaleDateString());
+      const ctx = g('navChart').getContext('2d');
+      const labels = data.map(d => new Date(d.t * 1000).toLocaleDateString());
       const prices = data.map(d => d.p);
-
-      if(chartInstance) {
+      if (chartInstance) {
         chartInstance.data.labels = labels;
         chartInstance.data.datasets[0].data = prices;
         chartInstance.update();
       } else {
         chartInstance = new Chart(ctx, {
           type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Share Price ($)',
-              data: prices,
-              borderColor: '#10b981', // Emerald green
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              fill: true,
-              tension: 0.4
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: {display: false} },
-            scales: {
-              x: { display: false },
-              y: { display: true, position: 'right' }
-            }
-          }
+          data: { labels, datasets: [{ label: 'Share Price ($)', data: prices, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4 }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: true, position: 'right' } } }
         });
       }
     }
 
     function calculateAPY(data) {
       if (!data || data.length === 0) return;
-
       const currentPrice = data[data.length - 1].p;
-      // Default to the oldest data point we have
-      let baselinePrice = data[0].p;
-      let labelText = "Recent Growth";
-
-      // SMART FALLBACK: 
-      // If local history shows no change (0%), but the price is clearly above the $1.00 peg,
-      // assume the user is new and show them the "Lifetime" growth from $1.00.
+      let baselinePrice = data[0].p, labelText = "Recent Growth";
       if (Math.abs(currentPrice - baselinePrice) < 0.000001 && currentPrice > 1.001) {
-        baselinePrice = 1.0;
-        labelText = "Total Return (Lifetime)";
+        baselinePrice = 1.0; labelText = "Total Return (Lifetime)";
       }
-
-      const percentChange = ((currentPrice - baselinePrice) / baselinePrice) * 100;
-      const sign = percentChange >= 0 ? "+" : "";
-      
-      if(els.apyLine) {
-        els.apyLine.textContent = `${sign}${percentChange.toFixed(2)}%`;
-        // Color
-        els.apyLine.className = `text-2xl font-mono font-semibold ${percentChange >= 0 ? 'text-green-600' : 'text-red-600'}`;
-        if(els.apyLabel) els.apyLabel.textContent = labelText;
-      }
+      const pct = ((currentPrice - baselinePrice) / baselinePrice) * 100;
+      els.apyLine.textContent = (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
+      els.apyLine.className = `text-2xl font-mono font-semibold ${pct >= 0 ? 'text-green-600' : 'text-red-600'}`;
+      if (els.apyLabel) els.apyLabel.textContent = labelText;
     }
 
-    // Initialize
     window.onload = initWeb3Auth;
-
   </script>
 </body>
 </html>
