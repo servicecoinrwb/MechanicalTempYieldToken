@@ -387,12 +387,27 @@
   </section>
 
   <footer class="bg-slate-900">
-    <div class="max-w-7xl mx-auto px-4 py-8 text-center">
-      <p class="text-slate-300">Powered by <a href="https://www.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300 font-semibold">Mechanical Temp</a> <span class="text-slate-500">•</span> Southfield, MI</p>
-      <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
-      <div class="mt-4"><a href="whitepaper.html" class="text-slate-400 hover:text-white text-sm">Whitepaper</a></div>
+  <div class="max-w-7xl mx-auto px-4 py-8 text-center">
+    <p class="text-slate-300">Powered by <a href="https://www.mechanicaltemp.com" class="text-sky-400 hover:text-sky-300 font-semibold">Mechanical Temp</a> <span class="text-slate-500">•</span> Southfield, MI</p>
+    <p class="mt-2 text-xs text-slate-500">© <span id="yr"></span> Mechanical Temp • All Rights Reserved</p>
+    <div class="mt-4"><a href="whitepaper.html" class="text-slate-400 hover:text-white text-sm">Whitepaper</a></div>
+    <div class="mt-5 pt-5 border-t border-slate-800">
+      <p class="text-slate-500 text-xs mb-3">Bridge USDC to another chain after redeeming</p>
+      <div class="flex justify-center gap-3 flex-wrap">
+        <a href="https://www.relay.link/bridge/base?fromChainId=42161&toCurrency=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&fromCurrency=0xaf88d065e77c8cc2239327c5edb3a432268e5831"
+           target="_blank"
+           class="px-4 py-2 rounded-xl bg-sky-600/20 border border-sky-700 text-sky-400 text-xs font-semibold hover:bg-sky-600/30 transition">
+          USDC → Base via Relay ↗
+        </a>
+        <a href="https://www.relay.link/bridge/ethereum?fromChainId=42161&toCurrency=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&fromCurrency=0xaf88d065e77c8cc2239327c5edb3a432268e5831"
+           target="_blank"
+           class="px-4 py-2 rounded-xl bg-slate-700 border border-slate-600 text-slate-400 text-xs font-semibold hover:bg-slate-600 transition">
+          USDC → Ethereum via Relay ↗
+        </a>
+      </div>
     </div>
-  </footer>
+  </div>
+</footer>
 
   <!-- Waitlist Modal -->
   <div id="waitlistModal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
