@@ -3,218 +3,158 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Agent of ETH • Mechanical Temp</title>
+  <title>Agent of ETH v5 - Mechanical Temp</title>
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
   <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    .glass { background: rgba(15,23,42,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(51,65,85,0.6); }
-    .pulse-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; animation:pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)} 50%{box-shadow:0 0 0 6px rgba(16,185,129,0)} }
-    .tab-btn { transition: all 0.2s; }
-    .tab-btn.active { background: rgba(14,165,233,0.15); border-color: #0ea5e9; color: #38bdf8; }
-    details summary::-webkit-details-marker { display: none; }
+    .glass{background:rgba(15,23,42,0.7);backdrop-filter:blur(12px);border:1px solid rgba(51,65,85,0.6)}
+    .pulse-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)}50%{box-shadow:0 0 0 6px rgba(16,185,129,0)}}
+    .tab-btn{transition:all 0.2s}.tab-btn.active{background:rgba(14,165,233,0.15);border-color:#0ea5e9;color:#38bdf8}
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
 
-  <!-- Header -->
-  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
-        <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">The <span class="text-sky-400">Conservator</span></span>
-      </a>
-      <div class="flex items-center gap-3">
-        <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
-        <button id="btn-connect" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition">Connect Wallet</button>
-      </div>
+<header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="https://vault.mechanicaltemp.com/" class="flex items-center gap-3">
+      <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-9 w-auto">
+      <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">The <span class="text-sky-400">Conservator</span></span>
+    </a>
+    <div class="flex items-center gap-3">
+      <div id="network-badge" class="hidden px-3 py-1 rounded-full text-xs font-mono font-semibold border"></div>
+      <button id="btn-connect" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition">Connect Wallet</button>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="max-w-7xl mx-auto px-4 py-10">
+<main class="max-w-7xl mx-auto px-4 py-10">
 
-    <!-- Title -->
-    <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-black text-white"><span class="text-sky-400">Agent of ETH</span></h1>
-        <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) • Arbitrum One • <a href="https://arbiscan.io/address/0xc9227b644285198646F9c75ceCf13F84bF419B78" target="_blank" class="text-sky-400 hover:underline">0xc...9B78</a></p>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <a href="credit-line.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-700 text-sky-400 text-sm font-bold transition">
-          🏗️ MT Credit Line
-        </a>
-      </div>
+  <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-black text-white"><span class="text-sky-400">Agent of ETH</span> <span class="text-xs font-mono text-slate-500 ml-2">v5</span></h1>
+      <p class="text-slate-400 mt-1 text-sm font-mono">Conservator ETH Vault (mtETH-S) - Arbitrum One - <a href="https://arbiscan.io/address/0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f" target="_blank" class="text-sky-400 hover:underline">0xC3c4...e54f</a></p>
     </div>
+    <a href="credit-line.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-700 text-sky-400 text-sm font-bold transition">MT Credit Line</a>
+  </div>
 
-    <!-- Network Warning -->
-    <div id="network-warning" class="hidden mb-6 px-4 py-3 rounded-xl bg-red-900/20 border border-red-800 text-red-400 text-sm font-semibold">
-      ⚠ Wrong Network — Switch MetaMask to Arbitrum One (Chain ID: 42161)
+  <div id="network-warning" class="hidden mb-6 px-4 py-3 rounded-xl bg-red-900/20 border border-red-800 text-red-400 text-sm font-semibold">
+    Wrong Network - Switch MetaMask to Arbitrum One (Chain ID: 42161)
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="glass rounded-2xl p-5">
+      <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Vault TVL</p>
+      <p id="stat-tvl" class="text-2xl font-mono text-sky-400">-</p>
+      <p id="tvl-usd" class="text-emerald-400 text-xs font-mono mt-0.5">-</p>
+      <p id="tvl-breakdown" class="text-slate-600 text-xs mt-1">Total WETH in vault</p>
     </div>
-
-    <!-- LIVE STATS -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div class="glass rounded-2xl p-5">
-        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Vault TVL</p>
-        <p id="stat-tvl" class="text-2xl font-mono text-sky-400">—</p>
-        <p id="tvl-usd" class="text-emerald-400 text-xs font-mono mt-0.5">—</p>
-        <p id="tvl-breakdown" class="text-slate-600 text-xs mt-1">Total WETH in vault</p>
-      </div>
-      <div class="glass rounded-2xl p-5">
-        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">NAV / Share</p>
-        <p id="stat-nav" class="text-2xl font-mono text-white">—</p>
-        <p class="text-slate-600 text-xs mt-1">Share price in WETH</p>
-      </div>
-      <div class="glass rounded-2xl p-5">
-        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Your mtETH-S</p>
-        <p id="stat-my-shares" class="text-2xl font-mono text-emerald-400">—</p>
-        <p class="text-slate-600 text-xs mt-1" id="stat-my-value">Connect wallet to see</p>
-      </div>
-      <div class="glass rounded-2xl p-5">
-        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Agent Status</p>
-        <div class="flex items-center gap-2 mt-1">
-          <span class="pulse-dot"></span>
-          <span id="stat-agent" class="text-sm font-mono text-emerald-400 truncate">Connecting...</span>
-        </div>
-        <p class="text-slate-600 text-xs mt-1">Active AI agent</p>
-        <p id="active-yield-rate" class="text-emerald-400 text-xs mt-1 font-mono">—</p>
-      </div>
+    <div class="glass rounded-2xl p-5">
+      <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">NAV / Share</p>
+      <p id="stat-nav" class="text-2xl font-mono text-white">-</p>
+      <p class="text-slate-600 text-xs mt-1">Share price in WETH</p>
     </div>
+    <div class="glass rounded-2xl p-5">
+      <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Your mtETH-S</p>
+      <p id="stat-my-shares" class="text-2xl font-mono text-emerald-400">-</p>
+      <p class="text-slate-600 text-xs mt-1" id="stat-my-value">Connect wallet to see</p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+      <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Agent Status</p>
+      <div class="flex items-center gap-2 mt-1"><span class="pulse-dot"></span><span id="stat-agent" class="text-sm font-mono text-emerald-400 truncate">Connecting...</span></div>
+      <p class="text-slate-600 text-xs mt-1">Active AI agent</p>
+      <p id="active-yield-rate" class="text-emerald-400 text-xs mt-1 font-mono">-</p>
+    </div>
+  </div>
 
-    <!-- AGENT PORTFOLIO TRACKER -->
-    <div class="glass rounded-2xl p-6 mb-6">
-      <button onclick="toggleSection('portfolio')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
-        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-          Agent Portfolio
-        </h2>
-        <svg id="portfolio-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" style="transform:rotate(180deg)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-      </button>
-      <div id="portfolio-body" style="display:block">
-      <div class="px-6 pb-6 pt-2">
-        <a id="agent-arbiscan-link" href="#" target="_blank" class="text-xs font-mono text-sky-400 hover:underline float-right">View on Arbiscan ↗</a>
-
-      <div class="grid md:grid-cols-5 gap-4 mb-6">
+  <!-- PORTFOLIO -->
+  <div class="glass rounded-2xl mb-6">
+    <button onclick="toggleSection('portfolio')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
+      <h2 class="text-lg font-bold text-white">Agent Portfolio</h2>
+      <svg id="portfolio-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" style="transform:rotate(180deg)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+    <div id="portfolio-body" style="display:block">
+    <div class="px-6 pb-6 pt-2">
+      <a id="agent-arbiscan-link" href="#" target="_blank" class="text-xs font-mono text-sky-400 hover:underline float-right">View Agent on Arbiscan</a>
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Agent Wallet</p>
-          <p id="portfolio-agent" class="text-xs font-mono text-emerald-400 truncate">—</p>
-          <p class="text-slate-600 text-xs mt-1">Active AI agent</p>
+          <p id="portfolio-agent" class="text-xs font-mono text-emerald-400 truncate">-</p>
         </div>
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Gas Balance</p>
-          <p id="portfolio-gas" class="text-lg font-mono text-white">—</p>
+          <p id="portfolio-gas" class="text-lg font-mono text-white">-</p>
           <p id="portfolio-gas-status" class="text-xs mt-1">ETH on Arbitrum</p>
-        </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-emerald-900/30">
-          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Deployed to Compound</p>
-          <p id="portfolio-compound" class="text-lg font-mono text-emerald-400">—</p>
-          <p class="text-slate-600 text-xs mt-1">cWETH earning yield</p>
-        </div>
-        <!-- NEW: GMX Card -->
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-blue-900/30">
-          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GMX ETH/USD Pool</p>
-          <p id="portfolio-gmx" class="text-lg font-mono text-blue-400">—</p>
-          <p id="portfolio-gmx-status" class="text-slate-600 text-xs mt-1">GM pool earning fees</p>
-        </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-red-900/20 opacity-60">
-          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Aave V3 (v3 vault — locked)</p>
-          <p id="portfolio-aave" class="text-lg font-mono text-red-400">—</p>
-          <p class="text-slate-600 text-xs mt-1">⚠ 100% utilization — monitoring</p>
         </div>
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Idle in Vault</p>
-          <p id="portfolio-idle" class="text-lg font-mono text-sky-400">—</p>
+          <p id="portfolio-idle" class="text-lg font-mono text-sky-400">-</p>
           <p class="text-slate-600 text-xs mt-1">WETH awaiting deploy</p>
         </div>
       </div>
-
-      <!-- Protocol Rates -->
-      <div class="grid md:grid-cols-3 gap-4 mb-6">
+      <div id="strategy-cards" class="grid md:grid-cols-3 gap-4 mb-6"></div>
+      <div class="grid md:grid-cols-2 gap-4 mb-6">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-emerald-900/30">
           <div class="flex items-center justify-between mb-1">
-            <p class="text-slate-500 text-xs uppercase tracking-wider">Compound V3</p>
+            <p class="text-slate-500 text-xs uppercase tracking-wider">Compound V3 Supply Rate</p>
             <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-900/50">Active</span>
           </div>
-          <p id="compound-apy" class="text-xl font-mono text-emerald-400">—</p>
-          <p class="text-slate-600 text-xs mt-1">WETH supply APY • 60% target</p>
+          <p id="compound-apy" class="text-xl font-mono text-emerald-400">-</p>
+          <p class="text-slate-600 text-xs mt-1">WETH supply APY on Arbitrum</p>
         </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-blue-900/30">
-          <div class="flex items-center justify-between mb-1">
-            <p class="text-slate-500 text-xs uppercase tracking-wider">GMX ETH/USD</p>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-900/40 text-blue-400 border border-blue-900/50">Active</span>
-          </div>
-          <p class="text-xl font-mono text-blue-400">~9.08% APY</p>
-          <p class="text-slate-600 text-xs mt-1">30d fee APR • 40% target</p>
-        </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-700/30 opacity-50">
-          <div class="flex items-center justify-between mb-1">
-            <p class="text-slate-500 text-xs uppercase tracking-wider">Aave V3</p>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 border border-red-900/50">Paused</span>
-          </div>
-          <p id="aave-apy" class="text-xl font-mono text-slate-500">—</p>
-          <p class="text-slate-600 text-xs mt-1">100% utilization — monitoring</p>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-2">v5 Plugin Architecture</p>
+          <p class="text-emerald-400 text-sm font-mono">Strategies pull via transferFrom</p>
+          <p class="text-slate-600 text-xs mt-1">Add any protocol in 3 steps. Vault never redeployed.</p>
         </div>
       </div>
-
       <div class="grid md:grid-cols-2 gap-6">
-
-        <!-- Allocation donut chart -->
         <div>
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-3">Allocation</p>
           <div class="relative flex items-center justify-center" style="height:180px">
             <canvas id="allocation-chart" width="180" height="180"></canvas>
             <div class="absolute text-center pointer-events-none">
-              <div id="donut-center-value" class="text-lg font-mono text-white">—</div>
+              <div id="donut-center-value" class="text-lg font-mono text-white">-</div>
               <div class="text-slate-500 text-xs">Total AUM</div>
             </div>
           </div>
-          <div class="flex items-center justify-center gap-4 mt-3 flex-wrap">
+          <div id="donut-legend" class="flex items-center justify-center gap-4 mt-3 flex-wrap">
             <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span><span class="text-xs text-slate-400">Compound</span></div>
-            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span><span class="text-xs text-slate-400">GMX</span></div>
-            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span><span class="text-xs text-slate-400">Aave (locked)</span></div>
             <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span><span class="text-xs text-slate-400">Idle</span></div>
           </div>
         </div>
-
-        <!-- NAV history line chart -->
         <div>
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-3">NAV History</p>
-          <div style="height:180px">
-            <canvas id="nav-chart"></canvas>
-          </div>
+          <div style="height:180px"><canvas id="nav-chart"></canvas></div>
           <p class="text-slate-600 text-xs mt-2 text-center">Snapshots stored locally every 15 minutes</p>
         </div>
-
-      </div>
       </div>
     </div>
     </div>
+  </div>
 
-    <!-- DEPOSIT / WITHDRAW TABS -->
-    <div class="glass rounded-2xl mb-6 overflow-hidden">
-      <button onclick="toggleSection('deposit-section')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
-        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          Deposit / Withdraw
-        </h2>
-        <svg id="deposit-section-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-      </button>
-      <div id="deposit-section-body" style="display:none">
-      <div class="px-6 pb-6">
+  <!-- DEPOSIT / WITHDRAW -->
+  <div class="glass rounded-2xl mb-6 overflow-hidden">
+    <button onclick="toggleSection('deposit-section')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
+      <h2 class="text-lg font-bold text-white">Deposit / Withdraw</h2>
+      <svg id="deposit-section-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+    <div id="deposit-section-body" style="display:none">
+    <div class="px-6 pb-6">
       <div class="flex gap-3 mb-6 pt-2">
-        <button id="tab-deposit" onclick="switchTab('deposit')" class="tab-btn active px-5 py-2 rounded-xl border border-slate-700 text-slate-300 text-sm font-bold">↓ Deposit WETH</button>
-        <button id="tab-withdraw" onclick="switchTab('withdraw')" class="tab-btn px-5 py-2 rounded-xl border border-slate-700 text-slate-300 text-sm font-bold">↑ Withdraw WETH</button>
+        <button id="tab-deposit" onclick="switchTab('deposit')" class="tab-btn active px-5 py-2 rounded-xl border border-slate-700 text-slate-300 text-sm font-bold">Deposit WETH</button>
+        <button id="tab-withdraw" onclick="switchTab('withdraw')" class="tab-btn px-5 py-2 rounded-xl border border-slate-700 text-slate-300 text-sm font-bold">Withdraw WETH</button>
       </div>
 
-      <!-- DEPOSIT TAB -->
       <div id="panel-deposit">
         <div id="mtyld-badge" class="hidden mb-4"></div>
         <div id="deposit-lock-msg" class="hidden mb-4 px-4 py-3 rounded-xl bg-amber-900/20 border border-amber-800 text-amber-400 text-sm font-semibold">
-          🔒 Deposit access is restricted to MTYLD token holders. <a href="https://www.mechanicaltemp.com" class="underline hover:text-amber-300">Get MTYLD →</a>
+          Deposit access restricted to MTYLD token holders.
         </div>
         <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-800 mb-4">
-          <p class="text-slate-400 text-sm">You send <strong class="text-white">WETH</strong> → You receive <strong class="text-sky-400">mtETH-S</strong>. The agent splits funds 60% Compound / 40% GMX ETH/USD to maximize yield. Minimum deposit is 0.01 WETH.</p>
+          <p class="text-slate-400 text-sm">You send <strong class="text-white">WETH</strong> and receive <strong class="text-sky-400">mtETH-S</strong> shares. The agent deploys to registered yield strategies. Minimum deposit is 0.01 WETH.</p>
         </div>
         <div class="grid md:grid-cols-3 gap-4 mb-4">
           <div>
@@ -227,17 +167,15 @@
           </div>
           <div>
             <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Your WETH Balance</label>
-            <div id="weth-balance" class="text-emerald-400 font-mono text-lg pt-2">—</div>
+            <div id="weth-balance" class="text-emerald-400 font-mono text-lg pt-2">-</div>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
-          <button id="btn-approve-weth" class="py-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-700 text-emerald-400 font-bold text-sm transition">Step 1 — Approve WETH</button>
-          <button id="btn-deposit" class="py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition shadow-lg shadow-sky-900/30">Step 2 — Deposit into Vault</button>
+          <button id="btn-approve-weth" class="py-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-700 text-emerald-400 font-bold text-sm transition">Step 1 - Approve WETH</button>
+          <button id="btn-deposit" class="py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition shadow-lg shadow-sky-900/30">Step 2 - Deposit into Vault</button>
         </div>
-        <p class="text-slate-600 text-xs mt-3 font-mono">Step 1 gives the vault permission to pull your WETH. Step 2 sends it in and mints your shares.</p>
       </div>
 
-      <!-- WITHDRAW TAB -->
       <div id="panel-withdraw" class="hidden">
         <div class="flex items-center gap-2 mb-5">
           <div id="wd-step1-dot" class="w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-white text-xs font-bold">1</div>
@@ -246,19 +184,17 @@
           <div class="flex-1 h-0.5 bg-slate-700"></div>
           <div id="wd-step3-dot" class="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-xs font-bold">3</div>
         </div>
-        <div class="flex justify-between text-xs text-slate-500 mb-5 px-1">
-          <span>Enter Amount</span><span>Request Funds</span><span>Receive WETH</span>
-        </div>
-        <div id="wd-position" class="bg-slate-900/60 rounded-xl p-4 border border-slate-800 mb-4 grid grid-cols-3 gap-4">
-          <div><p class="text-slate-500 text-xs mb-1">Your mtETH-S</p><p id="wd-my-shares" class="text-white font-mono font-semibold">—</p></div>
-          <div><p class="text-slate-500 text-xs mb-1">Current NAV</p><p id="wd-nav" class="text-white font-mono font-semibold">—</p></div>
-          <div><p class="text-slate-500 text-xs mb-1">Your WETH Value</p><p id="wd-value" class="text-emerald-400 font-mono font-semibold">—</p></div>
+        <div class="flex justify-between text-xs text-slate-500 mb-5 px-1"><span>Enter Amount</span><span>Request Funds</span><span>Receive WETH</span></div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800 mb-4 grid grid-cols-3 gap-4">
+          <div><p class="text-slate-500 text-xs mb-1">Your mtETH-S</p><p id="wd-my-shares" class="text-white font-mono font-semibold">-</p></div>
+          <div><p class="text-slate-500 text-xs mb-1">Current NAV</p><p id="wd-nav" class="text-white font-mono font-semibold">-</p></div>
+          <div><p class="text-slate-500 text-xs mb-1">Your WETH Value</p><p id="wd-value" class="text-emerald-400 font-mono font-semibold">-</p></div>
         </div>
         <div class="grid md:grid-cols-2 gap-4 mb-4">
           <div>
             <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">mtETH-S to Redeem</label>
             <input id="withdraw-shares" type="number" step="0.0001" min="0" placeholder="0.0000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
-            <button onclick="setMaxShares()" class="mt-1 text-xs text-sky-400 hover:underline">Use max →</button>
+            <button onclick="setMaxShares()" class="mt-1 text-xs text-sky-400 hover:underline">Use max</button>
           </div>
           <div>
             <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Receive To</label>
@@ -267,992 +203,527 @@
         </div>
         <div class="bg-slate-900/40 rounded-xl p-3 border border-slate-800 mb-4 flex items-center justify-between">
           <span class="text-slate-400 text-sm">You will receive:</span>
-          <span id="withdraw-preview" class="text-emerald-400 font-mono font-bold text-lg">—</span>
+          <span id="withdraw-preview" class="text-emerald-400 font-mono font-bold text-lg">-</span>
         </div>
         <div id="wd-status" class="hidden rounded-xl p-4 mb-4 text-sm"></div>
-        <div id="wd-btn-check" class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition text-center cursor-pointer" onclick="checkAndWithdraw()">Check &amp; Withdraw</div>
-        <div id="wd-btn-request" class="hidden w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition text-center cursor-pointer mt-3" onclick="requestFundsFromAgent()">🏦 Request Agent Pull Funds</div>
-        <div id="wd-btn-redeem" class="hidden w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition text-center cursor-pointer mt-3" onclick="executeRedeem()">✓ Funds Ready — Complete Withdrawal</div>
-        <p class="text-slate-600 text-xs mt-3 font-mono text-center">24 hour lock applies after each deposit. Note: GMX withdrawals may take a few minutes for the keeper to execute.</p>
-      </div>
-      </div>
+        <div id="wd-btn-check" class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition text-center cursor-pointer" onclick="checkAndWithdraw()">Check and Withdraw</div>
+        <div id="wd-btn-request" class="hidden w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition text-center cursor-pointer mt-3" onclick="requestFundsFromAgent()">Request Agent Pull Funds</div>
+        <div id="wd-btn-redeem" class="hidden w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition text-center cursor-pointer mt-3" onclick="executeRedeem()">Funds Ready - Complete Withdrawal</div>
+        <p class="text-slate-600 text-xs mt-3 font-mono text-center">24 hour lock applies after each deposit.</p>
       </div>
     </div>
+    </div>
+  </div>
 
-    <!-- Hidden value holders -->
-    <span id="step1-target-val" class="hidden">0x82aF49447D8a07e3bd95BD0d56f35241523fBab1</span>
-    <span id="step2-target-val" class="hidden">0x794a61358D6845594F94dc1DB02A252b5b4814aD</span>
+  <!-- OWNER CONTROLS -->
+  <div id="owner-section" class="glass rounded-2xl mb-6 overflow-hidden" style="display:none">
+    <button onclick="toggleSection('owner')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
+      <h2 class="text-lg font-bold text-white">Owner Controls</h2>
+      <svg id="owner-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+    <div id="owner-body" style="display:none">
+    <div class="px-6 pb-6 pt-2">
+      <p class="text-slate-500 text-xs font-mono mb-4">Only the vault owner wallet can use these functions.</p>
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
 
-    <!-- ADMIN PANELS -->
-    <div id="owner-section" class="glass rounded-2xl mb-6 overflow-hidden" style="display:none">
-      <button onclick="toggleSection('owner')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
-        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-          Owner Controls
-        </h2>
-        <svg id="owner-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-      </button>
-      <div id="owner-body" style="display:none">
-      <div class="px-6 pb-6 pt-2">
-        <p class="text-slate-500 text-xs font-mono mb-4">Only the vault owner wallet can use these functions.</p>
-
-        <div class="grid md:grid-cols-2 gap-6 mb-6">
-          <!-- Execute Strategy -->
-          <div class="glass rounded-2xl p-6">
-            <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
-              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              Execute Strategy
-            </h3>
-            <p class="text-slate-500 text-xs mb-4">Manually trigger vault strategy calls.</p>
-            <div class="space-y-3">
-              <div>
-                <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Target Contract</label>
-                <input id="exec-target" type="text" placeholder="0x..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
-              </div>
-              <div>
-                <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Encoded Call Data (Hex)</label>
-                <textarea id="exec-data" rows="3" placeholder="0x..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500 resize-none"></textarea>
-              </div>
-              <button id="btn-execute" class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition">Push Strategy to Chain</button>
-            </div>
-          </div>
-
-          <!-- Strategy Whitelist -->
-          <div class="glass rounded-2xl p-6">
-            <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
-              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-              Strategy Whitelist
-            </h3>
-            <p class="text-slate-500 text-xs mb-4">Approve or revoke contracts the AI agent can send funds to.</p>
+        <div class="glass rounded-2xl p-6">
+          <h3 class="text-base font-bold text-white mb-3">Deploy / Withdraw Strategy</h3>
+          <p class="text-slate-500 text-xs mb-4">Move WETH between vault and registered strategies.</p>
+          <div class="space-y-3">
             <div>
               <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Strategy Address</label>
-              <input id="strategy-addr" type="text" placeholder="0x..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500 mb-3">
-            </div>
-            <div class="grid grid-cols-2 gap-3 mb-3">
-              <button onclick="updateStrategy(true)" class="py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-800 text-emerald-400 font-bold text-sm transition">✓ Approve</button>
-              <button onclick="updateStrategy(false)" class="py-2.5 rounded-xl bg-red-600/20 hover:bg-red-600/30 border border-red-800 text-red-400 font-bold text-sm transition">✗ Revoke</button>
-            </div>
-            <button onclick="checkStrategy()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-sm font-semibold transition">Check Approval Status</button>
-            <div id="check-result" class="hidden mt-3 rounded-xl px-4 py-3 text-sm font-mono"></div>
-            <!-- GMX strategy quick-fill -->
-            <div class="mt-3 pt-3 border-t border-slate-800">
-              <p class="text-xs text-slate-500 mb-1">Quick fill GMX strategy:</p>
-              <button onclick="document.getElementById('strategy-addr').value='0x1dEFE0E684EBEd4D772e0358bf414FA76D687134'" class="text-xs text-blue-400 hover:underline font-mono">0x1dEF...7134 (GmxV2EthStrategy)</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-6 mb-4">
-          <!-- Agent Management -->
-          <div class="glass rounded-2xl p-6">
-            <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
-              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-              Agent Management
-            </h3>
-            <p class="text-slate-500 text-xs mb-4">Rotate the AI agent wallet address.</p>
-            <div class="mb-3">
-              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Current AI Agent</label>
-              <div id="current-agent-display" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs font-mono text-emerald-400 break-all">—</div>
+              <input id="deploy-strategy-addr" type="text" placeholder="0x..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">New Agent Address</label>
-              <input id="new-agent-addr" type="text" placeholder="0x..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500 mb-3">
+              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Amount (WETH)</label>
+              <input id="deploy-amount" type="number" step="0.001" placeholder="0.1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
             </div>
-            <button id="btn-set-agent" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-sm transition">Set New Agent</button>
-          </div>
-
-          <!-- Vault Parameters -->
-          <div class="glass rounded-2xl p-6">
-            <h3 class="text-base font-bold text-white mb-1">Vault Parameters</h3>
-            <p class="text-slate-500 text-xs mb-4">Read-only on-chain data.</p>
             <div class="grid grid-cols-2 gap-3">
-              <div class="bg-slate-900/60 rounded-xl p-3"><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Min Deposit</p><p id="info-min-deposit" class="text-white font-mono font-semibold">—</p></div>
-              <div class="bg-slate-900/60 rounded-xl p-3"><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Withdraw Lock</p><p id="info-lock" class="text-white font-mono font-semibold">—</p></div>
-              <div class="bg-slate-900/60 rounded-xl p-3"><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Underlying Asset</p><p id="info-asset" class="text-sky-400 font-mono text-xs break-all">—</p></div>
-              <div class="bg-slate-900/60 rounded-xl p-3"><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Vault Owner</p><p id="info-owner" class="text-slate-300 font-mono text-xs">—</p></div>
+              <button onclick="deployToStrategy()" class="py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-800 text-emerald-400 font-bold text-sm transition">Deploy</button>
+              <button onclick="withdrawFromStrategy()" class="py-2.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-800 text-amber-400 font-bold text-sm transition">Withdraw</button>
+            </div>
+            <button onclick="withdrawAllFromStrategy()" class="w-full py-2.5 rounded-xl bg-red-600/20 hover:bg-red-600/30 border border-red-800 text-red-400 font-bold text-sm transition">Withdraw All from Strategy</button>
+            <div class="pt-2 border-t border-slate-800">
+              <p class="text-xs text-slate-500 mb-1">Quick fill Compound:</p>
+              <button onclick="document.getElementById('deploy-strategy-addr').value='0x3F26B819988542c4EdA48cA6dC241DCF972A74F2'" class="text-xs text-emerald-400 hover:underline font-mono">0x3F26...4F2 (Compound V3)</button>
             </div>
           </div>
         </div>
-      </div>
-      </div>
-    </div>
 
-    <!-- Growth Milestones -->
-    <div class="glass rounded-2xl mb-6 overflow-hidden">
-      <button onclick="toggleSection('milestones')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
-        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          Growth Milestones
-        </h2>
-        <svg id="milestones-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-      </button>
-      <div id="milestones-body" style="display:none">
-        <div class="px-6 pb-6 pt-2">
-          <p class="text-slate-500 text-xs mb-4">TVL targets that unlock new vault capabilities.</p>
-          <div id="milestone-list" class="space-y-3"></div>
+        <div class="glass rounded-2xl p-6">
+          <h3 class="text-base font-bold text-white mb-3">Add / Remove Strategy</h3>
+          <p class="text-slate-500 text-xs mb-4">Register new yield strategies. Call approveToken first.</p>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Strategy Address</label>
+              <input id="reg-strategy-addr" type="text" placeholder="0x..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Strategy Name</label>
+              <input id="reg-strategy-name" type="text" placeholder="e.g. Compound V3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            </div>
+            <button onclick="addStrategy()" class="w-full py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-800 text-emerald-400 font-bold text-sm transition">Add Strategy</button>
+            <button onclick="removeStrategy()" class="w-full py-2.5 rounded-xl bg-red-600/20 hover:bg-red-600/30 border border-red-800 text-red-400 font-bold text-sm transition">Remove Strategy</button>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- How It Works -->
-    <div class="glass rounded-2xl mb-8 overflow-hidden">
-      <button onclick="toggleExplainer()" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition">
-        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          How This All Works
-        </h2>
-        <svg id="explainer-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-      </button>
-      <div id="explainer-body" style="display:none" class="px-6 pb-6">
-        <div class="grid md:grid-cols-3 gap-4 mb-6">
-          <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
-            <div class="text-sky-400 font-bold text-sm mb-2">① The Vault</div>
-            <p class="text-slate-400 text-sm">Secure on-chain safe on Arbitrum. Deposit WETH, receive mtETH-S shares. Shares grow in value as the vault earns yield from multiple strategies.</p>
-          </div>
-          <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
-            <div class="text-emerald-400 font-bold text-sm mb-2">② The Conservator (AI Agent)</div>
-            <p class="text-slate-400 text-sm">Claude AI running on Railway. Splits funds 60% Compound / 40% GMX ETH/USD pool. Rebalances when allocation drifts. Cannot steal funds — only whitelisted strategies.</p>
-          </div>
-          <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
-            <div class="text-amber-400 font-bold text-sm mb-2">③ This Dashboard</div>
-            <p class="text-slate-400 text-sm">Your control panel. Deposit WETH, withdraw to WETH, approve strategies, monitor allocation in real time.</p>
+        <div class="glass rounded-2xl p-6">
+          <h3 class="text-base font-bold text-white mb-3">Approve Token for Strategy</h3>
+          <p class="text-slate-500 text-xs mb-4">One-time WETH approval so a new strategy can pull funds. Do this before addStrategy.</p>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Token</label>
+              <input id="approve-token" type="text" value="0x82aF49447D8a07e3bd95BD0d56f35241523fBab1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Spender (Strategy Address)</label>
+              <input id="approve-spender" type="text" placeholder="0x..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500">
+            </div>
+            <button onclick="approveToken()" class="w-full py-3 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-800 text-amber-400 font-bold text-sm transition">Approve Max WETH</button>
           </div>
         </div>
-        <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800 mb-4">
-          <div class="text-slate-300 font-semibold text-sm mb-3">💡 Money Flow</div>
-          <div class="flex flex-wrap items-center gap-2 text-sm font-mono">
-            <span class="bg-slate-800 px-3 py-1 rounded-lg text-sky-300">Deposit WETH</span>
-            <span class="text-slate-500">→</span>
-            <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">Mint mtETH-S</span>
-            <span class="text-slate-500">→</span>
-            <span class="bg-slate-800 px-3 py-1 rounded-lg text-emerald-300">60% Compound + 40% GMX</span>
-            <span class="text-slate-500">→</span>
-            <span class="bg-slate-800 px-3 py-1 rounded-lg text-amber-300">Yield grows NAV</span>
-            <span class="text-slate-500">→</span>
-            <span class="bg-slate-800 px-3 py-1 rounded-lg text-purple-300">Withdraw = more WETH</span>
+
+        <div class="glass rounded-2xl p-6">
+          <h3 class="text-base font-bold text-white mb-3">Agent Management</h3>
+          <div class="mb-3">
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">Current AI Agent</label>
+            <div id="current-agent-display" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs font-mono text-emerald-400 break-all">-</div>
           </div>
+          <div>
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1 block">New Agent Address</label>
+            <input id="new-agent-addr" type="text" placeholder="0x..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-sky-300 focus:outline-none focus:border-sky-500 mb-3">
+          </div>
+          <button id="btn-set-agent" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-sm transition">Set New Agent</button>
         </div>
-        <div class="grid md:grid-cols-2 gap-4">
-          <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
-            <div class="text-slate-300 font-semibold text-sm mb-2">🔵 Why GMX ETH/USD?</div>
-            <p class="text-slate-400 text-sm">GMX V2 GM pools earn fees from perpetual traders. The ETH/USD pool has ~9% 30-day fee APY vs ~2-3% on Compound. Higher yield, managed exposure capped at 40% of AUM.</p>
-          </div>
-          <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
-            <div class="text-slate-300 font-semibold text-sm mb-2">⏱ Withdraw Lock</div>
-            <p class="text-slate-400 text-sm">24 hours after depositing before you can withdraw — prevents flash loan attacks. GMX withdrawals also require a keeper to execute (usually a few minutes).</p>
-          </div>
+
+      </div>
+
+      <div class="glass rounded-2xl p-6">
+        <h3 class="text-base font-bold text-white mb-4">Vault Parameters</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-slate-900/60 rounded-xl p-3"><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Min Deposit</p><p id="info-min-deposit" class="text-white font-mono font-semibold">-</p></div>
+          <div class="bg-slate-900/60 rounded-xl p-3"><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Withdraw Lock</p><p id="info-lock" class="text-white font-mono font-semibold">-</p></div>
+          <div class="bg-slate-900/60 rounded-xl p-3"><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Min MTYLD</p><p id="info-mtyld-req" class="text-white font-mono font-semibold">-</p></div>
+          <div class="bg-slate-900/60 rounded-xl p-3"><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Vault Owner</p><p id="info-owner" class="text-slate-300 font-mono text-xs">-</p></div>
         </div>
       </div>
     </div>
-
-    <!-- Footer -->
-    <div class="pt-6 border-t border-slate-800">
-      <div class="flex items-center justify-between mb-4">
-        <p class="text-slate-600 text-xs font-mono truncate">0xc922...419b78 • Arbitrum One • 15s refresh</p>
-        <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
-      </div>
-      <div class="text-center pb-2">
-        <p class="text-slate-600 text-xs mb-3">Bridge USDC to another chain after redeeming</p>
-        <div class="flex justify-center gap-3 flex-wrap">
-          <a href="https://www.relay.link/bridge/base?fromChainId=42161&toCurrency=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&fromCurrency=0xaf88d065e77c8cc2239327c5edb3a432268e5831" target="_blank" class="px-4 py-2 rounded-xl bg-sky-600/20 border border-sky-700 text-sky-400 text-xs font-semibold hover:bg-sky-600/30 transition">USDC → Base via Relay ↗</a>
-          <a href="https://www.relay.link/bridge/ethereum?fromChainId=42161&toCurrency=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&fromCurrency=0xaf88d065e77c8cc2239327c5edb3a432268e5831" target="_blank" class="px-4 py-2 rounded-xl bg-slate-700 border border-slate-600 text-slate-400 text-xs font-semibold hover:bg-slate-600 transition">USDC → Ethereum via Relay ↗</a>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- TX Toast -->
-  <div id="tx-toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm w-full">
-    <div id="tx-card" class="bg-slate-900 border rounded-2xl p-4 shadow-2xl">
-      <div id="tx-title" class="text-xs font-mono font-bold uppercase tracking-wider mb-1"></div>
-      <div id="tx-msg" class="text-slate-400 text-sm"></div>
-      <div id="tx-hash" class="mt-2 text-xs font-mono"></div>
     </div>
   </div>
 
-  <script>
-    // ── Constants ─────────────────────────────────────────────
-    const VAULT_ADDRESS    = "0xc9227b644285198646F9c75ceCf13F84bF419B78";
-    const WETH_ADDRESS     = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
-    const AWETH_ADDRESS    = "0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8";
-    const COMPOUND_ADDRESS = "0x6f7D514bbD4aFf3BcD1140B7344b32f063dEe486";
-    const GMX_STRATEGY     = "0x1dEFE0E684EBEd4D772e0358bf414FA76D687134";
-    const GM_ETH_USD       = "0x70d95587d40A2caf56bd97485aB3Eec10Bee6336";
-    const MTYLD_ADDRESS    = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
-    const CHAINLINK_ETH_USD = "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612";
-    const AAVE_DATA_PROVIDER = "0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654";
-    const ARBITRUM_ID = 42161n;
+  <!-- MILESTONES -->
+  <div class="glass rounded-2xl mb-6 overflow-hidden">
+    <button onclick="toggleSection('milestones')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
+      <h2 class="text-lg font-bold text-white">Growth Milestones</h2>
+      <svg id="milestones-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+    <div id="milestones-body" style="display:none">
+      <div class="px-6 pb-6 pt-2"><div id="milestone-list" class="space-y-3"></div></div>
+    </div>
+  </div>
 
-    const ABI = [
-      {"inputs":[],"name":"totalAssets","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"totalSupply","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"aiAgent","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"owner","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"MIN_DEPOSIT","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[],"name":"withdrawLockPeriod","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"name":"shares","type":"uint256"}],"name":"convertToAssets","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"name":"","type":"address"}],"name":"lastDepositTime","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"name":"owner","type":"address"}],"name":"maxRedeem","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"name":"","type":"address"}],"name":"isApprovedStrategy","outputs":[{"type":"bool"}],"stateMutability":"view","type":"function"},
-      {"inputs":[{"name":"_newAgent","type":"address"}],"name":"setAiAgent","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"name":"_target","type":"address"},{"name":"_status","type":"bool"}],"name":"approveStrategy","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"name":"target","type":"address"},{"name":"data","type":"bytes"}],"name":"executeStrategy","outputs":[],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"name":"assets","type":"uint256"},{"name":"receiver","type":"address"}],"name":"deposit","outputs":[{"type":"uint256"}],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[{"name":"shares","type":"uint256"},{"name":"receiver","type":"address"},{"name":"owner","type":"address"}],"name":"redeem","outputs":[{"type":"uint256"}],"stateMutability":"nonpayable","type":"function"},
-      {"inputs":[],"name":"minMtyldRequired","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
-    ];
+  <div class="pt-6 border-t border-slate-800">
+    <div class="flex items-center justify-between mb-4">
+      <p class="text-slate-600 text-xs font-mono truncate">0xC3c4...e54f (v5) - Arbitrum One - 15s refresh</p>
+      <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
+    </div>
+    <div class="text-center pb-2">
+      <p class="text-slate-600 text-xs mb-3">Bridge USDC to another chain after redeeming</p>
+      <div class="flex justify-center gap-3 flex-wrap">
+        <a href="https://www.relay.link/bridge/base?fromChainId=42161&toCurrency=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&fromCurrency=0xaf88d065e77c8cc2239327c5edb3a432268e5831" target="_blank" class="px-4 py-2 rounded-xl bg-sky-600/20 border border-sky-700 text-sky-400 text-xs font-semibold hover:bg-sky-600/30 transition">USDC to Base via Relay</a>
+        <a href="https://www.relay.link/bridge/ethereum?fromChainId=42161&toCurrency=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&fromCurrency=0xaf88d065e77c8cc2239327c5edb3a432268e5831" target="_blank" class="px-4 py-2 rounded-xl bg-slate-700 border border-slate-600 text-slate-400 text-xs font-semibold hover:bg-slate-600 transition">USDC to Ethereum via Relay</a>
+      </div>
+    </div>
+  </div>
+</main>
 
-    const ERC20_ABI = [{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"type":"bool"}],"stateMutability":"nonpayable","type":"function"}];
-    const COMPOUND_ABI = [{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getUtilization","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"name":"utilization","type":"uint256"}],"name":"getSupplyRate","outputs":[{"type":"uint64"}],"stateMutability":"view","type":"function"}];
-    const CHAINLINK_ABI = [{"inputs":[],"name":"latestRoundData","outputs":[{"type":"uint80"},{"type":"int256"},{"type":"uint256"},{"type":"uint256"},{"type":"uint80"}],"stateMutability":"view","type":"function"}];
-    const AAVE_DATA_ABI = [{"inputs":[{"name":"asset","type":"address"}],"name":"getReserveData","outputs":[{"components":[{"name":"unbacked","type":"uint128"},{"name":"accruedToTreasuryScaled","type":"uint128"},{"name":"totalAToken","type":"uint128"},{"name":"totalStableDebt","type":"uint128"},{"name":"totalVariableDebt","type":"uint128"},{"name":"liquidityRate","type":"uint128"},{"name":"variableBorrowRate","type":"uint128"},{"name":"stableBorrowRate","type":"uint128"},{"name":"averageStableBorrowRate","type":"uint128"},{"name":"liquidityIndex","type":"uint128"},{"name":"variableBorrowIndex","type":"uint128"},{"name":"lastUpdateTimestamp","type":"uint40"}],"type":"tuple"}],"stateMutability":"view","type":"function"}];
-    const GMX_STRATEGY_ABI = [{"inputs":[],"name":"gmBalance","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"wethBalance","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"deployedWeth","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"hasPendingAction","outputs":[{"type":"bool"}],"stateMutability":"view","type":"function"}];
+<div id="tx-toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm w-full">
+  <div id="tx-card" class="bg-slate-900 border rounded-2xl p-4 shadow-2xl">
+    <div id="tx-title" class="text-xs font-mono font-bold uppercase tracking-wider mb-1"></div>
+    <div id="tx-msg" class="text-slate-400 text-sm"></div>
+    <div id="tx-hash" class="mt-2 text-xs font-mono"></div>
+  </div>
+</div>
 
-    let provider, signer, contract, wethContract;
-    let isConnected = false, userAddress = null, isMtyldHolder = false;
-    let currentNav = 1.0, cachedEthPrice = 2040;
-    let toastTimer, allocationChart = null, navChart = null;
+<script>
+const VAULT_ADDRESS="0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f";
+const WETH_ADDRESS="0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
+const MTYLD_ADDRESS="0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
+const COMPOUND_ADDRESS="0x6f7D514bbD4aFf3BcD1140B7344b32f063dEe486";
+const CHAINLINK_ETH_USD="0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612";
+const ARBITRUM_ID=42161n;
+const STRATEGY_COLORS=["#10b981","#3b82f6","#f59e0b","#8b5cf6","#ef4444","#06b6d4"];
 
-    // ── Helpers ───────────────────────────────────────────────
-    function toggleSection(id) {
-      const body = document.getElementById(id + '-body');
-      const chevron = document.getElementById(id + '-chevron');
-      const isHidden = body.style.display === 'none';
-      body.style.display = isHidden ? 'block' : 'none';
-      chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+const ABI=[
+  {"inputs":[],"name":"totalAssets","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"totalSupply","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"aiAgent","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"owner","outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"MIN_DEPOSIT","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"withdrawLockPeriod","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"minMtyldRequired","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"idleWeth","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"getStrategies","outputs":[{"type":"address[]"},{"type":"string[]"},{"type":"uint256[]"},{"type":"bool[]"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"","type":"address"}],"name":"lastDepositTime","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"owner_","type":"address"}],"name":"maxRedeem","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"_newAgent","type":"address"}],"name":"setAiAgent","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"token","type":"address"},{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approveToken","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"strategy","type":"address"},{"name":"stratName","type":"string"}],"name":"addStrategy","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"strategy","type":"address"}],"name":"removeStrategy","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"strategy","type":"address"},{"name":"amount","type":"uint256"}],"name":"deployToStrategy","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"strategy","type":"address"},{"name":"amount","type":"uint256"}],"name":"withdrawFromStrategy","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"strategy","type":"address"}],"name":"withdrawAllFromStrategy","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"assets","type":"uint256"},{"name":"receiver","type":"address"}],"name":"deposit","outputs":[{"type":"uint256"}],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"shares","type":"uint256"},{"name":"receiver","type":"address"},{"name":"owner_","type":"address"}],"name":"redeem","outputs":[{"type":"uint256"}],"stateMutability":"nonpayable","type":"function"},
+];
+const ERC20_ABI=[{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"type":"bool"}],"stateMutability":"nonpayable","type":"function"}];
+const COMPOUND_ABI=[{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getUtilization","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"name":"utilization","type":"uint256"}],"name":"getSupplyRate","outputs":[{"type":"uint64"}],"stateMutability":"view","type":"function"}];
+const CHAINLINK_ABI=[{"inputs":[],"name":"latestRoundData","outputs":[{"type":"uint80"},{"type":"int256"},{"type":"uint256"},{"type":"uint256"},{"type":"uint80"}],"stateMutability":"view","type":"function"}];
+
+let provider,signer,contract,wethContract;
+let isConnected=false,userAddress=null,isMtyldHolder=false;
+let currentNav=1.0,cachedEthPrice=2040;
+let toastTimer,allocationChart=null,navChart=null;
+
+function toggleSection(id){
+  const body=document.getElementById(id+"-body");
+  const chevron=document.getElementById(id+"-chevron");
+  const isHidden=body.style.display==="none";
+  body.style.display=isHidden?"block":"none";
+  chevron.style.transform=isHidden?"rotate(180deg)":"rotate(0deg)";
+}
+function switchTab(tab){
+  document.getElementById("panel-deposit").classList.toggle("hidden",tab!=="deposit");
+  document.getElementById("panel-withdraw").classList.toggle("hidden",tab!=="withdraw");
+  document.getElementById("tab-deposit").classList.toggle("active",tab==="deposit");
+  document.getElementById("tab-withdraw").classList.toggle("active",tab==="withdraw");
+}
+function showToast(state,title,msg,hash){
+  clearTimeout(toastTimer);
+  const colors={pending:"border-amber-600",success:"border-emerald-600",error:"border-red-600"};
+  const tc={pending:"text-amber-400",success:"text-emerald-400",error:"text-red-400"};
+  document.getElementById("tx-card").className="bg-slate-900 border rounded-2xl p-4 shadow-2xl "+colors[state];
+  document.getElementById("tx-title").className="text-xs font-mono font-bold uppercase tracking-wider mb-1 "+tc[state];
+  document.getElementById("tx-title").textContent=title;
+  document.getElementById("tx-msg").textContent=msg;
+  document.getElementById("tx-hash").innerHTML=hash?"<a href=\"https://arbiscan.io/tx/"+hash+"\" target=\"_blank\" class=\"text-sky-400 hover:underline\">"+hash.slice(0,10)+"..."+hash.slice(-6)+" </a>":"";
+  document.getElementById("tx-toast").style.display="block";
+  if(state!=="pending")toastTimer=setTimeout(()=>document.getElementById("tx-toast").style.display="none",7000);
+}
+async function checkNetwork(){
+  if(!window.ethereum)return false;
+  const chainId=BigInt(await window.ethereum.request({method:"eth_chainId"}));
+  const badge=document.getElementById("network-badge");
+  const warning=document.getElementById("network-warning");
+  if(chainId===ARBITRUM_ID){badge.textContent="Arbitrum One";badge.className="px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-indigo-900/30 border-indigo-700 text-indigo-300";badge.style.display="block";warning.style.display="none";return true;}
+  badge.textContent="Wrong Network";badge.className="px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-red-900/30 border-red-700 text-red-400";badge.style.display="block";warning.style.display="block";return false;
+}
+async function getEthPrice(rp){
+  try{const feed=new ethers.Contract(CHAINLINK_ETH_USD,CHAINLINK_ABI,rp);const r=await feed.latestRoundData();cachedEthPrice=parseFloat(r[1].toString())/1e8;}catch{}return cachedEthPrice;
+}
+async function fetchProtocolRates(){
+  try{
+    const rp=new ethers.BrowserProvider(window.ethereum);
+    const comet=new ethers.Contract(COMPOUND_ADDRESS,COMPOUND_ABI,rp);
+    const util=await comet.getUtilization();
+    const rate=await comet.getSupplyRate(util);
+    const apy=(Math.pow(1+parseFloat(rate.toString())/1e18,31536000)-1)*100;
+    document.getElementById("compound-apy").textContent=apy.toFixed(2)+"% APY";
+    document.getElementById("active-yield-rate").textContent="Compound V3: "+apy.toFixed(2)+"% APY";
+  }catch(e){console.error("Rate error:",e);}
+}
+async function refreshData(){
+  if(!window.ethereum)return;
+  try{
+    const rp=new ethers.BrowserProvider(window.ethereum);
+    const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
+    const[supply,agent,minDep,lock,ownerAddr,idleWeth,mtyldReq,strats]=await Promise.all([
+      rc.totalSupply(),rc.aiAgent(),rc.MIN_DEPOSIT(),rc.withdrawLockPeriod(),
+      rc.owner(),rc.idleWeth(),rc.minMtyldRequired(),
+      rc.getStrategies().catch(()=>[[],[],[],[]])
+    ]);
+    const[stratAddrs,stratNames,stratBals,stratActive]=strats;
+    const idleFloat=parseFloat(ethers.formatEther(idleWeth));
+    let stratTotal=0;
+    const activeStrats=[];
+    for(let i=0;i<stratAddrs.length;i++){
+      if(stratActive[i]){const bal=parseFloat(ethers.formatEther(stratBals[i]));stratTotal+=bal;activeStrats.push({addr:stratAddrs[i],name:stratNames[i],bal});}
     }
-    function toggleExplainer() {
-      const body = document.getElementById('explainer-body');
-      const chevron = document.getElementById('explainer-chevron');
-      const isHidden = body.style.display === 'none';
-      body.style.display = isHidden ? 'block' : 'none';
-      chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-    }
-    function switchTab(tab) {
-      document.getElementById('panel-deposit').classList.toggle('hidden', tab !== 'deposit');
-      document.getElementById('panel-withdraw').classList.toggle('hidden', tab !== 'withdraw');
-      document.getElementById('tab-deposit').classList.toggle('active', tab === 'deposit');
-      document.getElementById('tab-withdraw').classList.toggle('active', tab === 'withdraw');
-    }
-    function showToast(state, title, msg, hash) {
-      clearTimeout(toastTimer);
-      const colors = { pending:'border-amber-600', success:'border-emerald-600', error:'border-red-600' };
-      const tc = { pending:'text-amber-400', success:'text-emerald-400', error:'text-red-400' };
-      document.getElementById('tx-card').className = `bg-slate-900 border rounded-2xl p-4 shadow-2xl ${colors[state]}`;
-      document.getElementById('tx-title').className = `text-xs font-mono font-bold uppercase tracking-wider mb-1 ${tc[state]}`;
-      document.getElementById('tx-title').textContent = title;
-      document.getElementById('tx-msg').textContent = msg;
-      document.getElementById('tx-hash').innerHTML = hash ? `<a href="https://arbiscan.io/tx/${hash}" target="_blank" class="text-sky-400 hover:underline">${hash.slice(0,10)}...${hash.slice(-6)} ↗</a>` : '';
-      document.getElementById('tx-toast').style.display = 'block';
-      if (state !== 'pending') toastTimer = setTimeout(() => document.getElementById('tx-toast').style.display = 'none', 7000);
-    }
-
-    // ── Network ───────────────────────────────────────────────
-    async function checkNetwork() {
-      if (!window.ethereum) return false;
-      const chainId = BigInt(await window.ethereum.request({ method: 'eth_chainId' }));
-      const badge = document.getElementById('network-badge');
-      const warning = document.getElementById('network-warning');
-      if (chainId === ARBITRUM_ID) {
-        badge.textContent = 'Arbitrum One';
-        badge.className = 'px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-indigo-900/30 border-indigo-700 text-indigo-300';
-        badge.style.display = 'block'; warning.style.display = 'none';
-        return true;
-      }
-      badge.textContent = 'Wrong Network';
-      badge.className = 'px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-red-900/30 border-red-700 text-red-400';
-      badge.style.display = 'block'; warning.style.display = 'block';
-      return false;
-    }
-
-    // ── GMX balance ───────────────────────────────────────────
-    async function getGmxBalance(rp) {
-      try {
-        const strat = new ethers.Contract(GMX_STRATEGY, GMX_STRATEGY_ABI, rp);
-        const [deployed, wethInStrat] = await Promise.all([strat.deployedWeth(), strat.wethBalance()]);
-        return deployed + wethInStrat;
-      } catch { return 0n; }
-    }
-
-    // ── ETH price ─────────────────────────────────────────────
-    async function getEthPrice(rp) {
-      try {
-        const feed = new ethers.Contract(CHAINLINK_ETH_USD, CHAINLINK_ABI, rp);
-        const result = await feed.latestRoundData();
-        cachedEthPrice = parseFloat(result[1].toString()) / 1e8;
-      } catch {}
-      return cachedEthPrice;
-    }
-
-    // ── Protocol rates ────────────────────────────────────────
-    async function fetchProtocolRates() {
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const aaveData = new ethers.Contract(AAVE_DATA_PROVIDER, AAVE_DATA_ABI, rp);
-        const reserveData = await aaveData.getReserveData(WETH_ADDRESS);
-        const aaveRate = parseFloat(reserveData.liquidityRate.toString()) / 1e27 * 100;
-        document.getElementById('aave-apy').textContent = aaveRate.toFixed(2) + '% APY';
-
-        const comet = new ethers.Contract(COMPOUND_ADDRESS, COMPOUND_ABI, rp);
-        const utilization = await comet.getUtilization();
-        const supplyRate = await comet.getSupplyRate(utilization);
-        const compoundAPY = (Math.pow(1 + parseFloat(supplyRate.toString()) / 1e18, 31536000) - 1) * 100;
-        document.getElementById('compound-apy').textContent = compoundAPY.toFixed(2) + '% APY';
-
-        // Blended APY estimate: 60% Compound + 40% GMX
-        const blended = (compoundAPY * 0.6) + (9.08 * 0.4);
-        document.getElementById('active-yield-rate').textContent = `Blended APY ~${blended.toFixed(2)}% (60% Compound / 40% GMX)`;
-      } catch(e) { console.error('Rate fetch error:', e); }
-    }
-
-    // ── Main data refresh ─────────────────────────────────────
-    async function refreshData() {
-      if (!window.ethereum) return;
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
-        const wethC = new ethers.Contract(WETH_ADDRESS, ERC20_ABI, rp);
-        const awethC = new ethers.Contract(AWETH_ADDRESS, ERC20_ABI, rp);
-        const compC = new ethers.Contract(COMPOUND_ADDRESS, COMPOUND_ABI, rp);
-
-        const [supply, agent, minDep, lock, ownerAddr, aWethBal, compBal, idleWeth, gmxBal] = await Promise.all([
-          rc.totalSupply(), rc.aiAgent(), rc.MIN_DEPOSIT(), rc.withdrawLockPeriod(), rc.owner(),
-          awethC.balanceOf(VAULT_ADDRESS).catch(() => 0n),
-          compC.balanceOf(VAULT_ADDRESS).catch(() => 0n),
-          wethC.balanceOf(VAULT_ADDRESS).catch(() => 0n),
-          getGmxBalance(rp),
-        ]);
-
-        const aWethFloat   = parseFloat(ethers.formatEther(aWethBal));
-        const compFloat    = parseFloat(ethers.formatEther(compBal));
-        const idleFloat    = parseFloat(ethers.formatEther(idleWeth));
-        const gmxFloat     = parseFloat(ethers.formatEther(gmxBal));
-        const totalFloat   = aWethFloat + compFloat + idleFloat + gmxFloat;
-        const supplyFloat  = parseFloat(ethers.formatEther(supply));
-        const realNav      = supplyFloat > 0 ? totalFloat / supplyFloat : 1.0;
-        currentNav = realNav;
-
-        const ethPrice = await getEthPrice(rp);
-        const tvlUSD = totalFloat * ethPrice;
-
-        document.getElementById('stat-tvl').textContent = totalFloat.toFixed(6) + ' WETH';
-        document.getElementById('tvl-usd').textContent = '≈ $' + tvlUSD.toLocaleString(undefined, { maximumFractionDigits: 2 });
-        document.getElementById('stat-nav').textContent = realNav.toFixed(6);
-        document.getElementById('stat-agent').textContent = agent.slice(0,6) + '...' + agent.slice(-4);
-        document.getElementById('current-agent-display').textContent = agent;
-        document.getElementById('info-min-deposit').textContent = ethers.formatEther(minDep) + ' WETH';
-        document.getElementById('info-lock').textContent = (Number(lock) / 3600).toFixed(1) + ' hrs';
-        document.getElementById('info-asset').textContent = '0x82aF...fBab1 (WETH)';
-        document.getElementById('info-owner').textContent = ownerAddr.slice(0,6) + '...' + ownerAddr.slice(-4);
-
-        let parts = [];
-        if (idleFloat > 0) parts.push(idleFloat.toFixed(4) + ' idle');
-        if (compFloat > 0) parts.push(compFloat.toFixed(4) + ' Compound');
-        if (gmxFloat > 0) parts.push(gmxFloat.toFixed(4) + ' GMX');
-        if (aWethFloat > 0) parts.push(aWethFloat.toFixed(4) + ' Aave');
-        document.getElementById('tvl-breakdown').textContent = parts.join(' + ') || 'Total WETH in vault';
-
-        renderMilestones(tvlUSD);
-
-        if (userAddress) {
-          const [myShares] = await Promise.all([rc.balanceOf(userAddress)]);
-          const sharesFloat = parseFloat(ethers.formatEther(myShares));
-          document.getElementById('stat-my-shares').textContent = sharesFloat.toFixed(4) + ' mtETH-S';
-          document.getElementById('stat-my-value').textContent = '≈ ' + (sharesFloat * currentNav).toFixed(6) + ' WETH';
-          updateWithdrawPosition();
-        }
-
-        await refreshPortfolio(rp, agent, aWethFloat, compFloat, idleFloat, gmxFloat, totalFloat);
-
-      } catch(e) { console.error('Read error:', e); }
-    }
-
-    async function refreshWethBalance() {
-      if (!isConnected || !userAddress) return;
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const weth = new ethers.Contract(WETH_ADDRESS, ERC20_ABI, rp);
-        const bal = await weth.balanceOf(userAddress);
-        document.getElementById('weth-balance').textContent = parseFloat(ethers.formatEther(bal)).toFixed(6) + ' WETH';
-      } catch {}
-    }
-
-    async function refreshAll() { await refreshData(); await refreshWethBalance(); }
-
-    // ── Portfolio panel ───────────────────────────────────────
-    async function refreshPortfolio(rp, agent, aWethFloat, compFloat, idleFloat, gmxFloat, totalFloat) {
-      try {
-        document.getElementById('portfolio-agent').textContent = agent;
-        document.getElementById('agent-arbiscan-link').href = 'https://arbiscan.io/address/' + agent;
-
-        const gasBal = await rp.getBalance(agent);
-        const gasFloat = parseFloat(ethers.formatEther(gasBal));
-        document.getElementById('portfolio-gas').textContent = gasFloat.toFixed(5) + ' ETH';
-        const gasStatus = document.getElementById('portfolio-gas-status');
-        if (gasFloat < 0.001) { gasStatus.textContent = '⚠ Low — top up soon'; gasStatus.className = 'text-xs mt-1 text-red-400'; }
-        else if (gasFloat < 0.005) { gasStatus.textContent = '⚡ OK — monitor'; gasStatus.className = 'text-xs mt-1 text-amber-400'; }
-        else { gasStatus.textContent = '✓ Healthy'; gasStatus.className = 'text-xs mt-1 text-emerald-400'; }
-
-        document.getElementById('portfolio-aave').textContent = aWethFloat.toFixed(6) + ' WETH';
-        document.getElementById('portfolio-compound').textContent = compFloat.toFixed(6) + ' WETH';
-        document.getElementById('portfolio-idle').textContent = idleFloat.toFixed(6) + ' WETH';
-        document.getElementById('portfolio-gmx').textContent = gmxFloat.toFixed(6) + ' WETH';
-        document.getElementById('donut-center-value').textContent = totalFloat.toFixed(4);
-
-        // GMX pending status
-        try {
-          const strat = new ethers.Contract(GMX_STRATEGY, GMX_STRATEGY_ABI, rp);
-          const pending = await strat.hasPendingAction();
-          const gmxStatus = document.getElementById('portfolio-gmx-status');
-          if (pending) { gmxStatus.textContent = '⏳ Keeper executing...'; gmxStatus.className = 'text-amber-400 text-xs mt-1'; }
-          else { gmxStatus.textContent = 'GM pool earning fees'; gmxStatus.className = 'text-slate-600 text-xs mt-1'; }
-        } catch {}
-
-        // Update donut — Compound, GMX, Aave, Idle
-        if (allocationChart) {
-          allocationChart.data.datasets[0].data = [compFloat, gmxFloat, aWethFloat, idleFloat];
-          allocationChart.update();
-        }
-
-        // NAV snapshot
-        if (currentNav > 0) {
-          saveNavSnapshot(currentNav);
-          const history = getNavHistory();
-          if (navChart) {
-            navChart.data.labels = history.map(h => h.label);
-            navChart.data.datasets[0].data = history.map(h => h.nav);
-            const minNav = Math.min(...history.map(h => h.nav));
-            const maxNav = Math.max(...history.map(h => h.nav));
-            navChart.options.scales.y.min = Math.max(0, minNav - 0.0005);
-            navChart.options.scales.y.max = maxNav + 0.0005;
-            navChart.update();
-          }
-        }
-      } catch(e) { console.error('Portfolio error:', e); }
-    }
-
-    // ── Charts ────────────────────────────────────────────────
-    function getNavHistory() { try { return JSON.parse(localStorage.getItem('mtvault_nav_history') || '[]'); } catch { return []; } }
-    function saveNavSnapshot(nav) {
-      const history = getNavHistory();
-      const now = Date.now();
-      if (history.length > 0 && now - history[history.length-1].time < 15*60*1000) return;
-      const d = new Date(now);
-      history.push({ label: d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0'), nav: parseFloat(nav.toFixed(6)), time: now });
-      if (history.length > 96) history.shift();
-      localStorage.setItem('mtvault_nav_history', JSON.stringify(history));
-    }
-
-    function initCharts() {
-      const donutCtx = document.getElementById('allocation-chart').getContext('2d');
-      allocationChart = new Chart(donutCtx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Compound', 'GMX', 'Aave', 'Idle'],
-          datasets: [{
-            data: [0, 0, 0, 1],
-            backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#0ea5e9'],
-            borderColor: ['#0f172a'], borderWidth: 3, hoverOffset: 4
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } }, animation: { duration: 400 } }
-      });
-
-      const history = getNavHistory();
-      const navCtx = document.getElementById('nav-chart').getContext('2d');
-      navChart = new Chart(navCtx, {
-        type: 'line',
-        data: {
-          labels: history.length > 0 ? history.map(h => h.label) : ['Now'],
-          datasets: [{ label: 'NAV', data: history.length > 0 ? history.map(h => h.nav) : [1.0], borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.08)', borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, fill: true, tension: 0.3 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#475569', font: { size: 10 } }, grid: { color: 'rgba(71,85,105,0.2)' } }, y: { ticks: { color: '#475569', font: { size: 10 }, callback: v => v.toFixed(4) }, grid: { color: 'rgba(71,85,105,0.2)' }, min: 0.995 } } }
-      });
-    }
-
-    // ── Connect ───────────────────────────────────────────────
-    async function connect() {
-      if (!window.ethereum) return alert('Install MetaMask to use this dashboard.');
-      try {
-        provider = new ethers.BrowserProvider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        signer = await provider.getSigner();
-        userAddress = await signer.getAddress();
-        contract = new ethers.Contract(VAULT_ADDRESS, ABI, signer);
-        wethContract = new ethers.Contract(WETH_ADDRESS, ERC20_ABI, signer);
-        isConnected = true;
-        const btn = document.getElementById('btn-connect');
-        btn.textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
-        btn.className = 'px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold';
-        await checkNetwork();
-
-        // Check MTYLD
-        try {
-          const rp = new ethers.BrowserProvider(window.ethereum);
-          const mtyld = new ethers.Contract(MTYLD_ADDRESS, ERC20_ABI, rp);
-          const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
-          const [bal, minReq] = await Promise.all([mtyld.balanceOf(userAddress), rc.minMtyldRequired().catch(() => 1n)]);
-          isMtyldHolder = bal >= (minReq > 0n ? minReq : 1n);
-        } catch { isMtyldHolder = false; }
-
-        updateDepositAccess();
-        const mtyldBadge = document.getElementById('mtyld-badge');
-        mtyldBadge.textContent = isMtyldHolder ? '✓ MTYLD Holder — Deposit Access Granted' : '✗ Insufficient MTYLD — Need at least 5 MTYLD to deposit.';
-        mtyldBadge.className = isMtyldHolder ? 'mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-900/20 border border-emerald-800 text-emerald-400' : 'mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-red-900/20 border border-red-800 text-red-400';
-        mtyldBadge.style.display = 'block';
-
-        // Owner check
-        try {
-          const rp = new ethers.BrowserProvider(window.ethereum);
-          const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
-          const ownerAddr = await rc.owner();
-          document.getElementById('owner-section').style.display = ownerAddr.toLowerCase() === userAddress.toLowerCase() ? 'block' : 'none';
-        } catch {}
-
-        await refreshAll();
-        updateWithdrawPosition();
-      } catch(e) { console.error(e); }
-    }
-
-    function updateDepositAccess() {
-      const approveBtn = document.getElementById('btn-approve-weth');
-      const depositBtn = document.getElementById('btn-deposit');
-      const lockMsg = document.getElementById('deposit-lock-msg');
-      approveBtn.disabled = !isMtyldHolder; depositBtn.disabled = !isMtyldHolder;
-      approveBtn.classList.toggle('opacity-40', !isMtyldHolder); approveBtn.classList.toggle('cursor-not-allowed', !isMtyldHolder);
-      depositBtn.classList.toggle('opacity-40', !isMtyldHolder); depositBtn.classList.toggle('cursor-not-allowed', !isMtyldHolder);
-      lockMsg.style.display = isMtyldHolder ? 'none' : 'block';
-    }
-
-    async function requireConnected() {
-      if (!isConnected) { alert('Connect your wallet first.'); return false; }
-      return await checkNetwork();
-    }
-
-    // ── Deposit ───────────────────────────────────────────────
-    document.getElementById('btn-approve-weth').onclick = async () => {
-      if (!await requireConnected()) return;
-      if (!isMtyldHolder) return alert('MTYLD holders only.');
-      const amt = document.getElementById('deposit-amount').value;
-      if (!amt || parseFloat(amt) <= 0) return alert('Enter amount first.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Approve WETH in MetaMask...');
-        const tx = await wethContract.approve(VAULT_ADDRESS, ethers.parseEther(amt));
-        showToast('pending', 'TX Submitted', 'Waiting for approval...', tx.hash);
-        await tx.wait();
-        showToast('success', 'WETH Approved ✓', 'Now click Step 2.', tx.hash);
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message || 'Rejected.'); }
-    };
-
-    document.getElementById('btn-deposit').onclick = async () => {
-      if (!await requireConnected()) return;
-      if (!isMtyldHolder) return alert('MTYLD holders only.');
-      const amt = document.getElementById('deposit-amount').value;
-      if (!amt || parseFloat(amt) < 0.01) return alert('Minimum deposit is 0.01 WETH.');
-      const receiverInput = document.getElementById('deposit-receiver').value.trim();
-      const receiver = receiverInput && ethers.isAddress(receiverInput) ? receiverInput : userAddress;
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm deposit()...');
-        const tx = await contract.deposit(ethers.parseEther(amt), receiver);
-        showToast('pending', 'TX Submitted', 'Depositing WETH, minting mtETH-S...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Deposit Confirmed ✓', 'mtETH-S issued.', tx.hash);
-        refreshAll();
-      } catch(e) { showToast('error', 'Deposit Failed', e.reason || e.message || 'Rejected.'); }
-    };
-
-    // ── Withdraw ──────────────────────────────────────────────
-    document.getElementById('withdraw-shares').addEventListener('input', function() {
-      const shares = parseFloat(this.value) || 0;
-      document.getElementById('withdraw-preview').textContent = (shares * currentNav).toFixed(6) + ' WETH';
-      document.getElementById('wd-btn-request').style.display = 'none';
-      document.getElementById('wd-btn-redeem').style.display = 'none';
-      document.getElementById('wd-btn-check').style.display = 'block';
-      document.getElementById('wd-status').style.display = 'none';
+    const totalFloat=idleFloat+stratTotal;
+    const supplyFloat=parseFloat(ethers.formatEther(supply));
+    const realNav=supplyFloat>0?totalFloat/supplyFloat:1.0;
+    currentNav=realNav;
+    const ethPrice=await getEthPrice(rp);
+    const tvlUSD=totalFloat*ethPrice;
+    document.getElementById("stat-tvl").textContent=totalFloat.toFixed(6)+" WETH";
+    document.getElementById("tvl-usd").textContent="approx $"+tvlUSD.toLocaleString(undefined,{maximumFractionDigits:2});
+    document.getElementById("stat-nav").textContent=realNav.toFixed(6);
+    document.getElementById("stat-agent").textContent=agent.slice(0,6)+"..."+agent.slice(-4);
+    document.getElementById("current-agent-display").textContent=agent;
+    document.getElementById("info-min-deposit").textContent=ethers.formatEther(minDep)+" WETH";
+    document.getElementById("info-lock").textContent=(Number(lock)/3600).toFixed(1)+" hrs";
+    document.getElementById("info-mtyld-req").textContent=ethers.formatEther(mtyldReq)+" MTYLD";
+    document.getElementById("info-owner").textContent=ownerAddr.slice(0,6)+"..."+ownerAddr.slice(-4);
+    document.getElementById("portfolio-idle").textContent=idleFloat.toFixed(6)+" WETH";
+    document.getElementById("donut-center-value").textContent=totalFloat.toFixed(4);
+    let parts=[];
+    if(idleFloat>0)parts.push(idleFloat.toFixed(4)+" idle");
+    activeStrats.forEach(s=>{if(s.bal>0)parts.push(s.bal.toFixed(4)+" "+s.name);});
+    document.getElementById("tvl-breakdown").textContent=parts.join(" + ")||"Total WETH in vault";
+    renderMilestones(tvlUSD);
+    const cardsEl=document.getElementById("strategy-cards");
+    cardsEl.innerHTML="";
+    activeStrats.forEach((s,i)=>{
+      const color=STRATEGY_COLORS[i%STRATEGY_COLORS.length];
+      cardsEl.innerHTML+="<div class=\"bg-slate-900/60 rounded-xl p-4 border border-slate-800\"><p class=\"text-slate-500 text-xs uppercase tracking-wider mb-1\">"+s.name+"</p><p class=\"text-lg font-mono\" style=\"color:"+color+"\">"+s.bal.toFixed(6)+" WETH</p><p class=\"text-slate-600 text-xs mt-1 font-mono truncate\">"+s.addr.slice(0,10)+"..."+s.addr.slice(-6)+"</p></div>";
     });
-
-    async function setMaxShares() {
-      if (!isConnected || !userAddress) return alert('Connect wallet first.');
-      const rp = new ethers.BrowserProvider(window.ethereum);
-      const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
-      const maxR = await rc.maxRedeem(userAddress);
-      const val = ethers.formatEther(maxR);
-      document.getElementById('withdraw-shares').value = val;
-      document.getElementById('withdraw-preview').textContent = (parseFloat(val) * currentNav).toFixed(6) + ' WETH';
+    if(allocationChart){
+      const labels=activeStrats.map(s=>s.name).concat(["Idle"]);
+      const data=activeStrats.map(s=>s.bal).concat([idleFloat]);
+      const colors=activeStrats.map((_,i)=>STRATEGY_COLORS[i%STRATEGY_COLORS.length]).concat(["#0ea5e9"]);
+      allocationChart.data.labels=labels;
+      allocationChart.data.datasets[0].data=data;
+      allocationChart.data.datasets[0].backgroundColor=colors;
+      allocationChart.update();
     }
-
-    async function updateWithdrawPosition() {
-      if (!isConnected || !userAddress) return;
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
-        const myShares = await rc.balanceOf(userAddress);
-        const sharesFloat = parseFloat(ethers.formatEther(myShares));
-        document.getElementById('wd-my-shares').textContent = sharesFloat.toFixed(4) + ' mtETH-S';
-        document.getElementById('wd-nav').textContent = currentNav.toFixed(6);
-        document.getElementById('wd-value').textContent = (sharesFloat * currentNav).toFixed(6) + ' WETH';
-      } catch {}
+    if(userAddress){
+      const myShares=await rc.balanceOf(userAddress);
+      const sf=parseFloat(ethers.formatEther(myShares));
+      document.getElementById("stat-my-shares").textContent=sf.toFixed(4)+" mtETH-S";
+      document.getElementById("stat-my-value").textContent="approx "+(sf*currentNav).toFixed(6)+" WETH";
+      updateWithdrawPosition();
     }
-
-    function setWdStatus(type, msg) {
-      const el = document.getElementById('wd-status');
-      const styles = { info:'bg-sky-900/20 border border-sky-800 text-sky-300', warning:'bg-amber-900/20 border border-amber-800 text-amber-300', success:'bg-emerald-900/20 border border-emerald-800 text-emerald-300', error:'bg-red-900/20 border border-red-800 text-red-300' };
-      el.className = 'rounded-xl p-4 mb-4 text-sm ' + (styles[type] || styles.info);
-      el.textContent = msg; el.style.display = 'block';
-    }
-
-    function setWdStep(step) {
-      ['wd-step1-dot','wd-step2-dot','wd-step3-dot'].forEach((id, i) => {
-        const el = document.getElementById(id);
-        el.className = i < step ? 'w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold' : i === step ? 'w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-white text-xs font-bold' : 'w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-xs font-bold';
-      });
-    }
-
-    async function checkAndWithdraw() {
-      if (!await requireConnected()) return;
-      const sharesStr = document.getElementById('withdraw-shares').value;
-      if (!sharesStr || parseFloat(sharesStr) <= 0) { setWdStatus('error', 'Enter amount first.'); return; }
-      const sharesFloat = parseFloat(sharesStr);
-      const assetsNeeded = sharesFloat * currentNav;
-      setWdStatus('info', 'Checking vault balance...'); setWdStep(1);
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
-        const wethC = new ethers.Contract(WETH_ADDRESS, ERC20_ABI, rp);
-        const lastDeposit = await rc.lastDepositTime(userAddress).catch(() => 0n);
-        const lockPeriod = await rc.withdrawLockPeriod().catch(() => 86400n);
-        const now = BigInt(Math.floor(Date.now() / 1000));
-        if (lastDeposit > 0n && now < lastDeposit + lockPeriod) {
-          const unlockTime = new Date(Number(lastDeposit + lockPeriod) * 1000);
-          setWdStatus('error', `⏱ Locked until ${unlockTime.toLocaleTimeString()} ${unlockTime.toLocaleDateString()}.`);
-          return;
-        }
-        const myShares = await rc.balanceOf(userAddress);
-        if (sharesFloat > parseFloat(ethers.formatEther(myShares))) { setWdStatus('error', `You only have ${ethers.formatEther(myShares)} mtETH-S.`); return; }
-        const idleWeth = await wethC.balanceOf(VAULT_ADDRESS);
-        const idleFloat = parseFloat(ethers.formatEther(idleWeth));
-        if (idleFloat >= assetsNeeded) {
-          setWdStatus('success', `✓ Vault has ${idleFloat.toFixed(4)} WETH available. Ready to withdraw.`);
-          setWdStep(2);
-          document.getElementById('wd-btn-check').style.display = 'none';
-          document.getElementById('wd-btn-redeem').style.display = 'block';
-        } else {
-          setWdStatus('warning', `⚠ Only ${idleFloat.toFixed(4)} WETH idle. Need ${(assetsNeeded - idleFloat).toFixed(4)} more from Compound/GMX. Click below to request.`);
-          document.getElementById('wd-btn-check').style.display = 'none';
-          document.getElementById('wd-btn-request').style.display = 'block';
-        }
-      } catch(e) { setWdStatus('error', 'Error: ' + (e.message || e)); }
-    }
-
-    async function requestFundsFromAgent() {
-      const sharesStr = document.getElementById('withdraw-shares').value;
-      const assetsNeeded = parseFloat(sharesStr) * currentNav;
-      setWdStatus('info', '📡 Contacting The Conservator agent...');
-      document.getElementById('wd-btn-request').style.display = 'none';
-      try {
-        const resp = await fetch('http://127.0.0.1:3001/request-withdrawal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ owner: userAddress, assets: assetsNeeded }) });
-        await resp.json();
-        setWdStatus('success', '✓ Agent notified. Pulling WETH from Compound/GMX now. This may take a few minutes for GMX keeper. Click Check again when ready.');
-        setWdStep(2);
-        document.getElementById('wd-btn-check').style.display = 'block';
-        document.getElementById('wd-btn-check').textContent = '🔄 Check Again';
-      } catch {
-        setWdStatus('warning', '⚠ Agent not reachable. The Conservator runs every 4 hours and will process automatically. Ask admin to pull funds manually.');
-        document.getElementById('wd-btn-request').style.display = 'block';
+    const gasBal=await rp.getBalance(agent);
+    const gasFloat=parseFloat(ethers.formatEther(gasBal));
+    document.getElementById("portfolio-agent").textContent=agent;
+    document.getElementById("agent-arbiscan-link").href="https://arbiscan.io/address/"+agent;
+    document.getElementById("portfolio-gas").textContent=gasFloat.toFixed(5)+" ETH";
+    const gs=document.getElementById("portfolio-gas-status");
+    if(gasFloat<0.001){gs.textContent="Low - top up soon";gs.className="text-xs mt-1 text-red-400";}
+    else if(gasFloat<0.005){gs.textContent="OK - monitor";gs.className="text-xs mt-1 text-amber-400";}
+    else{gs.textContent="Healthy";gs.className="text-xs mt-1 text-emerald-400";}
+    if(currentNav>0){
+      saveNavSnapshot(currentNav);
+      const history=getNavHistory();
+      if(navChart){
+        navChart.data.labels=history.map(h=>h.label);
+        navChart.data.datasets[0].data=history.map(h=>h.nav);
+        if(history.length>1){const mn=Math.min(...history.map(h=>h.nav));const mx=Math.max(...history.map(h=>h.nav));navChart.options.scales.y.min=Math.max(0,mn-0.0005);navChart.options.scales.y.max=mx+0.0005;}
+        navChart.update();
       }
     }
+  }catch(e){console.error("Read error:",e);}
+}
+async function refreshWethBalance(){
+  if(!isConnected||!userAddress)return;
+  try{const rp=new ethers.BrowserProvider(window.ethereum);const weth=new ethers.Contract(WETH_ADDRESS,ERC20_ABI,rp);const bal=await weth.balanceOf(userAddress);document.getElementById("weth-balance").textContent=parseFloat(ethers.formatEther(bal)).toFixed(6)+" WETH";}catch{}
+}
+async function refreshAll(){await refreshData();await refreshWethBalance();}
+function getNavHistory(){try{return JSON.parse(localStorage.getItem("mtvault_nav_history_v5")||"[]");}catch{return[];}}
+function saveNavSnapshot(nav){
+  const history=getNavHistory();const now=Date.now();
+  if(history.length>0&&now-history[history.length-1].time<15*60*1000)return;
+  const d=new Date(now);history.push({label:d.getHours()+":"+String(d.getMinutes()).padStart(2,"0"),nav:parseFloat(nav.toFixed(6)),time:now});
+  if(history.length>96)history.shift();localStorage.setItem("mtvault_nav_history_v5",JSON.stringify(history));
+}
+function initCharts(){
+  const donutCtx=document.getElementById("allocation-chart").getContext("2d");
+  allocationChart=new Chart(donutCtx,{type:"doughnut",data:{labels:["Compound","Idle"],datasets:[{data:[0,1],backgroundColor:["#10b981","#0ea5e9"],borderColor:["#0f172a"],borderWidth:3,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:"70%",plugins:{legend:{display:false}},animation:{duration:400}}});
+  const history=getNavHistory();
+  const navCtx=document.getElementById("nav-chart").getContext("2d");
+  navChart=new Chart(navCtx,{type:"line",data:{labels:history.length>0?history.map(h=>h.label):["Now"],datasets:[{label:"NAV",data:history.length>0?history.map(h=>h.nav):[1.0],borderColor:"#0ea5e9",backgroundColor:"rgba(14,165,233,0.08)",borderWidth:2,pointRadius:2,fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#475569",font:{size:10}},grid:{color:"rgba(71,85,105,0.2)"}},y:{ticks:{color:"#475569",font:{size:10},callback:v=>v.toFixed(4)},grid:{color:"rgba(71,85,105,0.2)"},min:0.995}}}});
+}
+async function connect(){
+  if(!window.ethereum)return alert("Install MetaMask.");
+  try{
+    provider=new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts",[]);
+    signer=await provider.getSigner();
+    userAddress=await signer.getAddress();
+    contract=new ethers.Contract(VAULT_ADDRESS,ABI,signer);
+    wethContract=new ethers.Contract(WETH_ADDRESS,ERC20_ABI,signer);
+    isConnected=true;
+    const btn=document.getElementById("btn-connect");
+    btn.textContent=userAddress.slice(0,6)+"..."+userAddress.slice(-4);
+    btn.className="px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold";
+    await checkNetwork();
+    try{
+      const rp=new ethers.BrowserProvider(window.ethereum);
+      const mtyld=new ethers.Contract(MTYLD_ADDRESS,ERC20_ABI,rp);
+      const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
+      const[bal,minReq]=await Promise.all([mtyld.balanceOf(userAddress),rc.minMtyldRequired().catch(()=>1n)]);
+      isMtyldHolder=bal>=(minReq>0n?minReq:1n);
+    }catch{isMtyldHolder=false;}
+    updateDepositAccess();
+    const badge=document.getElementById("mtyld-badge");
+    badge.textContent=isMtyldHolder?"MTYLD Holder - Deposit Access Granted":"Insufficient MTYLD - Cannot deposit.";
+    badge.className=isMtyldHolder?"mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-900/20 border border-emerald-800 text-emerald-400":"mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-red-900/20 border border-red-800 text-red-400";
+    badge.style.display="block";
+    try{const rp=new ethers.BrowserProvider(window.ethereum);const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);const o=await rc.owner();document.getElementById("owner-section").style.display=o.toLowerCase()===userAddress.toLowerCase()?"block":"none";}catch{}
+    await refreshAll();updateWithdrawPosition();
+  }catch(e){console.error(e);}
+}
+function updateDepositAccess(){
+  const a=document.getElementById("btn-approve-weth");const d=document.getElementById("btn-deposit");const l=document.getElementById("deposit-lock-msg");
+  a.disabled=!isMtyldHolder;d.disabled=!isMtyldHolder;
+  a.classList.toggle("opacity-40",!isMtyldHolder);a.classList.toggle("cursor-not-allowed",!isMtyldHolder);
+  d.classList.toggle("opacity-40",!isMtyldHolder);d.classList.toggle("cursor-not-allowed",!isMtyldHolder);
+  l.style.display=isMtyldHolder?"none":"block";
+}
+async function requireConnected(){if(!isConnected){alert("Connect wallet first.");return false;}return await checkNetwork();}
 
-    async function executeRedeem() {
-      if (!await requireConnected()) return;
-      const sharesStr = document.getElementById('withdraw-shares').value;
-      const receiverInput = document.getElementById('withdraw-receiver').value.trim();
-      const receiver = receiverInput && ethers.isAddress(receiverInput) ? receiverInput : userAddress;
-      document.getElementById('wd-btn-redeem').style.display = 'none';
-      setWdStatus('info', 'Confirm in your wallet...');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm redeem()...');
-        const tx = await contract.redeem(ethers.parseEther(sharesStr), receiver, userAddress);
-        showToast('pending', 'TX Submitted', 'Burning mtETH-S, sending WETH...', tx.hash);
-        await tx.wait();
-        showToast('success', 'Withdrawal Confirmed ✓', 'WETH sent to your wallet.', tx.hash);
-        setWdStatus('success', '🎉 Complete! WETH sent to your wallet.');
-        setWdStep(3);
-        document.getElementById('withdraw-shares').value = '';
-        document.getElementById('withdraw-preview').textContent = '—';
-        refreshAll();
-      } catch(e) {
-        const msg = e.reason || e.message || 'Rejected.';
-        setWdStatus('error', '❌ ' + msg);
-        document.getElementById('wd-btn-redeem').style.display = 'block';
-        showToast('error', 'Failed', msg);
-      }
-    }
-
-    // ── Admin ─────────────────────────────────────────────────
-    document.getElementById('btn-set-agent').onclick = async () => {
-      if (!await requireConnected()) return;
-      const addr = document.getElementById('new-agent-addr').value.trim();
-      if (!ethers.isAddress(addr)) return alert('Invalid address.');
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm setAiAgent()...');
-        const tx = await contract.setAiAgent(addr);
-        await tx.wait();
-        showToast('success', 'Agent Updated ✓', '', tx.hash);
-        refreshData();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message); }
-    };
-
-    async function updateStrategy(status) {
-      if (!await requireConnected()) return;
-      const addr = document.getElementById('strategy-addr').value.trim();
-      if (!ethers.isAddress(addr)) return alert('Invalid address.');
-      try {
-        showToast('pending', 'Awaiting Signature', `approveStrategy(${status})...`);
-        const tx = await contract.approveStrategy(addr, status);
-        await tx.wait();
-        showToast('success', status ? 'Approved ✓' : 'Revoked ✓', '', tx.hash);
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message); }
-    }
-
-    async function checkStrategy() {
-      const addr = document.getElementById('strategy-addr').value.trim();
-      if (!ethers.isAddress(addr)) return alert('Enter a valid address.');
-      const el = document.getElementById('check-result');
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
-        const approved = await rc.isApprovedStrategy(addr);
-        el.textContent = approved ? '✓ Approved' : '✗ Not Approved';
-        el.className = approved ? 'rounded-xl px-4 py-3 text-sm font-mono bg-emerald-900/20 border border-emerald-800 text-emerald-400' : 'rounded-xl px-4 py-3 text-sm font-mono bg-red-900/20 border border-red-800 text-red-400';
-        el.style.display = 'block';
-      } catch(e) { el.textContent = 'Error: ' + e.message; el.style.display = 'block'; }
-    }
-
-    document.getElementById('btn-execute').onclick = async () => {
-      if (!await requireConnected()) return;
-      const target = document.getElementById('exec-target').value.trim();
-      const data = document.getElementById('exec-data').value.trim();
-      if (!ethers.isAddress(target)) return alert('Invalid target.');
-      if (!data.startsWith('0x')) return alert('Data must start with 0x.');
-      if (!confirm(`Execute strategy on ${target}?`)) return;
-      try {
-        showToast('pending', 'Awaiting Signature', 'Confirm executeStrategy()...');
-        const tx = await contract.executeStrategy(target, data);
-        await tx.wait();
-        showToast('success', 'Executed ✓', '', tx.hash);
-        refreshData();
-      } catch(e) { showToast('error', 'Failed', e.reason || e.message); }
-    };
-
-    // ── Milestones ────────────────────────────────────────────
-    const MILESTONES = [
-      { tvl:100,     label:"Genesis",       sub:"First depositors",         unlocks:["NAV chart","Arbiscan listing","Twitter"] },
-      { tvl:5000,    label:"Seedling",      sub:"Product proves itself",    unlocks:["GMX strategy active","Protocol fee","Grants"] },
-      { tvl:25000,   label:"Growing",       sub:"Multi-strategy vault",     unlocks:["Third strategy","External depositors","Yield fee"] },
-      { tvl:100000,  label:"Established",   sub:"Secondary market ready",   unlocks:["WETH/mtETH-S LP","Camelot listing","Leverage yield"] },
-      { tvl:500000,  label:"Institutional", sub:"Standalone product",       unlocks:["Balancer pool","Institutional partners","License"] },
-      { tvl:1000000, label:"Protocol",      sub:"Full DeFi primitive",      unlocks:["DAO governance","Cross-chain","ETH derivative"] }
-    ];
-    function fmtMsTvl(n) { if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M'; if (n >= 1000) return '$' + (n/1000).toFixed(0) + 'K'; return '$' + n; }
-    function renderMilestones(tvlUSD) {
-      const container = document.getElementById('milestone-list');
-      if (!container) return;
-      container.innerHTML = '';
-      MILESTONES.forEach((m, i) => {
-        const pct = Math.min(100, (tvlUSD / m.tvl) * 100);
-        const isDone = tvlUSD >= m.tvl;
-        const isActive = !isDone && (i === 0 || tvlUSD >= MILESTONES[i-1].tvl);
-        const div = document.createElement('div');
-        div.className = ((!isDone && !isActive) ? 'opacity-50 ' : '') + 'bg-slate-900/40 rounded-xl p-4 border border-slate-800';
-        div.innerHTML = `<div class="flex items-center justify-between mb-2"><div><span class="text-sm font-semibold text-white">${m.label}</span><span class="text-slate-500 text-xs ml-2">${fmtMsTvl(m.tvl)}</span><span class="text-slate-600 text-xs ml-1">— ${m.sub}</span></div><span class="text-xs px-2 py-0.5 rounded-full ${isDone ? 'bg-emerald-900/40 text-emerald-400' : isActive ? 'bg-sky-900/40 text-sky-400' : 'bg-slate-800 text-slate-500'}">${isDone ? 'Complete' : isActive ? 'In progress' : 'Locked'}</span></div><div class="w-full bg-slate-800 rounded-full h-1.5 mb-2"><div class="h-1.5 rounded-full" style="width:${pct.toFixed(1)}%;background:${isDone ? '#1D9E75' : isActive ? '#378ADD' : '#444'}"></div></div><div class="text-slate-500 text-xs">Unlocks: ${m.unlocks.join(' • ')}</div>`;
-        container.appendChild(div);
-      });
-    }
-    renderMilestones(0);
-
-    // ── Init ──────────────────────────────────────────────────
-    document.getElementById('btn-connect').onclick = connect;
-    if (window.ethereum) {
-      window.ethereum.on('chainChanged', () => checkNetwork());
-      window.ethereum.on('accountsChanged', () => location.reload());
-      checkNetwork();
-      document.getElementById('btn-approve-weth').disabled = true;
-      document.getElementById('btn-deposit').disabled = true;
-      document.getElementById('btn-approve-weth').classList.add('opacity-40','cursor-not-allowed');
-      document.getElementById('btn-deposit').classList.add('opacity-40','cursor-not-allowed');
-      document.getElementById('deposit-lock-msg').style.display = 'block';
-    }
-    setTimeout(() => { initCharts(); fetchProtocolRates(); }, 500);
-    refreshData();
-    setInterval(refreshAll, 15000);
-    setInterval(fetchProtocolRates, 60000);
-  </script>
-
-  <!-- CHAT WIDGET -->
-  <style>
-    #chat-bubble { position:fixed; bottom:24px; right:24px; z-index:100; }
-    #chat-toggle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#0ea5e9,#10b981); border:none; cursor:pointer; box-shadow:0 4px 24px rgba(14,165,233,0.4); display:flex; align-items:center; justify-content:center; transition:transform 0.2s,box-shadow 0.2s; font-size:24px; }
-    #chat-toggle:hover { transform:scale(1.1); }
-    #chat-window { display:none; position:fixed; bottom:90px; right:24px; width:360px; height:500px; z-index:100; background:rgba(10,15,30,0.97); backdrop-filter:blur(20px); border:1px solid rgba(51,65,85,0.8); border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6); flex-direction:column; overflow:hidden; }
-    #chat-header { padding:16px 20px; background:rgba(14,165,233,0.08); border-bottom:1px solid rgba(51,65,85,0.6); display:flex; align-items:center; justify-content:space-between; }
-    .chat-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#0ea5e9,#10b981); display:flex; align-items:center; justify-content:center; font-size:14px; flex-none; }
-    #chat-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
-    .chat-msg { display:flex; gap:8px; max-width:100%; }
-    .chat-msg.user { flex-direction:row-reverse; }
-    .chat-msg-bubble { padding:10px 14px; border-radius:14px; font-size:13px; line-height:1.5; max-width:80%; word-break:break-word; }
-    .chat-msg.agent .chat-msg-bubble { background:rgba(14,165,233,0.1); border:1px solid rgba(14,165,233,0.2); color:#e2e8f0; border-bottom-left-radius:4px; }
-    .chat-msg.user .chat-msg-bubble { background:rgba(14,165,233,0.8); color:white; border-bottom-right-radius:4px; }
-    .chat-msg-avatar { width:24px; height:24px; border-radius:50%; flex-none; margin-top:2px; display:flex; align-items:center; justify-content:center; font-size:12px; }
-    .chat-msg.agent .chat-msg-avatar { background:linear-gradient(135deg,#0ea5e9,#10b981); }
-    .chat-msg.user .chat-msg-avatar { background:#334155; color:#94a3b8; }
-    .chat-typing { display:flex; gap:4px; padding:12px 14px; }
-    .chat-typing span { width:6px; height:6px; border-radius:50%; background:#0ea5e9; animation:typing 1.2s infinite; }
-    .chat-typing span:nth-child(2) { animation-delay:0.2s; }
-    .chat-typing span:nth-child(3) { animation-delay:0.4s; }
-    @keyframes typing { 0%,60%,100%{opacity:0.2;transform:scale(0.8)} 30%{opacity:1;transform:scale(1)} }
-    #chat-input-area { padding:12px 16px; border-top:1px solid rgba(51,65,85,0.6); display:flex; gap:8px; align-items:flex-end; }
-    #chat-input { flex:1; background:rgba(30,41,59,0.8); border:1px solid rgba(51,65,85,0.6); border-radius:12px; padding:10px 14px; color:#e2e8f0; font-size:13px; resize:none; outline:none; font-family:inherit; max-height:100px; }
-    #chat-send { width:36px; height:36px; border-radius:10px; border:none; cursor:pointer; background:linear-gradient(135deg,#0ea5e9,#10b981); display:flex; align-items:center; justify-content:center; transition:opacity 0.2s; flex-none; }
-    #chat-send:hover { opacity:0.85; }
-    #chat-send svg { width:16px; height:16px; fill:white; }
-    .chat-suggested { display:flex; flex-wrap:wrap; gap:6px; padding:0 16px 12px; }
-    .chat-suggestion { font-size:11px; padding:4px 10px; border-radius:20px; background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.2); color:#7dd3fc; cursor:pointer; transition:all 0.2s; }
-    .chat-suggestion:hover { background:rgba(14,165,233,0.15); color:#38bdf8; }
-  </style>
-
-  <div id="chat-bubble">
-    <button id="chat-toggle" onclick="toggleChat()" title="Talk to The Conservator">🤖</button>
-  </div>
-  <div id="chat-window">
-    <div id="chat-header">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div class="chat-avatar">🤖</div>
-        <div><div style="font-size:13px;font-weight:700;color:#e2e8f0">The Conservator</div><div style="font-size:11px;color:#10b981">● Live vault data</div></div>
-      </div>
-      <button onclick="toggleChat()" style="background:none;border:none;color:#475569;cursor:pointer;font-size:18px;padding:0">×</button>
-    </div>
-    <div id="chat-messages">
-      <div class="chat-msg agent">
-        <div class="chat-msg-avatar">🤖</div>
-        <div class="chat-msg-bubble">I am The Conservator. I manage this ETH vault — 60% Compound / 40% GMX ETH/USD pool. Ask me about TVL, NAV, your balance, yield strategy, or how to deposit.</div>
-      </div>
-    </div>
-    <div class="chat-suggested" id="chat-suggestions">
-      <span class="chat-suggestion" onclick="sendSuggestion('What is the current vault status?')">Vault status</span>
-      <span class="chat-suggestion" onclick="sendSuggestion('How does the GMX strategy work?')">GMX strategy</span>
-      <span class="chat-suggestion" onclick="sendSuggestion('What is my balance?')">My balance</span>
-      <span class="chat-suggestion" onclick="sendSuggestion('What is the blended APY?')">Blended APY</span>
-    </div>
-    <div id="chat-input-area">
-      <textarea id="chat-input" placeholder="Ask The Conservator..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
-      <button id="chat-send" onclick="sendChat()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
-    </div>
-  </div>
-
-  <script>
-    let chatOpen = false;
-    function toggleChat() {
-      chatOpen = !chatOpen;
-      const win = document.getElementById('chat-window');
-      win.style.display = chatOpen ? 'flex' : 'none';
-      if (chatOpen) document.getElementById('chat-input').focus();
-    }
-    function sendSuggestion(text) { document.getElementById('chat-input').value = text; sendChat(); }
-
-    async function getVaultContext() {
-      try {
-        const rp = new ethers.BrowserProvider(window.ethereum);
-        const rc = new ethers.Contract(VAULT_ADDRESS, ABI, rp);
-        const wethC = new ethers.Contract(WETH_ADDRESS, ERC20_ABI, rp);
-        const awethC = new ethers.Contract(AWETH_ADDRESS, ERC20_ABI, rp);
-        const compC = new ethers.Contract(COMPOUND_ADDRESS, COMPOUND_ABI, rp);
-        const clC = new ethers.Contract(CHAINLINK_ETH_USD, CHAINLINK_ABI, rp);
-        const [idleWeth, aWeth, compBal, supply, clData, gmxBal] = await Promise.all([
-          wethC.balanceOf(VAULT_ADDRESS), awethC.balanceOf(VAULT_ADDRESS),
-          compC.balanceOf(VAULT_ADDRESS), rc.totalSupply(), clC.latestRoundData(),
-          getGmxBalance(rp),
-        ]);
-        const idle = parseFloat(ethers.formatEther(idleWeth));
-        const aave = parseFloat(ethers.formatEther(aWeth));
-        const comp = parseFloat(ethers.formatEther(compBal));
-        const gmx  = parseFloat(ethers.formatEther(gmxBal));
-        const total = idle + aave + comp + gmx;
-        const shares = parseFloat(ethers.formatEther(supply));
-        const nav = shares > 0 ? total / shares : 1.0;
-        const ethPrice = parseFloat(clData[1].toString()) / 1e8;
-        let userInfo = '';
-        if (userAddress) {
-          const myShares = await rc.balanceOf(userAddress);
-          const sf = parseFloat(ethers.formatEther(myShares));
-          userInfo = `\nUser mtETH-S: ${sf.toFixed(6)}\nUser WETH value: ${(sf*nav).toFixed(6)} ($${(sf*nav*ethPrice).toFixed(2)})`;
-        }
-        return `VAULT (Arbitrum One, ${new Date().toLocaleTimeString()}):
-TVL: ${total.toFixed(6)} WETH ($${(total*ethPrice).toFixed(2)})
-Compound (60% target): ${comp.toFixed(6)} WETH
-GMX ETH/USD (40% target): ${gmx.toFixed(6)} WETH
-Aave (locked v3): ${aave.toFixed(6)} WETH
-Idle: ${idle.toFixed(6)} WETH
-NAV: ${nav.toFixed(6)} WETH/share
-ETH price: $${ethPrice.toFixed(2)}
-Strategy: 60% Compound V3 + 40% GMX ETH/USD GM pool
-Blended APY: ~${((2.5*0.6)+(9.08*0.4)).toFixed(2)}% (Compound ~2.5% + GMX ~9.08%)${userInfo}`;
-      } catch { return `Vault: ${VAULT_ADDRESS} on Arbitrum One. Connect wallet for live data.`; }
-    }
-
-    function getStaticResponse(msg, ctx) {
-      const m = msg.toLowerCase();
-      const lines = ctx.split('\n');
-      const get = (key) => { const l = lines.find(x => x.includes(key)); return l ? l.split(': ').slice(1).join(': ') : '—'; };
-      if (m.includes('status') || m.includes('tvl') || m.includes('vault'))
-        return `Vault Status:\nTVL: ${get('TVL:')}\nCompound: ${get('Compound')}\nGMX: ${get('GMX')}\nNAV: ${get('NAV:')}\nETH: ${get('ETH price:')}`;
-      if (m.includes('gmx') || m.includes('pool') || m.includes('strategy'))
-        return `The GMX strategy deploys 40% of vault WETH into the GMX V2 ETH/USD GM pool on Arbitrum.\n\nThe pool earns trading fees from perpetual traders (~9.08% 30d fee APY). The agent automatically rebalances between Compound (60%) and GMX (40%) when allocation drifts more than 5%.\n\nGMX withdrawals are handled async by GMX keepers — usually a few minutes.`;
-      if (m.includes('apy') || m.includes('yield') || m.includes('earn'))
-        return `Blended APY: ~${get('Blended APY:')}\n\nBreakdown:\n• Compound V3 WETH: ~2.5% APY (60% of AUM)\n• GMX ETH/USD pool: ~9.08% fee APY (40% of AUM)\n\nGMX yield comes from trading fees paid by perpetual traders, not token incentives — it's real fee revenue.`;
-      if (m.includes('balance') || m.includes('my '))
-        return userAddress ? `Your balance: ${get('User mtETH-S:')}\nWETH value: ${get('User WETH value:')}` : 'Connect your wallet to see your balance.';
-      if (m.includes('deposit'))
-        return 'To deposit:\n1. Hold at least 5 MTYLD tokens\n2. Open Deposit tab above\n3. Approve WETH (Step 1)\n4. Deposit (Step 2)\n\nThe agent splits your WETH: 60% to Compound, 40% to GMX ETH/USD pool automatically.';
-      if (m.includes('withdraw') || m.includes('redeem'))
-        return 'To withdraw:\n1. Open Withdraw tab\n2. Enter mtETH-S amount\n3. Click Check & Withdraw\n4. If funds are in Compound/GMX, the agent pulls them back\n5. Complete withdrawal\n\nNote: GMX withdrawals may take a few minutes for the keeper to execute.';
-      return `I manage this ETH vault — currently ${get('TVL:')} across Compound (60%) and GMX ETH/USD (40%). Blended APY ~${get('Blended APY:')}. Ask me anything about deposits, withdrawals, or yield.`;
-    }
-
-    async function sendChat() {
-      const input = document.getElementById('chat-input');
-      const msg = input.value.trim();
-      if (!msg) return;
-      input.value = ''; input.style.height = 'auto';
-      document.getElementById('chat-suggestions').style.display = 'none';
-      appendMessage('user', msg);
-      const typingId = showTyping();
-      try {
-        const ctx = await getVaultContext();
-        removeTyping(typingId);
-        appendMessage('agent', getStaticResponse(msg, ctx));
-      } catch {
-        removeTyping(typingId);
-        appendMessage('agent', 'Could not read vault data. Connect wallet to Arbitrum One.');
-      }
-    }
-
-    function appendMessage(role, text) {
-      const msgs = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = `chat-msg ${role}`;
-      div.innerHTML = `<div class="chat-msg-avatar">${role==='agent'?'🤖':'👤'}</div><div class="chat-msg-bubble">${text.split('\n').join('<br>')}</div>`;
-      msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
-    }
-    function showTyping() {
-      const msgs = document.getElementById('chat-messages');
-      const id = 'typing-' + Date.now();
-      const div = document.createElement('div');
-      div.className = 'chat-msg agent'; div.id = id;
-      div.innerHTML = `<div class="chat-msg-avatar">🤖</div><div class="chat-msg-bubble chat-typing"><span></span><span></span><span></span></div>`;
-      msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight; return id;
-    }
-    function removeTyping(id) { const el = document.getElementById(id); if (el) el.remove(); }
-  </script>
+document.getElementById("btn-approve-weth").onclick=async()=>{
+  if(!await requireConnected())return;if(!isMtyldHolder)return alert("MTYLD holders only.");
+  const amt=document.getElementById("deposit-amount").value;if(!amt||parseFloat(amt)<=0)return alert("Enter amount.");
+  try{showToast("pending","Awaiting Signature","Approve WETH in MetaMask...");const tx=await wethContract.approve(VAULT_ADDRESS,ethers.parseEther(amt));showToast("pending","TX Submitted","Waiting...",tx.hash);await tx.wait();showToast("success","WETH Approved","Now click Step 2.",tx.hash);}
+  catch(e){showToast("error","Failed",e.reason||e.message||"Rejected.");}
+};
+document.getElementById("btn-deposit").onclick=async()=>{
+  if(!await requireConnected())return;if(!isMtyldHolder)return alert("MTYLD holders only.");
+  const amt=document.getElementById("deposit-amount").value;if(!amt||parseFloat(amt)<0.01)return alert("Minimum 0.01 WETH.");
+  const recv=document.getElementById("deposit-receiver").value.trim();const receiver=recv&&ethers.isAddress(recv)?recv:userAddress;
+  try{showToast("pending","Awaiting Signature","Confirm deposit()...");const tx=await contract.deposit(ethers.parseEther(amt),receiver);showToast("pending","TX Submitted","Minting mtETH-S...",tx.hash);await tx.wait();showToast("success","Deposit Confirmed","mtETH-S issued.",tx.hash);refreshAll();}
+  catch(e){showToast("error","Failed",e.reason||e.message||"Rejected.");}
+};
+document.getElementById("withdraw-shares").addEventListener("input",function(){
+  document.getElementById("withdraw-preview").textContent=((parseFloat(this.value)||0)*currentNav).toFixed(6)+" WETH";
+  document.getElementById("wd-btn-request").style.display="none";document.getElementById("wd-btn-redeem").style.display="none";
+  document.getElementById("wd-btn-check").style.display="block";document.getElementById("wd-status").style.display="none";
+});
+async function setMaxShares(){
+  if(!isConnected||!userAddress)return alert("Connect wallet.");
+  const rp=new ethers.BrowserProvider(window.ethereum);const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
+  const maxR=await rc.maxRedeem(userAddress);const val=ethers.formatEther(maxR);
+  document.getElementById("withdraw-shares").value=val;document.getElementById("withdraw-preview").textContent=(parseFloat(val)*currentNav).toFixed(6)+" WETH";
+}
+async function updateWithdrawPosition(){
+  if(!isConnected||!userAddress)return;
+  try{const rp=new ethers.BrowserProvider(window.ethereum);const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);const s=await rc.balanceOf(userAddress);const sf=parseFloat(ethers.formatEther(s));document.getElementById("wd-my-shares").textContent=sf.toFixed(4)+" mtETH-S";document.getElementById("wd-nav").textContent=currentNav.toFixed(6);document.getElementById("wd-value").textContent=(sf*currentNav).toFixed(6)+" WETH";}catch{}
+}
+function setWdStatus(type,msg){
+  const el=document.getElementById("wd-status");
+  const styles={info:"bg-sky-900/20 border border-sky-800 text-sky-300",warning:"bg-amber-900/20 border border-amber-800 text-amber-300",success:"bg-emerald-900/20 border border-emerald-800 text-emerald-300",error:"bg-red-900/20 border border-red-800 text-red-300"};
+  el.className="rounded-xl p-4 mb-4 text-sm "+(styles[type]||styles.info);el.textContent=msg;el.style.display="block";
+}
+function setWdStep(step){
+  ["wd-step1-dot","wd-step2-dot","wd-step3-dot"].forEach((id,i)=>{
+    document.getElementById(id).className=i<step?"w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold":i===step?"w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-white text-xs font-bold":"w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-xs font-bold";
+  });
+}
+async function checkAndWithdraw(){
+  if(!await requireConnected())return;
+  const sharesStr=document.getElementById("withdraw-shares").value;
+  if(!sharesStr||parseFloat(sharesStr)<=0){setWdStatus("error","Enter amount first.");return;}
+  const assetsNeeded=parseFloat(sharesStr)*currentNav;
+  setWdStatus("info","Checking vault balance...");setWdStep(1);
+  try{
+    const rp=new ethers.BrowserProvider(window.ethereum);const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
+    const lastDeposit=await rc.lastDepositTime(userAddress).catch(()=>0n);
+    const lockPeriod=await rc.withdrawLockPeriod().catch(()=>86400n);
+    const now=BigInt(Math.floor(Date.now()/1000));
+    if(lastDeposit>0n&&now<lastDeposit+lockPeriod){const ut=new Date(Number(lastDeposit+lockPeriod)*1000);setWdStatus("error","Locked until "+ut.toLocaleTimeString()+" "+ut.toLocaleDateString()+".");return;}
+    const myShares=await rc.balanceOf(userAddress);
+    if(parseFloat(sharesStr)>parseFloat(ethers.formatEther(myShares))){setWdStatus("error","You only have "+ethers.formatEther(myShares)+" mtETH-S.");return;}
+    const idleWeth=await rc.idleWeth();const idleFloat=parseFloat(ethers.formatEther(idleWeth));
+    if(idleFloat>=assetsNeeded){setWdStatus("success","Vault has "+idleFloat.toFixed(4)+" WETH available. Ready to withdraw.");setWdStep(2);document.getElementById("wd-btn-check").style.display="none";document.getElementById("wd-btn-redeem").style.display="block";}
+    else{setWdStatus("warning","Only "+idleFloat.toFixed(4)+" WETH idle. Need "+(assetsNeeded-idleFloat).toFixed(4)+" more from strategies. Click below.");document.getElementById("wd-btn-check").style.display="none";document.getElementById("wd-btn-request").style.display="block";}
+  }catch(e){setWdStatus("error","Error: "+(e.message||e));}
+}
+async function requestFundsFromAgent(){
+  const sharesStr=document.getElementById("withdraw-shares").value;
+  const assetsNeeded=parseFloat(sharesStr)*currentNav;
+  setWdStatus("info","Contacting The Conservator agent...");document.getElementById("wd-btn-request").style.display="none";
+  try{await fetch("http://127.0.0.1:3001/request-withdrawal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({owner:userAddress,assets:assetsNeeded})});setWdStatus("success","Agent notified. Pulling WETH from strategies now. Click Check again when ready.");setWdStep(2);document.getElementById("wd-btn-check").style.display="block";document.getElementById("wd-btn-check").textContent="Check Again";}
+  catch{setWdStatus("warning","Agent not reachable. The Conservator runs every 4 hours and will process automatically.");document.getElementById("wd-btn-request").style.display="block";}
+}
+async function executeRedeem(){
+  if(!await requireConnected())return;
+  const sharesStr=document.getElementById("withdraw-shares").value;
+  const recv=document.getElementById("withdraw-receiver").value.trim();const receiver=recv&&ethers.isAddress(recv)?recv:userAddress;
+  document.getElementById("wd-btn-redeem").style.display="none";setWdStatus("info","Confirm in your wallet...");
+  try{showToast("pending","Awaiting Signature","Confirm redeem()...");const tx=await contract.redeem(ethers.parseEther(sharesStr),receiver,userAddress);showToast("pending","TX Submitted","Burning mtETH-S...",tx.hash);await tx.wait();showToast("success","Withdrawal Confirmed","WETH sent to wallet.",tx.hash);setWdStatus("success","Complete! WETH sent to your wallet.");setWdStep(3);document.getElementById("withdraw-shares").value="";document.getElementById("withdraw-preview").textContent="-";refreshAll();}
+  catch(e){const msg=e.reason||e.message||"Rejected.";setWdStatus("error",msg);document.getElementById("wd-btn-redeem").style.display="block";showToast("error","Failed",msg);}
+}
+document.getElementById("btn-set-agent").onclick=async()=>{
+  if(!await requireConnected())return;const addr=document.getElementById("new-agent-addr").value.trim();if(!ethers.isAddress(addr))return alert("Invalid address.");
+  try{showToast("pending","Awaiting Signature","setAiAgent()...");const tx=await contract.setAiAgent(addr);await tx.wait();showToast("success","Agent Updated","",tx.hash);refreshData();}
+  catch(e){showToast("error","Failed",e.reason||e.message);}
+};
+async function approveToken(){
+  if(!await requireConnected())return;
+  const token=document.getElementById("approve-token").value.trim();const spender=document.getElementById("approve-spender").value.trim();
+  if(!ethers.isAddress(token)||!ethers.isAddress(spender))return alert("Invalid address.");
+  try{showToast("pending","Awaiting Signature","approveToken()...");const tx=await contract.approveToken(token,spender,ethers.MaxUint256);await tx.wait();showToast("success","Token Approved","Strategy can now pull WETH.",tx.hash);}
+  catch(e){showToast("error","Failed",e.reason||e.message);}
+}
+async function addStrategy(){
+  if(!await requireConnected())return;
+  const addr=document.getElementById("reg-strategy-addr").value.trim();const name=document.getElementById("reg-strategy-name").value.trim();
+  if(!ethers.isAddress(addr))return alert("Invalid address.");if(!name)return alert("Enter strategy name.");
+  try{showToast("pending","Awaiting Signature","addStrategy()...");const tx=await contract.addStrategy(addr,name);await tx.wait();showToast("success","Strategy Added",name+" registered.",tx.hash);refreshData();}
+  catch(e){showToast("error","Failed",e.reason||e.message);}
+}
+async function removeStrategy(){
+  if(!await requireConnected())return;
+  const addr=document.getElementById("reg-strategy-addr").value.trim();if(!ethers.isAddress(addr))return alert("Invalid address.");
+  if(!confirm("Remove this strategy? Withdraw funds first."))return;
+  try{showToast("pending","Awaiting Signature","removeStrategy()...");const tx=await contract.removeStrategy(addr);await tx.wait();showToast("success","Strategy Removed","",tx.hash);refreshData();}
+  catch(e){showToast("error","Failed",e.reason||e.message);}
+}
+async function deployToStrategy(){
+  if(!await requireConnected())return;
+  const addr=document.getElementById("deploy-strategy-addr").value.trim();const amt=document.getElementById("deploy-amount").value;
+  if(!ethers.isAddress(addr))return alert("Invalid address.");if(!amt||parseFloat(amt)<=0)return alert("Enter amount.");
+  try{showToast("pending","Awaiting Signature","deployToStrategy()...");const tx=await contract.deployToStrategy(addr,ethers.parseEther(amt));await tx.wait();showToast("success","Deployed",amt+" WETH sent to strategy.",tx.hash);refreshData();}
+  catch(e){showToast("error","Failed",e.reason||e.message);}
+}
+async function withdrawFromStrategy(){
+  if(!await requireConnected())return;
+  const addr=document.getElementById("deploy-strategy-addr").value.trim();const amt=document.getElementById("deploy-amount").value;
+  if(!ethers.isAddress(addr))return alert("Invalid address.");if(!amt||parseFloat(amt)<=0)return alert("Enter amount.");
+  try{showToast("pending","Awaiting Signature","withdrawFromStrategy()...");const tx=await contract.withdrawFromStrategy(addr,ethers.parseEther(amt));await tx.wait();showToast("success","Withdrawn",amt+" WETH returned to vault.",tx.hash);refreshData();}
+  catch(e){showToast("error","Failed",e.reason||e.message);}
+}
+async function withdrawAllFromStrategy(){
+  if(!await requireConnected())return;
+  const addr=document.getElementById("deploy-strategy-addr").value.trim();if(!ethers.isAddress(addr))return alert("Invalid address.");
+  if(!confirm("Withdraw ALL from this strategy?"))return;
+  try{showToast("pending","Awaiting Signature","withdrawAllFromStrategy()...");const tx=await contract.withdrawAllFromStrategy(addr);await tx.wait();showToast("success","All Withdrawn","WETH returned to vault.",tx.hash);refreshData();}
+  catch(e){showToast("error","Failed",e.reason||e.message);}
+}
+const MILESTONES=[
+  {tvl:100,label:"Genesis",sub:"First depositors",unlocks:["NAV chart","Arbiscan listing"]},
+  {tvl:5000,label:"Seedling",sub:"Product proves itself",unlocks:["GMX strategy","Protocol fee"]},
+  {tvl:25000,label:"Growing",sub:"Multi-strategy vault",unlocks:["Pendle strategy","External depositors"]},
+  {tvl:100000,label:"Established",sub:"Secondary market ready",unlocks:["Camelot LP","Leverage yield"]},
+  {tvl:500000,label:"Institutional",sub:"Standalone product",unlocks:["Institutional partners","License model"]},
+  {tvl:1000000,label:"Protocol",sub:"Full DeFi primitive",unlocks:["DAO governance","Cross-chain"]}
+];
+function fmtMsTvl(n){return n>=1000000?"$"+(n/1000000).toFixed(1)+"M":n>=1000?"$"+(n/1000).toFixed(0)+"K":"$"+n;}
+function renderMilestones(tvlUSD){
+  const container=document.getElementById("milestone-list");if(!container)return;container.innerHTML="";
+  MILESTONES.forEach((m,i)=>{
+    const pct=Math.min(100,(tvlUSD/m.tvl)*100);const isDone=tvlUSD>=m.tvl;const isActive=!isDone&&(i===0||tvlUSD>=MILESTONES[i-1].tvl);
+    const div=document.createElement("div");div.className=((!isDone&&!isActive)?"opacity-50 ":"")+"bg-slate-900/40 rounded-xl p-4 border border-slate-800";
+    div.innerHTML="<div class=\"flex items-center justify-between mb-2\"><div><span class=\"text-sm font-semibold text-white\">"+m.label+"</span><span class=\"text-slate-500 text-xs ml-2\">"+fmtMsTvl(m.tvl)+"</span><span class=\"text-slate-600 text-xs ml-1\">"+m.sub+"</span></div><span class=\"text-xs px-2 py-0.5 rounded-full "+(isDone?"bg-emerald-900/40 text-emerald-400":isActive?"bg-sky-900/40 text-sky-400":"bg-slate-800 text-slate-500")+"\">"+(isDone?"Complete":isActive?"In progress":"Locked")+"</span></div><div class=\"w-full bg-slate-800 rounded-full h-1.5 mb-2\"><div class=\"h-1.5 rounded-full\" style=\"width:"+pct.toFixed(1)+"%;background:"+(isDone?"#1D9E75":isActive?"#378ADD":"#444")+"\" ></div></div><div class=\"text-slate-500 text-xs\">Unlocks: "+m.unlocks.join(" / ")+"</div>";
+    container.appendChild(div);
+  });
+}
+renderMilestones(0);
+document.getElementById("btn-connect").onclick=connect;
+if(window.ethereum){
+  window.ethereum.on("chainChanged",()=>checkNetwork());
+  window.ethereum.on("accountsChanged",()=>location.reload());
+  checkNetwork();
+  document.getElementById("btn-approve-weth").disabled=true;document.getElementById("btn-deposit").disabled=true;
+  document.getElementById("btn-approve-weth").classList.add("opacity-40","cursor-not-allowed");document.getElementById("btn-deposit").classList.add("opacity-40","cursor-not-allowed");
+  document.getElementById("deposit-lock-msg").style.display="block";
+}
+setTimeout(()=>{initCharts();fetchProtocolRates();},500);
+refreshData();
+setInterval(refreshAll,15000);
+setInterval(fetchProtocolRates,60000);
+</script>
 </body>
 </html>
