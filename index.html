@@ -316,7 +316,7 @@
         <li>USDC (Arbitrum): <a href="https://arbiscan.io/address/0xaf88d065e77c8cC2239327C5EDb3A432268e5831" target="_blank" class="text-sky-300 hover:underline">0xaf88d065e77c8cC2239327C5EDb3A432268e5831</a></li>
         <li>WETH (Arbitrum): <a href="https://arbiscan.io/address/0x82aF49447D8a07e3bd95BD0d56f35241523fBab1" target="_blank" class="text-sky-300 hover:underline">0x82aF49447D8a07e3bd95BD0d56f35241523fBab1</a></li>
         <li>MTYLD Vault: <a href="https://arbiscan.io/address/0xdFD1C01678e713FDe1630c9db921e6206f3795b4" target="_blank" class="text-sky-300 hover:underline">0xdFD1C01678e713FDe1630c9db921e6206f3795b4</a></li>
-        <li>mtETH-S Vault (Conservator): <a href="https://arbiscan.io/address/0xc9227b644285198646F9c75ceCf13F84bF419B78" target="_blank" class="text-sky-300 hover:underline">0xc9227b644285198646F9c75ceCf13F84bF419B78</a></li>
+        <li>mtETH-S Vault (Conservator): <a href="https://arbiscan.io/address/0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f" target="_blank" class="text-sky-300 hover:underline">0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f</a></li>
         <li>The Conservator (AI Agent): <a href="https://arbiscan.io/address/0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58" target="_blank" class="text-sky-300 hover:underline">0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58</a></li>
         <li>MT Credit Line: <a href="https://arbiscan.io/address/0xe442E46c4cbBa68bFE36196B9547392BAD0429eB" target="_blank" class="text-sky-300 hover:underline">0xe442E46c4cbBa68bFE36196B9547392BAD0429eB</a></li>
         <li>Treasury Wallet: <a href="https://arbiscan.io/address/0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482" target="_blank" class="text-sky-300 hover:underline">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</a></li>
@@ -429,7 +429,7 @@
     // Live On-Chain Stats
     (() => {
       const VAULT_ADDR     = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
-      const CONSERVATOR    = "0xc9227b644285198646F9c75ceCf13F84bF419B78";
+      const CONSERVATOR    = "0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f";
       const WETH_ADDR      = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
       const CHAINLINK_FEED = "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612";
       const CREDIT_LINE    = "0xe442E46c4cbBa68bFE36196B9547392BAD0429eB";
@@ -477,17 +477,16 @@
           const re = $("statService");  if(re) re.textContent = pending > 0 ? "+" + usd(pending) : "$—";
 
           // Conservator TVL
-          try {
-            const COMPOUND = "0x6f7D514bbD4aFf3BcD1140B7344b32f063dEe486";
-            const wethC = new ethers.Contract(WETH_ADDR, BAL_ABI, provider);
-            const compC = new ethers.Contract(COMPOUND, BAL_ABI, provider);
-            const clC   = new ethers.Contract(CHAINLINK_FEED, CL_ABI, provider);
-            const [wethBal, compBal, clData] = await Promise.all([wethC.balanceOf(CONSERVATOR), compC.balanceOf(CONSERVATOR), clC.latestRoundData()]);
-            const ethPrice = Number(clData[1]) / 1e8;
-            const totalWeth = (Number(wethBal) + Number(compBal)) / 1e18;
-            const tvl = totalWeth * ethPrice;
-            const ce = $("statConservator"); if(ce) ce.textContent = tvl > 0 ? usd(tvl) : "$—";
-          } catch(e) { console.error("Conservator TVL:", e); }
+         try {
+           const wethC  = new ethers.Contract(WETH_ADDR, BAL_ABI, provider);
+           const stratC = new ethers.Contract("0x3F26B819988542c4EdA48cA6dC241DCF972A74F2", ["function balance() view returns (uint256)"], provider);
+           const clC    = new ethers.Contract(CHAINLINK_FEED, CL_ABI, provider);
+           const [wethBal, stratBal, clData] = await Promise.all([wethC.balanceOf(CONSERVATOR), stratC.balance(), clC.latestRoundData()]);
+           const ethPrice = Number(clData[1]) / 1e8;
+           const totalWeth = (Number(wethBal) + Number(stratBal)) / 1e18;
+           const tvl = totalWeth * ethPrice;
+           const ce = $("statConservator"); if(ce) ce.textContent = tvl > 0 ? usd(tvl) : "$—";
+         } catch(e) { console.error("Conservator TVL:", e); }
 
           // Credit Line v3 USDC pool
           try {
