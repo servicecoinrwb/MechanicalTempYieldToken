@@ -150,19 +150,24 @@
       <p class="text-slate-500 text-xs mb-4">GM ETH/USD tokens held in owner wallet. Managed manually via <a href="https://app.gmx.io/#/pools" target="_blank" class="text-sky-400 hover:underline">app.gmx.io</a>. Earns fees from perpetual traders.</p>
       <div class="grid md:grid-cols-3 gap-4 mb-4">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-blue-900/30">
-          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GM Tokens</p>
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GM ETH/USD</p>
           <p id="gmx-gm-balance" class="text-lg font-mono text-blue-400">Loading...</p>
-          <p class="text-slate-600 text-xs mt-1">GM ETH/USD held</p>
+          <p class="text-slate-600 text-xs mt-1">GM tokens held</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-orange-900/30">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GMX Token</p>
+          <p id="gmx-token-balance" class="text-lg font-mono text-orange-400">Loading...</p>
+          <p class="text-slate-600 text-xs mt-1">Accumulating staking</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-yellow-900/30 opacity-50">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GM BTC/USD</p>
+          <p class="text-lg font-mono text-yellow-500">Coming Soon</p>
+          <p class="text-slate-600 text-xs mt-1">Planned next position</p>
         </div>
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">30d Fee APY</p>
           <p class="text-lg font-mono text-blue-400">~12.56%</p>
-          <p class="text-slate-600 text-xs mt-1">From trader fees</p>
-        </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
-          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Total APY</p>
-          <p class="text-lg font-mono text-blue-400">~22.57%</p>
-          <p class="text-slate-600 text-xs mt-1">Performance APY</p>
+          <p class="text-slate-600 text-xs mt-1">ETH/USD pool</p>
         </div>
       </div>
       <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800 flex items-center justify-between">
@@ -769,13 +774,23 @@ const OWNER_WALLET="0xcfe077e6f7554B1724546E02624a0832D1f4557a";
 
 async function refreshGmxPosition(){
   try{
-    if(!window.ethereum){document.getElementById("gmx-gm-balance").textContent="Connect wallet";return;}
+    if(!window.ethereum){
+      document.getElementById("gmx-gm-balance").textContent="Connect wallet";
+      document.getElementById("gmx-token-balance").textContent="Connect wallet";
+      return;
+    }
     const rp=new ethers.BrowserProvider(window.ethereum);
     const BAL_ABI=[{"inputs":[{"name":"a","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
     const gmToken=new ethers.Contract(GM_ETH_USD,BAL_ABI,rp);
-    const gmBal=await gmToken.balanceOf(OWNER_WALLET);
+    const gmxToken=new ethers.Contract(GMX_TOKEN,BAL_ABI,rp);
+    const [gmBal,gmxBal]=await Promise.all([
+      gmToken.balanceOf(OWNER_WALLET),
+      gmxToken.balanceOf(OWNER_WALLET),
+    ]);
     const gmFloat=parseFloat(ethers.formatEther(gmBal));
+    const gmxFloat=parseFloat(ethers.formatEther(gmxBal));
     document.getElementById("gmx-gm-balance").textContent=gmFloat.toFixed(4)+" GM";
+    document.getElementById("gmx-token-balance").textContent=gmxFloat.toFixed(4)+" GMX";
   }catch(e){console.error("GMX tracker:",e);document.getElementById("gmx-gm-balance").textContent="Error";}
 }
 
