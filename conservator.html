@@ -771,7 +771,8 @@ const OWNER_WALLET="0xcfe077e6f7554B1724546E02624a0832d1f4557a";
 
 async function refreshGmxPosition(){
   try{
-    const rp=window.ethereum?new ethers.BrowserProvider(window.ethereum):new ethers.JsonRpcProvider("https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu");
+    if(!window.ethereum){document.getElementById("gmx-gm-balance").textContent="Connect wallet";return;}
+    const rp=new ethers.BrowserProvider(window.ethereum);
     const gmToken=new ethers.Contract(GM_ETH_USD,ERC20_ABI,rp);
     const gmBal=await gmToken.balanceOf(OWNER_WALLET);
     const gmFloat=parseFloat(ethers.formatEther(gmBal));
