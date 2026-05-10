@@ -783,13 +783,19 @@ async function refreshGmxPosition(){
     const rp=new ethers.BrowserProvider(window.ethereum);
     const BAL_ABI=[{"inputs":[{"name":"a","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
     const gmToken=new ethers.Contract(GM_ETH_USD,BAL_ABI,rp);
-    const gmxToken=new ethers.Contract(GMX_TOKEN,BAL_ABI,rp);
-    const [gmBal,gmxBal]=await Promise.all([
+    // GMX staking tracker - stakedGmxTracker holds staked balance
+    const GMX_STAKING_TRACKER="0x908C4D94D34924765f1eDc22A1DD098397c59dD4";
+    // depositBalances(account, depositToken) returns staked GMX amount
+    const STAKING_ABI=[{"inputs":[{"name":"_account","type":"address"},{"name":"_depositToken","type":"address"}],"name":"depositBalances","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"name":"a","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
+    const gmxTracker=new ethers.Contract(GMX_STAKING_TRACKER,STAKING_ABI,rp);
+    const gmxWallet=new ethers.Contract(GMX_TOKEN,BAL_ABI,rp);
+    const [gmBal,gmxStakedBal,gmxWalletBal]=await Promise.all([
       gmToken.balanceOf(OWNER_WALLET),
-      gmxToken.balanceOf(OWNER_WALLET),
+      gmxTracker.depositBalances(OWNER_WALLET,GMX_TOKEN).catch(()=>0n),
+      gmxWallet.balanceOf(OWNER_WALLET).catch(()=>0n),
     ]);
     const gmFloat=parseFloat(ethers.formatEther(gmBal));
-    const gmxFloat=parseFloat(ethers.formatEther(gmxBal));
+    const gmxFloat=parseFloat(ethers.formatEther(gmxStakedBal+gmxWalletBal));
     document.getElementById("gmx-gm-balance").textContent=gmFloat.toFixed(4)+" GM";
     document.getElementById("gmx-token-balance").textContent=gmxFloat.toFixed(4)+" GMX";
   }catch(e){console.error("GMX tracker:",e);document.getElementById("gmx-gm-balance").textContent="Error";}
