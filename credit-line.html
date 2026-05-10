@@ -738,9 +738,9 @@
 
   async function approveERC20(tokenC, spender, amount) {
     const al = await tokenC.allowance(userAddr, spender);
-    if (al >= amount) return;
+    if (al >= amount) return; // already approved enough
     toast('pending', 'Awaiting Approval', 'Approve token in MetaMask…');
-    const tx = await tokenC.approve(spender, amount);
+    const tx = await tokenC.approve(spender, ethers.MaxUint256);
     toast('pending', 'Approving…', 'Waiting for approval confirmation…', tx.hash);
     await tx.wait();
     toast('success', 'Approved ✓', 'Now submit the deposit.', tx.hash);
