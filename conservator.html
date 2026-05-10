@@ -135,6 +135,52 @@
     </div>
   </div>
 
+  <!-- GMX POSITION TRACKER -->
+  <div class="glass rounded-2xl mb-6 overflow-hidden">
+    <button onclick="toggleSection('gmx-tracker')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
+      <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        <span class="text-blue-400 font-bold">GMX</span>
+        GMX ETH/USD Position
+        <span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-500 font-normal">Owner Wallet</span>
+      </h2>
+      <svg id="gmx-tracker-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-none" style="transform:rotate(180deg)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+    <div id="gmx-tracker-body" style="display:block">
+    <div class="px-6 pb-6 pt-2">
+      <p class="text-slate-500 text-xs mb-4">GM ETH/USD tokens held in owner wallet. Managed manually via <a href="https://app.gmx.io/#/pools" target="_blank" class="text-sky-400 hover:underline">app.gmx.io</a>. Earns fees from perpetual traders.</p>
+      <div class="grid md:grid-cols-4 gap-4 mb-4">
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-blue-900/30">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GM Tokens</p>
+          <p id="gmx-gm-balance" class="text-lg font-mono text-blue-400">Loading...</p>
+          <p class="text-slate-600 text-xs mt-1">GM ETH/USD held</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-blue-900/30">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">WETH Value</p>
+          <p id="gmx-weth-value" class="text-lg font-mono text-emerald-400">-</p>
+          <p class="text-slate-600 text-xs mt-1">Approx WETH value</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-blue-900/30">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">USD Value</p>
+          <p id="gmx-usd-value" class="text-lg font-mono text-emerald-400">-</p>
+          <p class="text-slate-600 text-xs mt-1">At current ETH price</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">30d Fee APY</p>
+          <p class="text-lg font-mono text-blue-400">~12.82%</p>
+          <p class="text-slate-600 text-xs mt-1">From trader fees</p>
+        </div>
+      </div>
+      <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800 flex items-center justify-between">
+        <div>
+          <p class="text-slate-500 text-xs mb-1">Tracking Wallet</p>
+          <p class="text-xs font-mono text-slate-400">0xcfe077e6f7554B1724546E02624a0832d1f4557a</p>
+        </div>
+        <a href="https://app.gmx.io/#/pools" target="_blank" class="px-4 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-800 text-blue-400 text-xs font-semibold transition">Manage on GMX ↗</a>
+      </div>
+    </div>
+    </div>
+  </div>
+
   <!-- DEPOSIT / WITHDRAW -->
   <div class="glass rounded-2xl mb-6 overflow-hidden">
     <button onclick="toggleSection('deposit-section')" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-800/30 transition rounded-t-2xl">
@@ -720,10 +766,36 @@ if(window.ethereum){
   document.getElementById("btn-approve-weth").classList.add("opacity-40","cursor-not-allowed");document.getElementById("btn-deposit").classList.add("opacity-40","cursor-not-allowed");
   document.getElementById("deposit-lock-msg").style.display="block";
 }
-setTimeout(()=>{initCharts();fetchProtocolRates();},500);
+const GM_ETH_USD="0x70d95587d40A2caf56bd97485aB3Eec10Bee6336";
+const OWNER_WALLET="0xcfe077e6f7554B1724546E02624a0832d1f4557a";
+
+async function refreshGmxPosition(){
+  try{
+    const rp=window.ethereum?new ethers.BrowserProvider(window.ethereum):new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc");
+    const gmToken=new ethers.Contract(GM_ETH_USD,ERC20_ABI,rp);
+    const gmBal=await gmToken.balanceOf(OWNER_WALLET);
+    const gmFloat=parseFloat(ethers.formatEther(gmBal));
+    document.getElementById("gmx-gm-balance").textContent=gmFloat.toFixed(4)+" GM";
+    if(gmFloat>0){
+      const gmTotal=await gmToken.totalSupply().catch(()=>0n);
+      const gmTotalFloat=parseFloat(ethers.formatEther(gmTotal));
+      const gmPriceUsd=gmTotalFloat>0?(69770000/gmTotalFloat):2.35;
+      const wethValueUsd=gmFloat*gmPriceUsd;
+      const wethValue=wethValueUsd/cachedEthPrice;
+      document.getElementById("gmx-weth-value").textContent=wethValue.toFixed(4)+" WETH";
+      document.getElementById("gmx-usd-value").textContent="$"+wethValueUsd.toLocaleString(undefined,{maximumFractionDigits:2});
+    }else{
+      document.getElementById("gmx-weth-value").textContent="0.0000 WETH";
+      document.getElementById("gmx-usd-value").textContent="$0.00";
+    }
+  }catch(e){console.error("GMX tracker:",e);document.getElementById("gmx-gm-balance").textContent="Error";}
+}
+
+setTimeout(()=>{initCharts();fetchProtocolRates();refreshGmxPosition();},500);
 refreshData();
 setInterval(refreshAll,15000);
 setInterval(fetchProtocolRates,60000);
+setInterval(refreshGmxPosition,30000);
 </script>
 </body>
 </html>
