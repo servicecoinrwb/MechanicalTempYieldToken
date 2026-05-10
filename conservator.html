@@ -469,7 +469,7 @@ async function checkNetwork(){
   badge.textContent="Wrong Network";badge.className="px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-red-900/30 border-red-700 text-red-400";badge.style.display="block";warning.style.display="block";return false;
 }
 async function getEthPrice(rp){
-  try{const feed=new ethers.Contract(CHAINLINK_ETH_USD,CHAINLINK_ABI,rp);const r=await feed.latestRoundData();cachedEthPrice=parseFloat(r[1].toString())/1e8;}catch{}return cachedEthPrice;
+  try{const priceRp=new ethers.JsonRpcProvider("https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu");const feed=new ethers.Contract(CHAINLINK_ETH_USD,CHAINLINK_ABI,priceRp);const r=await feed.latestRoundData();cachedEthPrice=parseFloat(r[1].toString())/1e8;}catch(e){console.error("ETH price:",e);}return cachedEthPrice;
 }
 async function fetchProtocolRates(){
   try{
