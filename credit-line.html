@@ -798,7 +798,9 @@
   // ── mtETH-S actions ────────────────────────────────────────
   async function approveMteths() {
     if (!await ensureConn()) return;
-    await approveERC20(mtethsC, CONTRACT, 1n); // amount just needs to be > 0 to trigger; max approved
+    const amt = el('cDepAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await approveERC20(mtethsC, CONTRACT, ethers.parseEther(amt));
   }
 
   async function depositMteths() {
@@ -844,7 +846,9 @@
   // ── MTYLD actions ──────────────────────────────────────────
   async function approveMtyld() {
     if (!await ensureConn()) return;
-    await approveERC20(mtyldC, CONTRACT, 1n); // amount just needs to be > 0 to trigger; max approved
+    const amt = el('mDepAmt').value;
+    if (!amt || +amt <= 0) return alert('Enter amount first.');
+    await approveERC20(mtyldC, CONTRACT, ethers.parseEther(amt));
   }
 
   async function depositMtyld() {
