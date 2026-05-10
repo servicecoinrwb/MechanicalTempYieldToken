@@ -400,7 +400,7 @@
         <h3 class="text-base font-bold text-white mb-4">Contract Details</h3>
         <div class="space-y-2.5 text-sm">
           <div class="flex justify-between"><span class="text-slate-400">Contract</span><a href="https://arbiscan.io/address/0xe442E46c4cbBa68bFE36196B9547392BAD0429eB" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xe442...29eB ↗</a></div>
-          <div class="flex justify-between"><span class="text-slate-400">mtETH-S Token</span><a href="https://arbiscan.io/address/0xc9227b644285198646F9c75ceCf13F84bF419B78" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xc922...9B78 ↗</a></div>
+          <div class="flex justify-between"><span class="text-slate-400">mtETH-S Token</span><a href="https://arbiscan.io/address/0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xC3c4...e54f ↗</a></div>
           <div class="flex justify-between"><span class="text-slate-400">MTYLD Token</span><a href="https://arbiscan.io/address/0xdFD1C01678e713FDe1630c9db921e6206f3795b4" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xdFD1...95b4 ↗</a></div>
           <div class="flex justify-between"><span class="text-slate-400">mtETH-S LTV</span><span class="text-white text-xs">60%</span></div>
           <div class="flex justify-between"><span class="text-slate-400">MTYLD LTV</span><span class="text-white text-xs">70%</span></div>
@@ -417,26 +417,9 @@
     </div>
 
     <!-- Footer -->
-    <div class="pt-6 border-t border-slate-800">
-      <div class="flex items-center justify-between mb-4">
-        <p class="text-slate-600 text-xs font-mono">0xe442...29eB • Arbitrum One • v3.0</p>
-        <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
-      </div>
-      <div class="text-center pb-2">
-        <p class="text-slate-600 text-xs mb-3">Bridge USDC to another chain after redeeming</p>
-        <div class="flex justify-center gap-3 flex-wrap">
-          <a href="https://www.relay.link/bridge/base?fromChainId=42161&toCurrency=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&fromCurrency=0xaf88d065e77c8cc2239327c5edb3a432268e5831"
-             target="_blank"
-             class="px-4 py-2 rounded-xl bg-sky-600/20 border border-sky-700 text-sky-400 text-xs font-semibold hover:bg-sky-600/30 transition">
-            USDC → Base via Relay ↗
-          </a>
-          <a href="https://www.relay.link/bridge/ethereum?fromChainId=42161&toCurrency=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&fromCurrency=0xaf88d065e77c8cc2239327c5edb3a432268e5831"
-             target="_blank"
-             class="px-4 py-2 rounded-xl bg-slate-700 border border-slate-600 text-slate-400 text-xs font-semibold hover:bg-slate-600 transition">
-            USDC → Ethereum via Relay ↗
-          </a>
-        </div>
-      </div>
+    <div class="pt-6 border-t border-slate-800 flex items-center justify-between">
+      <p class="text-slate-600 text-xs font-mono">0xe442...29eB • Arbitrum One • v3.0</p>
+      <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
     </div>
   </main>
 
@@ -451,7 +434,7 @@
 
 <script>
   const CONTRACT  = "0xe442E46c4cbBa68bFE36196B9547392BAD0429eB";
-  const MTETHS    = "0xc9227b644285198646F9c75ceCf13F84bF419B78";
+  const MTETHS    = "0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f";
   const MTYLD_TOK = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
   const USDC_ADDR = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
   const BORROWER  = "0xcfe077e6f7554B1724546E02624a0832D1f4557a";
