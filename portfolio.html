@@ -183,7 +183,7 @@
     <div>
       <div class="stat-label">mtETH-S Price</div>
       <div class="stat-value mono" id="ethPriceDisplay" style="color:#e2e8f0;">$—</div>
-      <div class="stat-sub">Chainlink ETH/USD</div>
+      <div class="stat-sub">ETH × share NAV</div>
     </div>
     <div>
       <div class="stat-label">MTYLD Price</div>
@@ -574,7 +574,7 @@
     const ethPrice = ethData ? parseFloat(ethData[1].toString())/1e8 : 2350;
     const gmxPrice = gmxData ? parseFloat(gmxData[1].toString())/1e8 : 7.52;
 
-    el('ethPriceDisplay').textContent = usd(ethPrice);
+    // ethPrice still fetched; banner writes share value after navPerShare is computed
     // GMX price still fetched for Market Maker section; no banner display
 
     // Token balances
@@ -663,6 +663,7 @@
     if (clUsdcFloat > 0) active++;
 
     // ── Update UI ────────────────────────────────────────
+    el('ethPriceDisplay').textContent   = usd(ethPrice * navPerShare);
     el('mtyldPriceDisplay').textContent = '$'+mtyldNavUsd.toFixed(4);
     el('totalValue').textContent    = usd(totalUsdVal);
     el('blendedApy').textContent    = blended !== "—" ? "~"+blended+"%" : "—";
