@@ -7,6 +7,96 @@
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
   <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MT Wallet — Shared Wallet Persistence (cross-page connect)
+       ═══════════════════════════════════════════════════════════ -->
+  <script>
+  (function () {
+    const STORAGE_KEY = 'mt_wallet_v1';
+    const state = { address: null, chainId: null, provider: null };
+
+    window.MTWallet = {
+      get address() { return state.address; },
+      get chainId() { return state.chainId; },
+      get connected() { return !!state.address; },
+      getProvider() {
+        if (!window.ethereum) throw new Error('No wallet detected');
+        if (!state.provider && window.ethers) {
+          state.provider = new window.ethers.BrowserProvider(window.ethereum);
+        }
+        return state.provider;
+      },
+      async getSigner() { return await this.getProvider().getSigner(); },
+      async connect() {
+        if (!window.ethereum) { alert('No wallet detected. Install MetaMask or Rabby.'); return null; }
+        try {
+          const accts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const chain = await window.ethereum.request({ method: 'eth_chainId' });
+          await setAddress(accts[0], chain);
+          return state.address;
+        } catch (e) { console.warn('Wallet connect canceled:', e?.message); return null; }
+      },
+      disconnect() {
+        localStorage.removeItem(STORAGE_KEY);
+        state.address = null; state.chainId = null; state.provider = null;
+        emitChange();
+      },
+    };
+
+    function emitChange() {
+      window.dispatchEvent(new CustomEvent('mt-wallet-change', {
+        detail: { address: state.address, chainId: state.chainId }
+      }));
+    }
+
+    async function setAddress(addr, chain) {
+      if (!addr) return;
+      const normalized = addr.toLowerCase();
+      state.address = normalized;
+      state.chainId = chain || state.chainId;
+      state.provider = null;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        address: normalized, chainId: state.chainId, ts: Date.now()
+      }));
+      emitChange();
+    }
+
+    async function silentReconnect() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return;
+      let parsed;
+      try { parsed = JSON.parse(stored); } catch { return; }
+      if (!window.ethereum) return;
+      try {
+        const accts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accts && accts.length > 0) {
+          const chain = await window.ethereum.request({ method: 'eth_chainId' });
+          await setAddress(accts[0], chain);
+        } else {
+          state.address = parsed.address;
+          state.chainId = parsed.chainId;
+          emitChange();
+        }
+      } catch (e) { console.warn('Silent reconnect failed:', e?.message); }
+    }
+
+    if (window.ethereum && window.ethereum.on) {
+      window.ethereum.on('accountsChanged', (accts) => {
+        if (!accts || accts.length === 0) window.MTWallet.disconnect();
+        else setAddress(accts[0], state.chainId);
+      });
+      window.ethereum.on('chainChanged', (chain) => {
+        state.chainId = chain; emitChange();
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', silentReconnect);
+    } else { silentReconnect(); }
+  })();
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     .glass{background:rgba(15,23,42,0.7);backdrop-filter:blur(12px);border:1px solid rgba(51,65,85,0.6)}
@@ -458,6 +548,12 @@ let isConnected=false,userAddress=null,isMtyldHolder=false;
 let currentNav=1.0,cachedEthPrice=2040;
 let toastTimer,allocationChart=null,navChart=null;
 
+// Read-only fallback provider for stats — works even before wallet connect
+function getReadProvider(){
+  if(provider) return provider;
+  return new ethers.JsonRpcProvider("https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu");
+}
+
 function toggleSection(id){
   const body=document.getElementById(id+"-body");
   const chevron=document.getElementById(id+"-chevron");
@@ -496,7 +592,7 @@ async function getEthPrice(rp){
 }
 async function fetchProtocolRates(){
   try{
-    const rp=new ethers.BrowserProvider(window.ethereum);
+    const rp=getReadProvider();
     const comet=new ethers.Contract(COMPOUND_ADDRESS,COMPOUND_ABI,rp);
     const util=await comet.getUtilization();
     const rate=await comet.getSupplyRate(util);
@@ -506,9 +602,8 @@ async function fetchProtocolRates(){
   }catch(e){console.error("Rate error:",e);}
 }
 async function refreshData(){
-  if(!window.ethereum)return;
   try{
-    const rp=new ethers.BrowserProvider(window.ethereum);
+    const rp=getReadProvider();
     const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
     const[supply,agent,minDep,lock,ownerAddr,idleWeth,mtyldReq,strats]=await Promise.all([
       rc.totalSupply(),rc.aiAgent(),rc.MIN_DEPOSIT(),rc.withdrawLockPeriod(),
@@ -588,8 +683,8 @@ async function refreshData(){
   }catch(e){console.error("Read error:",e);}
 }
 async function refreshWethBalance(){
-  if(!isConnected||!userAddress)return;
-  try{const rp=new ethers.BrowserProvider(window.ethereum);const weth=new ethers.Contract(WETH_ADDRESS,ERC20_ABI,rp);const bal=await weth.balanceOf(userAddress);document.getElementById("weth-balance").textContent=parseFloat(ethers.formatEther(bal)).toFixed(6)+" WETH";}catch{}
+  if(!userAddress)return;
+  try{const rp=getReadProvider();const weth=new ethers.Contract(WETH_ADDRESS,ERC20_ABI,rp);const bal=await weth.balanceOf(userAddress);document.getElementById("weth-balance").textContent=parseFloat(ethers.formatEther(bal)).toFixed(6)+" WETH";}catch{}
 }
 async function refreshAll(){await refreshData();await refreshWethBalance();}
 function getNavHistory(){try{return JSON.parse(localStorage.getItem("mtvault_nav_history_v5")||"[]");}catch{return[];}}
@@ -606,36 +701,74 @@ function initCharts(){
   const navCtx=document.getElementById("nav-chart").getContext("2d");
   navChart=new Chart(navCtx,{type:"line",data:{labels:history.length>0?history.map(h=>h.label):["Now"],datasets:[{label:"NAV",data:history.length>0?history.map(h=>h.nav):[1.0],borderColor:"#0ea5e9",backgroundColor:"rgba(14,165,233,0.08)",borderWidth:2,pointRadius:2,fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#475569",font:{size:10}},grid:{color:"rgba(71,85,105,0.2)"}},y:{ticks:{color:"#475569",font:{size:10},callback:v=>v.toFixed(4)},grid:{color:"rgba(71,85,105,0.2)"},min:0.995}}}});
 }
+
+// ── Connect — delegates to shared MTWallet ─────────────────
 async function connect(){
-  if(!window.ethereum)return alert("Install MetaMask.");
-  try{
-    provider=new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts",[]);
-    signer=await provider.getSigner();
-    userAddress=await signer.getAddress();
-    contract=new ethers.Contract(VAULT_ADDRESS,ABI,signer);
-    wethContract=new ethers.Contract(WETH_ADDRESS,ERC20_ABI,signer);
-    isConnected=true;
-    const btn=document.getElementById("btn-connect");
-    btn.textContent=userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-    btn.className="px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold";
-    await checkNetwork();
-    try{
-      const rp=new ethers.BrowserProvider(window.ethereum);
-      const mtyld=new ethers.Contract(MTYLD_ADDRESS,ERC20_ABI,rp);
-      const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
-      const[bal,minReq]=await Promise.all([mtyld.balanceOf(userAddress),rc.minMtyldRequired().catch(()=>1n)]);
-      isMtyldHolder=bal>=(minReq>0n?minReq:1n);
-    }catch{isMtyldHolder=false;}
-    updateDepositAccess();
-    const badge=document.getElementById("mtyld-badge");
-    badge.textContent=isMtyldHolder?"MTYLD Holder - Deposit Access Granted":"Insufficient MTYLD - Cannot deposit.";
-    badge.className=isMtyldHolder?"mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-900/20 border border-emerald-800 text-emerald-400":"mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-red-900/20 border border-red-800 text-red-400";
-    badge.style.display="block";
-    try{const rp=new ethers.BrowserProvider(window.ethereum);const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);const o=await rc.owner();document.getElementById("owner-section").style.display=o.toLowerCase()===userAddress.toLowerCase()?"block":"none";}catch{}
-    await refreshAll();updateWithdrawPosition();
-  }catch(e){console.error(e);}
+  await window.MTWallet.connect();
+  // UI updates via 'mt-wallet-change' listener below
 }
+
+// Apply wallet state to UI + contracts (called on every wallet change)
+async function applyWalletState(addr){
+  if(!addr){
+    // Disconnected
+    isConnected=false;userAddress=null;signer=null;contract=null;wethContract=null;
+    const btn=document.getElementById("btn-connect");
+    btn.textContent="Connect Wallet";
+    btn.className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition";
+    document.getElementById("owner-section").style.display="none";
+    document.getElementById("network-badge").style.display="none";
+    isMtyldHolder=false;updateDepositAccess();
+    document.getElementById("mtyld-badge").style.display="none";
+    document.getElementById("stat-my-shares").textContent="-";
+    document.getElementById("stat-my-value").textContent="Connect wallet to see";
+    return;
+  }
+
+  userAddress=addr;
+  try{
+    provider=window.MTWallet.getProvider();
+    try{signer=await provider.getSigner();}catch{signer=null;}
+    if(signer){
+      contract=new ethers.Contract(VAULT_ADDRESS,ABI,signer);
+      wethContract=new ethers.Contract(WETH_ADDRESS,ERC20_ABI,signer);
+      isConnected=true;
+    }
+  }catch{signer=null;contract=null;}
+
+  const btn=document.getElementById("btn-connect");
+  btn.textContent=addr.slice(0,6)+"..."+addr.slice(-4);
+  btn.className="px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold";
+  await checkNetwork();
+
+  // MTYLD holder check
+  try{
+    const rp=getReadProvider();
+    const mtyld=new ethers.Contract(MTYLD_ADDRESS,ERC20_ABI,rp);
+    const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
+    const[bal,minReq]=await Promise.all([mtyld.balanceOf(userAddress),rc.minMtyldRequired().catch(()=>1n)]);
+    isMtyldHolder=bal>=(minReq>0n?minReq:1n);
+  }catch{isMtyldHolder=false;}
+  updateDepositAccess();
+  const badge=document.getElementById("mtyld-badge");
+  badge.textContent=isMtyldHolder?"MTYLD Holder - Deposit Access Granted":"Insufficient MTYLD - Cannot deposit.";
+  badge.className=isMtyldHolder?"mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-900/20 border border-emerald-800 text-emerald-400":"mb-4 px-4 py-2 rounded-xl text-sm font-semibold bg-red-900/20 border border-red-800 text-red-400";
+  badge.style.display="block";
+
+  // Owner section
+  try{
+    const rp=getReadProvider();
+    const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
+    const o=await rc.owner();
+    document.getElementById("owner-section").style.display=o.toLowerCase()===userAddress.toLowerCase()?"block":"none";
+  }catch{}
+
+  await refreshAll();updateWithdrawPosition();
+}
+
+window.addEventListener("mt-wallet-change",e=>applyWalletState(e.detail.address));
+if(window.MTWallet?.connected) applyWalletState(window.MTWallet.address);
+
 function updateDepositAccess(){
   const a=document.getElementById("btn-approve-weth");const d=document.getElementById("btn-deposit");const l=document.getElementById("deposit-lock-msg");
   a.disabled=!isMtyldHolder;d.disabled=!isMtyldHolder;
@@ -643,7 +776,14 @@ function updateDepositAccess(){
   d.classList.toggle("opacity-40",!isMtyldHolder);d.classList.toggle("cursor-not-allowed",!isMtyldHolder);
   l.style.display=isMtyldHolder?"none":"block";
 }
-async function requireConnected(){if(!isConnected){alert("Connect wallet first.");return false;}return await checkNetwork();}
+async function requireConnected(){
+  if(!isConnected||!signer){
+    await window.MTWallet.connect();
+    await new Promise(r=>setTimeout(r,100));
+  }
+  if(!signer)return false;
+  return await checkNetwork();
+}
 
 document.getElementById("btn-approve-weth").onclick=async()=>{
   if(!await requireConnected())return;if(!isMtyldHolder)return alert("MTYLD holders only.");
@@ -664,14 +804,14 @@ document.getElementById("withdraw-shares").addEventListener("input",function(){
   document.getElementById("wd-btn-check").style.display="block";document.getElementById("wd-status").style.display="none";
 });
 async function setMaxShares(){
-  if(!isConnected||!userAddress)return alert("Connect wallet.");
-  const rp=new ethers.BrowserProvider(window.ethereum);const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
+  if(!userAddress)return alert("Connect wallet.");
+  const rp=getReadProvider();const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
   const maxR=await rc.maxRedeem(userAddress);const val=ethers.formatEther(maxR);
   document.getElementById("withdraw-shares").value=val;document.getElementById("withdraw-preview").textContent=(parseFloat(val)*currentNav).toFixed(6)+" WETH";
 }
 async function updateWithdrawPosition(){
-  if(!isConnected||!userAddress)return;
-  try{const rp=new ethers.BrowserProvider(window.ethereum);const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);const s=await rc.balanceOf(userAddress);const sf=parseFloat(ethers.formatEther(s));document.getElementById("wd-my-shares").textContent=sf.toFixed(4)+" mtETH-S";document.getElementById("wd-nav").textContent=currentNav.toFixed(6);document.getElementById("wd-value").textContent=(sf*currentNav).toFixed(6)+" WETH";}catch{}
+  if(!userAddress)return;
+  try{const rp=getReadProvider();const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);const s=await rc.balanceOf(userAddress);const sf=parseFloat(ethers.formatEther(s));document.getElementById("wd-my-shares").textContent=sf.toFixed(4)+" mtETH-S";document.getElementById("wd-nav").textContent=currentNav.toFixed(6);document.getElementById("wd-value").textContent=(sf*currentNav).toFixed(6)+" WETH";}catch{}
 }
 function setWdStatus(type,msg){
   const el=document.getElementById("wd-status");
@@ -690,7 +830,7 @@ async function checkAndWithdraw(){
   const assetsNeeded=parseFloat(sharesStr)*currentNav;
   setWdStatus("info","Checking vault balance...");setWdStep(1);
   try{
-    const rp=new ethers.BrowserProvider(window.ethereum);const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
+    const rp=getReadProvider();const rc=new ethers.Contract(VAULT_ADDRESS,ABI,rp);
     const lastDeposit=await rc.lastDepositTime(userAddress).catch(()=>0n);
     const lockPeriod=await rc.withdrawLockPeriod().catch(()=>86400n);
     const now=BigInt(Math.floor(Date.now()/1000));
@@ -784,14 +924,15 @@ function renderMilestones(tvlUSD){
 }
 renderMilestones(0);
 document.getElementById("btn-connect").onclick=connect;
+
+// Initial network check (only if wallet present)
 if(window.ethereum){
-  window.ethereum.on("chainChanged",()=>checkNetwork());
-  window.ethereum.on("accountsChanged",()=>location.reload());
   checkNetwork();
   document.getElementById("btn-approve-weth").disabled=true;document.getElementById("btn-deposit").disabled=true;
   document.getElementById("btn-approve-weth").classList.add("opacity-40","cursor-not-allowed");document.getElementById("btn-deposit").classList.add("opacity-40","cursor-not-allowed");
   document.getElementById("deposit-lock-msg").style.display="block";
 }
+
 const GM_ETH_USD="0x70d95587d40A2caf56bd97485aB3Eec10Bee6336";
 const GM_BTC_USD="0x47c031236e19d024b42f8AE6780E44A573170703";
 const GMX_TOKEN="0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a";
@@ -799,25 +940,17 @@ const OWNER_WALLET="0xcfe077e6f7554B1724546E02624a0832D1f4557a";
 
 async function refreshGmxPosition(){
   try{
-    if(!window.ethereum){
-      document.getElementById("gmx-gm-balance").textContent="Connect wallet";
-      document.getElementById("gmx-token-balance").textContent="Connect wallet";
-      return;
-    }
-    const rp=new ethers.BrowserProvider(window.ethereum);
+    const rp=getReadProvider();
     const BAL_ABI=[{"inputs":[{"name":"a","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
     const gmToken=new ethers.Contract(GM_ETH_USD,BAL_ABI,rp);
-    // GMX staking tracker - stakedGmxTracker holds staked balance
     const GMX_STAKING_TRACKER="0x908C4D94D34924765f1eDc22A1DD098397c59dD4";
-    const CHAINLINK_ABI=[{"inputs":[],"name":"latestRoundData","outputs":[{"type":"uint80"},{"type":"int256"},{"type":"uint256"},{"type":"uint256"},{"type":"uint80"}],"stateMutability":"view","type":"function"}];
-    // depositBalances(account, depositToken) returns staked GMX amount
+    const CL_ABI=[{"inputs":[],"name":"latestRoundData","outputs":[{"type":"uint80"},{"type":"int256"},{"type":"uint256"},{"type":"uint256"},{"type":"uint80"}],"stateMutability":"view","type":"function"}];
     const STAKING_ABI=[{"inputs":[{"name":"_account","type":"address"},{"name":"_depositToken","type":"address"}],"name":"depositBalances","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"name":"a","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
     const gmxTracker=new ethers.Contract(GMX_STAKING_TRACKER,STAKING_ABI,rp);
     const gmxWallet=new ethers.Contract(GMX_TOKEN,BAL_ABI,rp);
     const gmBtcToken=new ethers.Contract(GM_BTC_USD,BAL_ABI,rp);
-    // GMX price from Chainlink-style feed or estimate from market
-    const GMX_PRICE_FEED="0xDB98056FecFff59D032aB628337A4887110df3dB"; // GMX/USD Chainlink Arbitrum
-    const gmxPriceFeed=new ethers.Contract(GMX_PRICE_FEED,CHAINLINK_ABI,rp);
+    const GMX_PRICE_FEED="0xDB98056FecFff59D032aB628337A4887110df3dB";
+    const gmxPriceFeed=new ethers.Contract(GMX_PRICE_FEED,CL_ABI,rp);
 
     const [gmBal,gmxStakedBal,gmxWalletBal,gmBtcBal,gmxPriceData]=await Promise.all([
       gmToken.balanceOf(OWNER_WALLET),
@@ -832,7 +965,6 @@ async function refreshGmxPosition(){
     const gmBtcFloat = parseFloat(ethers.formatEther(gmBtcBal));
     const gmxPrice   = gmxPriceData ? parseFloat(gmxPriceData[1].toString())/1e8 : 7.52;
 
-    // Approx USD values: ETH GM ~$1.76/token, BTC GM ~$2.43/token (based on pool TVL/supply)
     const ethGmPriceUsd = 1.76;
     const btcGmPriceUsd = 2.43;
     const ethGmUsd  = gmFloat   * ethGmPriceUsd;
@@ -840,7 +972,6 @@ async function refreshGmxPosition(){
     const gmxUsd    = gmxFloat  * gmxPrice;
     const totalUsd  = ethGmUsd + btcGmUsd + gmxUsd;
 
-    // Blended APY weighted by position size (GM positions only, GMX TBD)
     const blendedApy = ethGmUsd + btcGmUsd > 0
       ? ((ethGmUsd * 12.56 + btcGmUsd * 28) / (ethGmUsd + btcGmUsd)).toFixed(1)
       : "—";
