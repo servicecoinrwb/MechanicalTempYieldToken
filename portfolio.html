@@ -517,9 +517,7 @@
   ];
   const VAULT_ABI = [
     "function balanceOf(address) view returns (uint256)",
-    "function totalAssets() view returns (uint256)",
-    "function totalSupply() view returns (uint256)",
-    "function idleWeth() view returns (uint256)",
+    "function pricePerShare() view returns (uint256)",
   ];
   const STRAT_ABI = ["function balance() view returns (uint256)"];
   const STRAT_ABI2 = ["function balance() view returns (uint256)"];
@@ -601,7 +599,7 @@
 
     const [
       mtyldBal, mtyldNav, mtyldSupply,
-      mtethsBal, vaultAssets, vaultSupply, stratBal, idleWeth,
+      mtethsBal, mtethsPricePerShare,
       gmEthBal, gmBtcBal,
       gmxStaked, gmxWallet,
       clUsdc, clEarned, clMtethsCol, clMtyldCol,
@@ -612,10 +610,7 @@
       mtyldC.pricePerToken(),
       mtyldC.totalSupply(),
       vaultC.balanceOf(userAddr),
-      vaultC.totalAssets().catch(()=>0n),
-      vaultC.totalSupply().catch(()=>1n),
-      new ethers.Contract(COMPOUND_STRAT, STRAT_ABI2, rp).balance().catch(()=>0n),
-      vaultC.idleWeth().catch(()=>0n),
+      vaultC.pricePerShare().catch(()=>ethers.parseEther("1")),
       gmEthC.balanceOf(userAddr),
       gmBtcC.balanceOf(userAddr),
       trackerC.depositBalances(userAddr, GMX_TOKEN).catch(()=>0n),
@@ -644,9 +639,8 @@
     const mtyldFloat       = mtyldWalletFloat + mtyldClFloat;
     const mtyldUsdVal      = mtyldFloat * mtyldNavUsd;
 
-    // mtETH-S: (idleWeth + compound strategy) / totalSupply
-    const realTVL = parseFloat(ethers.formatEther(idleWeth)) + parseFloat(ethers.formatEther(stratBal));
-    const navPerShare = vaultSupply > 0n ? realTVL / parseFloat(ethers.formatEther(vaultSupply)) : 1;
+    // mtETH-S: Conservator's pricePerShare() — auto-handles all strategies + idle WETH
+    const navPerShare = parseFloat(ethers.formatEther(mtethsPricePerShare));
     const mtethsWalletFloat = parseFloat(ethers.formatEther(mtethsBal));
     const mtethsClFloat     = parseFloat(ethers.formatEther(clMtethsCol));
     const mtethsFloat       = mtethsWalletFloat + mtethsClFloat;
