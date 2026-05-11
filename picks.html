@@ -7,6 +7,95 @@
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
   <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MT Wallet — Shared Wallet Persistence (cross-page connect)
+       ═══════════════════════════════════════════════════════════ -->
+  <script>
+  (function () {
+    const STORAGE_KEY = 'mt_wallet_v1';
+    const state = { address: null, chainId: null, provider: null };
+
+    window.MTWallet = {
+      get address() { return state.address; },
+      get chainId() { return state.chainId; },
+      get connected() { return !!state.address; },
+      getProvider() {
+        if (!window.ethereum) throw new Error('No wallet detected');
+        if (!state.provider && window.ethers) {
+          state.provider = new window.ethers.BrowserProvider(window.ethereum);
+        }
+        return state.provider;
+      },
+      async getSigner() { return await this.getProvider().getSigner(); },
+      async connect() {
+        if (!window.ethereum) { alert('No wallet detected. Install MetaMask or Rabby.'); return null; }
+        try {
+          const accts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const chain = await window.ethereum.request({ method: 'eth_chainId' });
+          await setAddress(accts[0], chain);
+          return state.address;
+        } catch (e) { console.warn('Wallet connect canceled:', e?.message); return null; }
+      },
+      disconnect() {
+        localStorage.removeItem(STORAGE_KEY);
+        state.address = null; state.chainId = null; state.provider = null;
+        emitChange();
+      },
+    };
+
+    function emitChange() {
+      window.dispatchEvent(new CustomEvent('mt-wallet-change', {
+        detail: { address: state.address, chainId: state.chainId }
+      }));
+    }
+
+    async function setAddress(addr, chain) {
+      if (!addr) return;
+      const normalized = addr.toLowerCase();
+      state.address = normalized;
+      state.chainId = chain || state.chainId;
+      state.provider = null;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        address: normalized, chainId: state.chainId, ts: Date.now()
+      }));
+      emitChange();
+    }
+
+    async function silentReconnect() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return;
+      let parsed;
+      try { parsed = JSON.parse(stored); } catch { return; }
+      if (!window.ethereum) return;
+      try {
+        const accts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accts && accts.length > 0) {
+          const chain = await window.ethereum.request({ method: 'eth_chainId' });
+          await setAddress(accts[0], chain);
+        } else {
+          state.address = parsed.address;
+          state.chainId = parsed.chainId;
+          emitChange();
+        }
+      } catch (e) { console.warn('Silent reconnect failed:', e?.message); }
+    }
+
+    if (window.ethereum && window.ethereum.on) {
+      window.ethereum.on('accountsChanged', (accts) => {
+        if (!accts || accts.length === 0) window.MTWallet.disconnect();
+        else setAddress(accts[0], state.chainId);
+      });
+      window.ethereum.on('chainChanged', (chain) => {
+        state.chainId = chain; emitChange();
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', silentReconnect);
+    } else { silentReconnect(); }
+  })();
+  </script>
   <style>
     html { scroll-behavior: smooth; }
     .glass { background: rgba(15,23,42,.6); backdrop-filter: blur(8px); }
@@ -497,22 +586,35 @@
       render();
     });
 
-    // Wallet connect (simple, ethers-compatible)
-    document.getElementById('connectBtn').addEventListener('click', async () => {
-      if (!window.ethereum) {
-        alert('No wallet detected. Install MetaMask or use the Partner Portal.');
-        return;
-      }
-      try {
-        const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const addr = accs[0];
-        const s = getState();
-        s.wallet = addr;
-        setState(s);
+    // Wallet connect (uses shared MTWallet module — persists across pages)
+    function applyWalletUI(addr) {
+      if (addr) {
         document.getElementById('connectBtn').textContent = addr.slice(0,6) + '…' + addr.slice(-4);
         document.getElementById('userStatus').textContent = '✓ Connected';
         document.getElementById('userStatusSub').textContent = addr.slice(0,8) + '…' + addr.slice(-6);
-      } catch(e) { console.error(e); }
+        // Also mirror to picks state for backward compat with existing code
+        const s = getState();
+        s.wallet = addr;
+        setState(s);
+      } else {
+        document.getElementById('connectBtn').textContent = 'Connect';
+        document.getElementById('userStatus').textContent = 'Not Connected';
+        document.getElementById('userStatusSub').textContent = 'Connect wallet to play';
+      }
+    }
+
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      // If already connected, treat the click as disconnect
+      if (window.MTWallet.connected) {
+        if (confirm('Disconnect wallet?')) window.MTWallet.disconnect();
+        return;
+      }
+      await window.MTWallet.connect();
+    });
+
+    // React to wallet state changes (covers initial silent reconnect AND user-driven connects)
+    window.addEventListener('mt-wallet-change', (e) => {
+      applyWalletUI(e.detail.address);
     });
 
     // Week countdown — until Sunday midnight ET
@@ -528,13 +630,10 @@
       document.getElementById('weekCountdown').textContent = `${d}d ${h}h ${m}m`;
     }
 
-    // Restore wallet if previously connected
+    // Restore wallet UI if MTWallet already reconnected (it fires before init runs on later loads)
     (function init() {
-      const s = getState();
-      if (s.wallet) {
-        document.getElementById('connectBtn').textContent = s.wallet.slice(0,6) + '…' + s.wallet.slice(-4);
-        document.getElementById('userStatus').textContent = '✓ Connected';
-        document.getElementById('userStatusSub').textContent = s.wallet.slice(0,8) + '…' + s.wallet.slice(-6);
+      if (window.MTWallet && window.MTWallet.connected) {
+        applyWalletUI(window.MTWallet.address);
       }
       render();
       updateCountdown();
