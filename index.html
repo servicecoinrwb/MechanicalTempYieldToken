@@ -54,9 +54,7 @@
                 <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-900/50">All Products</span>
               </div>
               <div id="statEcoAum" class="text-3xl font-mono font-black text-emerald-400">$—</div>
-              <div class="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-slate-800 text-xs font-mono">
-                </div>
-              </div>
+              <div class="text-slate-500 text-xs mt-1">MTYLD + Conservator + Credit Line + Operational</div>
             </div>
 
             <div class="col-span-2 rounded-xl bg-slate-900/60 border border-slate-800 p-5 flex items-center justify-between">
@@ -556,11 +554,7 @@
 
             const ecoTotal = mtyldAum + consAum + clAum + opsAum;
 
-            const e1 = $("statEcoAum");    if(e1) e1.textContent = usd(ecoTotal);
-            const e2 = $("ecoStatMtyld");  if(e2) e2.textContent = usd(mtyldAum);
-            const e3 = $("ecoStatCons");   if(e3) e3.textContent = usd(consAum);
-            const e4 = $("ecoStatCredit"); if(e4) e4.textContent = usd(clAum);
-            const e5 = $("ecoStatOps");    if(e5) e5.textContent = usd(opsAum);
+            const e1 = $("statEcoAum"); if(e1) e1.textContent = usd(ecoTotal);
           } catch(e) { console.error("Ecosystem AUM:", e); }
 
         } catch(e) { console.error("Stats:", e); }
