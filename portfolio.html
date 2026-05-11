@@ -592,16 +592,20 @@
     ]);
 
     // ── Calculate values ──────────────────────────────────
-    const mtyldNavUsd  = parseFloat(ethers.formatEther(mtyldNav));
-    const mtyldFloat   = parseFloat(ethers.formatEther(mtyldBal));
-    const mtyldUsdVal  = mtyldFloat * mtyldNavUsd;
+    const mtyldNavUsd      = parseFloat(ethers.formatEther(mtyldNav));
+    const mtyldWalletFloat = parseFloat(ethers.formatEther(mtyldBal));
+    const mtyldClFloat     = parseFloat(ethers.formatEther(clMtyldCol));
+    const mtyldFloat       = mtyldWalletFloat + mtyldClFloat;
+    const mtyldUsdVal      = mtyldFloat * mtyldNavUsd;
 
     // mtETH-S: (idleWeth + compound strategy) / totalSupply
     const realTVL = parseFloat(ethers.formatEther(idleWeth)) + parseFloat(ethers.formatEther(stratBal));
     const navPerShare = vaultSupply > 0n ? realTVL / parseFloat(ethers.formatEther(vaultSupply)) : 1;
-    const mtethsFloat  = parseFloat(ethers.formatEther(mtethsBal));
-    const mtethsWeth   = mtethsFloat * navPerShare;
-    const mtethsUsdVal = mtethsWeth * ethPrice;
+    const mtethsWalletFloat = parseFloat(ethers.formatEther(mtethsBal));
+    const mtethsClFloat     = parseFloat(ethers.formatEther(clMtethsCol));
+    const mtethsFloat       = mtethsWalletFloat + mtethsClFloat;
+    const mtethsWeth        = mtethsFloat * navPerShare;
+    const mtethsUsdVal      = mtethsWeth * ethPrice;
 
     // GM tokens (approximate price)
     const gmEthFloat  = parseFloat(ethers.formatEther(gmEthBal));
@@ -643,11 +647,15 @@
 
     el('mtyld-bal').textContent  = mtyldFloat.toFixed(4);
     el('mtyld-usd').textContent  = usd(mtyldUsdVal);
-    el('mtyld-nav').textContent  = 'NAV: $'+mtyldNavUsd.toFixed(6);
+    el('mtyld-nav').textContent  = mtyldClFloat > 0
+      ? mtyldWalletFloat.toFixed(2)+' wallet • '+mtyldClFloat.toFixed(2)+' locked'
+      : 'NAV: $'+mtyldNavUsd.toFixed(6);
 
     el('mteths-bal').textContent = mtethsFloat.toFixed(4);
     el('mteths-usd').textContent = usd(mtethsUsdVal);
-    el('mteths-weth').textContent= mtethsWeth.toFixed(6)+' WETH';
+    el('mteths-weth').textContent= mtethsClFloat > 0
+      ? mtethsWalletFloat.toFixed(4)+' wallet • '+mtethsClFloat.toFixed(4)+' locked'
+      : mtethsWeth.toFixed(6)+' WETH';
     const npEl=document.getElementById('mteths-nav-price'); if(npEl) npEl.textContent='1 mtETH-S = '+navPerShare.toFixed(6)+' WETH';
 
     el('gm-eth-bal').textContent = gmEthFloat.toFixed(4);
@@ -666,17 +674,22 @@
     el('cl-interest').textContent = usd(clEarnedFloat);
     el('cl-pool-share').textContent = 'Pool share: '+fP(clShare);
 
-    if (csum) {
-      el('cl-mteths-col').textContent  = parseFloat(ethers.formatEther(csum[0])).toFixed(4)+' mtETH-S';
-      el('cl-mteths-power').textContent= 'Borrow power: $'+(Number(csum[2])/1e6).toFixed(2);
-      el('cl-mtyld-col').textContent   = parseFloat(ethers.formatEther(csum[3])).toFixed(4)+' MTYLD';
-      el('cl-mtyld-power').textContent = 'Borrow power: $'+(Number(csum[5])/1e6).toFixed(2);
-      const totalBorrow = Number(csum[6])/1e6;
-      const maxBorrow   = Number(clMax)/1e6;
-      el('cl-borrow-power').textContent = usd(totalBorrow);
-      el('cl-max-borrow').textContent   = 'Max: '+usd(maxBorrow);
-      el('cl-borrow-bar').style.width   = totalBorrow > 0 ? Math.min(100, (maxBorrow/totalBorrow)*100)+'%' : '0%';
-    }
+    // Per-user credit line collateral & borrow power
+    const userMtethsColUsd = mtethsClFloat * navPerShare * ethPrice;
+    const userMtyldColUsd  = mtyldClFloat * mtyldNavUsd;
+    const userMtethsBorrow = userMtethsColUsd * 0.60;
+    const userMtyldBorrow  = userMtyldColUsd * 0.70;
+    const userTotalBorrow  = userMtethsBorrow + userMtyldBorrow;
+
+    el('cl-mteths-col').textContent  = mtethsClFloat.toFixed(4)+' mtETH-S';
+    el('cl-mteths-power').textContent= 'Borrow power: '+usd(userMtethsBorrow);
+    el('cl-mtyld-col').textContent   = mtyldClFloat.toFixed(4)+' MTYLD';
+    el('cl-mtyld-power').textContent = 'Borrow power: '+usd(userMtyldBorrow);
+    el('cl-borrow-power').textContent= usd(userTotalBorrow);
+
+    const maxBorrow = Number(clMax)/1e6;
+    el('cl-max-borrow').textContent = 'Max: '+usd(maxBorrow);
+    el('cl-borrow-bar').style.width = userTotalBorrow > 0 ? Math.min(100, (maxBorrow/userTotalBorrow)*100)+'%' : '0%';
 
     // ── Allocation chart ─────────────────────────────────
     const labels  = ['MTYLD','mtETH-S','GM ETH','GM BTC','GMX','Credit Line'];
