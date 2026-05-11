@@ -45,6 +45,35 @@
         <!-- STATS CARD -->
         <div class="glass ring-sky rounded-2xl p-6 border border-slate-800">
           <div class="grid grid-cols-2 gap-4">
+
+            <!-- ECOSYSTEM AUM headline tile -->
+            <div class="col-span-2 rounded-xl border border-emerald-900/40 p-5"
+                 style="background:linear-gradient(135deg,rgba(15,23,42,0.7),rgba(16,185,129,0.06));">
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest">Total Ecosystem AUM</div>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-900/50">All Products</span>
+              </div>
+              <div id="statEcoAum" class="text-3xl font-mono font-black text-emerald-400">$—</div>
+              <div class="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-slate-800 text-xs font-mono">
+                <div>
+                  <div class="text-slate-500 text-[10px] uppercase tracking-wide">MTYLD</div>
+                  <div id="ecoStatMtyld" class="text-purple-400">$—</div>
+                </div>
+                <div>
+                  <div class="text-slate-500 text-[10px] uppercase tracking-wide">Conservator</div>
+                  <div id="ecoStatCons" class="text-sky-400">$—</div>
+                </div>
+                <div>
+                  <div class="text-slate-500 text-[10px] uppercase tracking-wide">Credit Line</div>
+                  <div id="ecoStatCredit" class="text-emerald-400">$—</div>
+                </div>
+                <div>
+                  <div class="text-slate-500 text-[10px] uppercase tracking-wide">Operational</div>
+                  <div id="ecoStatOps" class="text-amber-400">$—</div>
+                </div>
+              </div>
+            </div>
+
             <div class="col-span-2 rounded-xl bg-slate-900/60 border border-slate-800 p-5 flex items-center justify-between">
               <div>
                 <div class="text-slate-400 text-sm">Active Treasury</div>
@@ -318,7 +347,7 @@
         <li>MTYLD Vault: <a href="https://arbiscan.io/address/0xdFD1C01678e713FDe1630c9db921e6206f3795b4" target="_blank" class="text-sky-300 hover:underline">0xdFD1C01678e713FDe1630c9db921e6206f3795b4</a></li>
         <li>mtETH-S Vault (Conservator): <a href="https://arbiscan.io/address/0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f" target="_blank" class="text-sky-300 hover:underline">0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f</a></li>
         <li>The Conservator (AI Agent): <a href="https://arbiscan.io/address/0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58" target="_blank" class="text-sky-300 hover:underline">0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58</a></li>
-        <li>MT Credit Line: <a href="https://arbiscan.io/address/0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc" target="_blank" class="text-sky-300 hover:underline">0xe442E46c4cbBa68bFE36196B9547392BAD0429eB</a></li>
+        <li>MT Credit Line: <a href="https://arbiscan.io/address/0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc" target="_blank" class="text-sky-300 hover:underline">0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc</a></li>
         <li>Treasury Wallet: <a href="https://arbiscan.io/address/0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482" target="_blank" class="text-sky-300 hover:underline">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</a></li>
       </ul>
       <p class="mt-3 text-xs text-slate-500">Always verify official links and addresses.</p>
@@ -433,12 +462,22 @@
       const WETH_ADDR      = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
       const CHAINLINK_FEED = "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612";
       const CREDIT_LINE    = "0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc";
+      const COMPOUND_STRAT = "0x3F26B819988542c4EdA48cA6dC241DCF972A74F2";
+      const MT_DEPLOYER    = "0xcfe077e6f7554B1724546E02624a0832D1f4557a";
+      const GM_ETH_ADDR    = "0x70d95587d40A2caf56bd97485aB3Eec10Bee6336";
+      const GM_BTC_ADDR    = "0x47c031236e19d024b42f8AE6780E44A573170703";
+      const GMX_TOKEN      = "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a";
+      const GMX_TRACKER    = "0x908C4D94D34924765f1eDc22A1DD098397c59dD4";
+      const GMX_PRICE      = "0xDB98056FecFff59D032aB628337A4887110df3dB";
       const RPCS = ["https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu","https://arbitrum.llamarpc.com"];
 
       const VAULT_ABI = ["function pricePerToken() view returns (uint256)","function treasuryActiveUSDC() view returns (uint256)","function pendingRevenueUSDC() view returns (uint256)","function totalSupply() view returns (uint256)"];
       const BAL_ABI   = ["function balanceOf(address) view returns (uint256)"];
       const CL_ABI    = ["function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)"];
       const CRD_ABI   = ["function totalUsdcDeposited() view returns (uint256)"];
+      const STRAT_ABI = ["function balance() view returns (uint256)"];
+      const TRK_ABI   = ["function depositBalances(address,address) view returns (uint256)"];
+      const IDLE_ABI  = ["function idleWeth() view returns (uint256)"];
 
       const $ = id => document.getElementById(id);
       const usd = (n, d=2) => "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: d });
@@ -479,7 +518,7 @@
           // Conservator TVL
          try {
            const wethC  = new ethers.Contract(WETH_ADDR, BAL_ABI, provider);
-           const stratC = new ethers.Contract("0x3F26B819988542c4EdA48cA6dC241DCF972A74F2", ["function balance() view returns (uint256)"], provider);
+           const stratC = new ethers.Contract(COMPOUND_STRAT, STRAT_ABI, provider);
            const clC    = new ethers.Contract(CHAINLINK_FEED, CL_ABI, provider);
            const [wethBal, stratBal, clData] = await Promise.all([wethC.balanceOf(CONSERVATOR), stratC.balance(), clC.latestRoundData()]);
            const ethPrice = Number(clData[1]) / 1e8;
@@ -495,6 +534,49 @@
             const clEl = $("statCreditLine");
             if(clEl) clEl.textContent = usd(Number(usdcPool) / 1e6);
           } catch(e) { console.error("Credit line stats:", e); }
+
+          // ── Total Ecosystem AUM ─────────────────────────────
+          try {
+            const gmE   = new ethers.Contract(GM_ETH_ADDR, BAL_ABI, provider);
+            const gmB   = new ethers.Contract(GM_BTC_ADDR, BAL_ABI, provider);
+            const gmxT  = new ethers.Contract(GMX_TOKEN, BAL_ABI, provider);
+            const trk   = new ethers.Contract(GMX_TRACKER, TRK_ABI, provider);
+            const gmxF  = new ethers.Contract(GMX_PRICE, CL_ABI, provider);
+            const ethF  = new ethers.Contract(CHAINLINK_FEED, CL_ABI, provider);
+            const stra  = new ethers.Contract(COMPOUND_STRAT, STRAT_ABI, provider);
+            const cons  = new ethers.Contract(CONSERVATOR, IDLE_ABI, provider);
+            const crd2  = new ethers.Contract(CREDIT_LINE, CRD_ABI, provider);
+
+            const [gmEbal, gmBbal, gmxStk, gmxWal, gmxData, ethData, stratBal2, idleW, clTotal] = await Promise.all([
+              gmE.balanceOf(MT_DEPLOYER).catch(()=>0n),
+              gmB.balanceOf(MT_DEPLOYER).catch(()=>0n),
+              trk.depositBalances(MT_DEPLOYER, GMX_TOKEN).catch(()=>0n),
+              gmxT.balanceOf(MT_DEPLOYER).catch(()=>0n),
+              gmxF.latestRoundData().catch(()=>null),
+              ethF.latestRoundData().catch(()=>null),
+              stra.balance().catch(()=>0n),
+              cons.idleWeth().catch(()=>0n),
+              crd2.totalUsdcDeposited().catch(()=>0n),
+            ]);
+
+            const gmxPx = gmxData ? Number(gmxData[1])/1e8 : 7.52;
+            const ethPx = ethData ? Number(ethData[1])/1e8 : 2300;
+
+            const mtyldAum = active + pending;                                          // already-fetched values from above
+            const consAum  = (Number(idleW) + Number(stratBal2)) / 1e18 * ethPx;
+            const clAum    = Number(clTotal) / 1e6;
+            const opsAum   = (Number(gmEbal)/1e18 * 1.76)
+                           + (Number(gmBbal)/1e18 * 2.43)
+                           + (Number(gmxStk + gmxWal)/1e18 * gmxPx);
+
+            const ecoTotal = mtyldAum + consAum + clAum + opsAum;
+
+            const e1 = $("statEcoAum");    if(e1) e1.textContent = usd(ecoTotal);
+            const e2 = $("ecoStatMtyld");  if(e2) e2.textContent = usd(mtyldAum);
+            const e3 = $("ecoStatCons");   if(e3) e3.textContent = usd(consAum);
+            const e4 = $("ecoStatCredit"); if(e4) e4.textContent = usd(clAum);
+            const e5 = $("ecoStatOps");    if(e5) e5.textContent = usd(opsAum);
+          } catch(e) { console.error("Ecosystem AUM:", e); }
 
         } catch(e) { console.error("Stats:", e); }
       }
