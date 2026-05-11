@@ -7,6 +7,96 @@
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
   <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MT Wallet — Shared Wallet Persistence (cross-page connect)
+       ═══════════════════════════════════════════════════════════ -->
+  <script>
+  (function () {
+    const STORAGE_KEY = 'mt_wallet_v1';
+    const state = { address: null, chainId: null, provider: null };
+
+    window.MTWallet = {
+      get address() { return state.address; },
+      get chainId() { return state.chainId; },
+      get connected() { return !!state.address; },
+      getProvider() {
+        if (!window.ethereum) throw new Error('No wallet detected');
+        if (!state.provider && window.ethers) {
+          state.provider = new window.ethers.BrowserProvider(window.ethereum);
+        }
+        return state.provider;
+      },
+      async getSigner() { return await this.getProvider().getSigner(); },
+      async connect() {
+        if (!window.ethereum) { alert('No wallet detected. Install MetaMask or Rabby.'); return null; }
+        try {
+          const accts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const chain = await window.ethereum.request({ method: 'eth_chainId' });
+          await setAddress(accts[0], chain);
+          return state.address;
+        } catch (e) { console.warn('Wallet connect canceled:', e?.message); return null; }
+      },
+      disconnect() {
+        localStorage.removeItem(STORAGE_KEY);
+        state.address = null; state.chainId = null; state.provider = null;
+        emitChange();
+      },
+    };
+
+    function emitChange() {
+      window.dispatchEvent(new CustomEvent('mt-wallet-change', {
+        detail: { address: state.address, chainId: state.chainId }
+      }));
+    }
+
+    async function setAddress(addr, chain) {
+      if (!addr) return;
+      const normalized = addr.toLowerCase();
+      state.address = normalized;
+      state.chainId = chain || state.chainId;
+      state.provider = null;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        address: normalized, chainId: state.chainId, ts: Date.now()
+      }));
+      emitChange();
+    }
+
+    async function silentReconnect() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return;
+      let parsed;
+      try { parsed = JSON.parse(stored); } catch { return; }
+      if (!window.ethereum) return;
+      try {
+        const accts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accts && accts.length > 0) {
+          const chain = await window.ethereum.request({ method: 'eth_chainId' });
+          await setAddress(accts[0], chain);
+        } else {
+          state.address = parsed.address;
+          state.chainId = parsed.chainId;
+          emitChange();
+        }
+      } catch (e) { console.warn('Silent reconnect failed:', e?.message); }
+    }
+
+    if (window.ethereum && window.ethereum.on) {
+      window.ethereum.on('accountsChanged', (accts) => {
+        if (!accts || accts.length === 0) window.MTWallet.disconnect();
+        else setAddress(accts[0], state.chainId);
+      });
+      window.ethereum.on('chainChanged', (chain) => {
+        state.chainId = chain; emitChange();
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', silentReconnect);
+    } else { silentReconnect(); }
+  })();
+  </script>
+
   <style>
     html { scroll-behavior: smooth; }
     .glass { background: rgba(15,23,42,0.75); backdrop-filter: blur(12px); border: 1px solid rgba(51,65,85,0.6); }
@@ -50,7 +140,7 @@
       <h1 class="text-3xl font-black text-white">Mechanical Temp <span class="text-sky-400">Business Credit Line</span></h1>
       <p class="text-slate-400 mt-1 text-sm max-w-2xl">Dual-collateral credit line backed by mtETH-S (60% LTV) and MTYLD (70% LTV). Deposit USDC to fund operations and earn interest.</p>
       <p class="text-slate-600 text-xs font-mono mt-1">
-        <a href="https://arbiscan.io/address/0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc" target="_blank" class="hover:text-sky-400 transition">0xe442...29eB ↗</a>
+        <a href="https://arbiscan.io/address/0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc" target="_blank" class="hover:text-sky-400 transition">0xDA91...A2Bc ↗</a>
         <span class="mx-2">•</span> Arbitrum One <span class="mx-2">•</span> <span id="refreshTimer">15s refresh</span>
       </p>
     </div>
@@ -399,7 +489,7 @@
       <div class="glass rounded-2xl p-6">
         <h3 class="text-base font-bold text-white mb-4">Contract Details</h3>
         <div class="space-y-2.5 text-sm">
-          <div class="flex justify-between"><span class="text-slate-400">Contract</span><a href="https://arbiscan.io/address/0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xe442...29eB ↗</a></div>
+          <div class="flex justify-between"><span class="text-slate-400">Contract</span><a href="https://arbiscan.io/address/0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xDA91...A2Bc ↗</a></div>
           <div class="flex justify-between"><span class="text-slate-400">mtETH-S Token</span><a href="https://arbiscan.io/address/0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xC3c4...e54f ↗</a></div>
           <div class="flex justify-between"><span class="text-slate-400">MTYLD Token</span><a href="https://arbiscan.io/address/0xdFD1C01678e713FDe1630c9db921e6206f3795b4" target="_blank" class="text-sky-400 font-mono text-xs hover:underline">0xdFD1...95b4 ↗</a></div>
           <div class="flex justify-between"><span class="text-slate-400">mtETH-S LTV</span><span class="text-white text-xs">60%</span></div>
@@ -418,7 +508,7 @@
 
     <!-- Footer -->
     <div class="pt-6 border-t border-slate-800 flex items-center justify-between">
-      <p class="text-slate-600 text-xs font-mono">0xe442...29eB • Arbitrum One • v3.0</p>
+      <p class="text-slate-600 text-xs font-mono">0xDA91...A2Bc • Arbitrum One • v3.0</p>
       <button onclick="refreshAll()" class="text-slate-500 hover:text-sky-400 text-xs font-mono transition">[ refresh ]</button>
     </div>
   </main>
@@ -536,33 +626,62 @@
     return false;
   }
 
-  // ── Connect ────────────────────────────────────────────────
+  // ── Connect (delegates to shared MTWallet) ─────────────────
   async function connect() {
-    if (!window.ethereum) return alert('Install MetaMask first.');
-    try {
-      provider = new ethers.BrowserProvider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      if (!await checkNet()) {
-        try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xa4b1' }] }); }
-        catch(e) { return; }
-      }
-      signer   = await provider.getSigner();
-      userAddr = await signer.getAddress();
-      contract = new ethers.Contract(CONTRACT, ABI, signer);
-      usdcC    = new ethers.Contract(USDC_ADDR, ERC20_ABI, signer);
-      mtethsC  = new ethers.Contract(MTETHS,    ERC20_ABI, signer);
-      mtyldC   = new ethers.Contract(MTYLD_TOK, ERC20_ABI, signer);
-      const btn = el('btnConnect');
-      btn.textContent = userAddr.slice(0,6) + '…' + userAddr.slice(-4);
-      btn.className   = 'px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold';
-      if (userAddr.toLowerCase() === BORROWER.toLowerCase()) el('borrowerSection').style.display = 'block';
-      await refreshAll();
-    } catch(e) { console.error(e); }
+    await window.MTWallet.connect();
+    // UI update happens via 'mt-wallet-change' listener below
   }
 
+  // Update UI + wire signer contracts when wallet state changes
+  async function applyWalletState(addr) {
+    if (!addr) {
+      // Disconnected
+      userAddr = null;
+      signer = null; contract = null; usdcC = null; mtethsC = null; mtyldC = null;
+      const btn = el('btnConnect');
+      btn.textContent = 'Connect Wallet';
+      btn.className   = 'px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition';
+      el('borrowerSection').style.display = 'none';
+      el('netBadge').style.display = 'none';
+      await refreshAll(); // refresh in read-only mode
+      return;
+    }
+
+    userAddr = addr;
+    try {
+      provider = window.MTWallet.getProvider();
+      try { signer = await provider.getSigner(); } catch { signer = null; }
+      if (signer) {
+        contract = new ethers.Contract(CONTRACT, ABI, signer);
+        usdcC    = new ethers.Contract(USDC_ADDR, ERC20_ABI, signer);
+        mtethsC  = new ethers.Contract(MTETHS,    ERC20_ABI, signer);
+        mtyldC   = new ethers.Contract(MTYLD_TOK, ERC20_ABI, signer);
+      }
+    } catch { signer = null; contract = null; }
+
+    const btn = el('btnConnect');
+    btn.textContent = addr.slice(0,6) + '…' + addr.slice(-4);
+    btn.className   = 'px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold';
+
+    await checkNet();
+    if (addr.toLowerCase() === BORROWER.toLowerCase()) {
+      el('borrowerSection').style.display = 'block';
+    } else {
+      el('borrowerSection').style.display = 'none';
+    }
+    await refreshAll();
+  }
+
+  window.addEventListener('mt-wallet-change', (e) => applyWalletState(e.detail.address));
+  if (window.MTWallet?.connected) applyWalletState(window.MTWallet.address);
+
   async function ensureConn() {
-    if (!userAddr) await connect();
-    return !!userAddr;
+    if (!userAddr || !signer) {
+      await window.MTWallet.connect();
+      // Give the event listener a tick to wire contracts
+      await new Promise(r => setTimeout(r, 100));
+    }
+    return !!signer;
   }
 
   // ── Tab switching ──────────────────────────────────────────
@@ -580,7 +699,7 @@
   // ── Main refresh ───────────────────────────────────────────
   async function refreshAll() {
     try {
-      const rp = provider || new ethers.JsonRpcProvider('https://arb1.arbitrum.io/rpc');
+      const rp = (signer && provider) ? provider : new ethers.JsonRpcProvider('https://arb1.arbitrum.io/rpc');
       const rc = new ethers.Contract(CONTRACT, ABI, rp);
 
       const [
@@ -787,7 +906,7 @@
 
   async function maxUsdcWithdraw() {
     if (!await ensureConn()) return;
-    const rp = new ethers.BrowserProvider(window.ethereum);
+    const rp = window.MTWallet.getProvider();
     const rc = new ethers.Contract(CONTRACT, ABI, rp);
     const dep = await rc.usdcDeposited(userAddr);
     el('uWithAmt').value = (Number(dep) / 1e6).toFixed(6);
@@ -836,7 +955,7 @@
 
   async function maxMtethsWithdraw() {
     if (!await ensureConn()) return;
-    const rp = new ethers.BrowserProvider(window.ethereum);
+    const rp = window.MTWallet.getProvider();
     const dep = await new ethers.Contract(CONTRACT, ABI, rp).collateralDeposited(userAddr);
     el('cWithAmt').value = ethers.formatEther(dep);
   }
@@ -884,7 +1003,7 @@
 
   async function maxMtyldWithdraw() {
     if (!await ensureConn()) return;
-    const rp = new ethers.BrowserProvider(window.ethereum);
+    const rp = window.MTWallet.getProvider();
     const dep = await new ethers.Contract(CONTRACT, ABI, rp).mtyldCollateralDeposited(userAddr);
     el('mWithAmt').value = ethers.formatEther(dep);
   }
@@ -904,7 +1023,7 @@
   async function approveRepay() {
     if (!await ensureConn()) return;
     try {
-      const rp  = new ethers.BrowserProvider(window.ethereum);
+      const rp  = window.MTWallet.getProvider();
       const rc  = new ethers.Contract(CONTRACT, ABI, rp);
       const due = await rc.amountDue();
       const approveAmt = due * 110n / 100n; // 10% buffer for accrual
@@ -924,13 +1043,7 @@
     await sendTx('Partial Repayment', () => contract.repayPartial(BigInt(Math.floor(amt * 1e6))));
   }
 
-  // ── Init ───────────────────────────────────────────────────
-  if (window.ethereum) {
-    window.ethereum.on('chainChanged',    () => location.reload());
-    window.ethereum.on('accountsChanged', () => location.reload());
-    checkNet();
-  }
-
+  // ── Init: always run a read-only refresh on load so stats show pre-connect ──
   refreshAll();
   setInterval(refreshAll, 15000);
 </script>
