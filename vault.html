@@ -7,6 +7,96 @@
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MT Wallet — Shared Wallet Persistence (cross-page connect)
+       ═══════════════════════════════════════════════════════════ -->
+  <script>
+  (function () {
+    const STORAGE_KEY = 'mt_wallet_v1';
+    const state = { address: null, chainId: null, provider: null };
+
+    window.MTWallet = {
+      get address() { return state.address; },
+      get chainId() { return state.chainId; },
+      get connected() { return !!state.address; },
+      getProvider() {
+        if (!window.ethereum) throw new Error('No wallet detected');
+        if (!state.provider && window.ethers) {
+          state.provider = new window.ethers.BrowserProvider(window.ethereum);
+        }
+        return state.provider;
+      },
+      async getSigner() { return await this.getProvider().getSigner(); },
+      async connect() {
+        if (!window.ethereum) { alert('No wallet detected. Install MetaMask or Rabby.'); return null; }
+        try {
+          const accts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const chain = await window.ethereum.request({ method: 'eth_chainId' });
+          await setAddress(accts[0], chain);
+          return state.address;
+        } catch (e) { console.warn('Wallet connect canceled:', e?.message); return null; }
+      },
+      disconnect() {
+        localStorage.removeItem(STORAGE_KEY);
+        state.address = null; state.chainId = null; state.provider = null;
+        emitChange();
+      },
+    };
+
+    function emitChange() {
+      window.dispatchEvent(new CustomEvent('mt-wallet-change', {
+        detail: { address: state.address, chainId: state.chainId }
+      }));
+    }
+
+    async function setAddress(addr, chain) {
+      if (!addr) return;
+      const normalized = addr.toLowerCase();
+      state.address = normalized;
+      state.chainId = chain || state.chainId;
+      state.provider = null;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        address: normalized, chainId: state.chainId, ts: Date.now()
+      }));
+      emitChange();
+    }
+
+    async function silentReconnect() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return;
+      let parsed;
+      try { parsed = JSON.parse(stored); } catch { return; }
+      if (!window.ethereum) return;
+      try {
+        const accts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accts && accts.length > 0) {
+          const chain = await window.ethereum.request({ method: 'eth_chainId' });
+          await setAddress(accts[0], chain);
+        } else {
+          state.address = parsed.address;
+          state.chainId = parsed.chainId;
+          emitChange();
+        }
+      } catch (e) { console.warn('Silent reconnect failed:', e?.message); }
+    }
+
+    if (window.ethereum && window.ethereum.on) {
+      window.ethereum.on('accountsChanged', (accts) => {
+        if (!accts || accts.length === 0) window.MTWallet.disconnect();
+        else setAddress(accts[0], state.chainId);
+      });
+      window.ethereum.on('chainChanged', (chain) => {
+        state.chainId = chain; emitChange();
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', silentReconnect);
+    } else { silentReconnect(); }
+  })();
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     html { scroll-behavior: smooth; }
@@ -368,6 +458,7 @@
     const USDC  = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
     const DISTRIBUTOR = "0x787e7354d28F40E4418D07043E04be77F00f0a13";
     const CHAIN_ID_ARBITRUM = 42161;
+    const FALLBACK_RPC = "https://arb1.arbitrum.io/rpc";
 
     const VAULT_ABI = ["function MAX_FEE_BPS() view returns (uint16)","function RESCUE_DELAY() view returns (uint256)","function allowance(address,address) view returns (uint256)","function balanceOf(address) view returns (uint256)","function decimals() view returns (uint8)","function epochClosing() view returns (bool)","function feeRecipient() view returns (address)","function feeRoundUp() view returns (bool)","function guardedLaunch() view returns (bool)","function isWhitelistedMinter(address) view returns (bool)","function maxSupply() view returns (uint256)","function mintFeeBps() view returns (uint16)","function name() view returns (string)","function navDelaySec() view returns (uint256)","function owner() view returns (address)","function paused() view returns (bool)","function pendingReleaseAt() view returns (uint64)","function pendingReleaseReady() view returns (bool)","function pendingRevenueUSDC() view returns (uint256)","function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)","function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)","function pricePerToken() view returns (uint256)","function redeemFeeBps() view returns (uint16)","function rescuable(address) view returns (bool)","function rescueReq() view returns (address token, uint256 amount, address to, uint64 eta)","function stable() view returns (address)","function stableDecimals() view returns (uint8)","function symbol() view returns (string)","function totalSupply() view returns (uint256)","function treasury18() view returns (uint256)","function treasuryActiveUSDC() view returns (uint256)","function treasuryUSDC() view returns (uint256)","function approve(address s, uint256 a) returns (bool)","function announceRescue(address token, uint256 amount, address to)","function applyPendingRevenue()","function beginEpochClose()","function endEpochClose()","function executeRescue()","function injectRevenue(uint256 usdcAmount)","function mint(uint256 usdcAmount, uint256 minMtyldOut)","function pause()","function redeem(uint256 mtyldAmount, uint256 minUsdcOut)","function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)","function setGuardedLaunch(bool on)","function setMaxSupply(uint256 cap)","function setNavDelay(uint256 seconds_)","function setWhitelist(address user, bool allowed)","function transfer(address to, uint256 a) returns (bool)","function transferFrom(address f, address t, uint256 a) returns (bool)","function transferOwnership(address n)","function unpause()","function whitelistRescuable(address token, bool allowed)"];
     const DIST_ABI = ["function distribute(address[] recipients, uint256[] amounts, string note)","function distributeProportional(address[] recipients, uint256[] weights, uint256 totalAmount, string note)","function distributionCount() view returns (uint256)","function getDistribution(uint256 id) view returns (uint256 timestamp, uint256 totalAmount, uint256 recipientCount, string note)","function getAllDistributions() view returns (tuple(uint256 timestamp, uint256 totalAmount, uint256 recipientCount, string note)[])"];
@@ -378,6 +469,18 @@
     const p18 = s => ethers.parseUnits(String(s||"0"), 18);
     const NAV_KEY = "mtyld_nav_history_" + VAULT;
     let navHistory=[], navChart, provider, signer, acct, vault, usdc, dist, vaultOwner;
+
+    // Read-only provider — works even before wallet connect
+    function getReadProvider(){
+      if(provider) return provider;
+      try{
+        if(window.MTWallet?.connected && window.ethereum){
+          provider = window.MTWallet.getProvider();
+          return provider;
+        }
+      }catch{}
+      return new ethers.JsonRpcProvider(FALLBACK_RPC);
+    }
 
     function loadH(){ try{ navHistory=JSON.parse(localStorage.getItem(NAV_KEY)||"[]"); }catch{ navHistory=[]; } }
     function saveH(){ try{ localStorage.setItem(NAV_KEY,JSON.stringify(navHistory)); }catch{} }
@@ -404,21 +507,78 @@
     const shortErr=e=>{ const s=(e&&(e.info?.error?.message||e.shortMessage||e.message))||String(e); return "Error: "+s.replace(/execution reverted: /i,'').slice(0,180); };
     function humanize(s){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60; return (h?h+"h ":"")+(m?m+"m ":"")+sec+"s"; }
 
-    async function ensureProvider(){
-      if(!window.ethereum){alert("No wallet found.");throw new Error("no wallet");}
-      provider=new ethers.BrowserProvider(window.ethereum);
-      const net=await provider.getNetwork();
-      if(Number(net.chainId)!==CHAIN_ID_ARBITRUM){ try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0xa4b1'}]});}catch(e){alert("Please switch to Arbitrum One.");throw e;} }
-      signer=await provider.getSigner(); acct=await signer.getAddress();
-      vault=new ethers.Contract(VAULT,VAULT_ABI,signer);
-      usdc=new ethers.Contract(USDC,ERC20_ABI,signer);
-      dist=new ethers.Contract(DISTRIBUTOR,DIST_ABI,signer);
-      el("addr").textContent=trunc(acct);
-      const btn=el("btnConnect"); btn.textContent=acct.slice(0,6)+"..."+acct.slice(-4); btn.className="ml-2 px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold";
-      vaultOwner=await vault.owner();
-      el("ownerLine").textContent=trunc(vaultOwner);
-      el("ownerPanel").classList.toggle("hidden",vaultOwner.toLowerCase()!==acct.toLowerCase());
-      el("userPanel").classList.remove("hidden");
+    // ── Connect — delegates to shared MTWallet ───────────────
+    async function connectWallet(){
+      const addr = await window.MTWallet.connect();
+      if(!addr) return false;
+      // UI updates flow through 'mt-wallet-change' listener below
+      return true;
+    }
+
+    // Apply wallet state to UI + signer contracts
+    async function applyWalletState(addr){
+      if(!addr){
+        // Disconnected
+        provider=null; signer=null; acct=null; vault=null; usdc=null; dist=null; vaultOwner=null;
+        el("addr").textContent="Not connected";
+        el("ownerLine").textContent="—";
+        const btn=el("btnConnect");
+        btn.textContent="Connect Wallet";
+        btn.className="ml-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition";
+        el("ownerPanel").classList.add("hidden");
+        el("userPanel").classList.add("hidden");
+        // Still refresh read-only stats
+        await refresh();
+        return;
+      }
+
+      acct = addr;
+      try{
+        provider = window.MTWallet.getProvider();
+        // Network check
+        const net = await provider.getNetwork();
+        if(Number(net.chainId) !== CHAIN_ID_ARBITRUM){
+          try{ await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:'0xa4b1'}]}); }
+          catch{ alert("Please switch to Arbitrum One."); }
+        }
+        try{ signer = await provider.getSigner(); }catch{ signer = null; }
+        if(signer){
+          vault = new ethers.Contract(VAULT, VAULT_ABI, signer);
+          usdc  = new ethers.Contract(USDC, ERC20_ABI, signer);
+          dist  = new ethers.Contract(DISTRIBUTOR, DIST_ABI, signer);
+        }
+      }catch(e){ console.warn("Provider init failed:", e); signer=null; vault=null; usdc=null; dist=null; }
+
+      el("addr").textContent = trunc(addr);
+      const btn = el("btnConnect");
+      btn.textContent = addr.slice(0,6)+"..."+addr.slice(-4);
+      btn.className = "ml-2 px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold";
+
+      // Owner check + user panel
+      try{
+        const rv = new ethers.Contract(VAULT, VAULT_ABI, provider);
+        vaultOwner = await rv.owner();
+        el("ownerLine").textContent = trunc(vaultOwner);
+        const isOwner = vaultOwner.toLowerCase() === addr.toLowerCase();
+        el("ownerPanel").classList.toggle("hidden", !isOwner);
+        el("userPanel").classList.remove("hidden");
+      }catch(e){ console.warn("Owner check failed:", e); }
+
+      await refresh();
+      if(vaultOwner && acct && vaultOwner.toLowerCase()===acct.toLowerCase()) await loadOwnerState();
+    }
+
+    window.addEventListener("mt-wallet-change", e => applyWalletState(e.detail.address));
+    if(window.MTWallet?.connected) applyWalletState(window.MTWallet.address);
+
+    async function ensureConnected(){
+      if(!signer || !vault){
+        const ok = await connectWallet();
+        if(!ok) return false;
+        // Give the listener a tick to wire contracts
+        await new Promise(r=>setTimeout(r,150));
+      }
+      return !!(signer && vault);
     }
 
     async function loadOwnerState(){
@@ -441,14 +601,23 @@
     }
 
     async function loadUserPanel(price){
-      if(!vault||!acct)return;
-      try{ const [bal,ts]=await Promise.all([vault.balanceOf(acct),vault.totalSupply()]); const b=+ethers.formatUnits(bal,18); el("userBal").textContent=b.toLocaleString(undefined,{maximumFractionDigits:6})+" MTYLD"; el("userVal").textContent="$"+(b*(+ethers.formatUnits(price,18))).toFixed(2); const s=+ethers.formatUnits(ts,18); el("userShare").textContent=(s>0?(b/s*100).toFixed(4):"0.0000")+"%"; }catch(e){console.error(e);}
+      if(!acct) return;
+      try{
+        const rp = getReadProvider();
+        const rv = new ethers.Contract(VAULT, VAULT_ABI, rp);
+        const [bal,ts]=await Promise.all([rv.balanceOf(acct),rv.totalSupply()]);
+        const b=+ethers.formatUnits(bal,18);
+        el("userBal").textContent=b.toLocaleString(undefined,{maximumFractionDigits:6})+" MTYLD";
+        el("userVal").textContent="$"+(b*(+ethers.formatUnits(price,18))).toFixed(2);
+        const s=+ethers.formatUnits(ts,18);
+        el("userShare").textContent=(s>0?(b/s*100).toFixed(4):"0.0000")+"%";
+      }catch(e){console.error(e);}
     }
 
     async function refresh(){
       try{
-        if(!provider){ provider=window.ethereum?new ethers.BrowserProvider(window.ethereum):new ethers.JsonRpcProvider("https://arb1.arbitrum.io/rpc"); }
-        const rv=new ethers.Contract(VAULT,VAULT_ABI,provider);
+        const rp = getReadProvider();
+        const rv = new ethers.Contract(VAULT,VAULT_ABI,rp);
         const [price,active,pending,relAt]=await Promise.all([rv.pricePerToken(),rv.treasuryActiveUSDC(),rv.pendingRevenueUSDC(),rv.pendingReleaseAt()]);
         const pUsd=+ethers.formatUnits(price,18);
         el("price").textContent="$"+pUsd.toFixed(6);
@@ -458,40 +627,40 @@
         el("tinyWarn").style.display=(aUsd>0&&aUsd<0.001)?'':'none';
         const now=Math.floor(Date.now()/1000),secs=Number(relAt)>now?Number(relAt)-now:0;
         el("countdown").textContent=secs?humanize(secs):(BigInt(pending)>0n?"Queued":"—");
-        if(vault&&signer&&acct){await loadUserPanel(price);}
-        if(vault&&vaultOwner&&signer&&vaultOwner.toLowerCase()===(await signer.getAddress()).toLowerCase()){await loadOwnerState();}
+        if(acct){ await loadUserPanel(price); }
+        if(vaultOwner && acct && vaultOwner.toLowerCase()===acct.toLowerCase()){ await loadOwnerState(); }
         recordNav(price); updatePerf(price);
       }catch(e){console.error(e);}
     }
 
-    el("btnPreviewMint").onclick=async()=>{ try{if(!provider)await ensureProvider();const u=p6(el("mintAmount").value);if(u<=0n){el("mintPreview").textContent="Enter amount";return;}const [out,price]=await vault.previewMint(u);el("mintPreview").textContent="Est. MTYLD: "+ethers.formatUnits(out,18)+" @ $"+(+ethers.formatUnits(price,18)).toFixed(6);el("btnMint").disabled=false;}catch(e){el("mintPreview").textContent=shortErr(e);} };
-    el("btnMint").onclick=async()=>{ try{el("btnMint").disabled=true;if(!provider)await ensureProvider();const u=p6(el("mintAmount").value);const sb=Math.round((+el("mintSlippage").value||0.5)*100);const [out]=await vault.previewMint(u);const mo=out-(out*BigInt(sb)/10000n);const al=await usdc.allowance(acct,VAULT);if(al<u){const ta=await usdc.approve(VAULT,u);await ta.wait();}const tx=await vault.mint(u,mo);await tx.wait();el("mintPreview").textContent="Minted!";await refresh();}catch(e){el("mintPreview").textContent=shortErr(e);}finally{el("btnMint").disabled=false;} };
-    el("btnPreviewRedeem").onclick=async()=>{ try{if(!provider)await ensureProvider();const m=p18(el("redeemAmount").value);if(m<=0n){el("redeemPreview").textContent="Enter amount";return;}const [out,price]=await vault.previewRedeem(m);el("redeemPreview").textContent="Est. USDC: "+ethers.formatUnits(out,6)+" @ $"+(+ethers.formatUnits(price,18)).toFixed(6);el("btnRedeem").disabled=false;}catch(e){el("redeemPreview").textContent=shortErr(e);} };
-    el("btnRedeem").onclick=async()=>{ try{el("btnRedeem").disabled=true;if(!provider)await ensureProvider();const m=p18(el("redeemAmount").value);const sb=Math.round((+el("redeemSlippage").value||0.5)*100);const [out]=await vault.previewRedeem(m);const mu=out-(out*BigInt(sb)/10000n);const tx=await vault.redeem(m,mu);await tx.wait();el("redeemPreview").textContent="Redeemed!";await refresh();}catch(e){el("redeemPreview").textContent=shortErr(e);}finally{el("btnRedeem").disabled=false;} };
-    el("btnMintMax").onclick=async()=>{ try{if(!provider)await ensureProvider();const b=await usdc.balanceOf(acct);el("mintAmount").value=ethers.formatUnits(b,6);}catch(e){} };
-    el("btnRedeemMax").onclick=async()=>{ try{if(!provider)await ensureProvider();const b=await vault.balanceOf(acct);el("redeemAmount").value=ethers.formatUnits(b,18);}catch(e){} };
-    el("btnQueueRev").onclick=async()=>{ try{el("revMsg").textContent="";if(!provider)await ensureProvider();const a=p6(el("revAmount").value);if(a<=0n){el("revMsg").textContent="Enter amount";return;}const al=await usdc.allowance(acct,VAULT);if(al<a){const ta=await usdc.approve(VAULT,a);await ta.wait();}const tx=await vault.injectRevenue(a);await tx.wait();el("revMsg").textContent="Queued!";await refresh();}catch(e){el("revMsg").textContent=shortErr(e);} };
-    el("btnApply").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.applyPendingRevenue()).wait();el("pendingHint").textContent="Applied!";await refresh();}catch(e){el("pendingHint").textContent=shortErr(e);} };
-    el("btnBeginClose").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.beginEpochClose()).wait();await refresh();}catch(e){alert(shortErr(e));} };
-    el("btnEndClose").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.endEpochClose()).wait();await refresh();}catch(e){alert(shortErr(e));} };
-    el("btnSetDelay").onclick=async()=>{ try{if(!provider)await ensureProvider();const s=Number(el("navDelay").value);if(!(s>0)){alert("Invalid");return;}await(await vault.setNavDelay(s)).wait();await refresh();}catch(e){alert(shortErr(e));} };
-    el("btnSetFees").onclick=async()=>{ try{if(!provider)await ensureProvider();const m=Number(el("mintFee").value),r=Number(el("redeemFee").value);const rec=await vault.feeRecipient();const ru=await vault.feeRoundUp();await(await vault.setFees(m,r,rec,ru)).wait();await refresh();}catch(e){alert(shortErr(e));} };
-    el("btnGuardOn").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.setGuardedLaunch(true)).wait();await refresh();}catch(e){alert(shortErr(e));} };
-    el("btnGuardOff").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.setGuardedLaunch(false)).wait();await refresh();}catch(e){alert(shortErr(e));} };
-    el("btnWhitelistOn").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.setWhitelist(el("wlAddr").value,true)).wait();el("wlMsg").textContent="Added";}catch(e){el("wlMsg").textContent=shortErr(e);} };
-    el("btnWhitelistOff").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.setWhitelist(el("wlAddr").value,false)).wait();el("wlMsg").textContent="Removed";}catch(e){el("wlMsg").textContent=shortErr(e);} };
-    el("btnSetCap").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.setMaxSupply(p18(el("maxSupplyIn").value))).wait();await refresh();}catch(e){alert(shortErr(e));} };
-    el("btnPause").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.pause()).wait();await refresh();}catch(e){alert(shortErr(e));} };
-    el("btnUnpause").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.unpause()).wait();await refresh();}catch(e){alert(shortErr(e));} };
-    el("btnAnnounceRescue").onclick=async()=>{ try{if(!provider)await ensureProvider();const t=el("resToken").value.trim(),r=el("resTo").value.trim();if(!ethers.isAddress(t)||!ethers.isAddress(r))return alert("Invalid addresses");await(await vault.announceRescue(t,BigInt(el("resAmt").value.trim()),r)).wait();await refresh();}catch(e){alert(shortErr(e));} };
-    el("btnExecuteRescue").onclick=async()=>{ try{if(!provider)await ensureProvider();await(await vault.executeRescue()).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnPreviewMint").onclick=async()=>{ try{if(!await ensureConnected())return;const u=p6(el("mintAmount").value);if(u<=0n){el("mintPreview").textContent="Enter amount";return;}const [out,price]=await vault.previewMint(u);el("mintPreview").textContent="Est. MTYLD: "+ethers.formatUnits(out,18)+" @ $"+(+ethers.formatUnits(price,18)).toFixed(6);el("btnMint").disabled=false;}catch(e){el("mintPreview").textContent=shortErr(e);} };
+    el("btnMint").onclick=async()=>{ try{el("btnMint").disabled=true;if(!await ensureConnected())return;const u=p6(el("mintAmount").value);const sb=Math.round((+el("mintSlippage").value||0.5)*100);const [out]=await vault.previewMint(u);const mo=out-(out*BigInt(sb)/10000n);const al=await usdc.allowance(acct,VAULT);if(al<u){const ta=await usdc.approve(VAULT,u);await ta.wait();}const tx=await vault.mint(u,mo);await tx.wait();el("mintPreview").textContent="Minted!";await refresh();}catch(e){el("mintPreview").textContent=shortErr(e);}finally{el("btnMint").disabled=false;} };
+    el("btnPreviewRedeem").onclick=async()=>{ try{if(!await ensureConnected())return;const m=p18(el("redeemAmount").value);if(m<=0n){el("redeemPreview").textContent="Enter amount";return;}const [out,price]=await vault.previewRedeem(m);el("redeemPreview").textContent="Est. USDC: "+ethers.formatUnits(out,6)+" @ $"+(+ethers.formatUnits(price,18)).toFixed(6);el("btnRedeem").disabled=false;}catch(e){el("redeemPreview").textContent=shortErr(e);} };
+    el("btnRedeem").onclick=async()=>{ try{el("btnRedeem").disabled=true;if(!await ensureConnected())return;const m=p18(el("redeemAmount").value);const sb=Math.round((+el("redeemSlippage").value||0.5)*100);const [out]=await vault.previewRedeem(m);const mu=out-(out*BigInt(sb)/10000n);const tx=await vault.redeem(m,mu);await tx.wait();el("redeemPreview").textContent="Redeemed!";await refresh();}catch(e){el("redeemPreview").textContent=shortErr(e);}finally{el("btnRedeem").disabled=false;} };
+    el("btnMintMax").onclick=async()=>{ try{if(!await ensureConnected())return;const b=await usdc.balanceOf(acct);el("mintAmount").value=ethers.formatUnits(b,6);}catch(e){} };
+    el("btnRedeemMax").onclick=async()=>{ try{if(!await ensureConnected())return;const b=await vault.balanceOf(acct);el("redeemAmount").value=ethers.formatUnits(b,18);}catch(e){} };
+    el("btnQueueRev").onclick=async()=>{ try{el("revMsg").textContent="";if(!await ensureConnected())return;const a=p6(el("revAmount").value);if(a<=0n){el("revMsg").textContent="Enter amount";return;}const al=await usdc.allowance(acct,VAULT);if(al<a){const ta=await usdc.approve(VAULT,a);await ta.wait();}const tx=await vault.injectRevenue(a);await tx.wait();el("revMsg").textContent="Queued!";await refresh();}catch(e){el("revMsg").textContent=shortErr(e);} };
+    el("btnApply").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.applyPendingRevenue()).wait();el("pendingHint").textContent="Applied!";await refresh();}catch(e){el("pendingHint").textContent=shortErr(e);} };
+    el("btnBeginClose").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.beginEpochClose()).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnEndClose").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.endEpochClose()).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnSetDelay").onclick=async()=>{ try{if(!await ensureConnected())return;const s=Number(el("navDelay").value);if(!(s>0)){alert("Invalid");return;}await(await vault.setNavDelay(s)).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnSetFees").onclick=async()=>{ try{if(!await ensureConnected())return;const m=Number(el("mintFee").value),r=Number(el("redeemFee").value);const rec=await vault.feeRecipient();const ru=await vault.feeRoundUp();await(await vault.setFees(m,r,rec,ru)).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnGuardOn").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.setGuardedLaunch(true)).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnGuardOff").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.setGuardedLaunch(false)).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnWhitelistOn").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.setWhitelist(el("wlAddr").value,true)).wait();el("wlMsg").textContent="Added";}catch(e){el("wlMsg").textContent=shortErr(e);} };
+    el("btnWhitelistOff").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.setWhitelist(el("wlAddr").value,false)).wait();el("wlMsg").textContent="Removed";}catch(e){el("wlMsg").textContent=shortErr(e);} };
+    el("btnSetCap").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.setMaxSupply(p18(el("maxSupplyIn").value))).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnPause").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.pause()).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnUnpause").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.unpause()).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnAnnounceRescue").onclick=async()=>{ try{if(!await ensureConnected())return;const t=el("resToken").value.trim(),r=el("resTo").value.trim();if(!ethers.isAddress(t)||!ethers.isAddress(r))return alert("Invalid addresses");await(await vault.announceRescue(t,BigInt(el("resAmt").value.trim()),r)).wait();await refresh();}catch(e){alert(shortErr(e));} };
+    el("btnExecuteRescue").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.executeRescue()).wait();await refresh();}catch(e){alert(shortErr(e));} };
 
     el("batchInput").addEventListener("input",()=>{ const lines=el("batchInput").value.split(/\r?\n/);let c=0,t=0n;for(const l of lines){const p=l.split(",");if(p.length>=2&&ethers.isAddress(p[0].trim())&&!isNaN(p[1].trim())){c++;try{t+=ethers.parseUnits(p[1].trim(),18);}catch{}}} el("batchStats").textContent="Wait: "+c+" | Total: "+ethers.formatUnits(t,18); });
-    el("btnSendBatch").onclick=async()=>{ try{if(!provider)await ensureProvider();const lines=el("batchInput").value.split(/\r?\n/),recipients=[];for(const l of lines){const p=l.split(",");if(p.length>=2&&ethers.isAddress(p[0].trim())){try{recipients.push({to:p[0].trim(),amount:ethers.parseUnits(p[1].trim(),18)});}catch{}}}if(!recipients.length)return alert("No valid lines");if(!confirm("Send to "+recipients.length+" wallets?"))return;el("btnSendBatch").disabled=true;el("batchLog").classList.remove("hidden");el("batchLog").textContent="Starting...\n";for(const r of recipients){try{el("batchLog").textContent+="Sending to "+r.to.slice(0,6)+"... ";await(await vault.transfer(r.to,r.amount)).wait();el("batchLog").textContent+="OK\n";}catch{el("batchLog").textContent+="FAIL\n";}}await refresh();}catch(e){alert(shortErr(e));}finally{el("btnSendBatch").disabled=false;} };
+    el("btnSendBatch").onclick=async()=>{ try{if(!await ensureConnected())return;const lines=el("batchInput").value.split(/\r?\n/),recipients=[];for(const l of lines){const p=l.split(",");if(p.length>=2&&ethers.isAddress(p[0].trim())){try{recipients.push({to:p[0].trim(),amount:ethers.parseUnits(p[1].trim(),18)});}catch{}}}if(!recipients.length)return alert("No valid lines");if(!confirm("Send to "+recipients.length+" wallets?"))return;el("btnSendBatch").disabled=true;el("batchLog").classList.remove("hidden");el("batchLog").textContent="Starting...\n";for(const r of recipients){try{el("batchLog").textContent+="Sending to "+r.to.slice(0,6)+"... ";await(await vault.transfer(r.to,r.amount)).wait();el("batchLog").textContent+="OK\n";}catch{el("batchLog").textContent+="FAIL\n";}}await refresh();}catch(e){alert(shortErr(e));}finally{el("btnSendBatch").disabled=false;} };
 
     el("btnAutoPopulate").onclick=async()=>{
       const btn=el("btnAutoPopulate"),status=el("autoPopulateStatus");
-      try{ if(!provider)await ensureProvider(); btn.textContent="Scanning..."; btn.disabled=true; status.classList.remove("hidden"); status.textContent="Reading Transfer events...";
+      try{ if(!await ensureConnected())return; btn.textContent="Scanning..."; btn.disabled=true; status.classList.remove("hidden"); status.textContent="Reading Transfer events...";
         const mc=new ethers.Contract(VAULT,["event Transfer(address indexed from, address indexed to, uint256 amount)"],provider);
         const events=await mc.queryFilter(mc.filters.Transfer(),0,"latest");
         const balances={},ZERO="0x0000000000000000000000000000000000000000";
@@ -506,15 +675,15 @@
       finally{btn.textContent="Auto-populate holders";btn.disabled=false;}
     };
     el("distInput").addEventListener("input",()=>{ const lines=el("distInput").value.split(/\r?\n/).filter(l=>l.trim());let c=0,w=0;for(const l of lines){const p=l.split(",");if(p.length>=2&&ethers.isAddress(p[0].trim())){c++;w+=parseFloat(p[1].trim())||0;}} el("distStats").textContent="Recipients: "+c+" | Total weight: "+w; });
-    el("btnApproveDist").onclick=async()=>{ try{if(!provider)await ensureProvider();const total=el("distTotal").value;if(!total)return alert("Enter total MTYLD amount first");el("distLog").classList.remove("hidden");el("distLog").textContent="Approving...";await(await vault.approve(DISTRIBUTOR,ethers.parseUnits(total,18))).wait();el("distLog").textContent="Approved! Now click Step 2: Distribute.";}catch(e){el("distLog").classList.remove("hidden");el("distLog").textContent=shortErr(e);} };
+    el("btnApproveDist").onclick=async()=>{ try{if(!await ensureConnected())return;const total=el("distTotal").value;if(!total)return alert("Enter total MTYLD amount first");el("distLog").classList.remove("hidden");el("distLog").textContent="Approving...";await(await vault.approve(DISTRIBUTOR,ethers.parseUnits(total,18))).wait();el("distLog").textContent="Approved! Now click Step 2: Distribute.";}catch(e){el("distLog").classList.remove("hidden");el("distLog").textContent=shortErr(e);} };
     el("btnDistribute").onclick=async()=>{
-      try{if(!provider)await ensureProvider();const lines=el("distInput").value.split(/\r?\n/).filter(l=>l.trim()),recipients=[],weights=[];for(const l of lines){const p=l.split(",");if(p.length>=2&&ethers.isAddress(p[0].trim())){recipients.push(p[0].trim());weights.push(BigInt(Math.round(parseFloat(p[1].trim())*100)));}}if(!recipients.length)return alert("No valid recipients");const total=el("distTotal").value,note=el("distNote").value||"Distribution";if(!total)return alert("Enter total MTYLD amount");if(!confirm("Distribute "+total+" MTYLD to "+recipients.length+" employees?"))return;el("distLog").classList.remove("hidden");el("distLog").textContent="Sending...";const tx=await dist.distributeProportional(recipients,weights,ethers.parseUnits(total,18),note);el("distLog").textContent="Submitted, waiting...";await tx.wait();el("distLog").textContent="Complete! "+recipients.length+" employees paid as '"+note+"'.";await refresh();}catch(e){el("distLog").classList.remove("hidden");el("distLog").textContent=shortErr(e);}
+      try{if(!await ensureConnected())return;const lines=el("distInput").value.split(/\r?\n/).filter(l=>l.trim()),recipients=[],weights=[];for(const l of lines){const p=l.split(",");if(p.length>=2&&ethers.isAddress(p[0].trim())){recipients.push(p[0].trim());weights.push(BigInt(Math.round(parseFloat(p[1].trim())*100)));}}if(!recipients.length)return alert("No valid recipients");const total=el("distTotal").value,note=el("distNote").value||"Distribution";if(!total)return alert("Enter total MTYLD amount");if(!confirm("Distribute "+total+" MTYLD to "+recipients.length+" employees?"))return;el("distLog").classList.remove("hidden");el("distLog").textContent="Sending...";const tx=await dist.distributeProportional(recipients,weights,ethers.parseUnits(total,18),note);el("distLog").textContent="Submitted, waiting...";await tx.wait();el("distLog").textContent="Complete! "+recipients.length+" employees paid as '"+note+"'.";await refresh();}catch(e){el("distLog").classList.remove("hidden");el("distLog").textContent=shortErr(e);}
     };
-    el("btnLoadHistory").onclick=async()=>{ try{if(!provider)await ensureProvider();el("distHistory").textContent="Loading...";const rd=new ethers.Contract(DISTRIBUTOR,DIST_ABI,provider);const count=await rd.distributionCount();if(count===0n){el("distHistory").textContent="No distributions yet.";return;}let html="";for(let i=Number(count)-1;i>=0;i--){const [ts,amount,recips,note]=await rd.getDistribution(i);html+="#"+i+" | "+new Date(Number(ts)*1000).toLocaleDateString()+" | "+note+" | "+parseFloat(ethers.formatUnits(amount,18)).toFixed(2)+" MTYLD | "+recips+" recipients\n";}el("distHistory").textContent=html||"No distributions found.";}catch(e){el("distHistory").textContent=shortErr(e);} };
+    el("btnLoadHistory").onclick=async()=>{ try{const rp=getReadProvider();el("distHistory").textContent="Loading...";const rd=new ethers.Contract(DISTRIBUTOR,DIST_ABI,rp);const count=await rd.distributionCount();if(count===0n){el("distHistory").textContent="No distributions yet.";return;}let html="";for(let i=Number(count)-1;i>=0;i--){const [ts,amount,recips,note]=await rd.getDistribution(i);html+="#"+i+" | "+new Date(Number(ts)*1000).toLocaleDateString()+" | "+note+" | "+parseFloat(ethers.formatUnits(amount,18)).toFixed(2)+" MTYLD | "+recips+" recipients\n";}el("distHistory").textContent=html||"No distributions found.";}catch(e){el("distHistory").textContent=shortErr(e);} };
 
     el("btnExportCSV").onclick=()=>{ const rows=[["timestamp","iso","nav_usd"]];for(const p of navHistory)rows.push([p.t,new Date(p.t*1000).toISOString(),p.p.toFixed(8)]);const csv=rows.map(r=>r.join(",")).join("\n");const blob=new Blob([csv],{type:"text/csv"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="mtyld_nav_history.csv";a.click();URL.revokeObjectURL(url); };
     el("btnResetHistory").onclick=()=>{ if(confirm("Reset history?")){navHistory=[];saveH();drawChart();} };
-    el("btnConnect").onclick=async()=>{ try{await ensureProvider();await refresh();await loadOwnerState();}catch(e){} };
+    el("btnConnect").onclick=connectWallet;
     el("btnRefresh").onclick=async()=>{ await refresh();if(vaultOwner&&signer)await loadOwnerState(); };
 
     loadH(); drawChart();
