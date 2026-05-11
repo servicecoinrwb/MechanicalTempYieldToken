@@ -304,10 +304,10 @@
   <!-- Conservator Vault Holdings -->
   <div class="glass" style="border-radius:20px;margin-bottom:24px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
-      <h2 style="font-size:16px;font-weight:800;letter-spacing:-0.02em;">Conservator Vault Holdings</h2>
-      <span class="tag badge-blue">Backing mtETH-S</span>
+      <h2 style="font-size:16px;font-weight:800;letter-spacing:-0.02em;">Market Maker Positions</h2>
+      <span class="tag badge-amber">MT Deployer Wallet</span>
     </div>
-    <p style="font-size:11px;color:var(--muted);margin-bottom:16px;">Positions managed by the Conservator AI agent. mtETH-S holders have a pro-rata claim on these assets and yield.</p>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:16px;">GMX ecosystem positions held in the Mechanical Temp Deployer wallet. Earns fees from perpetual traders on ETH and BTC markets.</p>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
       <!-- GM ETH -->
@@ -360,8 +360,11 @@
     </div>
 
     <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-      <div style="font-size:11px;color:var(--muted);">Total vault deployed</div>
-      <div class="mono" style="font-size:14px;font-weight:700;color:#e2e8f0;" id="cv-total">$—</div>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Total Deployer Holdings</div>
+        <a href="https://debank.com/profile/0xcfe077e6f7554b1724546e02624a0832d1f4557a" target="_blank" style="font-size:10px;color:var(--accent);font-family:'Space Mono',monospace;text-decoration:none;">0xcfe0…557a ↗</a>
+      </div>
+      <div class="mono" style="font-size:16px;font-weight:700;color:var(--accent3);" id="cv-total">$—</div>
     </div>
   </div>
 
@@ -489,6 +492,7 @@
   const CHAINLINK_ETH = "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612";
   const CHAINLINK_GMX = "0xDB98056FecFff59D032aB628337A4887110df3dB";
   const COMPOUND_STRAT= "0x3F26B819988542c4EdA48cA6dC241DCF972A74F2";
+  const MT_DEPLOYER   = "0xcfe077e6f7554B1724546E02624a0832D1f4557a";
   const RPC           = "https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu";
 
   // ── ABIs ──────────────────────────────────────────────────
@@ -597,10 +601,10 @@
       mtyldC.totalSupply(),
       vaultC.balanceOf(userAddr),
       vaultC.pricePerShare().catch(()=>ethers.parseEther("1")),
-      gmEthC.balanceOf(CONSERVATOR),
-      gmBtcC.balanceOf(CONSERVATOR),
-      trackerC.depositBalances(CONSERVATOR, GMX_TOKEN).catch(()=>0n),
-      gmxC.balanceOf(CONSERVATOR),
+      gmEthC.balanceOf(MT_DEPLOYER),
+      gmBtcC.balanceOf(MT_DEPLOYER),
+      trackerC.depositBalances(MT_DEPLOYER, GMX_TOKEN).catch(()=>0n),
+      gmxC.balanceOf(MT_DEPLOYER),
       clC.usdcDeposited(userAddr).catch(()=>0n),
       clC.earnedUsdc(userAddr).catch(()=>0n),
       clC.collateralDeposited(userAddr).catch(()=>0n),
