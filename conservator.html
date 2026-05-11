@@ -159,10 +159,10 @@
           <p id="gmx-token-balance" class="text-lg font-mono text-orange-400">Loading...</p>
           <p class="text-slate-600 text-xs mt-1">Accumulating staking</p>
         </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-yellow-900/30 opacity-50">
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-orange-900/30">
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GM BTC/USD</p>
-          <p class="text-lg font-mono text-yellow-500">Coming Soon</p>
-          <p class="text-slate-600 text-xs mt-1">Planned next position</p>
+          <p id="gmx-btc-balance" class="text-lg font-mono text-orange-400">Loading...</p>
+          <p class="text-slate-600 text-xs mt-1">BTC perpetual fees</p>
         </div>
         <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">30d Fee APY</p>
@@ -789,15 +789,20 @@ async function refreshGmxPosition(){
     const STAKING_ABI=[{"inputs":[{"name":"_account","type":"address"},{"name":"_depositToken","type":"address"}],"name":"depositBalances","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"name":"a","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
     const gmxTracker=new ethers.Contract(GMX_STAKING_TRACKER,STAKING_ABI,rp);
     const gmxWallet=new ethers.Contract(GMX_TOKEN,BAL_ABI,rp);
-    const [gmBal,gmxStakedBal,gmxWalletBal]=await Promise.all([
+    const gmBtcToken=new ethers.Contract(GM_BTC_USD,BAL_ABI,rp);
+    const [gmBal,gmxStakedBal,gmxWalletBal,gmBtcBal]=await Promise.all([
       gmToken.balanceOf(OWNER_WALLET),
       gmxTracker.depositBalances(OWNER_WALLET,GMX_TOKEN).catch(()=>0n),
       gmxWallet.balanceOf(OWNER_WALLET).catch(()=>0n),
+      gmBtcToken.balanceOf(OWNER_WALLET).catch(()=>0n),
     ]);
     const gmFloat=parseFloat(ethers.formatEther(gmBal));
     const gmxFloat=parseFloat(ethers.formatEther(gmxStakedBal+gmxWalletBal));
+    const gmBtcFloat=parseFloat(ethers.formatEther(gmBtcBal));
     document.getElementById("gmx-gm-balance").textContent=gmFloat.toFixed(4)+" GM";
     document.getElementById("gmx-token-balance").textContent=gmxFloat.toFixed(4)+" GMX";
+    const btcEl=document.getElementById("gmx-btc-balance");
+    if(btcEl) btcEl.textContent=gmBtcFloat.toFixed(4)+" GM";
   }catch(e){console.error("GMX tracker:",e);document.getElementById("gmx-gm-balance").textContent="Error";}
 }
 
