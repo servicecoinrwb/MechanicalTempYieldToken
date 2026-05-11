@@ -267,84 +267,6 @@
       </div>
     </div>
 
-    <!-- GM ETH/USD -->
-    <div class="position-row">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:40px;height:40px;border-radius:12px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-none;">Ξ</div>
-        <div>
-          <div style="font-weight:700;font-size:14px;">GM ETH/USD</div>
-          <div style="display:flex;gap:6px;margin-top:3px;">
-            <span class="tag badge-blue">GMX V2</span>
-            <span class="tag badge-green">Active</span>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="mono" style="font-size:14px;font-weight:700;" id="gm-eth-bal">—</div>
-        <div style="font-size:10px;color:var(--muted);">GM tokens</div>
-      </div>
-      <div>
-        <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="gm-eth-usd">—</div>
-        <div style="font-size:10px;color:var(--muted);">ETH/USDC pool</div>
-      </div>
-      <div>
-        <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent);">~12.56%</div>
-        <div style="font-size:10px;color:var(--muted);">30d fee APY</div>
-      </div>
-    </div>
-
-    <!-- GM BTC/USD -->
-    <div class="position-row">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:40px;height:40px;border-radius:12px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-none;">₿</div>
-        <div>
-          <div style="font-weight:700;font-size:14px;">GM BTC/USD</div>
-          <div style="display:flex;gap:6px;margin-top:3px;">
-            <span class="tag badge-amber">GMX V2</span>
-            <span class="tag badge-green">Active</span>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="mono" style="font-size:14px;font-weight:700;" id="gm-btc-bal">—</div>
-        <div style="font-size:10px;color:var(--muted);">GM tokens</div>
-      </div>
-      <div>
-        <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="gm-btc-usd">—</div>
-        <div style="font-size:10px;color:var(--muted);">BTC/USDC pool</div>
-      </div>
-      <div>
-        <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent2);">~28%</div>
-        <div style="font-size:10px;color:var(--muted);">30d fee APY</div>
-      </div>
-    </div>
-
-    <!-- GMX Staked -->
-    <div class="position-row">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:40px;height:40px;border-radius:12px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-none;">🔒</div>
-        <div>
-          <div style="font-weight:700;font-size:14px;">GMX Staked</div>
-          <div style="display:flex;gap:6px;margin-top:3px;">
-            <span class="tag badge-amber">Protocol Fees</span>
-            <span class="tag badge-amber">Accumulating</span>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="mono" style="font-size:14px;font-weight:700;" id="gmx-staked-bal">—</div>
-        <div style="font-size:10px;color:var(--muted);">GMX tokens</div>
-      </div>
-      <div>
-        <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="gmx-staked-usd">—</div>
-        <div style="font-size:10px;color:var(--muted);" id="gmx-to-target">— to $90 target</div>
-      </div>
-      <div>
-        <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent2);">Buyback</div>
-        <div style="font-size:10px;color:var(--muted);">At $90 trigger</div>
-      </div>
-    </div>
-
     <!-- Credit Line -->
     <div class="position-row">
       <div style="display:flex;align-items:center;gap:12px;">
@@ -376,6 +298,70 @@
       <div style="font-weight:800;font-size:18px;margin-bottom:6px;">Connect Your Wallet</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:20px;text-align:center;max-width:280px;">See all your positions across the Mechanical Temp ecosystem</div>
       <button id="connectBtn2" onclick="connect()" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8);border:none;border-radius:12px;padding:12px 28px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;">Connect Wallet</button>
+    </div>
+  </div>
+
+  <!-- Conservator Vault Holdings -->
+  <div class="glass" style="border-radius:20px;margin-bottom:24px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
+      <h2 style="font-size:16px;font-weight:800;letter-spacing:-0.02em;">Conservator Vault Holdings</h2>
+      <span class="tag badge-blue">Backing mtETH-S</span>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:16px;">Positions managed by the Conservator AI agent. mtETH-S holders have a pro-rata claim on these assets and yield.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+      <!-- GM ETH -->
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:34px;height:34px;border-radius:10px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">Ξ</div>
+          <div>
+            <div style="font-weight:700;font-size:13px;">GM ETH/USD</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">GMX V2 Pool</div>
+          </div>
+        </div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent3);" id="cv-gm-eth-usd">$—</div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;">
+          <span style="color:var(--muted);font-family:'Space Mono',monospace;" id="cv-gm-eth-bal">— GM</span>
+          <span style="color:var(--accent);font-weight:700;">~12.56% APY</span>
+        </div>
+      </div>
+
+      <!-- GM BTC -->
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">₿</div>
+          <div>
+            <div style="font-weight:700;font-size:13px;">GM BTC/USD</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">GMX V2 Pool</div>
+          </div>
+        </div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent3);" id="cv-gm-btc-usd">$—</div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;">
+          <span style="color:var(--muted);font-family:'Space Mono',monospace;" id="cv-gm-btc-bal">— GM</span>
+          <span style="color:var(--accent2);font-weight:700;">~28% APY</span>
+        </div>
+      </div>
+
+      <!-- GMX Staked -->
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">🔒</div>
+          <div>
+            <div style="font-weight:700;font-size:13px;">GMX Staked</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Buyback Reserve</div>
+          </div>
+        </div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent3);" id="cv-gmx-usd">$—</div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;">
+          <span style="color:var(--muted);font-family:'Space Mono',monospace;" id="cv-gmx-bal">— GMX</span>
+          <span style="color:var(--accent2);font-weight:700;" id="cv-gmx-target">→ $90 target</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:11px;color:var(--muted);">Total vault deployed</div>
+      <div class="mono" style="font-size:14px;font-weight:700;color:#e2e8f0;" id="cv-total">$—</div>
     </div>
   </div>
 
@@ -600,8 +586,8 @@
     const [
       mtyldBal, mtyldNav, mtyldSupply,
       mtethsBal, mtethsPricePerShare,
-      gmEthBal, gmBtcBal,
-      gmxStaked, gmxWallet,
+      cvGmEth, cvGmBtc,
+      cvGmxStaked, cvGmxWallet,
       clUsdc, clEarned, clMtethsCol, clMtyldCol,
       clMtethsEarned, clMtyldEarned, clShare, clMax, csum,
       curLoan, loanAccrued, loanDue, loanDays, loanOverdue, loanBorrower,
@@ -611,10 +597,10 @@
       mtyldC.totalSupply(),
       vaultC.balanceOf(userAddr),
       vaultC.pricePerShare().catch(()=>ethers.parseEther("1")),
-      gmEthC.balanceOf(userAddr),
-      gmBtcC.balanceOf(userAddr),
-      trackerC.depositBalances(userAddr, GMX_TOKEN).catch(()=>0n),
-      gmxC.balanceOf(userAddr),
+      gmEthC.balanceOf(CONSERVATOR),
+      gmBtcC.balanceOf(CONSERVATOR),
+      trackerC.depositBalances(CONSERVATOR, GMX_TOKEN).catch(()=>0n),
+      gmxC.balanceOf(CONSERVATOR),
       clC.usdcDeposited(userAddr).catch(()=>0n),
       clC.earnedUsdc(userAddr).catch(()=>0n),
       clC.collateralDeposited(userAddr).catch(()=>0n),
@@ -647,42 +633,35 @@
     const mtethsWeth        = mtethsFloat * navPerShare;
     const mtethsUsdVal      = mtethsWeth * ethPrice;
 
-    // GM tokens (approximate price)
-    const gmEthFloat  = parseFloat(ethers.formatEther(gmEthBal));
-    const gmBtcFloat  = parseFloat(ethers.formatEther(gmBtcBal));
-    const gmEthUsd    = gmEthFloat * 1.76;
-    const gmBtcUsd    = gmBtcFloat * 2.43;
-
-    // GMX
-    const gmxTotal    = parseFloat(ethers.formatEther(gmxStaked + gmxWallet));
-    const gmxUsd      = gmxTotal * gmxPrice;
+    // Conservator vault holdings (NOT user-owned; backing for mtETH-S)
+    const cvGmEthFloat = parseFloat(ethers.formatEther(cvGmEth));
+    const cvGmBtcFloat = parseFloat(ethers.formatEther(cvGmBtc));
+    const cvGmEthUsd   = cvGmEthFloat * 1.76;
+    const cvGmBtcUsd   = cvGmBtcFloat * 2.43;
+    const cvGmxTotal   = parseFloat(ethers.formatEther(cvGmxStaked + cvGmxWallet));
+    const cvGmxUsd     = cvGmxTotal * gmxPrice;
+    const cvTotalUsd   = cvGmEthUsd + cvGmBtcUsd + cvGmxUsd;
 
     // Credit line
     const clUsdcFloat = Number(clUsdc) / 1e6;
     const clEarnedFloat = Number(clEarned) / 1e6;
 
-    // Total
-    const totalUsdVal = mtyldUsdVal + mtethsUsdVal + gmEthUsd + gmBtcUsd + gmxUsd + clUsdcFloat;
+    // Total — user positions only (mtETH-S already reflects vault-deployed value)
+    const totalUsdVal = mtyldUsdVal + mtethsUsdVal + clUsdcFloat;
 
-    // Blended APY on yield positions
-    const yieldBase = mtethsUsdVal + gmEthUsd + gmBtcUsd;
-    const blended = yieldBase > 0
-      ? ((mtethsUsdVal*7 + gmEthUsd*12.56 + gmBtcUsd*28) / yieldBase).toFixed(1)
-      : "—";
+    // Blended APY — user holds mtETH-S which earns ~7% from underlying strategies
+    const blended = mtethsUsdVal > 0 ? "7.0" : "—";
 
-    // Count active positions
+    // Count active user positions
     let active = 0;
     if (mtyldFloat > 0) active++;
     if (mtethsFloat > 0) active++;
-    if (gmEthFloat > 0) active++;
-    if (gmBtcFloat > 0) active++;
-    if (gmxTotal > 0) active++;
     if (clUsdcFloat > 0) active++;
 
     // ── Update UI ────────────────────────────────────────
     el('totalValue').textContent    = usd(totalUsdVal);
     el('blendedApy').textContent    = blended !== "—" ? "~"+blended+"%" : "—";
-    el('activePositions').textContent = active+"/6";
+    el('activePositions').textContent = active+"/3";
     el('chartTotal').textContent    = usd(totalUsdVal);
 
     el('mtyld-bal').textContent  = mtyldFloat.toFixed(4);
@@ -698,15 +677,18 @@
       : mtethsWeth.toFixed(6)+' WETH';
     const npEl=document.getElementById('mteths-nav-price'); if(npEl) npEl.textContent='1 mtETH-S = '+navPerShare.toFixed(6)+' WETH';
 
-    el('gm-eth-bal').textContent = gmEthFloat.toFixed(4);
-    el('gm-eth-usd').textContent = usd(gmEthUsd);
-    el('gm-btc-bal').textContent = gmBtcFloat.toFixed(4);
-    el('gm-btc-usd').textContent = usd(gmBtcUsd);
-
-    el('gmx-staked-bal').textContent = gmxTotal.toFixed(4);
-    el('gmx-staked-usd').textContent = usd(gmxUsd);
+    // Conservator vault holdings section
+    el('cv-gm-eth-bal').textContent = cvGmEthFloat.toFixed(4)+' GM';
+    el('cv-gm-eth-usd').textContent = usd(cvGmEthUsd);
+    el('cv-gm-btc-bal').textContent = cvGmBtcFloat.toFixed(4)+' GM';
+    el('cv-gm-btc-usd').textContent = usd(cvGmBtcUsd);
+    el('cv-gmx-bal').textContent    = cvGmxTotal.toFixed(4)+' GMX';
+    el('cv-gmx-usd').textContent    = usd(cvGmxUsd);
+    el('cv-total').textContent      = usd(cvTotalUsd);
     const toTarget = Math.max(0, 90 - gmxPrice);
-    el('gmx-to-target').textContent  = '$'+toTarget.toFixed(2)+' to $90 target';
+    el('cv-gmx-target').textContent = toTarget > 0
+      ? '$'+toTarget.toFixed(2)+' to $90 target'
+      : 'At buyback target ✓';
 
     el('cl-dep').textContent  = usd(clUsdcFloat);
     el('cl-earned').textContent = usd(clEarnedFloat);
@@ -760,10 +742,10 @@
     }
 
     // ── Allocation chart ─────────────────────────────────
-    const labels  = ['MTYLD','mtETH-S','GM ETH','GM BTC','GMX','Credit Line'];
-    const values  = [mtyldUsdVal, mtethsUsdVal, gmEthUsd, gmBtcUsd, gmxUsd, clUsdcFloat];
-    const colors  = ['#c084fc','#38bdf8','#38bdf8','#f59e0b','#f59e0b','#10b981'];
-    const borders = ['#a855f7','#0ea5e9','#0ea5e9','#d97706','#d97706','#059669'];
+    const labels  = ['MTYLD','mtETH-S','Credit Line'];
+    const values  = [mtyldUsdVal, mtethsUsdVal, clUsdcFloat];
+    const colors  = ['#c084fc','#38bdf8','#10b981'];
+    const borders = ['#a855f7','#0ea5e9','#059669'];
 
     if (allocChart) allocChart.destroy();
     const ctx = document.getElementById('allocChart').getContext('2d');
