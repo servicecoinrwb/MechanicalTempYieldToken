@@ -147,37 +147,59 @@
     </button>
     <div id="gmx-tracker-body" style="display:block">
     <div class="px-6 pb-6 pt-2">
-      <p class="text-slate-500 text-xs mb-4">GM ETH/USD tokens held in owner wallet. Managed manually via <a href="https://app.gmx.io/#/pools" target="_blank" class="text-sky-400 hover:underline">app.gmx.io</a>. Earns fees from perpetual traders.</p>
+      <p class="text-slate-500 text-xs mb-4">GMX ecosystem positions held in the Mechanical Temp Deployer wallet. Earns fees from perpetual traders on ETH and BTC markets.</p>
+
+      <!-- Top row: three positions -->
       <div class="grid md:grid-cols-3 gap-4 mb-4">
         <div class="bg-slate-900/60 rounded-xl p-4 border border-blue-900/30">
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GM ETH/USD</p>
-          <p id="gmx-gm-balance" class="text-lg font-mono text-blue-400">Loading...</p>
-          <p class="text-slate-600 text-xs mt-1">GM tokens held</p>
-        </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-orange-900/30">
-          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GMX Token</p>
-          <p id="gmx-token-balance" class="text-lg font-mono text-orange-400">Loading...</p>
-          <p class="text-slate-600 text-xs mt-1">Accumulating staking</p>
+          <p id="gmx-gm-balance" class="text-xl font-mono text-blue-400">Loading...</p>
+          <p id="gmx-eth-usd" class="text-xs font-mono text-emerald-400 mt-0.5">—</p>
+          <p class="text-slate-600 text-xs mt-1">~12.56% 30d APY</p>
         </div>
         <div class="bg-slate-900/60 rounded-xl p-4 border border-orange-900/30">
           <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GM BTC/USD</p>
-          <p id="gmx-btc-balance" class="text-lg font-mono text-orange-400">Loading...</p>
-          <p class="text-slate-600 text-xs mt-1">BTC perpetual fees</p>
+          <p id="gmx-btc-balance" class="text-xl font-mono text-orange-400">Loading...</p>
+          <p id="gmx-btc-usd" class="text-xs font-mono text-emerald-400 mt-0.5">—</p>
+          <p class="text-slate-600 text-xs mt-1">~28% 30d APY</p>
         </div>
-        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
-          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">30d Fee APY</p>
-          <p class="text-lg font-mono text-blue-400">~12.56%</p>
-          <p class="text-slate-600 text-xs mt-1">ETH/USD pool</p>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-yellow-900/30">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GMX Staked</p>
+          <p id="gmx-token-balance" class="text-xl font-mono text-yellow-400">Loading...</p>
+          <p id="gmx-token-usd" class="text-xs font-mono text-emerald-400 mt-0.5">—</p>
+          <p class="text-slate-600 text-xs mt-1">Accumulating buyback</p>
         </div>
       </div>
+
+      <!-- Summary row -->
+      <div class="grid md:grid-cols-3 gap-4 mb-4">
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-emerald-900/30">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Total GMX Value</p>
+          <p id="gmx-total-usd" class="text-xl font-mono text-emerald-400">—</p>
+          <p class="text-slate-600 text-xs mt-1">All positions combined</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Blended APY</p>
+          <p id="gmx-blended-apy" class="text-xl font-mono text-blue-400">—</p>
+          <p class="text-slate-600 text-xs mt-1">Weighted by position size</p>
+        </div>
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
+          <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">GMX Price</p>
+          <p id="gmx-price" class="text-xl font-mono text-yellow-400">—</p>
+          <p class="text-slate-600 text-xs mt-1">Buyback target $90</p>
+        </div>
+      </div>
+
+      <!-- Footer -->
       <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800 flex items-center justify-between">
         <div>
           <p class="text-slate-500 text-xs mb-1">Mechanical Temp Deployer</p>
           <p class="text-xs font-mono text-slate-400">0xcfe0...557a</p>
         </div>
-        <div class="flex gap-2">
-          <a href="https://app.gmx.io/#/pools/details?market=0x70d95587d40A2caf56bd97485aB3Eec10Bee6336" target="_blank" class="px-4 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-800 text-blue-400 text-xs font-semibold transition">Pool ↗</a>
-          <a href="https://app.gmx.io/#/earn/portfolio" target="_blank" class="px-4 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-800 text-blue-400 text-xs font-semibold transition">Portfolio ↗</a>
+        <div class="flex gap-2 flex-wrap">
+          <a href="https://app.gmx.io/#/pools/details?market=0x70d95587d40A2caf56bd97485aB3Eec10Bee6336" target="_blank" class="px-3 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-800 text-blue-400 text-xs font-semibold transition">ETH Pool ↗</a>
+          <a href="https://app.gmx.io/#/pools/details?market=0x47c031236e19d024b42f8AE6780E44A573170703" target="_blank" class="px-3 py-1.5 rounded-xl bg-orange-600/20 hover:bg-orange-600/30 border border-orange-800 text-orange-400 text-xs font-semibold transition">BTC Pool ↗</a>
+          <a href="https://app.gmx.io/#/earn/portfolio" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 text-xs font-semibold transition">Portfolio ↗</a>
         </div>
       </div>
     </div>
@@ -786,24 +808,51 @@ async function refreshGmxPosition(){
     const gmToken=new ethers.Contract(GM_ETH_USD,BAL_ABI,rp);
     // GMX staking tracker - stakedGmxTracker holds staked balance
     const GMX_STAKING_TRACKER="0x908C4D94D34924765f1eDc22A1DD098397c59dD4";
+    const CHAINLINK_ABI=[{"inputs":[],"name":"latestRoundData","outputs":[{"type":"uint80"},{"type":"int256"},{"type":"uint256"},{"type":"uint256"},{"type":"uint80"}],"stateMutability":"view","type":"function"}];
     // depositBalances(account, depositToken) returns staked GMX amount
     const STAKING_ABI=[{"inputs":[{"name":"_account","type":"address"},{"name":"_depositToken","type":"address"}],"name":"depositBalances","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"name":"a","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
     const gmxTracker=new ethers.Contract(GMX_STAKING_TRACKER,STAKING_ABI,rp);
     const gmxWallet=new ethers.Contract(GMX_TOKEN,BAL_ABI,rp);
     const gmBtcToken=new ethers.Contract(GM_BTC_USD,BAL_ABI,rp);
-    const [gmBal,gmxStakedBal,gmxWalletBal,gmBtcBal]=await Promise.all([
+    // GMX price from Chainlink-style feed or estimate from market
+    const GMX_PRICE_FEED="0xDB98056FecFff59D032aB628337A4887110df3dB"; // GMX/USD Chainlink Arbitrum
+    const gmxPriceFeed=new ethers.Contract(GMX_PRICE_FEED,CHAINLINK_ABI,rp);
+
+    const [gmBal,gmxStakedBal,gmxWalletBal,gmBtcBal,gmxPriceData]=await Promise.all([
       gmToken.balanceOf(OWNER_WALLET),
       gmxTracker.depositBalances(OWNER_WALLET,GMX_TOKEN).catch(()=>0n),
       gmxWallet.balanceOf(OWNER_WALLET).catch(()=>0n),
       gmBtcToken.balanceOf(OWNER_WALLET).catch(()=>0n),
+      gmxPriceFeed.latestRoundData().catch(()=>null),
     ]);
-    const gmFloat=parseFloat(ethers.formatEther(gmBal));
-    const gmxFloat=parseFloat(ethers.formatEther(gmxStakedBal+gmxWalletBal));
-    const gmBtcFloat=parseFloat(ethers.formatEther(gmBtcBal));
-    document.getElementById("gmx-gm-balance").textContent=gmFloat.toFixed(4)+" GM";
-    document.getElementById("gmx-token-balance").textContent=gmxFloat.toFixed(4)+" GMX";
-    const btcEl=document.getElementById("gmx-btc-balance");
-    if(btcEl) btcEl.textContent=gmBtcFloat.toFixed(4)+" GM";
+
+    const gmFloat    = parseFloat(ethers.formatEther(gmBal));
+    const gmxFloat   = parseFloat(ethers.formatEther(gmxStakedBal+gmxWalletBal));
+    const gmBtcFloat = parseFloat(ethers.formatEther(gmBtcBal));
+    const gmxPrice   = gmxPriceData ? parseFloat(gmxPriceData[1].toString())/1e8 : 7.52;
+
+    // Approx USD values: ETH GM ~$1.76/token, BTC GM ~$2.43/token (based on pool TVL/supply)
+    const ethGmPriceUsd = 1.76;
+    const btcGmPriceUsd = 2.43;
+    const ethGmUsd  = gmFloat   * ethGmPriceUsd;
+    const btcGmUsd  = gmBtcFloat * btcGmPriceUsd;
+    const gmxUsd    = gmxFloat  * gmxPrice;
+    const totalUsd  = ethGmUsd + btcGmUsd + gmxUsd;
+
+    // Blended APY weighted by position size (GM positions only, GMX TBD)
+    const blendedApy = ethGmUsd + btcGmUsd > 0
+      ? ((ethGmUsd * 12.56 + btcGmUsd * 28) / (ethGmUsd + btcGmUsd)).toFixed(1)
+      : "—";
+
+    document.getElementById("gmx-gm-balance").textContent  = gmFloat.toFixed(4)+" GM";
+    document.getElementById("gmx-eth-usd").textContent     = "$"+ethGmUsd.toLocaleString(undefined,{maximumFractionDigits:2});
+    document.getElementById("gmx-btc-balance").textContent = gmBtcFloat.toFixed(4)+" GM";
+    document.getElementById("gmx-btc-usd").textContent     = "$"+btcGmUsd.toLocaleString(undefined,{maximumFractionDigits:2});
+    document.getElementById("gmx-token-balance").textContent = gmxFloat.toFixed(4)+" GMX";
+    document.getElementById("gmx-token-usd").textContent   = "$"+gmxUsd.toLocaleString(undefined,{maximumFractionDigits:2});
+    document.getElementById("gmx-total-usd").textContent   = "$"+totalUsd.toLocaleString(undefined,{maximumFractionDigits:2});
+    document.getElementById("gmx-blended-apy").textContent = blendedApy !== "—" ? "~"+blendedApy+"%" : "—";
+    document.getElementById("gmx-price").textContent       = "$"+gmxPrice.toFixed(2);
   }catch(e){console.error("GMX tracker:",e);document.getElementById("gmx-gm-balance").textContent="Error";}
 }
 
