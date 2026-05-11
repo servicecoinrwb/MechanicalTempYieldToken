@@ -164,6 +164,24 @@
     <p style="color:var(--muted);font-size:14px;">All Mechanical Temp ecosystem positions in one view. Connect your wallet to see your holdings.</p>
   </div>
 
+  <!-- Total Ecosystem AUM banner -->
+  <div class="glass" style="border-radius:20px;padding:20px 28px;margin-bottom:16px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;border:1px solid rgba(16,185,129,0.2);background:linear-gradient(135deg,rgba(14,21,38,0.85),rgba(16,185,129,0.04));">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent3);">Total Ecosystem AUM</span>
+        <span class="tag" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#10b981;">Across All Products</span>
+      </div>
+      <div class="mono" id="ecoTotalAum" style="font-size:2.25rem;font-weight:800;color:#10b981;letter-spacing:-0.02em;">$—</div>
+      <div id="ecoBreakdown" style="font-size:11px;color:var(--muted);margin-top:4px;">MTYLD treasury + Conservator + Credit Line + Operational</div>
+    </div>
+    <div id="ecoMiniGrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;font-family:'Space Mono',monospace;font-size:11px;">
+      <div><div style="color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-size:9px;margin-bottom:2px;">MTYLD</div><div id="ecoMtyld" style="color:#c084fc;font-weight:700;">$—</div></div>
+      <div><div style="color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-size:9px;margin-bottom:2px;">Conservator</div><div id="ecoConservator" style="color:var(--accent);font-weight:700;">$—</div></div>
+      <div><div style="color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-size:9px;margin-bottom:2px;">Credit Line</div><div id="ecoCreditLine" style="color:var(--accent3);font-weight:700;">$—</div></div>
+      <div><div style="color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-size:9px;margin-bottom:2px;">Operational</div><div id="ecoOperational" style="color:var(--accent2);font-weight:700;">$—</div></div>
+    </div>
+  </div>
+
   <!-- Total value banner -->
   <div class="glass" style="border-radius:20px;padding:28px;margin-bottom:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:24px;">
     <div>
@@ -652,6 +670,41 @@
 
     // Total — user positions only (mtETH-S already reflects vault-deployed value)
     const totalUsdVal = mtyldUsdVal + mtethsUsdVal + clUsdcFloat;
+
+    // ── Ecosystem AUM (protocol-wide, not user-specific) ─────
+    // Components: MTYLD treasury, Conservator TVL, Credit Line pool, Operational (deployer GMX positions)
+    try {
+      const MTYLD_AUM_ABI  = ["function treasuryActiveUSDC() view returns (uint256)","function pendingRevenueUSDC() view returns (uint256)"];
+      const CONS_AUM_ABI   = ["function idleWeth() view returns (uint256)","function pricePerShare() view returns (uint256)","function totalSupply() view returns (uint256)"];
+      const STRAT_BAL_ABI  = ["function balance() view returns (uint256)"];
+      const CL_AUM_ABI     = ["function totalUsdcDeposited() view returns (uint256)"];
+
+      const mtyldA = new ethers.Contract(MTYLD_VAULT, MTYLD_AUM_ABI, rp);
+      const consA  = new ethers.Contract(CONSERVATOR, CONS_AUM_ABI, rp);
+      const stratA = new ethers.Contract(COMPOUND_STRAT, STRAT_BAL_ABI, rp);
+      const clA    = new ethers.Contract(CREDIT_LINE, CL_AUM_ABI, rp);
+
+      const [mtyldActive, mtyldPending, consIdle, consStrat, clPool] = await Promise.all([
+        mtyldA.treasuryActiveUSDC().catch(()=>0n),
+        mtyldA.pendingRevenueUSDC().catch(()=>0n),
+        consA.idleWeth().catch(()=>0n),
+        stratA.balance().catch(()=>0n),
+        clA.totalUsdcDeposited().catch(()=>0n),
+      ]);
+
+      const ecoMtyldUsd       = (Number(mtyldActive) + Number(mtyldPending)) / 1e6;
+      const consTotalWeth     = parseFloat(ethers.formatEther(consIdle + consStrat));
+      const ecoConservatorUsd = consTotalWeth * ethPrice;
+      const ecoCreditLineUsd  = Number(clPool) / 1e6;
+      const ecoOperationalUsd = cvTotalUsd;  // already computed above (GM ETH + GM BTC + GMX)
+      const ecoTotal          = ecoMtyldUsd + ecoConservatorUsd + ecoCreditLineUsd + ecoOperationalUsd;
+
+      el('ecoTotalAum').textContent    = usd(ecoTotal);
+      el('ecoMtyld').textContent       = usd(ecoMtyldUsd);
+      el('ecoConservator').textContent = usd(ecoConservatorUsd);
+      el('ecoCreditLine').textContent  = usd(ecoCreditLineUsd);
+      el('ecoOperational').textContent = usd(ecoOperationalUsd);
+    } catch(e) { console.error("Ecosystem AUM:", e); }
 
     // Blended APY — user holds mtETH-S which earns ~7% from underlying strategies
     const blended = mtethsUsdVal > 0 ? "7.0" : "—";
