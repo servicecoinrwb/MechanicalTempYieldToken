@@ -255,6 +255,7 @@
       <div>
         <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="mteths-usd">—</div>
         <div style="font-size:10px;color:var(--muted);" id="mteths-weth">— WETH</div>
+        <div style="font-size:10px;color:#38bdf8;font-family:'Space Mono',monospace;" id="mteths-nav-price">1 mtETH-S = — WETH</div>
       </div>
       <div>
         <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent);" id="mteths-apy">~7%</div>
@@ -488,6 +489,7 @@
     "function idleWeth() view returns (uint256)",
   ];
   const STRAT_ABI = ["function balance() view returns (uint256)"];
+  const STRAT_ABI2 = ["function balance() view returns (uint256)"];
   const CL_ABI = [
     "function usdcDeposited(address) view returns (uint256)",
     "function earnedUsdc(address) view returns (uint256)",
@@ -560,7 +562,7 @@
 
     const [
       mtyldBal, mtyldNav, mtyldSupply,
-      mtethsBal, vaultAssets, vaultSupply,
+      mtethsBal, vaultAssets, vaultSupply, stratBal, idleWeth,
       gmEthBal, gmBtcBal,
       gmxStaked, gmxWallet,
       clUsdc, clEarned, clMtethsCol, clMtyldCol,
@@ -572,6 +574,8 @@
       vaultC.balanceOf(userAddr),
       vaultC.totalAssets().catch(()=>0n),
       vaultC.totalSupply().catch(()=>1n),
+      new ethers.Contract(COMPOUND_STRAT, STRAT_ABI2, rp).balance().catch(()=>0n),
+      vaultC.idleWeth().catch(()=>0n),
       gmEthC.balanceOf(userAddr),
       gmBtcC.balanceOf(userAddr),
       trackerC.depositBalances(userAddr, GMX_TOKEN).catch(()=>0n),
@@ -592,8 +596,9 @@
     const mtyldFloat   = parseFloat(ethers.formatEther(mtyldBal));
     const mtyldUsdVal  = mtyldFloat * mtyldNavUsd;
 
-    // mtETH-S: shares * (totalAssets / totalSupply) = WETH value
-    const navPerShare  = vaultSupply > 0n ? parseFloat(ethers.formatEther(vaultAssets)) / parseFloat(ethers.formatEther(vaultSupply)) : 1;
+    // mtETH-S: (idleWeth + compound strategy) / totalSupply
+    const realTVL = parseFloat(ethers.formatEther(idleWeth)) + parseFloat(ethers.formatEther(stratBal));
+    const navPerShare = vaultSupply > 0n ? realTVL / parseFloat(ethers.formatEther(vaultSupply)) : 1;
     const mtethsFloat  = parseFloat(ethers.formatEther(mtethsBal));
     const mtethsWeth   = mtethsFloat * navPerShare;
     const mtethsUsdVal = mtethsWeth * ethPrice;
@@ -643,6 +648,7 @@
     el('mteths-bal').textContent = mtethsFloat.toFixed(4);
     el('mteths-usd').textContent = usd(mtethsUsdVal);
     el('mteths-weth').textContent= mtethsWeth.toFixed(6)+' WETH';
+    const npEl=document.getElementById('mteths-nav-price'); if(npEl) npEl.textContent='1 mtETH-S = '+navPerShare.toFixed(6)+' WETH';
 
     el('gm-eth-bal').textContent = gmEthFloat.toFixed(4);
     el('gm-eth-usd').textContent = usd(gmEthUsd);
