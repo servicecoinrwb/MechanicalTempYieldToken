@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Portfolio • Mechanical Temp Ecosystem</title>
+  <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
+  <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap');
+
+    :root {
+      --bg: #080c14;
+      --surface: rgba(14,21,38,0.8);
+      --border: rgba(56,189,248,0.12);
+      --accent: #38bdf8;
+      --accent2: #f59e0b;
+      --accent3: #10b981;
+      --muted: #475569;
+      --text: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(56,189,248,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(245,158,11,0.03) 0%, transparent 60%),
+        linear-gradient(rgba(56,189,248,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .mono { font-family: 'Space Mono', monospace; }
+    .glass {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+    }
+
+    .card {
+      background: rgba(14,21,38,0.6);
+      border: 1px solid rgba(56,189,248,0.08);
+      border-radius: 16px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .card:hover { border-color: rgba(56,189,248,0.2); transform: translateY(-1px); }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .pulse { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent3); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5)} 50%{box-shadow:0 0 0 6px rgba(16,185,129,0)} }
+
+    .stat-value { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; }
+    .stat-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    .perf-bar { height: 4px; border-radius: 99px; background: rgba(56,189,248,0.1); overflow: hidden; margin-top: 8px; }
+    .perf-fill { height: 100%; border-radius: 99px; transition: width 1s ease; }
+
+    .position-row {
+      display: grid;
+      grid-template-columns: 1fr 120px 120px 100px;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(56,189,248,0.06);
+      transition: background 0.15s;
+    }
+    .position-row:hover { background: rgba(56,189,248,0.03); }
+    .position-row:last-child { border-bottom: none; }
+
+    @media (max-width: 640px) {
+      .position-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .hide-mobile { display: none; }
+    }
+
+    .connect-overlay {
+      position: absolute; inset: 0;
+      background: rgba(8,12,20,0.85);
+      backdrop-filter: blur(8px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: 16px;
+      z-index: 10;
+    }
+
+    .badge-green { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #10b981; }
+    .badge-blue  { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); color: #38bdf8; }
+    .badge-amber { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: #f59e0b; }
+    .badge-purple{ background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2); color: #c084fc; }
+
+    .nav-link { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0.05em; transition: color 0.2s; }
+    .nav-link:hover { color: var(--accent); }
+
+    #connectBtn {
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      border: none; border-radius: 12px;
+      padding: 10px 24px;
+      color: #fff; font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 13px;
+      cursor: pointer; transition: opacity 0.2s, transform 0.2s;
+    }
+    #connectBtn:hover { opacity: 0.9; transform: scale(1.02); }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header style="position:sticky;top:0;z-index:30;background:rgba(8,12,20,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;">
+    <a href="https://vault.mechanicaltemp.com/" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+      <img src="https://i.imgur.com/YJvJw7V.png" alt="MT" style="height:36px;">
+      <div>
+        <div style="font-weight:800;font-size:15px;color:#e2e8f0;letter-spacing:-0.02em;">Mechanical Temp <span style="color:var(--accent);">Portfolio</span></div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;font-family:'Space Mono',monospace;">Ecosystem Dashboard</div>
+      </div>
+    </a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <a href="conservator.html" class="nav-link">← Conservator</a>
+      <a href="credit-line.html" class="nav-link">Credit Line</a>
+      <button id="connectBtn" onclick="connect()">Connect Wallet</button>
+    </div>
+  </div>
+</header>
+
+<main style="position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:32px 24px;">
+
+  <!-- Hero stats -->
+  <div style="margin-bottom:32px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span class="pulse"></span>
+      <span style="font-size:11px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;font-family:'Space Mono',monospace;">Live on Arbitrum One</span>
+    </div>
+    <h1 style="font-size:clamp(28px,5vw,48px);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:8px;">
+      Your <span style="color:var(--accent);">Portfolio</span>
+    </h1>
+    <p style="color:var(--muted);font-size:14px;">All Mechanical Temp ecosystem positions in one view. Connect your wallet to see your holdings.</p>
+  </div>
+
+  <!-- Total value banner -->
+  <div class="glass" style="border-radius:20px;padding:28px;margin-bottom:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:24px;">
+    <div>
+      <div class="stat-label">Total Portfolio Value</div>
+      <div class="stat-value" id="totalValue" style="color:var(--accent3);font-size:2rem;">$—</div>
+      <div class="stat-sub" id="totalChange">Connect wallet to load</div>
+    </div>
+    <div>
+      <div class="stat-label">Blended APY</div>
+      <div class="stat-value mono" id="blendedApy" style="color:var(--accent);">—</div>
+      <div class="stat-sub">Weighted across all positions</div>
+    </div>
+    <div>
+      <div class="stat-label">ETH Price</div>
+      <div class="stat-value mono" id="ethPriceDisplay" style="color:#e2e8f0;">$—</div>
+      <div class="stat-sub">Chainlink ETH/USD</div>
+    </div>
+    <div>
+      <div class="stat-label">GMX Price</div>
+      <div class="stat-value mono" id="gmxPriceDisplay" style="color:var(--accent2);">$—</div>
+      <div class="stat-sub">Target $90 buyback</div>
+    </div>
+    <div>
+      <div class="stat-label">Active Positions</div>
+      <div class="stat-value mono" id="activePositions" style="color:#e2e8f0;">—</div>
+      <div class="stat-sub">Across the ecosystem</div>
+    </div>
+  </div>
+
+  <!-- Positions table -->
+  <div class="glass" style="border-radius:20px;margin-bottom:24px;overflow:hidden;position:relative;">
+    <div style="padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div>
+        <h2 style="font-size:16px;font-weight:800;letter-spacing:-0.02em;">Positions</h2>
+        <p style="font-size:11px;color:var(--muted);margin-top:2px;">All active holdings in the MT ecosystem</p>
+      </div>
+    </div>
+
+    <!-- Table header -->
+    <div style="display:grid;grid-template-columns:1fr 120px 120px 100px;gap:16px;padding:10px 20px;border-bottom:1px solid var(--border);">
+      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">Position</div>
+      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">Balance</div>
+      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">USD Value</div>
+      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">APY</div>
+    </div>
+
+    <!-- MTYLD -->
+    <div class="position-row" id="row-mtyld">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-none;">🏭</div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">MTYLD</div>
+          <div style="display:flex;gap:6px;margin-top:3px;">
+            <span class="tag badge-purple">Revenue Vault</span>
+            <span class="tag badge-purple">70% LTV</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;" id="mtyld-bal">—</div>
+        <div style="font-size:10px;color:var(--muted);">tokens</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="mtyld-usd">—</div>
+        <div style="font-size:10px;color:var(--muted);" id="mtyld-nav">NAV: —</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent3);">NAV+</div>
+        <div style="font-size:10px;color:var(--muted);">Revenue backed</div>
+      </div>
+    </div>
+
+    <!-- mtETH-S -->
+    <div class="position-row" id="row-mteths">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-none;">⚡</div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">mtETH-S</div>
+          <div style="display:flex;gap:6px;margin-top:3px;">
+            <span class="tag badge-blue">ETH Vault</span>
+            <span class="tag badge-blue">60% LTV</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;" id="mteths-bal">—</div>
+        <div style="font-size:10px;color:var(--muted);">shares</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="mteths-usd">—</div>
+        <div style="font-size:10px;color:var(--muted);" id="mteths-weth">— WETH</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent);" id="mteths-apy">~7%</div>
+        <div style="font-size:10px;color:var(--muted);">Compound+GMX</div>
+      </div>
+    </div>
+
+    <!-- GM ETH/USD -->
+    <div class="position-row">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-none;">Ξ</div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">GM ETH/USD</div>
+          <div style="display:flex;gap:6px;margin-top:3px;">
+            <span class="tag badge-blue">GMX V2</span>
+            <span class="tag badge-green">Active</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;" id="gm-eth-bal">—</div>
+        <div style="font-size:10px;color:var(--muted);">GM tokens</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="gm-eth-usd">—</div>
+        <div style="font-size:10px;color:var(--muted);">ETH/USDC pool</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent);">~12.56%</div>
+        <div style="font-size:10px;color:var(--muted);">30d fee APY</div>
+      </div>
+    </div>
+
+    <!-- GM BTC/USD -->
+    <div class="position-row">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-none;">₿</div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">GM BTC/USD</div>
+          <div style="display:flex;gap:6px;margin-top:3px;">
+            <span class="tag badge-amber">GMX V2</span>
+            <span class="tag badge-green">Active</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;" id="gm-btc-bal">—</div>
+        <div style="font-size:10px;color:var(--muted);">GM tokens</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="gm-btc-usd">—</div>
+        <div style="font-size:10px;color:var(--muted);">BTC/USDC pool</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent2);">~28%</div>
+        <div style="font-size:10px;color:var(--muted);">30d fee APY</div>
+      </div>
+    </div>
+
+    <!-- GMX Staked -->
+    <div class="position-row">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-none;">🔒</div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">GMX Staked</div>
+          <div style="display:flex;gap:6px;margin-top:3px;">
+            <span class="tag badge-amber">Protocol Fees</span>
+            <span class="tag badge-amber">Accumulating</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;" id="gmx-staked-bal">—</div>
+        <div style="font-size:10px;color:var(--muted);">GMX tokens</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="gmx-staked-usd">—</div>
+        <div style="font-size:10px;color:var(--muted);" id="gmx-to-target">— to $90 target</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent2);">Buyback</div>
+        <div style="font-size:10px;color:var(--muted);">At $90 trigger</div>
+      </div>
+    </div>
+
+    <!-- Credit Line -->
+    <div class="position-row">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-none;">💵</div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">Credit Line</div>
+          <div style="display:flex;gap:6px;margin-top:3px;">
+            <span class="tag badge-blue">USDC Deposit</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;" id="cl-dep">—</div>
+        <div style="font-size:10px;color:var(--muted);">USDC deposited</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="cl-earned">—</div>
+        <div style="font-size:10px;color:var(--muted);">interest earned</div>
+      </div>
+      <div>
+        <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent);">8%</div>
+        <div style="font-size:10px;color:var(--muted);">APR on loans</div>
+      </div>
+    </div>
+
+    <!-- Connect overlay -->
+    <div class="connect-overlay" id="connectOverlay">
+      <div style="font-size:32px;margin-bottom:12px;">🔐</div>
+      <div style="font-weight:800;font-size:18px;margin-bottom:6px;">Connect Your Wallet</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px;text-align:center;max-width:280px;">See all your positions across the Mechanical Temp ecosystem</div>
+      <button id="connectBtn2" onclick="connect()" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8);border:none;border-radius:12px;padding:12px 28px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;">Connect Wallet</button>
+    </div>
+  </div>
+
+  <!-- Allocation chart + Credit line status -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+
+    <!-- Allocation donut -->
+    <div class="glass" style="border-radius:20px;padding:24px;position:relative;">
+      <h2 style="font-size:15px;font-weight:800;margin-bottom:4px;">Allocation</h2>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:20px;">Portfolio breakdown by position</p>
+      <div style="position:relative;max-width:200px;margin:0 auto;">
+        <canvas id="allocChart" width="200" height="200"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;">Total</div>
+          <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent3);" id="chartTotal">$—</div>
+        </div>
+      </div>
+      <div id="legendItems" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- Credit line + Borrow power -->
+    <div class="glass" style="border-radius:20px;padding:24px;">
+      <h2 style="font-size:15px;font-weight:800;margin-bottom:4px;">Credit Line Status</h2>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:20px;">MT Credit Line v3 — your collateral & liquidity</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div class="card" style="padding:14px;">
+          <div class="stat-label">USDC Deposited</div>
+          <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent);" id="cl-usdc-dep">$—</div>
+          <div class="stat-sub" id="cl-pool-share">Pool share: —</div>
+        </div>
+        <div class="card" style="padding:14px;">
+          <div class="stat-label">Interest Earned</div>
+          <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent2);" id="cl-interest">$—</div>
+          <div class="stat-sub">Claimable USDC</div>
+        </div>
+        <div class="card" style="padding:14px;">
+          <div class="stat-label">mtETH-S Collateral</div>
+          <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent);" id="cl-mteths-col">—</div>
+          <div class="stat-sub" id="cl-mteths-power">Borrow power: —</div>
+        </div>
+        <div class="card" style="padding:14px;">
+          <div class="stat-label">MTYLD Collateral</div>
+          <div class="mono" style="font-size:18px;font-weight:700;color:#c084fc;" id="cl-mtyld-col">—</div>
+          <div class="stat-sub" id="cl-mtyld-power">Borrow power: —</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div class="stat-label">Total Borrow Power</div>
+          <div class="mono" style="font-size:16px;font-weight:700;color:var(--accent3);" id="cl-borrow-power">$—</div>
+        </div>
+        <div class="perf-bar">
+          <div class="perf-fill" id="cl-borrow-bar" style="width:0%;background:linear-gradient(90deg,#10b981,#38bdf8);"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;">
+          <div style="font-size:10px;color:var(--muted);">Available</div>
+          <div style="font-size:10px;color:var(--muted);" id="cl-max-borrow">Max: $—</div>
+        </div>
+      </div>
+
+      <a href="credit-line.html" style="display:block;text-align:center;margin-top:14px;padding:10px;border-radius:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(56,189,248,0.15)'" onmouseout="this.style.background='rgba(56,189,248,0.08)'">Open Credit Line →</a>
+    </div>
+  </div>
+
+  <!-- Quick links -->
+  <div class="glass" style="border-radius:20px;padding:20px;">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;font-weight:700;color:var(--muted);">Quick Links</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <a href="conservator.html" style="padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">⚡ Conservator</a>
+        <a href="credit-line.html" style="padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">💵 Credit Line</a>
+        <a href="https://app.gmx.io/#/earn/portfolio" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);color:var(--accent2);font-size:12px;font-weight:700;text-decoration:none;">GMX Portfolio ↗</a>
+        <a href="https://app.gmx.io/#/pools/details?market=0x70d95587d40A2caf56bd97485aB3Eec10Bee6336" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">ETH Pool ↗</a>
+        <a href="https://app.gmx.io/#/pools/details?market=0x47c031236e19d024b42f8AE6780E44A573170703" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);color:var(--accent2);font-size:12px;font-weight:700;text-decoration:none;">BTC Pool ↗</a>
+        <a href="https://debank.com/profile/0xcfe077e6f7554b1724546e02624a0832d1f4557a" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);color:var(--accent3);font-size:12px;font-weight:700;text-decoration:none;">DeBank ↗</a>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ── Addresses ──────────────────────────────────────────────
+  const MTYLD_VAULT   = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
+  const CONSERVATOR   = "0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f";
+  const CREDIT_LINE   = "0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc";
+  const GM_ETH        = "0x70d95587d40A2caf56bd97485aB3Eec10Bee6336";
+  const GM_BTC        = "0x47c031236e19d024b42f8AE6780E44A573170703";
+  const GMX_TOKEN     = "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a";
+  const GMX_TRACKER   = "0x908C4D94D34924765f1eDc22A1DD098397c59dD4";
+  const WETH          = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
+  const USDC          = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+  const CHAINLINK_ETH = "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612";
+  const CHAINLINK_GMX = "0xDB98056FecFff59D032aB628337A4887110df3dB";
+  const COMPOUND_STRAT= "0x3F26B819988542c4EdA48cA6dC241DCF972A74F2";
+  const RPC           = "https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu";
+
+  // ── ABIs ──────────────────────────────────────────────────
+  const ERC20_ABI = [
+    "function balanceOf(address) view returns (uint256)",
+    "function totalSupply() view returns (uint256)",
+  ];
+  const MTYLD_ABI = [
+    "function balanceOf(address) view returns (uint256)",
+    "function pricePerToken() view returns (uint256)",
+    "function totalSupply() view returns (uint256)",
+  ];
+  const VAULT_ABI = [
+    "function balanceOf(address) view returns (uint256)",
+    "function totalAssets() view returns (uint256)",
+    "function totalSupply() view returns (uint256)",
+    "function idleWeth() view returns (uint256)",
+  ];
+  const STRAT_ABI = ["function balance() view returns (uint256)"];
+  const CL_ABI = [
+    "function usdcDeposited(address) view returns (uint256)",
+    "function earnedUsdc(address) view returns (uint256)",
+    "function collateralDeposited(address) view returns (uint256)",
+    "function mtyldCollateralDeposited(address) view returns (uint256)",
+    "function earnedCollateral(address) view returns (uint256)",
+    "function earnedMtyldCollateral(address) view returns (uint256)",
+    "function usdcShareOf(address) view returns (uint256)",
+    "function maxBorrowable() view returns (uint256)",
+    "function collateralSummary() view returns (uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
+  ];
+  const TRACKER_ABI = [
+    "function depositBalances(address,address) view returns (uint256)",
+    "function balanceOf(address) view returns (uint256)",
+  ];
+  const CL_FEED_ABI = ["function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)"];
+
+  const el = id => document.getElementById(id);
+  const usd = (n,d=2) => '$'+Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fmt4 = n => parseFloat(ethers.formatEther(n)).toFixed(4);
+  const fU6 = n => '$'+(Number(n)/1e6).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fP = n => (Number(n)/1e16).toFixed(2)+'%';
+
+  let provider, signer, userAddr;
+  let allocChart;
+
+  // ── Connect ───────────────────────────────────────────────
+  async function connect() {
+    if (!window.ethereum) return alert('Install MetaMask first.');
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send('eth_requestAccounts', []);
+    signer  = await provider.getSigner();
+    userAddr = await signer.getAddress();
+    const btn = el('connectBtn');
+    btn.textContent = userAddr.slice(0,6)+'…'+userAddr.slice(-4);
+    btn.style.background = 'rgba(16,185,129,0.2)';
+    btn.style.border = '1px solid rgba(16,185,129,0.3)';
+    btn.style.color = '#10b981';
+    el('connectOverlay').style.display = 'none';
+    await loadPortfolio();
+  }
+
+  // ── Main loader ───────────────────────────────────────────
+  async function loadPortfolio() {
+    if (!userAddr) return;
+    const rp = new ethers.JsonRpcProvider(RPC);
+
+    // Price feeds
+    const ethFeed = new ethers.Contract(CHAINLINK_ETH, CL_FEED_ABI, rp);
+    const gmxFeed = new ethers.Contract(CHAINLINK_GMX, CL_FEED_ABI, rp);
+    const [ethData, gmxData] = await Promise.all([
+      ethFeed.latestRoundData().catch(()=>null),
+      gmxFeed.latestRoundData().catch(()=>null),
+    ]);
+    const ethPrice = ethData ? parseFloat(ethData[1].toString())/1e8 : 2350;
+    const gmxPrice = gmxData ? parseFloat(gmxData[1].toString())/1e8 : 7.52;
+
+    el('ethPriceDisplay').textContent = usd(ethPrice);
+    el('gmxPriceDisplay').textContent = usd(gmxPrice,2);
+
+    // Token balances
+    const mtyldC   = new ethers.Contract(MTYLD_VAULT, MTYLD_ABI, rp);
+    const vaultC   = new ethers.Contract(CONSERVATOR, VAULT_ABI, rp);
+    const stratC   = new ethers.Contract(COMPOUND_STRAT, STRAT_ABI, rp);
+    const gmEthC   = new ethers.Contract(GM_ETH, ERC20_ABI, rp);
+    const gmBtcC   = new ethers.Contract(GM_BTC, ERC20_ABI, rp);
+    const trackerC = new ethers.Contract(GMX_TRACKER, TRACKER_ABI, rp);
+    const gmxC     = new ethers.Contract(GMX_TOKEN, ERC20_ABI, rp);
+    const clC      = new ethers.Contract(CREDIT_LINE, CL_ABI, rp);
+
+    const [
+      mtyldBal, mtyldNav, mtyldSupply,
+      mtethsBal, vaultAssets, vaultSupply,
+      gmEthBal, gmBtcBal,
+      gmxStaked, gmxWallet,
+      clUsdc, clEarned, clMtethsCol, clMtyldCol,
+      clMtethsEarned, clMtyldEarned, clShare, clMax, csum,
+    ] = await Promise.all([
+      mtyldC.balanceOf(userAddr),
+      mtyldC.pricePerToken(),
+      mtyldC.totalSupply(),
+      vaultC.balanceOf(userAddr),
+      vaultC.totalAssets().catch(()=>0n),
+      vaultC.totalSupply().catch(()=>1n),
+      gmEthC.balanceOf(userAddr),
+      gmBtcC.balanceOf(userAddr),
+      trackerC.depositBalances(userAddr, GMX_TOKEN).catch(()=>0n),
+      gmxC.balanceOf(userAddr),
+      clC.usdcDeposited(userAddr).catch(()=>0n),
+      clC.earnedUsdc(userAddr).catch(()=>0n),
+      clC.collateralDeposited(userAddr).catch(()=>0n),
+      clC.mtyldCollateralDeposited(userAddr).catch(()=>0n),
+      clC.earnedCollateral(userAddr).catch(()=>0n),
+      clC.earnedMtyldCollateral(userAddr).catch(()=>0n),
+      clC.usdcShareOf(userAddr).catch(()=>0n),
+      clC.maxBorrowable().catch(()=>0n),
+      clC.collateralSummary().catch(()=>null),
+    ]);
+
+    // ── Calculate values ──────────────────────────────────
+    const mtyldNavUsd  = parseFloat(ethers.formatEther(mtyldNav));
+    const mtyldFloat   = parseFloat(ethers.formatEther(mtyldBal));
+    const mtyldUsdVal  = mtyldFloat * mtyldNavUsd;
+
+    // mtETH-S: shares * (totalAssets / totalSupply) = WETH value
+    const navPerShare  = vaultSupply > 0n ? parseFloat(ethers.formatEther(vaultAssets)) / parseFloat(ethers.formatEther(vaultSupply)) : 1;
+    const mtethsFloat  = parseFloat(ethers.formatEther(mtethsBal));
+    const mtethsWeth   = mtethsFloat * navPerShare;
+    const mtethsUsdVal = mtethsWeth * ethPrice;
+
+    // GM tokens (approximate price)
+    const gmEthFloat  = parseFloat(ethers.formatEther(gmEthBal));
+    const gmBtcFloat  = parseFloat(ethers.formatEther(gmBtcBal));
+    const gmEthUsd    = gmEthFloat * 1.76;
+    const gmBtcUsd    = gmBtcFloat * 2.43;
+
+    // GMX
+    const gmxTotal    = parseFloat(ethers.formatEther(gmxStaked + gmxWallet));
+    const gmxUsd      = gmxTotal * gmxPrice;
+
+    // Credit line
+    const clUsdcFloat = Number(clUsdc) / 1e6;
+    const clEarnedFloat = Number(clEarned) / 1e6;
+
+    // Total
+    const totalUsdVal = mtyldUsdVal + mtethsUsdVal + gmEthUsd + gmBtcUsd + gmxUsd + clUsdcFloat;
+
+    // Blended APY on yield positions
+    const yieldBase = mtethsUsdVal + gmEthUsd + gmBtcUsd;
+    const blended = yieldBase > 0
+      ? ((mtethsUsdVal*7 + gmEthUsd*12.56 + gmBtcUsd*28) / yieldBase).toFixed(1)
+      : "—";
+
+    // Count active positions
+    let active = 0;
+    if (mtyldFloat > 0) active++;
+    if (mtethsFloat > 0) active++;
+    if (gmEthFloat > 0) active++;
+    if (gmBtcFloat > 0) active++;
+    if (gmxTotal > 0) active++;
+    if (clUsdcFloat > 0) active++;
+
+    // ── Update UI ────────────────────────────────────────
+    el('totalValue').textContent    = usd(totalUsdVal);
+    el('blendedApy').textContent    = blended !== "—" ? "~"+blended+"%" : "—";
+    el('activePositions').textContent = active+"/6";
+    el('chartTotal').textContent    = usd(totalUsdVal);
+
+    el('mtyld-bal').textContent  = mtyldFloat.toFixed(4);
+    el('mtyld-usd').textContent  = usd(mtyldUsdVal);
+    el('mtyld-nav').textContent  = 'NAV: $'+mtyldNavUsd.toFixed(6);
+
+    el('mteths-bal').textContent = mtethsFloat.toFixed(4);
+    el('mteths-usd').textContent = usd(mtethsUsdVal);
+    el('mteths-weth').textContent= mtethsWeth.toFixed(6)+' WETH';
+
+    el('gm-eth-bal').textContent = gmEthFloat.toFixed(4);
+    el('gm-eth-usd').textContent = usd(gmEthUsd);
+    el('gm-btc-bal').textContent = gmBtcFloat.toFixed(4);
+    el('gm-btc-usd').textContent = usd(gmBtcUsd);
+
+    el('gmx-staked-bal').textContent = gmxTotal.toFixed(4);
+    el('gmx-staked-usd').textContent = usd(gmxUsd);
+    const toTarget = Math.max(0, 90 - gmxPrice);
+    el('gmx-to-target').textContent  = '$'+toTarget.toFixed(2)+' to $90 target';
+
+    el('cl-dep').textContent  = usd(clUsdcFloat);
+    el('cl-earned').textContent = usd(clEarnedFloat);
+    el('cl-usdc-dep').textContent = usd(clUsdcFloat);
+    el('cl-interest').textContent = usd(clEarnedFloat);
+    el('cl-pool-share').textContent = 'Pool share: '+fP(clShare);
+
+    if (csum) {
+      el('cl-mteths-col').textContent  = parseFloat(ethers.formatEther(csum[0])).toFixed(4)+' mtETH-S';
+      el('cl-mteths-power').textContent= 'Borrow power: $'+(Number(csum[2])/1e6).toFixed(2);
+      el('cl-mtyld-col').textContent   = parseFloat(ethers.formatEther(csum[3])).toFixed(4)+' MTYLD';
+      el('cl-mtyld-power').textContent = 'Borrow power: $'+(Number(csum[5])/1e6).toFixed(2);
+      const totalBorrow = Number(csum[6])/1e6;
+      const maxBorrow   = Number(clMax)/1e6;
+      el('cl-borrow-power').textContent = usd(totalBorrow);
+      el('cl-max-borrow').textContent   = 'Max: '+usd(maxBorrow);
+      el('cl-borrow-bar').style.width   = totalBorrow > 0 ? Math.min(100, (maxBorrow/totalBorrow)*100)+'%' : '0%';
+    }
+
+    // ── Allocation chart ─────────────────────────────────
+    const labels  = ['MTYLD','mtETH-S','GM ETH','GM BTC','GMX','Credit Line'];
+    const values  = [mtyldUsdVal, mtethsUsdVal, gmEthUsd, gmBtcUsd, gmxUsd, clUsdcFloat];
+    const colors  = ['#c084fc','#38bdf8','#38bdf8','#f59e0b','#f59e0b','#10b981'];
+    const borders = ['#a855f7','#0ea5e9','#0ea5e9','#d97706','#d97706','#059669'];
+
+    if (allocChart) allocChart.destroy();
+    const ctx = document.getElementById('allocChart').getContext('2d');
+    allocChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: colors.map(c => c+'33'),
+          borderColor: borders,
+          borderWidth: 2,
+          hoverOffset: 6,
+        }]
+      },
+      options: {
+        cutout: '70%',
+        plugins: { legend: { display: false }, tooltip: {
+          callbacks: { label: ctx => ' '+ctx.label+': '+usd(ctx.raw) }
+        }},
+        animation: { animateRotate: true, duration: 800 },
+      }
+    });
+
+    // Legend
+    const leg = el('legendItems');
+    leg.innerHTML = '';
+    labels.forEach((l,i) => {
+      if (values[i] <= 0) return;
+      const pct = totalUsdVal > 0 ? (values[i]/totalUsdVal*100).toFixed(1) : '0';
+      leg.innerHTML += `<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:10px;height:10px;border-radius:3px;background:${colors[i]};flex-none;"></div>
+          <span style="color:#94a3b8;">${l}</span>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <span style="color:#e2e8f0;font-family:'Space Mono',monospace;">${usd(values[i])}</span>
+          <span style="color:${colors[i]};font-family:'Space Mono',monospace;width:42px;text-align:right;">${pct}%</span>
+        </div>
+      </div>`;
+    });
+  }
+
+  // ── Init ─────────────────────────────────────────────────
+  if (window.ethereum) {
+    window.ethereum.on('accountsChanged', () => location.reload());
+    window.ethereum.on('chainChanged', () => location.reload());
+  }
+</script>
+</body>
+</html>
