@@ -7,6 +7,99 @@
   <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
   <script src="https://cdn.tailwindcss.com/3.4.1"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MT Wallet — Shared Wallet Persistence
+       Remembers connection across all MT pages. Silent reconnect.
+       Public API: window.MTWallet.address / .connect() / .disconnect()
+       Event:       window.addEventListener('mt-wallet-change', e => …)
+       ═══════════════════════════════════════════════════════════ -->
+  <script>
+  (function () {
+    const STORAGE_KEY = 'mt_wallet_v1';
+    const state = { address: null, chainId: null, provider: null };
+
+    window.MTWallet = {
+      get address() { return state.address; },
+      get chainId() { return state.chainId; },
+      get connected() { return !!state.address; },
+      getProvider() {
+        if (!window.ethereum) throw new Error('No wallet detected');
+        if (!state.provider && window.ethers) {
+          state.provider = new window.ethers.BrowserProvider(window.ethereum);
+        }
+        return state.provider;
+      },
+      async getSigner() { return await this.getProvider().getSigner(); },
+      async connect() {
+        if (!window.ethereum) { alert('No wallet detected. Install MetaMask or Rabby.'); return null; }
+        try {
+          const accts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const chain = await window.ethereum.request({ method: 'eth_chainId' });
+          await setAddress(accts[0], chain);
+          return state.address;
+        } catch (e) { console.warn('Wallet connect canceled:', e?.message); return null; }
+      },
+      disconnect() {
+        localStorage.removeItem(STORAGE_KEY);
+        state.address = null; state.chainId = null; state.provider = null;
+        emitChange();
+      },
+    };
+
+    function emitChange() {
+      window.dispatchEvent(new CustomEvent('mt-wallet-change', {
+        detail: { address: state.address, chainId: state.chainId }
+      }));
+    }
+
+    async function setAddress(addr, chain) {
+      if (!addr) return;
+      const normalized = addr.toLowerCase();
+      state.address = normalized;
+      state.chainId = chain || state.chainId;
+      state.provider = null;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        address: normalized, chainId: state.chainId, ts: Date.now()
+      }));
+      emitChange();
+    }
+
+    async function silentReconnect() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return;
+      let parsed;
+      try { parsed = JSON.parse(stored); } catch { return; }
+      if (!window.ethereum) return;
+      try {
+        const accts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accts && accts.length > 0) {
+          const chain = await window.ethereum.request({ method: 'eth_chainId' });
+          await setAddress(accts[0], chain);
+        } else {
+          // Wallet locked — keep address read-only, still emit so UI can update
+          state.address = parsed.address;
+          state.chainId = parsed.chainId;
+          emitChange();
+        }
+      } catch (e) { console.warn('Silent reconnect failed:', e?.message); }
+    }
+
+    if (window.ethereum && window.ethereum.on) {
+      window.ethereum.on('accountsChanged', (accts) => {
+        if (!accts || accts.length === 0) window.MTWallet.disconnect();
+        else setAddress(accts[0], state.chainId);
+      });
+      window.ethereum.on('chainChanged', (chain) => {
+        state.chainId = chain; emitChange();
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', silentReconnect);
+    } else { silentReconnect(); }
+  })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap');
@@ -565,20 +658,51 @@
   let provider, signer, userAddr;
   let allocChart;
 
-  // ── Connect ───────────────────────────────────────────────
+  // ── Connect (uses shared MTWallet module for cross-page persistence) ─
   async function connect() {
-    if (!window.ethereum) return alert('Install MetaMask first.');
-    provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send('eth_requestAccounts', []);
-    signer  = await provider.getSigner();
-    userAddr = await signer.getAddress();
+    const addr = await window.MTWallet.connect();
+    if (!addr) return;
+    // MTWallet emits 'mt-wallet-change' which our listener below handles
+  }
+
+  // Refresh UI when wallet state changes (connect / disconnect / account switch / silent reconnect)
+  window.addEventListener('mt-wallet-change', async (e) => {
+    const addr = e.detail.address;
+    if (!addr) {
+      // Disconnected
+      userAddr = null;
+      const btn = el('connectBtn');
+      btn.textContent = 'Connect Wallet';
+      btn.style.background = '';
+      btn.style.border = '';
+      btn.style.color = '';
+      el('connectOverlay').style.display = 'flex';
+      return;
+    }
+
+    // Connected (or silently reconnected on page load)
+    userAddr = addr;
+    try {
+      provider = window.MTWallet.getProvider();
+      // signer only obtainable when the wallet has an unlocked account for this site;
+      // silently reconnected (read-only) addresses won't yield a signer until full connect()
+      try { signer = await provider.getSigner(); } catch { signer = null; }
+    } catch { provider = null; signer = null; }
+
     const btn = el('connectBtn');
-    btn.textContent = userAddr.slice(0,6)+'…'+userAddr.slice(-4);
+    btn.textContent = addr.slice(0,6)+'…'+addr.slice(-4);
     btn.style.background = 'rgba(16,185,129,0.2)';
     btn.style.border = '1px solid rgba(16,185,129,0.3)';
     btn.style.color = '#10b981';
     el('connectOverlay').style.display = 'none';
     await loadPortfolio();
+  });
+
+  // If wallet was already restored before this listener attached, fire it manually
+  if (window.MTWallet && window.MTWallet.connected) {
+    window.dispatchEvent(new CustomEvent('mt-wallet-change', {
+      detail: { address: window.MTWallet.address, chainId: window.MTWallet.chainId }
+    }));
   }
 
   // ── Main loader ───────────────────────────────────────────
