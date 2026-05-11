@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MT Picks • Detroit Sports Predictions</title>
+  <link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
+  <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .glass { background: rgba(15,23,42,.6); backdrop-filter: blur(8px); }
+    .ring-sky { box-shadow: 0 0 0 1px rgba(56,189,248,.35) inset; }
+
+    /* Team color accents */
+    .team-pistons { --team-fg: #c8102e; --team-bg: rgba(200,16,46,0.08); --team-border: rgba(200,16,46,0.3); }
+    .team-tigers  { --team-fg: #fa4616; --team-bg: rgba(250,70,22,0.08); --team-border: rgba(250,70,22,0.3); }
+    .team-wings   { --team-fg: #ce1126; --team-bg: rgba(206,17,38,0.08); --team-border: rgba(206,17,38,0.3); }
+    .team-lions   { --team-fg: #0076b6; --team-bg: rgba(0,118,182,0.10); --team-border: rgba(0,118,182,0.35); }
+
+    .team-card { background: var(--team-bg); border-color: var(--team-border); }
+    .team-fg   { color: var(--team-fg); }
+
+    /* Detroit skyline accent — subtle bottom border decoration */
+    .skyline-glow {
+      background: radial-gradient(ellipse at bottom, rgba(56,189,248,0.15) 0%, transparent 60%);
+    }
+
+    /* Pick input */
+    .score-input {
+      background: rgba(15,23,42,0.8);
+      border: 1px solid rgba(71,85,105,0.5);
+      color: white;
+      font-family: 'Space Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      width: 4rem;
+      height: 4rem;
+      border-radius: 0.75rem;
+      transition: all 0.15s;
+    }
+    .score-input:focus {
+      outline: none;
+      border-color: rgb(56,189,248);
+      background: rgba(15,23,42,1);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+    }
+    .score-input::-webkit-outer-spin-button,
+    .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    .pulse-live { animation: pulseLive 2s ease-in-out infinite; }
+    @keyframes pulseLive {
+      0%,100% { opacity: 1; }
+      50%     { opacity: 0.5; }
+    }
+
+    /* Pixel-ish countdown digit */
+    .countdown { font-family: 'Space Mono', monospace; letter-spacing: 0.05em; }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-10 w-auto">
+      </a>
+      <nav class="flex items-center gap-1 sm:gap-3 text-sm">
+        <a href="portfolio.html" class="hidden sm:inline px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800">Portfolio</a>
+        <a href="vault.html" class="hidden sm:inline px-3 py-1.5 rounded-lg text-slate-300 hover:bg-slate-800">Vault</a>
+        <button id="connectBtn" class="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm">Connect</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="relative border-b border-slate-800 overflow-hidden">
+    <div class="absolute inset-0 skyline-glow"></div>
+    <div class="relative max-w-7xl mx-auto px-4 py-10 sm:py-14">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-900/50 font-bold uppercase tracking-wider">Beta</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-400 border border-amber-900/50 font-bold uppercase tracking-wider">Free to Play</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-black tracking-tight text-white">MT Picks</h1>
+      <p class="mt-2 text-xl text-sky-300 font-medium">Detroit Sports Predictions for MTYLD Holders</p>
+      <p class="mt-4 text-slate-400 max-w-2xl">
+        Predict the final score of every Detroit sports game. Closest predictions earn points.
+        Top of the weekly leaderboard wins a USDC prize sponsored by Mechanical Temp.
+        <span class="text-slate-300 font-medium">No money at risk. MTYLD holders only.</span>
+      </p>
+
+      <!-- Prize pool banner -->
+      <div class="mt-6 grid sm:grid-cols-3 gap-4">
+        <div class="rounded-2xl border border-emerald-900/40 p-5"
+             style="background:linear-gradient(135deg,rgba(15,23,42,0.7),rgba(16,185,129,0.06));">
+          <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">This Week's Prize Pool</div>
+          <div class="text-3xl font-mono font-black text-emerald-400" id="prizePool">$25.00</div>
+          <div class="text-slate-500 text-xs mt-1">USDC • Sponsored by MT • Split 60/30/10 top 3</div>
+        </div>
+        <div class="rounded-2xl border border-sky-900/40 p-5"
+             style="background:linear-gradient(135deg,rgba(15,23,42,0.7),rgba(56,189,248,0.06));">
+          <div class="text-sky-400 text-xs font-bold uppercase tracking-widest mb-2">Your Status</div>
+          <div class="text-2xl font-mono font-bold text-sky-400" id="userStatus">Not Connected</div>
+          <div class="text-slate-500 text-xs mt-1" id="userStatusSub">Connect wallet to play</div>
+        </div>
+        <div class="rounded-2xl border border-amber-900/40 p-5"
+             style="background:linear-gradient(135deg,rgba(15,23,42,0.7),rgba(245,158,11,0.06));">
+          <div class="text-amber-400 text-xs font-bold uppercase tracking-widest mb-2">Week Resets In</div>
+          <div class="text-3xl font-mono font-black text-amber-400 countdown" id="weekCountdown">—</div>
+          <div class="text-slate-500 text-xs mt-1">Every Sunday midnight ET</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tab bar -->
+  <section class="border-b border-slate-800 bg-slate-900/40 sticky top-[68px] z-20 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex gap-1 overflow-x-auto py-3" id="teamTabs">
+        <button data-team="pistons" class="team-tab active flex-none px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-bold border border-slate-700 transition flex items-center gap-2">
+          <span class="text-base">🏀</span> Pistons
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-900/50 text-emerald-400 font-mono">LIVE</span>
+        </button>
+        <button data-team="tigers" class="team-tab flex-none px-4 py-2 rounded-lg text-slate-400 hover:bg-slate-800 text-sm font-bold transition flex items-center gap-2">
+          <span class="text-base">⚾</span> Tigers
+        </button>
+        <button data-team="wings" class="team-tab flex-none px-4 py-2 rounded-lg text-slate-400 hover:bg-slate-800 text-sm font-bold transition flex items-center gap-2">
+          <span class="text-base">🏒</span> Red Wings
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-400 font-mono">OFF</span>
+        </button>
+        <button data-team="lions" class="team-tab flex-none px-4 py-2 rounded-lg text-slate-400 hover:bg-slate-800 text-sm font-bold transition flex items-center gap-2">
+          <span class="text-base">🏈</span> Lions
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-400 font-mono">OFF</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main content: games + leaderboard -->
+  <section class="max-w-7xl mx-auto px-4 py-8">
+    <div class="grid lg:grid-cols-3 gap-6">
+
+      <!-- Games column -->
+      <div class="lg:col-span-2 space-y-4" id="gamesContainer">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Leaderboard column -->
+      <aside class="space-y-4">
+        <div class="glass border border-slate-800 rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-white font-bold text-lg">Leaderboard</h2>
+            <span class="text-xs text-slate-500">This week</span>
+          </div>
+          <div class="space-y-2" id="leaderboard">
+            <!-- Populated by JS -->
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+            Picks lock at game tip-off
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="glass border border-slate-800 rounded-2xl p-5">
+          <h2 class="text-white font-bold text-base mb-3">How to Play</h2>
+          <ol class="space-y-2 text-sm text-slate-400">
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">1.</span> Hold MTYLD in your wallet</li>
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">2.</span> Submit a score prediction before tip-off</li>
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">3.</span> Earn points when the game ends</li>
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">4.</span> Top 3 each week split the prize pool</li>
+          </ol>
+          <div class="mt-4 pt-4 border-t border-slate-800">
+            <h3 class="text-slate-300 font-semibold text-xs uppercase tracking-wider mb-2">Scoring</h3>
+            <ul class="space-y-1.5 text-xs text-slate-400">
+              <li class="flex justify-between"><span>Exact score (both teams)</span><span class="text-emerald-400 font-mono font-bold">+100 pts</span></li>
+              <li class="flex justify-between"><span>One score exact</span><span class="text-emerald-400 font-mono font-bold">+50 pts</span></li>
+              <li class="flex justify-between"><span>Winner correct</span><span class="text-emerald-400 font-mono font-bold">+25 pts</span></li>
+              <li class="flex justify-between"><span>Margin within 5</span><span class="text-emerald-400 font-mono font-bold">+10 pts</span></li>
+              <li class="flex justify-between"><span>Total within 10</span><span class="text-emerald-400 font-mono font-bold">+10 pts</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+          <p class="text-xs text-slate-500 leading-relaxed">
+            <strong class="text-slate-400">No wagers, no risk.</strong> MT Picks is a free promotional fan game.
+            No user funds are at stake. Prizes are sponsored by Mechanical Temp.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <footer class="border-t border-slate-800 bg-slate-900 mt-12">
+    <div class="max-w-7xl mx-auto px-4 py-6 text-center">
+      <p class="text-slate-400 text-sm">Part of the <a href="index.html" class="text-sky-400 hover:underline">MTYLD ecosystem</a> • Built by <a href="https://www.mechanicaltemp.com" class="text-sky-400 hover:underline">Mechanical Temp</a> • Southfield, MI</p>
+      <p class="mt-2 text-xs text-slate-600">© <span id="yr"></span> Mechanical Temp • Picks are for fan entertainment only</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    // ─────────────────────────────────────────────────────────────────
+    // SCHEDULE DATA — replace this with live SportRadar/ESPN API later.
+    // Times are in UTC. Real data fetched May 11, 2026.
+    // ─────────────────────────────────────────────────────────────────
+    const SCHEDULE = {
+      pistons: {
+        sport: 'NBA',
+        emoji: '🏀',
+        themeClass: 'team-pistons',
+        active: true,
+        games: [
+          {
+            id: 'det-cle-g4',
+            title: 'Game 4 — Eastern Conf. Semifinals',
+            subtitle: 'DET leads series 2-1',
+            home: { abbr: 'CLE', name: 'Cleveland Cavaliers' },
+            away: { abbr: 'DET', name: 'Detroit Pistons' },
+            start: '2026-05-12T00:00:00Z', // May 11 8 PM EDT = May 12 00:00 UTC
+            status: 'scheduled'
+          }
+        ]
+      },
+      tigers: {
+        sport: 'MLB',
+        emoji: '⚾',
+        themeClass: 'team-tigers',
+        active: true,
+        games: [
+          {
+            id: 'det-nym-1',
+            title: 'Regular Season',
+            subtitle: 'Series opener at Citi Field',
+            home: { abbr: 'NYM', name: 'New York Mets' },
+            away: { abbr: 'DET', name: 'Detroit Tigers' },
+            start: '2026-05-12T23:10:00Z',
+            status: 'scheduled'
+          },
+          {
+            id: 'det-nym-2',
+            title: 'Regular Season',
+            subtitle: 'Game 2 of the series',
+            home: { abbr: 'NYM', name: 'New York Mets' },
+            away: { abbr: 'DET', name: 'Detroit Tigers' },
+            start: '2026-05-13T23:10:00Z',
+            status: 'scheduled'
+          },
+          {
+            id: 'det-nym-3',
+            title: 'Regular Season',
+            subtitle: 'Series finale, day game',
+            home: { abbr: 'NYM', name: 'New York Mets' },
+            away: { abbr: 'DET', name: 'Detroit Tigers' },
+            start: '2026-05-14T17:10:00Z',
+            status: 'scheduled'
+          },
+          {
+            id: 'det-tor-1',
+            title: 'Regular Season',
+            subtitle: 'Home stand begins',
+            home: { abbr: 'DET', name: 'Detroit Tigers' },
+            away: { abbr: 'TOR', name: 'Toronto Blue Jays' },
+            start: '2026-05-15T22:45:00Z',
+            status: 'scheduled'
+          }
+        ]
+      },
+      wings: {
+        sport: 'NHL',
+        emoji: '🏒',
+        themeClass: 'team-wings',
+        active: false,
+        offseasonMsg: 'Stanley Cup Playoffs underway',
+        resumeMsg: 'Picks resume October 2026',
+        games: []
+      },
+      lions: {
+        sport: 'NFL',
+        emoji: '🏈',
+        themeClass: 'team-lions',
+        active: false,
+        offseasonMsg: 'Off-season • Training camp opens July',
+        resumeMsg: 'Picks resume September 2026',
+        games: []
+      }
+    };
+
+    // ─────────────────────────────────────────────────────────────────
+    // STATE — localStorage for prototype, swap to Supabase later
+    // ─────────────────────────────────────────────────────────────────
+    const STORAGE_KEY = 'mt_picks_v1';
+    const getState = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"picks":{},"wallet":null}');
+    const setState = (s) => localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+
+    function recordPick(gameId, awayScore, homeScore) {
+      const s = getState();
+      s.picks[gameId] = { awayScore: parseInt(awayScore), homeScore: parseInt(homeScore), submittedAt: Date.now() };
+      setState(s);
+      render();
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // FAKE LEADERBOARD — replace with Supabase query later
+    // ─────────────────────────────────────────────────────────────────
+    const FAKE_LEADERBOARD = [
+      { handle: 'tigers_fan_313', points: 285, addr: '0x4a2e…b1c8' },
+      { handle: 'd_town_picks',    points: 240, addr: '0x7f3a…9d2e' },
+      { handle: 'motorcity_mike',  points: 195, addr: '0x8c1b…6e44' },
+      { handle: 'hockeytown',      points: 175, addr: '0x12fd…8a91' },
+      { handle: 'gretzky_jr',      points: 140, addr: '0x9933…cd02' },
+      { handle: 'olde_english_d',  points: 110, addr: '0x5577…3a8f' }
+    ];
+
+    // ─────────────────────────────────────────────────────────────────
+    // RENDERING
+    // ─────────────────────────────────────────────────────────────────
+    let activeTeam = 'pistons';
+
+    function fmtGameTime(iso) {
+      const d = new Date(iso);
+      const opts = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' };
+      return d.toLocaleString('en-US', opts);
+    }
+
+    function timeUntil(iso) {
+      const diff = new Date(iso) - new Date();
+      if (diff <= 0) return 'LOCKED';
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      if (h > 24) return `${Math.floor(h/24)}d ${h%24}h`;
+      if (h > 0)  return `${h}h ${m}m`;
+      return `${m}m`;
+    }
+
+    function gameLocked(game) {
+      return new Date(game.start) <= new Date();
+    }
+
+    function renderGame(game, themeClass) {
+      const state = getState();
+      const pick = state.picks[game.id];
+      const locked = gameLocked(game);
+      const hasPick = !!pick;
+
+      return `
+        <div class="team-card ${themeClass} rounded-2xl p-5 border">
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider team-fg">${game.title}</div>
+              <div class="text-xs text-slate-500 mt-0.5">${game.subtitle || ''}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[10px] uppercase tracking-wider text-slate-500">${locked ? 'Locked' : 'Locks in'}</div>
+              <div class="text-sm font-mono font-bold ${locked ? 'text-slate-500' : 'text-amber-400'}">${timeUntil(game.start)}</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 mb-3">
+            <!-- Away team -->
+            <div class="text-right">
+              <div class="text-2xl font-black text-white">${game.away.abbr}</div>
+              <div class="text-xs text-slate-500">${game.away.name}</div>
+            </div>
+
+            <!-- Score inputs / display -->
+            <div class="flex items-center gap-2">
+              ${hasPick || locked
+                ? `<div class="score-input flex items-center justify-center">${pick?.awayScore ?? '—'}</div>
+                   <span class="text-slate-500">–</span>
+                   <div class="score-input flex items-center justify-center">${pick?.homeScore ?? '—'}</div>`
+                : `<input type="number" min="0" max="200" placeholder="—" class="score-input" id="away_${game.id}">
+                   <span class="text-slate-500">–</span>
+                   <input type="number" min="0" max="200" placeholder="—" class="score-input" id="home_${game.id}">`
+              }
+            </div>
+
+            <!-- Home team -->
+            <div class="text-left">
+              <div class="text-2xl font-black text-white">${game.home.abbr}</div>
+              <div class="text-xs text-slate-500">${game.home.name}</div>
+            </div>
+          </div>
+
+          <div class="text-center text-xs text-slate-500 mb-4">${fmtGameTime(game.start)}</div>
+
+          ${hasPick && !locked
+            ? `<div class="flex gap-2">
+                 <div class="flex-1 py-2 rounded-lg bg-emerald-900/30 border border-emerald-900/50 text-emerald-400 text-sm font-semibold text-center">✓ Pick Submitted</div>
+                 <button onclick="clearPick('${game.id}')" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm">Change</button>
+               </div>`
+            : locked
+            ? `<div class="py-2 rounded-lg bg-slate-800/60 border border-slate-700 text-slate-400 text-sm font-semibold text-center">Picks Locked</div>`
+            : `<button onclick="submitPick('${game.id}')" class="w-full py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold transition">Submit Pick</button>`
+          }
+        </div>
+      `;
+    }
+
+    function renderTeam(teamKey) {
+      const team = SCHEDULE[teamKey];
+      const container = document.getElementById('gamesContainer');
+
+      if (!team.active) {
+        container.innerHTML = `
+          <div class="glass border border-slate-800 rounded-2xl p-10 text-center">
+            <div class="text-6xl mb-4 opacity-50">${team.emoji}</div>
+            <h2 class="text-2xl font-black text-white mb-2">${team.sport} — Off Season</h2>
+            <p class="text-slate-400 max-w-md mx-auto mb-2">${team.offseasonMsg}</p>
+            <p class="text-sm text-amber-400 font-semibold">${team.resumeMsg}</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (team.games.length === 0) {
+        container.innerHTML = `
+          <div class="glass border border-slate-800 rounded-2xl p-8 text-center">
+            <p class="text-slate-400">No upcoming games in the next 7 days.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-xl font-bold text-white">Upcoming ${team.sport} Games</h2>
+          <span class="text-xs text-slate-500">${team.games.length} game${team.games.length === 1 ? '' : 's'}</span>
+        </div>
+      ` + team.games.map(g => renderGame(g, team.themeClass)).join('');
+    }
+
+    function renderLeaderboard() {
+      const ranks = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'];
+      document.getElementById('leaderboard').innerHTML = FAKE_LEADERBOARD.map((row, i) => `
+        <div class="flex items-center gap-3 py-2 ${i < 3 ? 'border-b border-slate-800' : ''}">
+          <span class="text-lg flex-none w-6">${ranks[i] || (i+1)}</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-white truncate">${row.handle}</div>
+            <div class="text-[10px] text-slate-500 font-mono">${row.addr}</div>
+          </div>
+          <div class="text-emerald-400 font-mono font-bold text-sm">${row.points}</div>
+        </div>
+      `).join('');
+    }
+
+    function render() {
+      renderTeam(activeTeam);
+      renderLeaderboard();
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // INTERACTIONS
+    // ─────────────────────────────────────────────────────────────────
+    window.submitPick = function(gameId) {
+      const away = document.getElementById('away_' + gameId).value;
+      const home = document.getElementById('home_' + gameId).value;
+      if (away === '' || home === '') {
+        alert('Enter both scores before submitting');
+        return;
+      }
+      if (parseInt(away) < 0 || parseInt(home) < 0 || parseInt(away) > 200 || parseInt(home) > 200) {
+        alert('Score must be between 0 and 200');
+        return;
+      }
+      recordPick(gameId, away, home);
+    };
+
+    window.clearPick = function(gameId) {
+      const s = getState();
+      delete s.picks[gameId];
+      setState(s);
+      render();
+    };
+
+    // Tab switching
+    document.getElementById('teamTabs').addEventListener('click', e => {
+      const btn = e.target.closest('[data-team]');
+      if (!btn) return;
+      activeTeam = btn.dataset.team;
+      document.querySelectorAll('.team-tab').forEach(t => {
+        if (t.dataset.team === activeTeam) {
+          t.classList.add('active','bg-slate-800','text-white','border','border-slate-700');
+          t.classList.remove('text-slate-400');
+        } else {
+          t.classList.remove('active','bg-slate-800','text-white','border','border-slate-700');
+          t.classList.add('text-slate-400');
+        }
+      });
+      render();
+    });
+
+    // Wallet connect (simple, ethers-compatible)
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      if (!window.ethereum) {
+        alert('No wallet detected. Install MetaMask or use the Partner Portal.');
+        return;
+      }
+      try {
+        const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const addr = accs[0];
+        const s = getState();
+        s.wallet = addr;
+        setState(s);
+        document.getElementById('connectBtn').textContent = addr.slice(0,6) + '…' + addr.slice(-4);
+        document.getElementById('userStatus').textContent = '✓ Connected';
+        document.getElementById('userStatusSub').textContent = addr.slice(0,8) + '…' + addr.slice(-6);
+      } catch(e) { console.error(e); }
+    });
+
+    // Week countdown — until Sunday midnight ET
+    function updateCountdown() {
+      const now = new Date();
+      const sunday = new Date(now);
+      sunday.setDate(now.getDate() + ((7 - now.getDay()) % 7 || 7));
+      sunday.setHours(0,0,0,0);
+      const diff = sunday - now;
+      const d = Math.floor(diff/86400000);
+      const h = Math.floor((diff%86400000)/3600000);
+      const m = Math.floor((diff%3600000)/60000);
+      document.getElementById('weekCountdown').textContent = `${d}d ${h}h ${m}m`;
+    }
+
+    // Restore wallet if previously connected
+    (function init() {
+      const s = getState();
+      if (s.wallet) {
+        document.getElementById('connectBtn').textContent = s.wallet.slice(0,6) + '…' + s.wallet.slice(-4);
+        document.getElementById('userStatus').textContent = '✓ Connected';
+        document.getElementById('userStatusSub').textContent = s.wallet.slice(0,8) + '…' + s.wallet.slice(-6);
+      }
+      render();
+      updateCountdown();
+      setInterval(updateCountdown, 60000);
+      // Auto-refresh game lock states every minute
+      setInterval(render, 60000);
+    })();
+  </script>
+</body>
+</html>
