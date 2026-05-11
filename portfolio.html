@@ -170,6 +170,10 @@
       <div class="stat-label">Total Portfolio Value</div>
       <div class="stat-value" id="totalValue" style="color:var(--accent3);font-size:2rem;">$—</div>
       <div class="stat-sub" id="totalChange">Connect wallet to load</div>
+      <div id="netPositionLine" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid rgba(56,189,248,0.08);font-size:11px;">
+        <span style="color:var(--muted);">Net of loan:</span>
+        <span class="mono" id="netPositionVal" style="color:#f87171;font-weight:700;margin-left:4px;">$—</span>
+      </div>
     </div>
     <div>
       <div class="stat-label">Blended APY</div>
@@ -397,6 +401,35 @@
       <h2 style="font-size:15px;font-weight:800;margin-bottom:4px;">Credit Line Status</h2>
       <p style="font-size:11px;color:var(--muted);margin-bottom:20px;">MT Credit Line v3 — your collateral & liquidity</p>
 
+      <!-- Active loan card (only shown when loan is active) -->
+      <div id="active-loan-card" class="card" style="padding:14px;margin-bottom:14px;display:none;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:14px;">🏗️</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent2);">Active Loan</span>
+            <span id="loan-overdue-badge" style="display:none;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fff;background:#dc2626;padding:2px 6px;border-radius:4px;">Overdue</span>
+          </div>
+          <span id="loan-days" style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;">— days left</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">Principal</div>
+            <div class="mono" style="font-size:14px;font-weight:700;color:#e2e8f0;" id="loan-principal">$—</div>
+          </div>
+          <div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">Interest</div>
+            <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent2);" id="loan-interest">$—</div>
+          </div>
+          <div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">Total Due</div>
+            <div class="mono" style="font-size:14px;font-weight:700;color:#f87171;" id="loan-due">$—</div>
+          </div>
+        </div>
+        <div id="loan-borrower-note" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(245,158,11,0.15);font-size:10px;color:var(--muted);">
+          You are the borrower on this loan — see Net Position above.
+        </div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
         <div class="card" style="padding:14px;">
           <div class="stat-label">USDC Deposited</div>
@@ -500,6 +533,12 @@
     "function usdcShareOf(address) view returns (uint256)",
     "function maxBorrowable() view returns (uint256)",
     "function collateralSummary() view returns (uint256,uint256,uint256,uint256,uint256,uint256,uint256)",
+    "function currentLoan() view returns (uint256 principal, uint256 startTime, uint256 termSeconds, uint256 interestRateBps, bool active)",
+    "function accruedInterest() view returns (uint256)",
+    "function amountDue() view returns (uint256)",
+    "function daysRemaining() view returns (uint256)",
+    "function isOverdue() view returns (bool)",
+    "function borrower() view returns (address)",
   ];
   const TRACKER_ABI = [
     "function depositBalances(address,address) view returns (uint256)",
@@ -567,6 +606,7 @@
       gmxStaked, gmxWallet,
       clUsdc, clEarned, clMtethsCol, clMtyldCol,
       clMtethsEarned, clMtyldEarned, clShare, clMax, csum,
+      curLoan, loanAccrued, loanDue, loanDays, loanOverdue, loanBorrower,
     ] = await Promise.all([
       mtyldC.balanceOf(userAddr),
       mtyldC.pricePerToken(),
@@ -589,6 +629,12 @@
       clC.usdcShareOf(userAddr).catch(()=>0n),
       clC.maxBorrowable().catch(()=>0n),
       clC.collateralSummary().catch(()=>null),
+      clC.currentLoan().catch(()=>null),
+      clC.accruedInterest().catch(()=>0n),
+      clC.amountDue().catch(()=>0n),
+      clC.daysRemaining().catch(()=>0n),
+      clC.isOverdue().catch(()=>false),
+      clC.borrower().catch(()=>ethers.ZeroAddress),
     ]);
 
     // ── Calculate values ──────────────────────────────────
@@ -690,6 +736,34 @@
     const maxBorrow = Number(clMax)/1e6;
     el('cl-max-borrow').textContent = 'Max: '+usd(maxBorrow);
     el('cl-borrow-bar').style.width = userTotalBorrow > 0 ? Math.min(100, (maxBorrow/userTotalBorrow)*100)+'%' : '0%';
+
+    // ── Active loan + Net Position ────────────────────────
+    const loanActive  = curLoan && curLoan[4] === true;
+    const loanPrinc   = loanActive ? Number(curLoan[0])/1e6 : 0;
+    const loanInt     = Number(loanAccrued)/1e6;
+    const loanTotal   = Number(loanDue)/1e6;
+    const daysLeft    = Number(loanDays);
+    const isBorrower  = loanBorrower && userAddr &&
+                        loanBorrower.toLowerCase() === userAddr.toLowerCase();
+
+    if (loanActive) {
+      el('active-loan-card').style.display = 'block';
+      el('loan-principal').textContent = usd(loanPrinc);
+      el('loan-interest').textContent  = usd(loanInt);
+      el('loan-due').textContent       = usd(loanTotal);
+      el('loan-days').textContent      = daysLeft + ' days left';
+      if (loanOverdue) el('loan-overdue-badge').style.display = 'inline-block';
+      if (isBorrower)  el('loan-borrower-note').style.display = 'block';
+    }
+
+    if (loanActive && isBorrower) {
+      const netVal = totalUsdVal - loanTotal;
+      el('netPositionLine').style.display = 'block';
+      el('netPositionVal').textContent = usd(netVal);
+      el('totalChange').textContent = 'Gross assets (you are the borrower)';
+    } else {
+      el('totalChange').textContent = 'Ecosystem positions';
+    }
 
     // ── Allocation chart ─────────────────────────────────
     const labels  = ['MTYLD','mtETH-S','GM ETH','GM BTC','GMX','Credit Line'];
