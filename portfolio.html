@@ -544,16 +544,36 @@
         <div class="card" style="padding:14px;">
           <div class="stat-label">mtETH-S Collateral</div>
           <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent);" id="cl-mteths-col">—</div>
-          <div class="stat-sub" id="cl-mteths-power">Borrow power: —</div>
+          <div class="stat-sub" id="cl-mteths-power">Pool contribution: —</div>
         </div>
         <div class="card" style="padding:14px;">
           <div class="stat-label">MTYLD Collateral</div>
           <div class="mono" style="font-size:18px;font-weight:700;color:#c084fc;" id="cl-mtyld-col">—</div>
-          <div class="stat-sub" id="cl-mtyld-power">Borrow power: —</div>
+          <div class="stat-sub" id="cl-mtyld-power">Pool contribution: —</div>
         </div>
       </div>
 
-      <div class="card" style="padding:14px;">
+      <!-- LENDER VIEW (default — shown to everyone except the borrower wallet) -->
+      <div id="cl-lender-view" class="card" style="padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div class="stat-label">Backing the Credit Line</div>
+          <div class="mono" style="font-size:16px;font-weight:700;color:var(--accent3);" id="cl-lender-stake">$—</div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.5;" id="cl-lender-explain">
+          Your deposits enable borrow capacity for Mechanical Temp.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+          <div style="font-size:10px;color:var(--muted);">
+            <span style="color:var(--accent);font-weight:600;">70%</span> of interest on USDC
+          </div>
+          <div style="font-size:10px;color:var(--muted);">
+            <span style="color:#c084fc;font-weight:600;">30%</span> (weighted) on collateral
+          </div>
+        </div>
+      </div>
+
+      <!-- BORROWER VIEW (hidden — only shown to MT Deployer wallet) -->
+      <div id="cl-borrower-view" class="card" style="display:none;padding:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <div class="stat-label">Total Borrow Power</div>
           <div class="mono" style="font-size:16px;font-weight:700;color:var(--accent3);" id="cl-borrow-power">$—</div>
@@ -567,7 +587,7 @@
         </div>
       </div>
 
-      <a href="credit-line.html" style="display:block;text-align:center;margin-top:14px;padding:10px;border-radius:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(56,189,248,0.15)'" onmouseout="this.style.background='rgba(56,189,248,0.08)'">Open Credit Line →</a>
+      <a id="cl-cta" href="credit-line.html" style="display:block;text-align:center;margin-top:14px;padding:10px;border-radius:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(56,189,248,0.15)'" onmouseout="this.style.background='rgba(56,189,248,0.08)'">Manage Position →</a>
     </div>
   </div>
 
@@ -883,31 +903,55 @@
     el('cl-interest').textContent = usd(clEarnedFloat);
     el('cl-pool-share').textContent = 'Pool share: '+fP(clShare);
 
-    // Per-user credit line collateral & borrow power
+    // Per-user credit line collateral & pool contribution
     const userMtethsColUsd = mtethsClFloat * navPerShare * ethPrice;
     const userMtyldColUsd  = mtyldClFloat * mtyldNavUsd;
     const userMtethsBorrow = userMtethsColUsd * 0.60;
     const userMtyldBorrow  = userMtyldColUsd * 0.70;
     const userTotalBorrow  = userMtethsBorrow + userMtyldBorrow;
+    const userTotalStake   = clUsdcFloat + userMtethsColUsd + userMtyldColUsd;
+
+    // Determine role early — borrower view vs lender view
+    const isBorrower = loanBorrower && userAddr &&
+                       loanBorrower.toLowerCase() === userAddr.toLowerCase();
+    const colLabel   = isBorrower ? 'Borrow power: ' : 'Pool contribution: ';
 
     el('cl-mteths-col').textContent  = mtethsClFloat.toFixed(4)+' mtETH-S';
-    el('cl-mteths-power').textContent= 'Borrow power: '+usd(userMtethsBorrow);
+    el('cl-mteths-power').textContent= colLabel + (isBorrower ? usd(userMtethsBorrow) : usd(userMtethsColUsd));
     el('cl-mtyld-col').textContent   = mtyldClFloat.toFixed(4)+' MTYLD';
-    el('cl-mtyld-power').textContent = 'Borrow power: '+usd(userMtyldBorrow);
-    el('cl-borrow-power').textContent= usd(userTotalBorrow);
+    el('cl-mtyld-power').textContent = colLabel + (isBorrower ? usd(userMtyldBorrow) : usd(userMtyldColUsd));
 
     const maxBorrow = Number(clMax)/1e6;
-    el('cl-max-borrow').textContent = 'Max: '+usd(maxBorrow);
-    el('cl-borrow-bar').style.width = userTotalBorrow > 0 ? Math.min(100, (maxBorrow/userTotalBorrow)*100)+'%' : '0%';
+    const lenderView   = document.getElementById('cl-lender-view');
+    const borrowerView = document.getElementById('cl-borrower-view');
+    const ctaBtn       = document.getElementById('cl-cta');
+
+    if (isBorrower) {
+      lenderView.style.display   = 'none';
+      borrowerView.style.display = 'block';
+      el('cl-borrow-power').textContent = usd(userTotalBorrow);
+      el('cl-max-borrow').textContent   = 'Max: '+usd(maxBorrow);
+      el('cl-borrow-bar').style.width   = userTotalBorrow > 0
+        ? Math.min(100, (maxBorrow/userTotalBorrow)*100)+'%'
+        : '0%';
+      if (ctaBtn) ctaBtn.textContent = 'Open Credit Line →';
+    } else {
+      borrowerView.style.display = 'none';
+      lenderView.style.display   = 'block';
+      el('cl-lender-stake').textContent = usd(userTotalStake);
+      const hasStake = userTotalStake > 0.01;
+      el('cl-lender-explain').textContent = hasStake
+        ? 'Your USDC and collateral deposits enable the borrower to draw against the pool. You earn a proportional share of interest paid back.'
+        : 'Deposit USDC, mtETH-S, or MTYLD on the Credit Line to start earning interest from Mechanical Temp loans.';
+      if (ctaBtn) ctaBtn.textContent = hasStake ? 'Manage Position →' : 'Lend to the Pool →';
+    }
 
     // ── Active loan + Net Position ────────────────────────
-    const loanActive  = curLoan && curLoan[4] === true;
-    const loanPrinc   = loanActive ? Number(curLoan[0])/1e6 : 0;
-    const loanInt     = Number(loanAccrued)/1e6;
-    const loanTotal   = Number(loanDue)/1e6;
-    const daysLeft    = Number(loanDays);
-    const isBorrower  = loanBorrower && userAddr &&
-                        loanBorrower.toLowerCase() === userAddr.toLowerCase();
+    const loanActive = curLoan && curLoan[4] === true;
+    const loanPrinc  = loanActive ? Number(curLoan[0])/1e6 : 0;
+    const loanInt    = Number(loanAccrued)/1e6;
+    const loanTotal  = Number(loanDue)/1e6;
+    const daysLeft   = Number(loanDays);
 
     if (loanActive) {
       el('active-loan-card').style.display = 'block';
