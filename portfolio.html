@@ -181,14 +181,14 @@
       <div class="stat-sub">Weighted across all positions</div>
     </div>
     <div>
-      <div class="stat-label">ETH Price</div>
+      <div class="stat-label">mtETH-S Price</div>
       <div class="stat-value mono" id="ethPriceDisplay" style="color:#e2e8f0;">$—</div>
       <div class="stat-sub">Chainlink ETH/USD</div>
     </div>
     <div>
-      <div class="stat-label">GMX Price</div>
-      <div class="stat-value mono" id="gmxPriceDisplay" style="color:var(--accent2);">$—</div>
-      <div class="stat-sub">Target $90 buyback</div>
+      <div class="stat-label">MTYLD Price</div>
+      <div class="stat-value mono" id="mtyldPriceDisplay" style="color:#c084fc;">$—</div>
+      <div class="stat-sub">Backed by HVAC revenue</div>
     </div>
     <div>
       <div class="stat-label">Active Positions</div>
@@ -575,7 +575,7 @@
     const gmxPrice = gmxData ? parseFloat(gmxData[1].toString())/1e8 : 7.52;
 
     el('ethPriceDisplay').textContent = usd(ethPrice);
-    el('gmxPriceDisplay').textContent = usd(gmxPrice,2);
+    // GMX price still fetched for Market Maker section; no banner display
 
     // Token balances
     const mtyldC   = new ethers.Contract(MTYLD_VAULT, MTYLD_ABI, rp);
@@ -663,6 +663,7 @@
     if (clUsdcFloat > 0) active++;
 
     // ── Update UI ────────────────────────────────────────
+    el('mtyldPriceDisplay').textContent = '$'+mtyldNavUsd.toFixed(4);
     el('totalValue').textContent    = usd(totalUsdVal);
     el('blendedApy').textContent    = blended !== "—" ? "~"+blended+"%" : "—";
     el('activePositions').textContent = active+"/3";
