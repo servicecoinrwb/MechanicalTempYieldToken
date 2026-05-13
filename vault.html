@@ -167,6 +167,22 @@
       </div>
     </div>
 
+    <!-- Performance Chart -->
+    <div class="glass rounded-2xl p-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div>
+          <h2 class="text-base font-bold text-white">NAV Performance</h2>
+          <p id="apyLine" class="text-sm font-mono text-emerald-400 mt-1">APY (30d): —</p>
+          <p id="changeLine" class="text-xs font-mono text-slate-400">24h: —  •  7d: —  •  30d: —</p>
+        </div>
+        <div class="flex gap-2">
+          <button id="btnExportCSV" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">Export CSV</button>
+          <button id="btnResetHistory" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">Reset History</button>
+        </div>
+      </div>
+      <div style="height:160px"><canvas id="navChart"></canvas></div>
+    </div>
+
     <!-- User Position -->
     <div id="userPanel" class="hidden glass rounded-2xl p-6">
       <h2 class="text-base font-bold text-white mb-4">Your Position</h2>
@@ -184,22 +200,6 @@
           <p id="userShare" class="text-lg font-mono text-sky-400">—</p>
         </div>
       </div>
-    </div>
-
-    <!-- Performance Chart -->
-    <div class="glass rounded-2xl p-6">
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <div>
-          <h2 class="text-base font-bold text-white">NAV Performance</h2>
-          <p id="apyLine" class="text-sm font-mono text-emerald-400 mt-1">APY (30d): —</p>
-          <p id="changeLine" class="text-xs font-mono text-slate-400">24h: —  •  7d: —  •  30d: —</p>
-        </div>
-        <div class="flex gap-2">
-          <button id="btnExportCSV" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">Export CSV</button>
-          <button id="btnResetHistory" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">Reset History</button>
-        </div>
-      </div>
-      <div style="height:160px"><canvas id="navChart"></canvas></div>
     </div>
 
     <!-- Mint / Redeem -->
