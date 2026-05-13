@@ -185,6 +185,35 @@
       </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         Revenue Injection History — reads RevenueQueued events on-chain
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="glass rounded-2xl p-6">
+      <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <h2 class="text-base font-bold text-white">Revenue Injection History</h2>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-800">Live On-Chain</span>
+          </div>
+          <p class="text-xs text-slate-500">Every USDC revenue injection queued into the vault, recorded on Arbitrum.</p>
+        </div>
+        <div class="flex items-end gap-8">
+          <div>
+            <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Total Injected</p>
+            <p id="revTotalInjected" class="text-2xl font-mono font-bold text-emerald-400">$—</p>
+            <p id="revInjectionCount" class="text-xs text-slate-500">— since launch</p>
+          </div>
+          <div>
+            <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Latest</p>
+            <p id="revLatestAmount" class="text-lg font-mono text-white">—</p>
+            <p id="revLatestDate" class="text-xs text-slate-500">—</p>
+          </div>
+        </div>
+      </div>
+      <div style="height:200px"><canvas id="revChart"></canvas></div>
+      <p id="revStatus" class="text-xs text-slate-600 mt-3 text-center">Loading on-chain revenue events…</p>
+    </div>
+
     <!-- Mint / Redeem -->
     <div class="grid md:grid-cols-2 gap-6">
       <div class="glass rounded-2xl p-6">
@@ -460,7 +489,8 @@
     const CHAIN_ID_ARBITRUM = 42161;
     const FALLBACK_RPC = "https://arb1.arbitrum.io/rpc";
 
-    const VAULT_ABI = ["function MAX_FEE_BPS() view returns (uint16)","function RESCUE_DELAY() view returns (uint256)","function allowance(address,address) view returns (uint256)","function balanceOf(address) view returns (uint256)","function decimals() view returns (uint8)","function epochClosing() view returns (bool)","function feeRecipient() view returns (address)","function feeRoundUp() view returns (bool)","function guardedLaunch() view returns (bool)","function isWhitelistedMinter(address) view returns (bool)","function maxSupply() view returns (uint256)","function mintFeeBps() view returns (uint16)","function name() view returns (string)","function navDelaySec() view returns (uint256)","function owner() view returns (address)","function paused() view returns (bool)","function pendingReleaseAt() view returns (uint64)","function pendingReleaseReady() view returns (bool)","function pendingRevenueUSDC() view returns (uint256)","function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)","function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)","function pricePerToken() view returns (uint256)","function redeemFeeBps() view returns (uint16)","function rescuable(address) view returns (bool)","function rescueReq() view returns (address token, uint256 amount, address to, uint64 eta)","function stable() view returns (address)","function stableDecimals() view returns (uint8)","function symbol() view returns (string)","function totalSupply() view returns (uint256)","function treasury18() view returns (uint256)","function treasuryActiveUSDC() view returns (uint256)","function treasuryUSDC() view returns (uint256)","function approve(address s, uint256 a) returns (bool)","function announceRescue(address token, uint256 amount, address to)","function applyPendingRevenue()","function beginEpochClose()","function endEpochClose()","function executeRescue()","function injectRevenue(uint256 usdcAmount)","function mint(uint256 usdcAmount, uint256 minMtyldOut)","function pause()","function redeem(uint256 mtyldAmount, uint256 minUsdcOut)","function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)","function setGuardedLaunch(bool on)","function setMaxSupply(uint256 cap)","function setNavDelay(uint256 seconds_)","function setWhitelist(address user, bool allowed)","function transfer(address to, uint256 a) returns (bool)","function transferFrom(address f, address t, uint256 a) returns (bool)","function transferOwnership(address n)","function unpause()","function whitelistRescuable(address token, bool allowed)"];
+    // NOTE: RevenueQueued + RevenueApplied events added for on-chain revenue tracker
+    const VAULT_ABI = ["function MAX_FEE_BPS() view returns (uint16)","function RESCUE_DELAY() view returns (uint256)","function allowance(address,address) view returns (uint256)","function balanceOf(address) view returns (uint256)","function decimals() view returns (uint8)","function epochClosing() view returns (bool)","function feeRecipient() view returns (address)","function feeRoundUp() view returns (bool)","function guardedLaunch() view returns (bool)","function isWhitelistedMinter(address) view returns (bool)","function maxSupply() view returns (uint256)","function mintFeeBps() view returns (uint16)","function name() view returns (string)","function navDelaySec() view returns (uint256)","function owner() view returns (address)","function paused() view returns (bool)","function pendingReleaseAt() view returns (uint64)","function pendingReleaseReady() view returns (bool)","function pendingRevenueUSDC() view returns (uint256)","function previewMint(uint256 usdcAmount) view returns (uint256 mtyldOut, uint256 price)","function previewRedeem(uint256 mtyldAmount) view returns (uint256 usdcOut, uint256 price)","function pricePerToken() view returns (uint256)","function redeemFeeBps() view returns (uint16)","function rescuable(address) view returns (bool)","function rescueReq() view returns (address token, uint256 amount, address to, uint64 eta)","function stable() view returns (address)","function stableDecimals() view returns (uint8)","function symbol() view returns (string)","function totalSupply() view returns (uint256)","function treasury18() view returns (uint256)","function treasuryActiveUSDC() view returns (uint256)","function treasuryUSDC() view returns (uint256)","function approve(address s, uint256 a) returns (bool)","function announceRescue(address token, uint256 amount, address to)","function applyPendingRevenue()","function beginEpochClose()","function endEpochClose()","function executeRescue()","function injectRevenue(uint256 usdcAmount)","function mint(uint256 usdcAmount, uint256 minMtyldOut)","function pause()","function redeem(uint256 mtyldAmount, uint256 minUsdcOut)","function setFees(uint16 _mintFeeBps, uint16 _redeemFeeBps, address _recipient, bool _roundUp)","function setGuardedLaunch(bool on)","function setMaxSupply(uint256 cap)","function setNavDelay(uint256 seconds_)","function setWhitelist(address user, bool allowed)","function transfer(address to, uint256 a) returns (bool)","function transferFrom(address f, address t, uint256 a) returns (bool)","function transferOwnership(address n)","function unpause()","function whitelistRescuable(address token, bool allowed)","event RevenueQueued(address indexed from, uint256 usdcAmount, uint64 releaseAt)","event RevenueApplied(uint256 appliedUSDC, uint256 newPrice)"];
     const DIST_ABI = ["function distribute(address[] recipients, uint256[] amounts, string note)","function distributeProportional(address[] recipients, uint256[] weights, uint256 totalAmount, string note)","function distributionCount() view returns (uint256)","function getDistribution(uint256 id) view returns (uint256 timestamp, uint256 totalAmount, uint256 recipientCount, string note)","function getAllDistributions() view returns (tuple(uint256 timestamp, uint256 totalAmount, uint256 recipientCount, string note)[])"];
     const ERC20_ABI = ["function allowance(address owner, address spender) view returns (uint256)","function approve(address spender, uint256 amount) returns (bool)","function balanceOf(address account) view returns (uint256)"];
 
@@ -468,7 +498,8 @@
     const p6  = s => ethers.parseUnits(String(s||"0"), 6);
     const p18 = s => ethers.parseUnits(String(s||"0"), 18);
     const NAV_KEY = "mtyld_nav_history_" + VAULT;
-    let navHistory=[], navChart, provider, signer, acct, vault, usdc, dist, vaultOwner;
+    const REV_CACHE_KEY = "mtyld_revenue_events_" + VAULT;
+    let navHistory=[], navChart, revChart, provider, signer, acct, vault, usdc, dist, vaultOwner;
 
     // Read-only provider — works even before wallet connect
     function getReadProvider(){
@@ -503,6 +534,209 @@
       el("apyLine").textContent="APY (30d annualized): "+(a===null?"--":a.toFixed(2)+"%");
     }
 
+    // ════════════════════════════════════════════════════════════
+    // Revenue Injection Tracker
+    // Reads RevenueQueued events on-chain. Caches by last-scanned
+    // block so repeat visits don't re-scan full history.
+    // ════════════════════════════════════════════════════════════
+    async function loadRevenueHistory(){
+      const status = el("revStatus");
+      try{
+        const rp = getReadProvider();
+        const rv = new ethers.Contract(VAULT, VAULT_ABI, rp);
+
+        let cache = { events: [], lastBlock: 0 };
+        try{
+          const raw = localStorage.getItem(REV_CACHE_KEY);
+          if(raw) cache = JSON.parse(raw);
+        }catch{}
+
+        const latestBlock = await rp.getBlockNumber();
+        const fromBlock = cache.lastBlock ? cache.lastBlock + 1 : 0;
+        const filter = rv.filters.RevenueQueued();
+
+        let newEvents = [];
+
+        if(fromBlock <= latestBlock){
+          status.textContent = "Scanning chain for revenue injections…";
+          try{
+            // Try full range first — most public Arbitrum RPCs allow
+            // topic-filtered queries across the full chain
+            const raw = await rv.queryFilter(filter, fromBlock, latestBlock);
+            for(const ev of raw){
+              const blk = await ev.getBlock();
+              newEvents.push({
+                tx: ev.transactionHash,
+                block: ev.blockNumber,
+                ts: blk.timestamp,
+                from: ev.args.from,
+                amount: ev.args.usdcAmount.toString(),
+                releaseAt: Number(ev.args.releaseAt),
+              });
+            }
+          }catch(e){
+            // RPC rejected wide range — fall back to chunking
+            console.warn("Wide queryFilter failed, chunking:", e?.message);
+            const CHUNK = 50000;
+            for(let start = fromBlock; start <= latestBlock; start += CHUNK){
+              const end = Math.min(start + CHUNK - 1, latestBlock);
+              status.textContent = `Scanning blocks ${start.toLocaleString()}–${end.toLocaleString()}…`;
+              try{
+                const raw = await rv.queryFilter(filter, start, end);
+                for(const ev of raw){
+                  const blk = await ev.getBlock();
+                  newEvents.push({
+                    tx: ev.transactionHash,
+                    block: ev.blockNumber,
+                    ts: blk.timestamp,
+                    from: ev.args.from,
+                    amount: ev.args.usdcAmount.toString(),
+                    releaseAt: Number(ev.args.releaseAt),
+                  });
+                }
+              }catch(chunkErr){
+                console.warn("Chunk failed:", start, end, chunkErr?.message);
+              }
+            }
+          }
+        }
+
+        const allEvents = [...cache.events, ...newEvents];
+        try{
+          localStorage.setItem(REV_CACHE_KEY, JSON.stringify({
+            events: allEvents,
+            lastBlock: latestBlock,
+          }));
+        }catch{}
+
+        renderRevenueChart(allEvents);
+      }catch(e){
+        console.error("Revenue history failed:", e);
+        status.textContent = "Error loading revenue history: " + (e.message||"").slice(0,80);
+      }
+    }
+
+    function renderRevenueChart(events){
+      const status = el("revStatus");
+      events.sort((a,b)=>a.ts-b.ts);
+
+      let total = 0n;
+      for(const ev of events) total += BigInt(ev.amount);
+      const totalUsdc = Number(total) / 1e6;
+
+      el("revTotalInjected").textContent =
+        "$" + totalUsdc.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
+      el("revInjectionCount").textContent =
+        events.length + " injection" + (events.length===1?"":"s") + " since launch";
+
+      if(events.length === 0){
+        el("revLatestAmount").textContent = "—";
+        el("revLatestDate").textContent = "No injections yet";
+        status.textContent = "No revenue injections found on-chain yet — chart populates after the first injectRevenue() call.";
+        renderChartObj([], [], []);
+        return;
+      }
+
+      const latest = events[events.length-1];
+      const latestAmt = Number(BigInt(latest.amount)) / 1e6;
+      el("revLatestAmount").textContent =
+        "$" + latestAmt.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
+      el("revLatestDate").textContent =
+        new Date(latest.ts * 1000).toLocaleDateString(undefined,
+          {month:'short', day:'numeric', year:'numeric'});
+
+      const labels = [], barData = [], lineData = [], txLinks = [];
+      let running = 0;
+      for(const ev of events){
+        const amt = Number(BigInt(ev.amount)) / 1e6;
+        running += amt;
+        labels.push(new Date(ev.ts * 1000).toLocaleDateString(undefined,
+          {month:'short', day:'numeric'}));
+        barData.push(amt);
+        lineData.push(running);
+        txLinks.push(ev.tx);
+      }
+
+      renderChartObj(labels, barData, lineData, txLinks);
+      status.textContent = "Live from Arbitrum. Click any bar to open the tx on Arbiscan.";
+    }
+
+    function renderChartObj(labels, barData, lineData, txLinks){
+      const c = document.getElementById("revChart");
+      if(!c) return;
+      const cfg = {
+        type:'bar',
+        data:{
+          labels,
+          datasets:[
+            {
+              type:'bar',
+              label:'Injection',
+              data: barData,
+              backgroundColor:'rgba(16,185,129,0.55)',
+              borderColor:'rgba(16,185,129,0.85)',
+              borderWidth:1,
+              borderRadius:4,
+              yAxisID:'y',
+              order: 2,
+            },
+            {
+              type:'line',
+              label:'Cumulative',
+              data: lineData || [],
+              borderColor:'#38bdf8',
+              backgroundColor:'rgba(14,165,233,0.08)',
+              borderWidth:2,
+              pointRadius:2,
+              pointHoverRadius:4,
+              fill:true,
+              tension:0.3,
+              yAxisID:'y1',
+              order: 1,
+            }
+          ]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          interaction: { mode:'index', intersect:false },
+          onClick: (e, els) => {
+            if(!els || !els.length || !txLinks) return;
+            const idx = els[0].index;
+            const tx = txLinks[idx];
+            if(tx) window.open('https://arbiscan.io/tx/'+tx, '_blank');
+          },
+          plugins:{
+            legend:{ labels:{ color:'#94a3b8', font:{size:11} } },
+            tooltip:{
+              callbacks:{
+                label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),
+              }
+            }
+          },
+          scales:{
+            x:{ grid:{color:'rgba(71,85,105,0.15)'}, ticks:{color:'#64748b',font:{size:10}} },
+            y:{
+              position:'left',
+              grid:{color:'rgba(71,85,105,0.15)'},
+              ticks:{color:'#10b981',callback:v=>'$'+Number(v).toLocaleString()},
+              title:{display:true, text:'Per Injection', color:'#10b981', font:{size:10}},
+              beginAtZero:true,
+            },
+            y1:{
+              position:'right',
+              grid:{display:false},
+              ticks:{color:'#38bdf8',callback:v=>'$'+Number(v).toLocaleString()},
+              title:{display:true, text:'Cumulative', color:'#38bdf8', font:{size:10}},
+              beginAtZero:true,
+            }
+          }
+        }
+      };
+      if(revChart) revChart.destroy();
+      revChart = new Chart(c.getContext("2d"), cfg);
+    }
+
     const trunc=a=>a?a.slice(0,6)+"..."+a.slice(-4):"--";
     const shortErr=e=>{ const s=(e&&(e.info?.error?.message||e.shortMessage||e.message))||String(e); return "Error: "+s.replace(/execution reverted: /i,'').slice(0,180); };
     function humanize(s){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60; return (h?h+"h ":"")+(m?m+"m ":"")+sec+"s"; }
@@ -511,14 +745,11 @@
     async function connectWallet(){
       const addr = await window.MTWallet.connect();
       if(!addr) return false;
-      // UI updates flow through 'mt-wallet-change' listener below
       return true;
     }
 
-    // Apply wallet state to UI + signer contracts
     async function applyWalletState(addr){
       if(!addr){
-        // Disconnected
         provider=null; signer=null; acct=null; vault=null; usdc=null; dist=null; vaultOwner=null;
         el("addr").textContent="Not connected";
         el("ownerLine").textContent="—";
@@ -527,7 +758,6 @@
         btn.className="ml-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition";
         el("ownerPanel").classList.add("hidden");
         el("userPanel").classList.add("hidden");
-        // Still refresh read-only stats
         await refresh();
         return;
       }
@@ -535,7 +765,6 @@
       acct = addr;
       try{
         provider = window.MTWallet.getProvider();
-        // Network check
         const net = await provider.getNetwork();
         if(Number(net.chainId) !== CHAIN_ID_ARBITRUM){
           try{ await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:'0xa4b1'}]}); }
@@ -554,7 +783,6 @@
       btn.textContent = addr.slice(0,6)+"..."+addr.slice(-4);
       btn.className = "ml-2 px-4 py-2 rounded-lg bg-emerald-700/30 border border-emerald-700 text-emerald-400 text-sm font-semibold";
 
-      // Owner check + user panel
       try{
         const rv = new ethers.Contract(VAULT, VAULT_ABI, provider);
         vaultOwner = await rv.owner();
@@ -575,7 +803,6 @@
       if(!signer || !vault){
         const ok = await connectWallet();
         if(!ok) return false;
-        // Give the listener a tick to wire contracts
         await new Promise(r=>setTimeout(r,150));
       }
       return !!(signer && vault);
@@ -639,7 +866,8 @@
     el("btnRedeem").onclick=async()=>{ try{el("btnRedeem").disabled=true;if(!await ensureConnected())return;const m=p18(el("redeemAmount").value);const sb=Math.round((+el("redeemSlippage").value||0.5)*100);const [out]=await vault.previewRedeem(m);const mu=out-(out*BigInt(sb)/10000n);const tx=await vault.redeem(m,mu);await tx.wait();el("redeemPreview").textContent="Redeemed!";await refresh();}catch(e){el("redeemPreview").textContent=shortErr(e);}finally{el("btnRedeem").disabled=false;} };
     el("btnMintMax").onclick=async()=>{ try{if(!await ensureConnected())return;const b=await usdc.balanceOf(acct);el("mintAmount").value=ethers.formatUnits(b,6);}catch(e){} };
     el("btnRedeemMax").onclick=async()=>{ try{if(!await ensureConnected())return;const b=await vault.balanceOf(acct);el("redeemAmount").value=ethers.formatUnits(b,18);}catch(e){} };
-    el("btnQueueRev").onclick=async()=>{ try{el("revMsg").textContent="";if(!await ensureConnected())return;const a=p6(el("revAmount").value);if(a<=0n){el("revMsg").textContent="Enter amount";return;}const al=await usdc.allowance(acct,VAULT);if(al<a){const ta=await usdc.approve(VAULT,a);await ta.wait();}const tx=await vault.injectRevenue(a);await tx.wait();el("revMsg").textContent="Queued!";await refresh();}catch(e){el("revMsg").textContent=shortErr(e);} };
+    // injectRevenue success refreshes both stats AND the revenue tracker chart
+    el("btnQueueRev").onclick=async()=>{ try{el("revMsg").textContent="";if(!await ensureConnected())return;const a=p6(el("revAmount").value);if(a<=0n){el("revMsg").textContent="Enter amount";return;}const al=await usdc.allowance(acct,VAULT);if(al<a){const ta=await usdc.approve(VAULT,a);await ta.wait();}const tx=await vault.injectRevenue(a);await tx.wait();el("revMsg").textContent="Queued!";await refresh();await loadRevenueHistory();}catch(e){el("revMsg").textContent=shortErr(e);} };
     el("btnApply").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.applyPendingRevenue()).wait();el("pendingHint").textContent="Applied!";await refresh();}catch(e){el("pendingHint").textContent=shortErr(e);} };
     el("btnBeginClose").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.beginEpochClose()).wait();await refresh();}catch(e){alert(shortErr(e));} };
     el("btnEndClose").onclick=async()=>{ try{if(!await ensureConnected())return;await(await vault.endEpochClose()).wait();await refresh();}catch(e){alert(shortErr(e));} };
@@ -684,11 +912,13 @@
     el("btnExportCSV").onclick=()=>{ const rows=[["timestamp","iso","nav_usd"]];for(const p of navHistory)rows.push([p.t,new Date(p.t*1000).toISOString(),p.p.toFixed(8)]);const csv=rows.map(r=>r.join(",")).join("\n");const blob=new Blob([csv],{type:"text/csv"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="mtyld_nav_history.csv";a.click();URL.revokeObjectURL(url); };
     el("btnResetHistory").onclick=()=>{ if(confirm("Reset history?")){navHistory=[];saveH();drawChart();} };
     el("btnConnect").onclick=connectWallet;
-    el("btnRefresh").onclick=async()=>{ await refresh();if(vaultOwner&&signer)await loadOwnerState(); };
+    // Refresh button now also re-scans revenue events
+    el("btnRefresh").onclick=async()=>{ await refresh();if(vaultOwner&&signer)await loadOwnerState();await loadRevenueHistory(); };
 
     loadH(); drawChart();
     setInterval(()=>{ refresh().catch(()=>{}); },10000);
     refresh().catch(()=>{});
+    loadRevenueHistory().catch(()=>{});
   })();
   </script>
 </body>
