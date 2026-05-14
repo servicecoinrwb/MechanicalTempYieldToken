@@ -892,7 +892,7 @@
     el('cv-total').textContent      = usd(cvTotalUsd);
     const toTarget = Math.max(0, 90 - gmxPrice);
     el('cv-gmx-target').textContent = toTarget > 0
-      ? '$'+toTarget.toFixed(2)+' to $90 target'
+      ? 'GMX $'+gmxPrice.toFixed(2)+' • $'+toTarget.toFixed(2)+' to $90'
       : 'At buyback target ✓';
 
     el('cl-dep').textContent  = usd(clUsdcFloat);
