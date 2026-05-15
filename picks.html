@@ -519,22 +519,41 @@
     // ════════════════════════════════════════════════════════════════
     // Mutations
     // ════════════════════════════════════════════════════════════════
+    // Pick submission goes through an Edge Function that re-checks the
+    // MTYLD balance server-side. Client-side check above is UX; this is
+    // the real enforcement that can't be bypassed by editing JS.
     async function upsertPick(gameId, { winner, homeScore, awayScore }) {
       if (!walletAddr) { alert('Connect wallet first'); return null; }
       // Fetch existing to merge fields (so picking score doesn't erase winner pick)
       const existing = await fetchPickForGame(gameId);
-      const row = {
+      const payload = {
         wallet: walletAddr,
         game_id: gameId,
         winner: winner !== undefined ? winner : (existing?.winner ?? null),
         home_score: homeScore !== undefined ? homeScore : (existing?.home_score ?? null),
         away_score: awayScore !== undefined ? awayScore : (existing?.away_score ?? null),
-        submitted_at: new Date().toISOString(),
       };
-      const { data, error } = await sb.from('picks')
-        .upsert(row, { onConflict: 'wallet,game_id' }).select().single();
-      if (error) { console.error('upsertPick:', error); alert('Error saving pick: '+error.message); return null; }
-      return data;
+      try {
+        const r = await fetch(`${SUPABASE_URL}/functions/v1/mt-picks-submit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'apikey': SUPABASE_KEY,
+          },
+          body: JSON.stringify(payload),
+        });
+        const result = await r.json();
+        if (!r.ok || result.error) {
+          alert('Error saving pick: ' + (result.error || `HTTP ${r.status}`));
+          return null;
+        }
+        return result.pick;
+      } catch (e) {
+        console.error('upsertPick:', e);
+        alert('Network error saving pick. Try again.');
+        return null;
+      }
     }
 
     async function finalizeGame(gameId, finalHome, finalAway) {
@@ -848,18 +867,33 @@
     // ════════════════════════════════════════════════════════════════
     // Window-exposed action handlers (called from inline onclick)
     // ════════════════════════════════════════════════════════════════
+    // MTYLD gate check — call before any pick submission
+    function gateBlocks() {
+      if (!walletAddr) { alert('Connect wallet first'); return true; }
+      if (!canPlay) {
+        alert(
+          `You need at least ${MIN_MTYLD_TO_PLAY} MTYLD to submit picks.\n\n` +
+          (mtyldBalance !== null
+            ? `Your balance: ${mtyldBalance.toFixed(4)} MTYLD`
+            : 'Could not read your balance — try again in a moment.')
+        );
+        return true;
+      }
+      return false;
+    }
+
     window.submitWinner = async (gameId, winner) => {
-      if (!walletAddr) { alert('Connect wallet first'); return; }
+      if (gateBlocks()) return;
       const res = await upsertPick(gameId, { winner });
       if (res) await render();
     };
     window.clearWinner = async (gameId) => {
-      if (!walletAddr) return;
+      if (gateBlocks()) return;
       await upsertPick(gameId, { winner: null });
       await render();
     };
     window.submitScore = async (gameId) => {
-      if (!walletAddr) { alert('Connect wallet first'); return; }
+      if (gateBlocks()) return;
       const a = $('away_'+gameId).value, h = $('home_'+gameId).value;
       if (a === '' || h === '') { alert('Enter both scores'); return; }
       const aN = parseInt(a), hN = parseInt(h);
@@ -868,7 +902,7 @@
       if (res) await render();
     };
     window.clearScore = async (gameId) => {
-      if (!walletAddr) return;
+      if (gateBlocks()) return;
       await upsertPick(gameId, { homeScore: null, awayScore: null });
       await render();
     };
@@ -980,31 +1014,76 @@
     async function applyWalletUI(addr) {
       walletAddr = addr ? addr.toLowerCase() : null;
       isAdmin = walletAddr === ADMIN_WALLET;
+
+      // Reset gate state on any wallet change
+      mtyldBalance = null;
+      canPlay = false;
+
       if (addr) {
         $('connectBtn').textContent = addr.slice(0,6) + '…' + addr.slice(-4);
+
+        // Read MTYLD balance — same rule applies to admin (no bypass)
+        mtyldBalance = await readMtyldBalance(walletAddr);
+        canPlay = mtyldBalance !== null && mtyldBalance >= MIN_MTYLD_TO_PLAY;
+
         if (isAdmin) {
-          $('userStatus').textContent = '✓ Admin Connected';
-          $('userStatus').className = 'text-2xl font-mono font-bold text-amber-400';
-          $('userStatusSub').textContent = 'MT Deployer • Can finalize games';
+          $('userStatus').textContent = canPlay ? '✓ Admin Connected' : '⚠ Admin (no MTYLD)';
+          $('userStatus').className = `text-2xl font-mono font-bold ${canPlay ? 'text-amber-400' : 'text-red-400'}`;
+          $('userStatusSub').textContent = canPlay
+            ? `MT Deployer • ${mtyldBalance.toFixed(2)} MTYLD`
+            : 'MT Deployer • Need ≥1 MTYLD to submit picks';
         } else {
           // Show user's all-time points in status tile
           const picks = await fetchMyPicks();
           const pts = picks.reduce((s,p) => s + (p.points || 0), 0);
           $('userStatus').textContent = `${pts} pts`;
           $('userStatus').className = 'text-2xl font-mono font-bold text-sky-400';
-          $('userStatusSub').textContent = `${picks.length} pick${picks.length === 1 ? '' : 's'} • ${trunc(walletAddr)}`;
+          const mtyldLabel = mtyldBalance === null
+            ? '? MTYLD'
+            : `${mtyldBalance.toFixed(2)} MTYLD`;
+          $('userStatusSub').textContent = `${picks.length} pick${picks.length === 1 ? '' : 's'} • ${mtyldLabel} • ${trunc(walletAddr)}`;
           $('myPicksCount').textContent = picks.length;
           $('myPicksCount').classList.toggle('hidden', picks.length === 0);
         }
+        renderGateBanner();
       } else {
         $('connectBtn').textContent = 'Connect Wallet';
         $('userStatus').textContent = 'Not Connected';
         $('userStatus').className = 'text-2xl font-mono font-bold text-sky-400';
         $('userStatusSub').textContent = 'Connect wallet to play';
         $('myPicksCount').classList.add('hidden');
+        renderGateBanner();
       }
       await render();
       await renderAdminPanel();
+    }
+
+    // Show the MTYLD-gate banner when the connected wallet lacks the minimum.
+    function renderGateBanner() {
+      let el = document.getElementById('mtyldGate');
+      const needed = walletAddr && !canPlay;
+      if (!needed) { if (el) el.remove(); return; }
+
+      const msg = mtyldBalance === null
+        ? 'Could not read your MTYLD balance. Picks are disabled until we can verify.'
+        : `You hold ${mtyldBalance.toFixed(4)} MTYLD. You need at least ${MIN_MTYLD_TO_PLAY} to submit picks.`;
+
+      const html = `
+        <div id="mtyldGate" class="rounded-2xl p-4 mb-4 border border-red-900/50"
+             style="background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(220,38,38,0.06));">
+          <div class="flex items-start gap-3">
+            <div class="text-2xl">🚫</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-bold text-red-400 mb-1">Hold MTYLD to play</div>
+              <div class="text-xs text-slate-300">${msg}</div>
+              <div class="text-xs text-slate-500 mt-1">MT Picks is exclusive to MTYLD holders. Mint MTYLD by depositing USDC on the Vault.</div>
+            </div>
+            <a href="vault.html" class="flex-none px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition">Get MTYLD →</a>
+          </div>
+        </div>`;
+      // Insert at the top of the games container
+      const container = $('gamesContainer');
+      if (container) container.insertAdjacentHTML('beforebegin', html);
     }
 
     $('connectBtn').addEventListener('click', async () => {
