@@ -93,6 +93,7 @@
     .team-tigers  { --team-fg: #fa4616; --team-bg: rgba(250,70,22,0.08); --team-border: rgba(250,70,22,0.3); }
     .team-wings   { --team-fg: #ce1126; --team-bg: rgba(206,17,38,0.08); --team-border: rgba(206,17,38,0.3); }
     .team-lions   { --team-fg: #0076b6; --team-bg: rgba(0,118,182,0.10); --team-border: rgba(0,118,182,0.35); }
+    .team-custom  { --team-fg: #10b981; --team-bg: rgba(16,185,129,0.06); --team-border: rgba(16,185,129,0.3); }
 
     .team-card { background: var(--team-bg); border-color: var(--team-border); }
     .team-fg { color: var(--team-fg); }
@@ -127,7 +128,7 @@
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3">
         <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp" class="h-10 w-auto">
-        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline"><span class="text-sky-400"></span></span>
+        <span class="font-bold tracking-wide text-slate-200 hidden sm:inline">MT <span class="text-sky-400">Picks</span></span>
       </a>
       <nav class="flex items-center gap-1">
         <a href="index.html" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 text-sm transition">Home</a>
@@ -197,6 +198,9 @@
         <button data-team="lions" class="team-tab flex-none px-4 py-2 rounded-lg text-slate-400 hover:bg-slate-800 text-sm font-bold transition flex items-center gap-2">
           <span class="text-base">🏈</span> Lions
           <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-400 font-mono">OFF</span>
+        </button>
+        <button data-team="custom" class="team-tab flex-none px-4 py-2 rounded-lg text-slate-400 hover:bg-slate-800 text-sm font-bold transition flex items-center gap-2">
+          <span class="text-base">🎯</span> Custom
         </button>
         <button data-team="history" class="team-tab flex-none px-4 py-2 rounded-lg text-slate-400 hover:bg-slate-800 text-sm font-bold transition flex items-center gap-2">
           <span class="text-base">📜</span> My Picks
@@ -281,23 +285,25 @@
       </div>
       <div class="mt-6 pt-4 border-t border-slate-800">
         <h3 class="text-white font-semibold text-sm mb-3">Add New Game</h3>
-        <p class="text-xs text-slate-500 mb-3">For one-off games not in seed data. Format: ID is your choice (e.g. <code>det-bos-1</code>).</p>
+        <p class="text-xs text-slate-500 mb-3">For one-off games not in seed data. Format: ID is your choice (e.g. <code>det-bos-1</code>). Choose <strong>Custom Event</strong> for fights, soccer matches, or anything else.</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <input id="ngId" placeholder="game id (det-xxx-N)" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
+          <input id="ngId" placeholder="event id (e.g. fight-1)" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
           <select id="ngTeam" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
             <option value="pistons">Pistons (NBA)</option>
             <option value="tigers">Tigers (MLB)</option>
             <option value="wings">Red Wings (NHL)</option>
             <option value="lions">Lions (NFL)</option>
+            <option value="custom">🎯 Custom Event (Fight/Soccer/Other)</option>
           </select>
+          <input id="ngSport" placeholder="sport/league (e.g. UFC, EPL)" class="hidden px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
           <input id="ngTitle" placeholder="title" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
           <input id="ngSubtitle" placeholder="subtitle (optional)" class="col-span-2 sm:col-span-3 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
-          <input id="ngHomeAbbr" placeholder="home abbr (DET)" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
-          <input id="ngHomeName" placeholder="home name" class="col-span-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
-          <input id="ngAwayAbbr" placeholder="away abbr (BOS)" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
-          <input id="ngAwayName" placeholder="away name" class="col-span-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
+          <input id="ngHomeAbbr" placeholder="competitor 1 abbr / home" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
+          <input id="ngHomeName" placeholder="competitor 1 name / home name" class="col-span-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
+          <input id="ngAwayAbbr" placeholder="competitor 2 abbr / away" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
+          <input id="ngAwayName" placeholder="competitor 2 name / away name" class="col-span-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
           <input id="ngStart" type="datetime-local" class="col-span-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100">
-          <button id="btnAddGame" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold">Add Game</button>
+          <button id="btnAddGame" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold">Add Event</button>
         </div>
         <p id="addGameMsg" class="text-xs font-mono text-slate-400 mt-2 min-h-[16px]"></p>
       </div>
@@ -321,6 +327,11 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFncG1jcnp1Y3pqZ3BuY21ncm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NDI1MzMsImV4cCI6MjA5NDIxODUzM30.q4oOn6gIDv-uudODoPkgqeZbaKjtDXRZW7rLbqMQVZw";
     const ADMIN_WALLET = "0xcfe077e6f7554b1724546e02624a0832d1f4557a"; // MT Deployer, lowercased
 
+    // MTYLD-holder gating
+    const MTYLD_VAULT_ADDR = "0xdFD1C01678e713FDe1630c9db921e6206f3795b4";
+    const ARBITRUM_RPC = "https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu";
+    const MIN_MTYLD_TO_PLAY = 1; // wallets need at least this many MTYLD to submit picks
+
     // Team metadata (sport, emoji, theming, off-season copy) lives client-side.
     // The games table only carries per-game data.
     const TEAM_META = {
@@ -333,7 +344,9 @@
                  resumeMsg:'Picks resume October 2026' },
       lions:   { sport:'NFL', emoji:'🏈', themeClass:'team-lions', active:false,
                  offseasonMsg:'Off-season • Training camp opens July',
-                 resumeMsg:'Picks resume September 2026' }
+                 resumeMsg:'Picks resume September 2026' },
+      custom:  { sport:'CUSTOM', emoji:'🎯', themeClass:'team-custom', active:true,
+                 offseasonMsg:'', resumeMsg:'' }
     };
 
     // ════════════════════════════════════════════════════════════════
@@ -390,6 +403,35 @@
     const gameFinal  = game => game.final_home != null && game.final_away != null;
 
     // ════════════════════════════════════════════════════════════════
+    // MTYLD balance reader — talks to Arbitrum RPC directly
+    // Used for gating: wallets need at least MIN_MTYLD_TO_PLAY to submit picks
+    // ════════════════════════════════════════════════════════════════
+    async function readMtyldBalance(walletAddr) {
+      if (!walletAddr) return 0;
+      try {
+        // balanceOf(address) selector: 0x70a08231
+        const calldata = '0x70a08231' + walletAddr.replace(/^0x/, '').padStart(64, '0');
+        const r = await fetch(ARBITRUM_RPC, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0', id: 1, method: 'eth_call',
+            params: [{ to: MTYLD_VAULT_ADDR, data: calldata }, 'latest']
+          })
+        });
+        const data = await r.json();
+        if (data.error) throw new Error(data.error.message);
+        // Result is hex-encoded uint256 wei; MTYLD has 18 decimals
+        const wei = BigInt(data.result);
+        const balance = Number(wei) / 1e18;
+        return balance;
+      } catch (e) {
+        console.warn('MTYLD balance read failed:', e.message);
+        return null; // null = couldn't read; treat as unknown, not zero
+      }
+    }
+
+    // ════════════════════════════════════════════════════════════════
     // Scoring — runs client-side when admin enters final score
     // Winner pick (+20) and Score pick (+0 to +100) stack independently
     // ════════════════════════════════════════════════════════════════
@@ -427,6 +469,8 @@
     let isAdmin = false;
     let gamesCache = [];          // games for active team
     let myPicksCache = [];        // user's picks across all games (joined w/ games)
+    let mtyldBalance = null;      // wallet's MTYLD balance (null = unknown / not read yet)
+    let canPlay = false;          // true if wallet meets MIN_MTYLD_TO_PLAY threshold
 
     // ════════════════════════════════════════════════════════════════
     // Data fetchers
@@ -651,7 +695,7 @@
       if (!gamesCache.length) {
         container.innerHTML = `
           <div class="glass border border-slate-800 rounded-2xl p-8 text-center">
-            <p class="text-slate-400">No upcoming games for the ${meta.sport}.</p>
+            <p class="text-slate-400">${teamKey === 'custom' ? 'No custom events yet.' : 'No upcoming games for the ' + meta.sport + '.'}</p>
             ${isAdmin ? `<p class="text-xs text-slate-500 mt-2">Use the admin panel below to add games.</p>` : ''}
           </div>`;
         return;
@@ -665,8 +709,8 @@
       }
       container.innerHTML = `
         <div class="flex items-center justify-between mb-2">
-          <h2 class="text-xl font-bold text-white">Upcoming ${meta.sport} Games</h2>
-          <span class="text-xs text-slate-500">${gamesCache.length} game${gamesCache.length === 1 ? '' : 's'}</span>
+          <h2 class="text-xl font-bold text-white">${teamKey === 'custom' ? 'Custom Events' : 'Upcoming ' + meta.sport + ' Games'}</h2>
+          <span class="text-xs text-slate-500">${gamesCache.length} ${teamKey === 'custom' ? 'event' : 'game'}${gamesCache.length === 1 ? '' : 's'}</span>
         </div>
       ` + gamesCache.map(g => renderGame(g, meta.themeClass, picksByGame[g.id])).join('');
     }
@@ -850,18 +894,42 @@
     };
     window.deleteGame = async (gameId) => {
       if (!confirm(`Delete game ${gameId}? This also deletes all picks on it.`)) return;
-      const { error } = await sb.from('games').delete().eq('id', gameId);
+      // .select() returns the rows that were actually deleted, so we can
+      // tell the difference between "deleted 0 rows (RLS blocked or missing)"
+      // and "deleted N rows successfully".
+      const { data, error } = await sb.from('games').delete().eq('id', gameId).select();
       if (error) { alert('Delete failed: '+error.message); return; }
+      if (!data || data.length === 0) {
+        alert(
+          'Delete returned 0 rows.\n\n'+
+          'This usually means an RLS DELETE policy is missing in Supabase.\n'+
+          'Run picks-schema-patch-v2.sql in the SQL editor to fix.'
+        );
+        return;
+      }
       await renderAdminPanel();
       if (activeTeam !== 'history') await renderTeam(activeTeam);
     };
 
+    // Toggle sport field visibility when team_key changes
+    $('ngTeam').addEventListener('change', () => {
+      const isCustom = $('ngTeam').value === 'custom';
+      $('ngSport').classList.toggle('hidden', !isCustom);
+      if (!isCustom) $('ngSport').value = '';
+    });
+
     $('btnAddGame').onclick = async () => {
       const msg = $('addGameMsg');
+      const teamKey = $('ngTeam').value;
+      // For 'custom' events, take sport from the free-text field;
+      // for known teams, use the predefined sport in TEAM_META.
+      const sport = teamKey === 'custom'
+        ? ($('ngSport').value.trim() || 'CUSTOM')
+        : TEAM_META[teamKey].sport;
       const payload = {
         id:        $('ngId').value.trim(),
-        team_key:  $('ngTeam').value,
-        sport:     TEAM_META[$('ngTeam').value].sport,
+        team_key:  teamKey,
+        sport:     sport,
         title:     $('ngTitle').value.trim(),
         subtitle:  $('ngSubtitle').value.trim() || null,
         home_abbr: $('ngHomeAbbr').value.trim().toUpperCase(),
@@ -871,12 +939,15 @@
         start_at:  $('ngStart').value ? new Date($('ngStart').value).toISOString() : null,
       };
       if (!payload.id || !payload.home_abbr || !payload.away_abbr || !payload.start_at) {
-        msg.textContent = 'Need id, home abbr, away abbr, and start time'; msg.className='text-xs font-mono text-red-400'; return;
+        msg.textContent = 'Need id, competitor abbrs, and start time'; msg.className='text-xs font-mono text-red-400'; return;
+      }
+      if (teamKey === 'custom' && !$('ngSport').value.trim()) {
+        msg.textContent = 'Custom events need a sport/league name'; msg.className='text-xs font-mono text-red-400'; return;
       }
       try {
         await addNewGame(payload);
         msg.textContent = '✓ Added '+payload.id; msg.className='text-xs font-mono text-emerald-400';
-        ['ngId','ngTitle','ngSubtitle','ngHomeAbbr','ngHomeName','ngAwayAbbr','ngAwayName','ngStart'].forEach(i => $(i).value='');
+        ['ngId','ngTitle','ngSubtitle','ngHomeAbbr','ngHomeName','ngAwayAbbr','ngAwayName','ngStart','ngSport'].forEach(i => $(i).value='');
         if (activeTeam === payload.team_key) await renderTeam(activeTeam);
       } catch (e) {
         msg.textContent = 'Error: '+(e.message||'').slice(0,100); msg.className='text-xs font-mono text-red-400';
