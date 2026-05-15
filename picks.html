@@ -596,6 +596,10 @@
       const final = gameFinal(game);
       const hasWinner = myPick?.winner != null;
       const hasScore = myPick?.home_score != null && myPick?.away_score != null;
+      // Gated wallets (no MTYLD) can't submit picks — treat like locked
+      // for the visual state so it's obvious why buttons aren't responding.
+      const gated = walletAddr && !canPlay;
+      const blocked = locked || gated;
 
       // Final result strip if game is finalized
       const finalStrip = final ? `
@@ -615,16 +619,16 @@
             <span class="text-[10px] font-mono text-emerald-400">+20 pts</span>
           </div>
           <div class="grid grid-cols-2 gap-2">
-            <button class="winner-btn ${myPick?.winner === 'away' ? 'selected' : ''} rounded-lg py-2 border border-slate-700 bg-slate-800/40 text-slate-300 text-sm font-bold ${locked ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500 hover:text-emerald-400'}"
-                    ${locked ? 'disabled' : `onclick="window.submitWinner('${game.id}','away')"`}>
+            <button class="winner-btn ${myPick?.winner === 'away' ? 'selected' : ''} rounded-lg py-2 border border-slate-700 bg-slate-800/40 text-slate-300 text-sm font-bold ${blocked ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500 hover:text-emerald-400'}"
+                    ${blocked ? 'disabled' : `onclick="window.submitWinner('${game.id}','away')"`}>
               ${escapeHtml(game.away_abbr)} wins
             </button>
-            <button class="winner-btn ${myPick?.winner === 'home' ? 'selected' : ''} rounded-lg py-2 border border-slate-700 bg-slate-800/40 text-slate-300 text-sm font-bold ${locked ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500 hover:text-emerald-400'}"
-                    ${locked ? 'disabled' : `onclick="window.submitWinner('${game.id}','home')"`}>
+            <button class="winner-btn ${myPick?.winner === 'home' ? 'selected' : ''} rounded-lg py-2 border border-slate-700 bg-slate-800/40 text-slate-300 text-sm font-bold ${blocked ? 'opacity-50 cursor-not-allowed' : 'hover:border-emerald-500 hover:text-emerald-400'}"
+                    ${blocked ? 'disabled' : `onclick="window.submitWinner('${game.id}','home')"`}>
               ${escapeHtml(game.home_abbr)} wins
             </button>
           </div>
-          ${hasWinner && !locked
+          ${hasWinner && !blocked
             ? `<button onclick="window.clearWinner('${game.id}')" class="mt-2 text-[10px] text-slate-500 hover:text-slate-300">clear winner pick</button>`
             : ''}
         </div>`;
@@ -638,24 +642,24 @@
           <div class="flex items-center justify-center gap-3 mb-3">
             <div class="text-center">
               <div class="text-[10px] text-slate-500 mb-1">${escapeHtml(game.away_abbr)}</div>
-              ${hasScore || locked
-                ? `<div class="score-input flex items-center justify-center">${myPick?.away_score ?? '—'}</div>`
+              ${hasScore || blocked
+                ? `<div class="score-input flex items-center justify-center ${blocked && !hasScore ? 'opacity-50' : ''}">${myPick?.away_score ?? '—'}</div>`
                 : `<input type="number" min="0" max="200" placeholder="—" class="score-input" id="away_${game.id}">`}
             </div>
             <span class="text-slate-600 text-xl">–</span>
             <div class="text-center">
               <div class="text-[10px] text-slate-500 mb-1">${escapeHtml(game.home_abbr)}</div>
-              ${hasScore || locked
-                ? `<div class="score-input flex items-center justify-center">${myPick?.home_score ?? '—'}</div>`
+              ${hasScore || blocked
+                ? `<div class="score-input flex items-center justify-center ${blocked && !hasScore ? 'opacity-50' : ''}">${myPick?.home_score ?? '—'}</div>`
                 : `<input type="number" min="0" max="200" placeholder="—" class="score-input" id="home_${game.id}">`}
             </div>
           </div>
-          ${hasScore && !locked
+          ${hasScore && !blocked
             ? `<div class="flex gap-2">
                  <div class="flex-1 py-1.5 rounded-lg bg-emerald-900/30 border border-emerald-900/50 text-emerald-400 text-xs font-semibold text-center">✓ Score Submitted</div>
                  <button onclick="window.clearScore('${game.id}')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">Change</button>
                </div>`
-            : locked
+            : blocked
             ? ''
             : `<button onclick="window.submitScore('${game.id}')" class="w-full py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition">Submit Score Pick</button>`
           }
@@ -1060,9 +1064,13 @@
 
     // Show the MTYLD-gate banner when the connected wallet lacks the minimum.
     function renderGateBanner() {
-      let el = document.getElementById('mtyldGate');
+      // Always remove any existing banner first — prevents stacking duplicates
+      // when applyWalletUI or render() is called multiple times.
+      const existing = document.getElementById('mtyldGate');
+      if (existing) existing.remove();
+
       const needed = walletAddr && !canPlay;
-      if (!needed) { if (el) el.remove(); return; }
+      if (!needed) return;
 
       const msg = mtyldBalance === null
         ? 'Could not read your MTYLD balance. Picks are disabled until we can verify.'
