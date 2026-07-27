@@ -54,7 +54,7 @@
                 <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-900/50">All Products</span>
               </div>
               <div id="statEcoAum" class="text-3xl font-mono font-black text-emerald-400">$—</div>
-              <div id="statEcoBreakdown" class="text-slate-500 text-xs mt-1 font-mono">MTYLD + Conservator + Credit Line + Operational</div>
+              <div class="text-slate-500 text-xs mt-1">MTYLD + Conservator + Credit Line + Operational</div>
             </div>
 
             <div class="col-span-2 rounded-xl bg-slate-900/60 border border-slate-800 p-5 flex items-center justify-between">
@@ -100,6 +100,20 @@
                 <div class="text-right">
                   <div class="text-slate-500 text-[10px]">8% APR • MTYLD 70% LTV</div>
                   <div class="text-slate-500 text-[10px]">mtETH-S 60% LTV</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-span-2 rounded-xl bg-slate-900/60 border border-amber-900/30 p-4 relative overflow-hidden">
+              <div class="absolute top-0 right-0 p-1.5"><span class="flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span></span></div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-slate-400 text-xs font-semibold">MT Operational Treasury</div>
+                  <div class="text-xl font-mono text-amber-400 mt-1" id="statOperational">$—</div>
+                  <div class="text-slate-500 text-[10px] mt-1" id="statOperationalNote">Deployer wallet holdings</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-slate-500 text-[10px]">Held by Mechanical Temp</div>
+                  <div class="text-slate-500 text-[10px]">Not holder-owned</div>
                 </div>
               </div>
             </div>
@@ -153,11 +167,11 @@
         <div>
           <div class="inline-flex items-center gap-2 px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-emerald-400 uppercase bg-emerald-900/20 rounded-full border border-emerald-900/50"><span class="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-white font-black text-xs">1</span>Level 1 — ETH Yield</div>
           <h2 class="text-3xl sm:text-4xl font-black text-white">The Conservator <span class="text-sky-400">— mtETH-S</span></h2>
-          <p class="mt-4 text-lg text-slate-400">An AI-powered ETH savings vault — exclusively for MTYLD holders. Deposit your ETH and let <strong class="text-white">The Conservator</strong>, our on-chain AI agent, put it to work earning yield across multiple strategies automatically.</p>
+          <p class="mt-4 text-lg text-slate-400">An AI-powered ETH savings vault — exclusively for MTYLD holders. Deposit your ETH and let <strong class="text-white">The Conservator</strong>, our on-chain AI agent, put it to work earning lending yield automatically.</p>
           <div class="mt-8 space-y-5">
             <div class="flex gap-4"><div class="flex-none w-12 h-12 rounded-xl bg-sky-900/20 border border-sky-900/50 flex items-center justify-center text-sky-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div><div><h3 class="text-lg font-bold text-white">Hold MTYLD, Unlock Access</h3><p class="text-slate-400 text-sm mt-1">The Conservator vault is gated — only wallets holding MTYLD tokens can deposit.</p></div></div>
             <div class="flex gap-4"><div class="flex-none w-12 h-12 rounded-xl bg-emerald-900/20 border border-emerald-900/50 flex items-center justify-center text-emerald-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div><h3 class="text-lg font-bold text-white">AI Manages Your ETH</h3><p class="text-slate-400 text-sm mt-1">The Conservator deploys vault WETH into Compound V3 for reliable lending yield — automatically, around the clock. New strategies can be added to the vault without redeploying it.</p></div></div>
-            <div class="flex gap-4"><div class="flex-none w-12 h-12 rounded-xl bg-amber-900/20 border border-amber-900/50 flex items-center justify-center text-amber-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div><h3 class="text-lg font-bold text-white">Your ETH Grows — Withdraw Anytime</h3><p class="text-slate-400 text-sm mt-1">Yield from both strategies grows the NAV of your mtETH-S shares. Withdraw more WETH than you put in.</p></div></div>
+            <div class="flex gap-4"><div class="flex-none w-12 h-12 rounded-xl bg-amber-900/20 border border-amber-900/50 flex items-center justify-center text-amber-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div><h3 class="text-lg font-bold text-white">Your ETH Grows — Withdraw Anytime</h3><p class="text-slate-400 text-sm mt-1">Lending yield grows the NAV of your mtETH-S shares. Withdraw more WETH than you put in.</p></div></div>
           </div>
         </div>
         <div class="glass rounded-2xl p-8 border border-slate-800">
@@ -570,13 +584,15 @@
 
             const e1 = $("statEcoAum"); if(e1) e1.textContent = usd(ecoTotal);
 
-            // Breakdown so the headline is legible rather than a mystery number
-            const e2 = $("statEcoBreakdown");
-            if (e2) e2.innerHTML =
-                '<span class="text-purple-400">' + usd(mtyldAum) + '</span> MTYLD'
-              + ' <span class="text-slate-600">+</span> <span class="text-emerald-400">' + usd(consAum) + '</span> Conservator'
-              + ' <span class="text-slate-600">+</span> <span class="text-sky-400">' + usd(clAum) + '</span> Credit Line'
-              + ' <span class="text-slate-600">+</span> <span class="text-amber-400">' + usd(opsAum) + '</span> Operational';
+            // Operational tile — MT's own on-chain treasury (deployer wallet).
+            // This is the only AUM component without its own tile, so it gets one
+            // rather than being buried in the headline.
+            const e2 = $("statOperational");
+            if (e2) e2.textContent = usd(opsAum);
+            const e3 = $("statOperationalNote");
+            if (e3) e3.textContent = doloAum > 0
+              ? "Dolomite lending + GMX positions"
+              : "GMX positions";
           } catch(e) { console.error("Ecosystem AUM:", e); }
 
         } catch(e) { console.error("Stats:", e); }
