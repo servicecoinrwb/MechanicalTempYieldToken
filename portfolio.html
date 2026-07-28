@@ -410,15 +410,16 @@
     </div>
   </div>
 
-  <!-- Dolomite Lending -->
+  <!-- Aave Lending -->
   <div class="glass" style="border-radius:20px;margin-bottom:24px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
-      <h2 style="font-size:16px;font-weight:800;letter-spacing:-0.02em;">Dolomite Lending</h2>
+      <h2 style="font-size:16px;font-weight:800;letter-spacing:-0.02em;">Aave Lending</h2>
       <span class="tag badge-amber">MT Deployer Wallet</span>
     </div>
     <p style="font-size:11px;color:var(--muted);margin-bottom:16px;">
-      USDC supplied to Dolomite's lending market on Arbitrum. Earns interest paid by borrowers.
-      Interest compounds directly into the balance — there is nothing to claim.
+      USDC supplied to Aave v3 on Arbitrum. Earns interest paid by borrowers, in USDC —
+      no reward tokens to harvest or price. Interest accrues into the aToken balance itself,
+      so there is nothing to claim.
     </p>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
@@ -428,7 +429,7 @@
           <div style="width:34px;height:34px;border-radius:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">💵</div>
           <div>
             <div style="font-weight:700;font-size:13px;">USDC Supplied</div>
-            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Market ID 17</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Aave v3 • aUSDC</div>
           </div>
         </div>
         <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent3);" id="dolo-supplied">$—</div>
@@ -465,13 +466,13 @@
     <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
       <div style="font-size:10px;color:var(--muted);max-width:620px;line-height:1.6;">
         <strong style="color:var(--text);">How this works:</strong>
-        deposits go through Dolomite's DepositWithdrawalRouter into account #0. The balance below grows on its own
-        as interest accrues — no harvest transaction, no reward token to sell. Withdraw any time; there is no lockup.
-        Rates float with pool utilization, so check Dolomite for the live APR.
+        supplying USDC to Aave mints aUSDC 1:1. The aUSDC balance grows on its own as borrowers pay interest —
+        no harvest transaction, no reward token to sell. Withdraw any time; there is no lockup.
+        Rates float with pool utilization, so check Aave for the live APY.
       </div>
-      <a href="https://app.dolomite.io/balances" target="_blank"
+      <a href="https://app.aave.com/?marketName=proto_arbitrum_v3" target="_blank"
          style="flex-none;padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">
-         Open Dolomite ↗
+         Open Aave ↗
       </a>
     </div>
   </div>
@@ -667,7 +668,7 @@
         <a href="vault.html" style="padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">💵 Vault</a>
         <a href="conservator.html" style="padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">⚡ Conservator</a>
         <a href="credit-line.html" style="padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">💵 Credit Line</a>
-        <a href="https://app.dolomite.io/balances" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);color:var(--accent3);font-size:12px;font-weight:700;text-decoration:none;">Dolomite ↗</a>
+        <a href="https://app.aave.com/?marketName=proto_arbitrum_v3" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);color:var(--accent3);font-size:12px;font-weight:700;text-decoration:none;">Aave ↗</a>
         <a href="https://app.gmx.io/#/earn/portfolio" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);color:var(--accent2);font-size:12px;font-weight:700;text-decoration:none;">GMX Portfolio ↗</a>
         <a href="https://app.gmx.io/#/pools/details?market=0x70d95587d40A2caf56bd97485aB3Eec10Bee6336" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">ETH Pool ↗</a>
         <a href="https://app.gmx.io/#/pools/details?market=0x47c031236e19d024b42f8AE6780E44A573170703" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);color:var(--accent2);font-size:12px;font-weight:700;text-decoration:none;">BTC Pool ↗</a>
@@ -695,12 +696,16 @@
   const MT_DEPLOYER   = "0xcfe077e6f7554B1724546E02624a0832D1f4557a";
   const RPC           = "https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu";
 
-  // Dolomite — core margin contract holds all account balances.
-  // Deposits/withdrawals go through the DepositWithdrawalRouter, but
-  // balances are always read from DolomiteMargin.getAccountWei().
-  const DOLOMITE_MARGIN     = "0x6Bd780E7fDf01D77e4d475c821f1e7AE05409072";
-  const DOLOMITE_USDC_MKT   = 17;   // verified via getMarketIdByTokenAddress(USDC)
-  const DOLOMITE_ACCOUNT_NO = 0;    // default account number
+  // Aave v3 (Arbitrum) — supplying USDC mints aUSDC 1:1. The aToken
+  // rebases upward as interest accrues, so balanceOf() IS the position
+  // including all earned interest. Borrowing mints a variable-debt token
+  // that rebases the same way.
+  //
+  // VERIFY: if the panel reads $0.00 while you hold a position, these
+  // aToken addresses are wrong. Check which token your deposit minted on
+  // Arbiscan and swap it in here.
+  const AAVE_A_USDC    = "0x724dc807b04555b71ed48a6896b6F41593b8C637"; // aArbUSDCn (native USDC)
+  const AAVE_DEBT_USDC = "0xf611aEb5013fD2c0511c9CD55c7dc5C1140741A6"; // variableDebtArbUSDCn
 
   // ── ABIs ──────────────────────────────────────────────────
   const ERC20_ABI = [
@@ -740,11 +745,9 @@
   ];
   const CL_FEED_ABI = ["function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)"];
 
-  // getAccountWei returns a signed balance: sign=true means supplied,
-  // sign=false means borrowed. Value is in the token's native decimals.
-  const DOLOMITE_ABI = [
-    "function getAccountWei((address owner, uint256 number) account, uint256 marketId) view returns ((bool sign, uint256 value))",
-  ];
+  // aTokens and debt tokens are plain ERC-20s whose balance rebases with
+  // accrued interest — a single balanceOf() is the whole position.
+  const ATOKEN_ABI = ["function balanceOf(address) view returns (uint256)"];
 
   const el = id => document.getElementById(id);
   const usd = (n,d=2) => '$'+Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -802,30 +805,27 @@
     }));
   }
 
-  // ── Dolomite position reader ──────────────────────────────
+  // ── Aave position reader ──────────────────────────────────
   // Returns { supplied, borrowed, net, ok }. `ok:false` means the read
-  // failed — the UI shows that explicitly rather than pretending it's zero.
-  async function readDolomitePosition(rp) {
+  // failed — the UI says so explicitly rather than pretending it's zero.
+  async function readAavePosition(rp) {
     try {
-      const dolo = new ethers.Contract(DOLOMITE_MARGIN, DOLOMITE_ABI, rp);
-      const res = await dolo.getAccountWei(
-        { owner: MT_DEPLOYER, number: DOLOMITE_ACCOUNT_NO },
-        DOLOMITE_USDC_MKT
-      );
-      // ethers v6 returns a Result — access by name or index defensively
-      const sign  = (res.sign  !== undefined) ? res.sign  : res[0];
-      const value = (res.value !== undefined) ? res.value : res[1];
-      const amount = Number(value) / 1e6;          // USDC has 6 decimals
-      const supplied = sign ? amount : 0;
-      const borrowed = sign ? 0 : amount;
+      const aTok = new ethers.Contract(AAVE_A_USDC, ATOKEN_ABI, rp);
+      const dTok = new ethers.Contract(AAVE_DEBT_USDC, ATOKEN_ABI, rp);
+      const [aBal, dBal] = await Promise.all([
+        aTok.balanceOf(MT_DEPLOYER),
+        dTok.balanceOf(MT_DEPLOYER).catch(() => 0n),
+      ]);
+      const supplied = Number(aBal) / 1e6;   // USDC has 6 decimals
+      const borrowed = Number(dBal) / 1e6;
       return { supplied, borrowed, net: supplied - borrowed, ok: true };
     } catch (e) {
-      console.error('Dolomite read failed:', e);
+      console.error('Aave read failed:', e);
       return { supplied: 0, borrowed: 0, net: 0, ok: false };
     }
   }
 
-  function renderDolomite(pos) {
+  function renderAave(pos) {
     if (!pos.ok) {
       el('dolo-supplied').textContent = '—';
       el('dolo-borrowed').textContent = '—';
@@ -840,12 +840,12 @@
     el('dolo-net').textContent      = usd(pos.net);
 
     el('dolo-supplied-note').textContent = pos.supplied > 0
-      ? 'Earning interest, compounding automatically'
-      : 'No USDC supplied yet — deposit on Dolomite to start earning';
+      ? 'Earning interest, accruing into aUSDC'
+      : 'No USDC supplied — deposit on Aave to start earning';
 
     el('dolo-borrowed-note').textContent = pos.borrowed > 0
       ? 'Interest accruing on this debt'
-      : 'No debt — nothing borrowed against this account';
+      : 'No debt — nothing borrowed against this position';
   }
 
   // ── Main loader ───────────────────────────────────────────
@@ -880,7 +880,7 @@
       clUsdc, clEarned, clMtethsCol, clMtyldCol,
       clMtethsEarned, clMtyldEarned, clShare, clMax, csum,
       curLoan, loanAccrued, loanDue, loanDays, loanOverdue, loanBorrower,
-      doloPos,
+      aavePos,
     ] = await Promise.all([
       mtyldC.balanceOf(userAddr),
       mtyldC.pricePerToken(),
@@ -906,12 +906,12 @@
       clC.daysRemaining().catch(()=>0n),
       clC.isOverdue().catch(()=>false),
       clC.borrower().catch(()=>ethers.ZeroAddress),
-      readDolomitePosition(rp),
+      readAavePosition(rp),
     ]);
 
-    // ── Dolomite ──────────────────────────────────────────
-    renderDolomite(doloPos);
-    const doloUsd = doloPos.ok ? doloPos.net : 0;
+    // ── Aave ──────────────────────────────────────────────
+    renderAave(aavePos);
+    const aaveUsd = aavePos.ok ? aavePos.net : 0;
 
     // ── Calculate values ──────────────────────────────────
     const mtyldNavUsd      = parseFloat(ethers.formatEther(mtyldNav));
@@ -945,7 +945,7 @@
     const totalUsdVal = mtyldUsdVal + mtethsUsdVal + clUsdcFloat;
 
     // ── Ecosystem AUM (protocol-wide, not user-specific) ─────
-    // Operational = deployer-wallet GMX positions + Dolomite lending
+    // Operational = deployer-wallet GMX positions + Aave lending
     try {
       const MTYLD_AUM_ABI  = ["function treasuryActiveUSDC() view returns (uint256)","function pendingRevenueUSDC() view returns (uint256)"];
       const CONS_AUM_ABI   = ["function idleWeth() view returns (uint256)","function pricePerShare() view returns (uint256)","function totalSupply() view returns (uint256)"];
@@ -969,7 +969,7 @@
       const consTotalWeth     = parseFloat(ethers.formatEther(consIdle + consStrat));
       const ecoConservatorUsd = consTotalWeth * ethPrice;
       const ecoCreditLineUsd  = Number(clPool) / 1e6;
-      const ecoOperationalUsd = cvTotalUsd + doloUsd;  // GMX positions + Dolomite lending
+      const ecoOperationalUsd = cvTotalUsd + aaveUsd;  // GMX positions + Aave lending
       const ecoTotal          = ecoMtyldUsd + ecoConservatorUsd + ecoCreditLineUsd + ecoOperationalUsd;
 
       el('ecoTotalAum').textContent    = usd(ecoTotal);
@@ -977,7 +977,7 @@
       el('ecoConservator').textContent = usd(ecoConservatorUsd);
       el('ecoCreditLine').textContent  = usd(ecoCreditLineUsd);
       el('ecoOperational').textContent = usd(ecoOperationalUsd);
-      el('ecoBreakdown').textContent   = 'MTYLD treasury + Conservator + Credit Line + Operational (GMX + Dolomite)';
+      el('ecoBreakdown').textContent   = 'MTYLD treasury + Conservator + Credit Line + Operational (GMX + Aave)';
     } catch(e) { console.error("Ecosystem AUM:", e); }
 
     // Blended APY — user holds mtETH-S which earns ~7% from underlying strategies
