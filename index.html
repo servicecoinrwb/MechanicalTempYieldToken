@@ -465,8 +465,10 @@
       const GMX_TOKEN      = "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a";
       const GMX_TRACKER    = "0x908C4D94D34924765f1eDc22A1DD098397c59dD4";
       const GMX_PRICE      = "0xDB98056FecFff59D032aB628337A4887110df3dB";
-      const DOLOMITE_MARGIN   = "0x6Bd780E7fDf01D77e4d475c821f1e7AE05409072";
-      const DOLOMITE_USDC_MKT = 17;   // verified via getMarketIdByTokenAddress(USDC)
+      // Aave v3 Arbitrum — aUSDC rebases with accrued interest, so
+      // balanceOf() is the full position. If this reads 0 while a position
+      // exists, verify the aToken address on Arbiscan.
+      const AAVE_A_USDC       = "0x724dc807b04555b71ed48a6896b6F41593b8C637";
       const RPCS = ["https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu","https://arbitrum.llamarpc.com"];
 
       const VAULT_ABI = ["function pricePerToken() view returns (uint256)","function treasuryActiveUSDC() view returns (uint256)","function pendingRevenueUSDC() view returns (uint256)","function totalSupply() view returns (uint256)"];
@@ -475,8 +477,7 @@
       const CRD_ABI   = ["function totalUsdcDeposited() view returns (uint256)"];
       const STRAT_ABI = ["function balance() view returns (uint256)"];
       const TRK_ABI   = ["function depositBalances(address,address) view returns (uint256)"];
-      // Dolomite tracks balances as signed values: sign=true is supplied, false is borrowed
-      const DOLO_ABI  = ["function getAccountWei((address owner, uint256 number) account, uint256 marketId) view returns ((bool sign, uint256 value))"];
+      const ATOKEN_ABI = ["function balanceOf(address) view returns (uint256)"];
       const IDLE_ABI  = ["function idleWeth() view returns (uint256)"];
 
       const $ = id => document.getElementById(id);
@@ -546,9 +547,9 @@
             const stra  = new ethers.Contract(COMPOUND_STRAT, STRAT_ABI, provider);
             const cons  = new ethers.Contract(CONSERVATOR, IDLE_ABI, provider);
             const crd2  = new ethers.Contract(CREDIT_LINE, CRD_ABI, provider);
-            const dolo  = new ethers.Contract(DOLOMITE_MARGIN, DOLO_ABI, provider);
+            const aave  = new ethers.Contract(AAVE_A_USDC, ATOKEN_ABI, provider);
 
-            const [gmEbal, gmBbal, gmxStk, gmxWal, gmxData, ethData, stratBal2, idleW, clTotal, doloWei] = await Promise.all([
+            const [gmEbal, gmBbal, gmxStk, gmxWal, gmxData, ethData, stratBal2, idleW, clTotal, aaveBal] = await Promise.all([
               gmE.balanceOf(MT_DEPLOYER).catch(()=>0n),
               gmB.balanceOf(MT_DEPLOYER).catch(()=>0n),
               trk.depositBalances(MT_DEPLOYER, GMX_TOKEN).catch(()=>0n),
@@ -558,19 +559,14 @@
               stra.balance().catch(()=>0n),
               cons.idleWeth().catch(()=>0n),
               crd2.totalUsdcDeposited().catch(()=>0n),
-              dolo.getAccountWei({ owner: MT_DEPLOYER, number: 0 }, DOLOMITE_USDC_MKT).catch(()=>null),
+              aave.balanceOf(MT_DEPLOYER).catch(()=>0n),
             ]);
 
             const gmxPx = gmxData ? Number(gmxData[1])/1e8 : 7.52;
             const ethPx = ethData ? Number(ethData[1])/1e8 : 2300;
 
-            // Dolomite lending — signed balance, positive means supplied
-            let doloAum = 0;
-            if (doloWei) {
-              const sign  = (doloWei.sign  !== undefined) ? doloWei.sign  : doloWei[0];
-              const value = (doloWei.value !== undefined) ? doloWei.value : doloWei[1];
-              doloAum = (sign ? 1 : -1) * Number(value) / 1e6;   // USDC has 6 decimals
-            }
+            // Aave lending — aUSDC balance already includes accrued interest
+            const aaveAum = Number(aaveBal) / 1e6;   // USDC has 6 decimals
 
             const mtyldAum = active + pending;                                          // already-fetched values from above
             const consAum  = (Number(idleW) + Number(stratBal2)) / 1e18 * ethPx;
@@ -578,7 +574,7 @@
             const opsAum   = (Number(gmEbal)/1e18 * 1.76)
                            + (Number(gmBbal)/1e18 * 2.43)
                            + (Number(gmxStk + gmxWal)/1e18 * gmxPx)
-                           + doloAum;
+                           + aaveAum;
 
             const ecoTotal = mtyldAum + consAum + clAum + opsAum;
 
@@ -590,8 +586,8 @@
             const e2 = $("statOperational");
             if (e2) e2.textContent = usd(opsAum);
             const e3 = $("statOperationalNote");
-            if (e3) e3.textContent = doloAum > 0
-              ? "Dolomite lending + GMX positions"
+            if (e3) e3.textContent = aaveAum > 0
+              ? "Aave lending + GMX positions"
               : "GMX positions";
           } catch(e) { console.error("Ecosystem AUM:", e); }
 
