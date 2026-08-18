@@ -260,6 +260,115 @@
     </div>
   </section>
   
+  <!-- OPERATIONAL TREASURY SECTION -->
+  <section class="border-b border-slate-800 bg-slate-900/40">
+    <div class="max-w-7xl mx-auto px-4 py-14">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-amber-400 uppercase bg-amber-900/20 rounded-full border border-amber-900/50">
+            <span class="w-5 h-5 rounded-full bg-amber-600 flex items-center justify-center text-white font-black text-xs">&#9679;</span>Behind the Scenes
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-black text-white">MT <span class="text-amber-400">Operational Treasury</span></h2>
+          <p class="mt-4 text-lg text-slate-400">
+            Mechanical Temp holds its own working capital on-chain instead of in a bank account.
+            It sits in the same wallet you can inspect on Arbiscan, deployed into lending markets
+            rather than earning nothing.
+          </p>
+
+          <div class="mt-6 rounded-xl bg-slate-900/60 border border-amber-900/30 p-5">
+            <div class="text-amber-400 text-xs font-bold uppercase tracking-widest mb-2">Who owns this</div>
+            <p class="text-slate-300 text-sm leading-relaxed">
+              This capital belongs to <strong class="text-white">Mechanical Temp</strong> &mdash; not to MTYLD holders.
+              It is counted in ecosystem AUM because it is part of the same on-chain balance sheet and
+              verifiable at the same addresses, not because holders have a claim on it.
+            </p>
+          </div>
+
+          <div class="mt-8 space-y-5">
+            <div class="flex gap-4">
+              <div class="flex-none w-12 h-12 rounded-xl bg-emerald-900/20 border border-emerald-900/50 flex items-center justify-center text-emerald-400">&#128181;</div>
+              <div>
+                <h3 class="text-lg font-bold text-white">Aave v3 &mdash; USDC Lending</h3>
+                <p class="text-slate-400 text-sm mt-1">
+                  Supplied to the largest money market in DeFi. Interest accrues into the balance itself,
+                  paid in USDC by overcollateralized borrowers. Withdrawable any time.
+                </p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="flex-none w-12 h-12 rounded-xl bg-purple-900/20 border border-purple-900/50 flex items-center justify-center text-purple-400">&#128225;</div>
+              <div>
+                <h3 class="text-lg font-bold text-white">Wise Lending &mdash; Real World Assets</h3>
+                <p class="text-slate-400 text-sm mt-1">
+                  USDC backing World Mobile AirNodes, physical telecom infrastructure. Higher stated yield,
+                  but the risk is counterparty rather than smart contract, and exit requires a sell order
+                  rather than an instant withdrawal.
+                </p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="flex-none w-12 h-12 rounded-xl bg-amber-900/20 border border-amber-900/50 flex items-center justify-center text-amber-400">&#128274;</div>
+              <div>
+                <h3 class="text-lg font-bold text-white">GMX &mdash; Staked</h3>
+                <p class="text-slate-400 text-sm mt-1">
+                  A legacy position from earlier market-making activity, held toward the protocol&rsquo;s
+                  buyback threshold.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-8 border border-slate-800">
+          <div class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-5">Live Positions</div>
+
+          <div class="rounded-xl bg-slate-900/60 border border-amber-900/30 p-5 mb-4">
+            <div class="text-slate-500 text-xs mb-1">Total Operational Treasury</div>
+            <div class="text-3xl font-mono font-black text-amber-400" id="opsTotal">$&mdash;</div>
+            <div class="text-slate-600 text-xs mt-1">Held by Mechanical Temp &bull; not holder-owned</div>
+          </div>
+
+          <div class="space-y-3 mb-5">
+            <div class="flex items-center justify-between bg-slate-900/60 rounded-xl px-4 py-3 border border-slate-800">
+              <div>
+                <div class="text-slate-300 text-sm font-semibold">Aave v3</div>
+                <div class="text-slate-600 text-xs">USDC lending &bull; instant exit</div>
+              </div>
+              <div class="font-mono text-emerald-400 font-bold" id="opsAave">$&mdash;</div>
+            </div>
+            <div class="flex items-center justify-between bg-slate-900/60 rounded-xl px-4 py-3 border border-slate-800">
+              <div>
+                <div class="text-slate-300 text-sm font-semibold">Wise RWA</div>
+                <div class="text-slate-600 text-xs">World Mobile &bull; principal only</div>
+              </div>
+              <div class="font-mono text-purple-400 font-bold" id="opsWise">$&mdash;</div>
+            </div>
+            <div class="flex items-center justify-between bg-slate-900/60 rounded-xl px-4 py-3 border border-slate-800">
+              <div>
+                <div class="text-slate-300 text-sm font-semibold">GMX Staked</div>
+                <div class="text-slate-600 text-xs">Legacy position</div>
+              </div>
+              <div class="font-mono text-amber-400 font-bold" id="opsGmx">$&mdash;</div>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-800 pt-4">
+            <p class="text-slate-500 text-xs leading-relaxed">
+              Every figure above is read live from Arbitrum. The Wise figure is principal only &mdash;
+              yield earned there accrues separately and is not included.
+            </p>
+          </div>
+
+          <a href="https://debank.com/profile/0xcfe077e6f7554b1724546e02624a0832d1f4557a" target="_blank"
+             class="block w-full mt-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-center rounded-xl transition text-sm">
+            Inspect the wallet on DeBank &#8599;
+          </a>
+          <p class="mt-3 text-xs text-slate-600 text-center font-mono">0xcfe077e6...4557a</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- MINI GAME -->
   <section class="border-b border-slate-800 bg-slate-900/40">
     <div class="max-w-7xl mx-auto px-4 py-14">
@@ -592,6 +701,15 @@
             // rather than being buried in the headline.
             const e2 = $("statOperational");
             if (e2) e2.textContent = usd(opsAum);
+
+            // Operational Treasury section — per-venue breakdown
+            const oT = $("opsTotal"); if (oT) oT.textContent = usd(opsAum);
+            const oA = $("opsAave");  if (oA) oA.textContent = usd(aaveAum);
+            const oW = $("opsWise");  if (oW) oW.textContent = usd(wiseAum);
+            const oG = $("opsGmx");
+            if (oG) oG.textContent = usd(Number(gmxStk + gmxWal)/1e18 * gmxPx
+                                       + Number(gmEbal)/1e18 * 1.76
+                                       + Number(gmBbal)/1e18 * 2.43);
             const e3 = $("statOperationalNote");
             if (e3) {
               const parts = [];
