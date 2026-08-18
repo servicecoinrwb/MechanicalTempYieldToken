@@ -10,9 +10,6 @@
 
   <!-- ═══════════════════════════════════════════════════════════
        MT Wallet — Shared Wallet Persistence
-       Remembers connection across all MT pages. Silent reconnect.
-       Public API: window.MTWallet.address / .connect() / .disconnect()
-       Event:       window.addEventListener('mt-wallet-change', e => …)
        ═══════════════════════════════════════════════════════════ -->
   <script>
   (function () {
@@ -77,7 +74,6 @@
           const chain = await window.ethereum.request({ method: 'eth_chainId' });
           await setAddress(accts[0], chain);
         } else {
-          // Wallet locked — keep address read-only, still emit so UI can update
           state.address = parsed.address;
           state.chainId = parsed.chainId;
           emitChange();
@@ -315,7 +311,6 @@
       </div>
     </div>
 
-    <!-- Table header -->
     <div style="display:grid;grid-template-columns:1fr 120px 120px 100px;gap:16px;padding:10px 20px;border-bottom:1px solid var(--border);">
       <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">Position</div>
       <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">Balance</div>
@@ -423,7 +418,6 @@
     </p>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
-      <!-- Supplied -->
       <div class="card" style="padding:14px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <div style="width:34px;height:34px;border-radius:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">💵</div>
@@ -432,11 +426,10 @@
             <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Aave v3 • aUSDC</div>
           </div>
         </div>
-        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent3);" id="dolo-supplied">$—</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:4px;" id="dolo-supplied-note">Reading on-chain…</div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent3);" id="aave-supplied">$—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;" id="aave-supplied-note">Reading on-chain…</div>
       </div>
 
-      <!-- Borrowed -->
       <div class="card" style="padding:14px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <div style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">📉</div>
@@ -445,11 +438,10 @@
             <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Outstanding debt</div>
           </div>
         </div>
-        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent2);" id="dolo-borrowed">$—</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:4px;" id="dolo-borrowed-note">Reading on-chain…</div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent2);" id="aave-borrowed">$—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;" id="aave-borrowed-note">Reading on-chain…</div>
       </div>
 
-      <!-- Net -->
       <div class="card" style="padding:14px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <div style="width:34px;height:34px;border-radius:10px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">Σ</div>
@@ -458,7 +450,7 @@
             <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Supplied − Borrowed</div>
           </div>
         </div>
-        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent);" id="dolo-net">$—</div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent);" id="aave-net">$—</div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px;">What you'd have after repaying</div>
       </div>
     </div>
@@ -466,9 +458,9 @@
     <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
       <div style="font-size:10px;color:var(--muted);max-width:620px;line-height:1.6;">
         <strong style="color:var(--text);">How this works:</strong>
-        supplying USDC to Aave mints aUSDC 1:1. The aUSDC balance grows on its own as borrowers pay interest —
-        no harvest transaction, no reward token to sell. Withdraw any time; there is no lockup.
-        Rates float with pool utilization, so check Aave for the live APY.
+        supplying USDC to Aave mints aUSDC 1:1. The aUSDC balance grows on its own as borrowers pay
+        interest — no harvest transaction, no reward token to sell. Withdraw any time; there is no
+        lockup. Rates float with pool utilization, so check Aave for the live APY.
       </div>
       <a href="https://app.aave.com/?marketName=proto_arbitrum_v3" target="_blank"
          style="flex-none;padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">
@@ -477,7 +469,71 @@
     </div>
   </div>
 
-  <!-- Conservator Vault Holdings -->
+  <!-- Wise RWA Strategy -->
+  <div class="glass" style="border-radius:20px;margin-bottom:24px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
+      <h2 style="font-size:16px;font-weight:800;letter-spacing:-0.02em;">Wise RWA Strategy</h2>
+      <span class="tag badge-amber">MT Deployer Wallet</span>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:16px;">
+      USDC deposited into Wise Lending's real-world-asset strategy on Arbitrum. Yield is generated by
+      World Mobile AirNodes — physical telecom infrastructure — not by crypto borrowers.
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:34px;height:34px;border-radius:10px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">📡</div>
+          <div>
+            <div style="font-weight:700;font-size:13px;">USDC Deposited</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Wise Lending • Arbitrum</div>
+          </div>
+        </div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:#c084fc;" id="wise-principal">$—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;" id="wise-principal-note">Reading on-chain…</div>
+      </div>
+
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:34px;height:34px;border-radius:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">↑</div>
+          <div>
+            <div style="font-weight:700;font-size:13px;">Stated APR</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Not read on-chain</div>
+          </div>
+        </div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent3);">20%</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;">Set by Wise — verify the live rate before relying on it</div>
+      </div>
+
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">⚠</div>
+          <div>
+            <div style="font-weight:700;font-size:13px;">Exit Mechanism</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Not instant</div>
+          </div>
+        </div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent2);">Sell order</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;">Needs a buyer — unlike Aave, you can't just withdraw</div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div style="font-size:10px;color:var(--muted);max-width:620px;line-height:1.6;">
+        <strong style="color:var(--text);">How this works:</strong>
+        the figure above is <em>principal only</em> — the contract's balanceOf returns what you put in.
+        Earned yield accrues separately and is claimed on Wise, so it is not counted here or in
+        Ecosystem AUM. The risk here is counterparty, not smart contract: if World Mobile stops
+        paying, there is no collateral to liquidate.
+      </div>
+      <a href="https://app.wiselending.com/" target="_blank"
+         style="flex-none;padding:8px 16px;border-radius:10px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);color:#c084fc;font-size:12px;font-weight:700;text-decoration:none;">
+         Open Wise ↗
+      </a>
+    </div>
+  </div>
+
+  <!-- Market Maker Positions -->
   <div class="glass" style="border-radius:20px;margin-bottom:24px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
       <h2 style="font-size:16px;font-weight:800;letter-spacing:-0.02em;">Market Maker Positions</h2>
@@ -486,7 +542,6 @@
     <p style="font-size:11px;color:var(--muted);margin-bottom:16px;">GMX ecosystem positions held in the Mechanical Temp Deployer wallet. Earns fees from perpetual traders on ETH and BTC markets.</p>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
-      <!-- GM ETH -->
       <div class="card" style="padding:14px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <div style="width:34px;height:34px;border-radius:10px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">Ξ</div>
@@ -502,7 +557,6 @@
         </div>
       </div>
 
-      <!-- GM BTC -->
       <div class="card" style="padding:14px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <div style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">₿</div>
@@ -518,7 +572,6 @@
         </div>
       </div>
 
-      <!-- GMX Staked -->
       <div class="card" style="padding:14px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <div style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-none;">🔒</div>
@@ -547,7 +600,6 @@
   <!-- Allocation chart + Credit line status -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
 
-    <!-- Allocation donut -->
     <div class="glass" style="border-radius:20px;padding:24px;position:relative;">
       <h2 style="font-size:15px;font-weight:800;margin-bottom:4px;">Allocation</h2>
       <p style="font-size:11px;color:var(--muted);margin-bottom:20px;">Portfolio breakdown by position</p>
@@ -561,12 +613,10 @@
       <div id="legendItems" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;"></div>
     </div>
 
-    <!-- Credit line + Borrow power -->
     <div class="glass" style="border-radius:20px;padding:24px;">
       <h2 style="font-size:15px;font-weight:800;margin-bottom:4px;">Credit Line Status</h2>
       <p style="font-size:11px;color:var(--muted);margin-bottom:20px;">MT Credit Line v3 — your collateral &amp; liquidity</p>
 
-      <!-- Active loan card (only shown when loan is active) -->
       <div id="active-loan-card" class="card" style="padding:14px;margin-bottom:14px;display:none;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div style="display:flex;align-items:center;gap:8px;">
@@ -618,7 +668,6 @@
         </div>
       </div>
 
-      <!-- LENDER VIEW (default — shown to everyone except the borrower wallet) -->
       <div id="cl-lender-view" class="card" style="padding:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <div class="stat-label">Backing the Credit Line</div>
@@ -637,7 +686,6 @@
         </div>
       </div>
 
-      <!-- BORROWER VIEW (hidden — only shown to MT Deployer wallet) -->
       <div id="cl-borrower-view" class="card" style="display:none;padding:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <div class="stat-label">Total Borrow Power</div>
@@ -669,9 +717,8 @@
         <a href="conservator.html" style="padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">⚡ Conservator</a>
         <a href="credit-line.html" style="padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">💵 Credit Line</a>
         <a href="https://app.aave.com/?marketName=proto_arbitrum_v3" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);color:var(--accent3);font-size:12px;font-weight:700;text-decoration:none;">Aave ↗</a>
+        <a href="https://app.wiselending.com/" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);color:#c084fc;font-size:12px;font-weight:700;text-decoration:none;">Wise ↗</a>
         <a href="https://app.gmx.io/#/earn/portfolio" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);color:var(--accent2);font-size:12px;font-weight:700;text-decoration:none;">GMX Portfolio ↗</a>
-        <a href="https://app.gmx.io/#/pools/details?market=0x70d95587d40A2caf56bd97485aB3Eec10Bee6336" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;">ETH Pool ↗</a>
-        <a href="https://app.gmx.io/#/pools/details?market=0x47c031236e19d024b42f8AE6780E44A573170703" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);color:var(--accent2);font-size:12px;font-weight:700;text-decoration:none;">BTC Pool ↗</a>
         <a href="https://debank.com/profile/0xcfe077e6f7554b1724546e02624a0832d1f4557a" target="_blank" style="padding:8px 16px;border-radius:10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);color:var(--accent3);font-size:12px;font-weight:700;text-decoration:none;">DeBank ↗</a>
       </div>
     </div>
@@ -696,16 +743,19 @@
   const MT_DEPLOYER   = "0xcfe077e6f7554B1724546E02624a0832D1f4557a";
   const RPC           = "https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu";
 
-  // Aave v3 (Arbitrum) — supplying USDC mints aUSDC 1:1. The aToken
-  // rebases upward as interest accrues, so balanceOf() IS the position
-  // including all earned interest. Borrowing mints a variable-debt token
-  // that rebases the same way.
-  //
-  // VERIFY: if the panel reads $0.00 while you hold a position, these
-  // aToken addresses are wrong. Check which token your deposit minted on
-  // Arbiscan and swap it in here.
-  const AAVE_A_USDC    = "0x724dc807b04555b71ed48a6896b6F41593b8C637"; // aArbUSDCn (native USDC)
+  // Aave v3 (Arbitrum) — supplying USDC mints aUSDC 1:1. The aToken rebases
+  // upward as interest accrues, so balanceOf() IS the position including all
+  // earned interest. Borrowing mints a variable-debt token that behaves the same.
+  // Verified live: reads matched the Aave dashboard exactly.
+  const AAVE_A_USDC    = "0x724dc807b04555b71ed48a6896b6F41593b8C637"; // aArbUSDCn
   const AAVE_DEBT_USDC = "0xf611aEb5013fD2c0511c9CD55c7dc5C1140741A6"; // variableDebtArbUSDCn
+
+  // Wise Lending — RWA yield strategy (World Mobile AirNodes), Arbitrum.
+  // NOTE: unlike Aave, balanceOf() here is PRINCIPAL ONLY at 6 decimals.
+  // Accrued yield is tracked separately and claimed on the Wise UI, so it is
+  // deliberately NOT counted here or in Ecosystem AUM.
+  // Verified: balanceOf(0xcfe0…557a) = 2466076473 -> $2,466.08
+  const WISE_RWA_USDC  = "0x7e1EFF4301defc24936470B30bd1c686D2a295dc";
 
   // ── ABIs ──────────────────────────────────────────────────
   const ERC20_ABI = [
@@ -721,7 +771,6 @@
     "function balanceOf(address) view returns (uint256)",
     "function pricePerShare() view returns (uint256)",
   ];
-  const STRAT_ABI = ["function balance() view returns (uint256)"];
   const CL_ABI = [
     "function usdcDeposited(address) view returns (uint256)",
     "function earnedUsdc(address) view returns (uint256)",
@@ -745,31 +794,24 @@
   ];
   const CL_FEED_ABI = ["function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)"];
 
-  // aTokens and debt tokens are plain ERC-20s whose balance rebases with
-  // accrued interest — a single balanceOf() is the whole position.
+  // aTokens, debt tokens and the Wise receipt are all plain ERC-20 reads.
   const ATOKEN_ABI = ["function balanceOf(address) view returns (uint256)"];
 
   const el = id => document.getElementById(id);
   const usd = (n,d=2) => '$'+Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
-  const fmt4 = n => parseFloat(ethers.formatEther(n)).toFixed(4);
-  const fU6 = n => '$'+(Number(n)/1e6).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   const fP = n => (Number(n)/1e16).toFixed(2)+'%';
 
   let provider, signer, userAddr;
   let allocChart;
 
-  // ── Connect (uses shared MTWallet module for cross-page persistence) ─
+  // ── Connect ───────────────────────────────────────────────
   async function connect() {
-    const addr = await window.MTWallet.connect();
-    if (!addr) return;
-    // MTWallet emits 'mt-wallet-change' which our listener below handles
+    await window.MTWallet.connect();
   }
 
-  // Refresh UI when wallet state changes (connect / disconnect / account switch / silent reconnect)
   window.addEventListener('mt-wallet-change', async (e) => {
     const addr = e.detail.address;
     if (!addr) {
-      // Disconnected
       userAddr = null;
       const btn = el('connectBtn');
       btn.textContent = 'Connect Wallet';
@@ -780,12 +822,9 @@
       return;
     }
 
-    // Connected (or silently reconnected on page load)
     userAddr = addr;
     try {
       provider = window.MTWallet.getProvider();
-      // signer only obtainable when the wallet has an unlocked account for this site;
-      // silently reconnected (read-only) addresses won't yield a signer until full connect()
       try { signer = await provider.getSigner(); } catch { signer = null; }
     } catch { provider = null; signer = null; }
 
@@ -798,7 +837,6 @@
     await loadPortfolio();
   });
 
-  // If wallet was already restored before this listener attached, fire it manually
   if (window.MTWallet && window.MTWallet.connected) {
     window.dispatchEvent(new CustomEvent('mt-wallet-change', {
       detail: { address: window.MTWallet.address, chainId: window.MTWallet.chainId }
@@ -806,8 +844,6 @@
   }
 
   // ── Aave position reader ──────────────────────────────────
-  // Returns { supplied, borrowed, net, ok }. `ok:false` means the read
-  // failed — the UI says so explicitly rather than pretending it's zero.
   async function readAavePosition(rp) {
     try {
       const aTok = new ethers.Contract(AAVE_A_USDC, ATOKEN_ABI, rp);
@@ -816,7 +852,7 @@
         aTok.balanceOf(MT_DEPLOYER),
         dTok.balanceOf(MT_DEPLOYER).catch(() => 0n),
       ]);
-      const supplied = Number(aBal) / 1e6;   // USDC has 6 decimals
+      const supplied = Number(aBal) / 1e6;
       const borrowed = Number(dBal) / 1e6;
       return { supplied, borrowed, net: supplied - borrowed, ok: true };
     } catch (e) {
@@ -827,25 +863,47 @@
 
   function renderAave(pos) {
     if (!pos.ok) {
-      el('dolo-supplied').textContent = '—';
-      el('dolo-borrowed').textContent = '—';
-      el('dolo-net').textContent      = '—';
-      el('dolo-supplied-note').textContent = 'Could not read on-chain — see console';
-      el('dolo-borrowed-note').textContent = 'Could not read on-chain — see console';
+      el('aave-supplied').textContent = '—';
+      el('aave-borrowed').textContent = '—';
+      el('aave-net').textContent      = '—';
+      el('aave-supplied-note').textContent = 'Could not read on-chain — see console';
+      el('aave-borrowed-note').textContent = 'Could not read on-chain — see console';
       return;
     }
-
-    el('dolo-supplied').textContent = usd(pos.supplied);
-    el('dolo-borrowed').textContent = usd(pos.borrowed);
-    el('dolo-net').textContent      = usd(pos.net);
-
-    el('dolo-supplied-note').textContent = pos.supplied > 0
+    el('aave-supplied').textContent = usd(pos.supplied);
+    el('aave-borrowed').textContent = usd(pos.borrowed);
+    el('aave-net').textContent      = usd(pos.net);
+    el('aave-supplied-note').textContent = pos.supplied > 0
       ? 'Earning interest, accruing into aUSDC'
       : 'No USDC supplied — deposit on Aave to start earning';
-
-    el('dolo-borrowed-note').textContent = pos.borrowed > 0
+    el('aave-borrowed-note').textContent = pos.borrowed > 0
       ? 'Interest accruing on this debt'
       : 'No debt — nothing borrowed against this position';
+  }
+
+  // ── Wise RWA reader ───────────────────────────────────────
+  // Principal only. See the note on WISE_RWA_USDC above.
+  async function readWisePosition(rp) {
+    try {
+      const c = new ethers.Contract(WISE_RWA_USDC, ATOKEN_ABI, rp);
+      const bal = await c.balanceOf(MT_DEPLOYER);
+      return { principal: Number(bal) / 1e6, ok: true };
+    } catch (e) {
+      console.error('Wise RWA read failed:', e);
+      return { principal: 0, ok: false };
+    }
+  }
+
+  function renderWise(pos) {
+    if (!pos.ok) {
+      el('wise-principal').textContent = '—';
+      el('wise-principal-note').textContent = 'Could not read on-chain — see console';
+      return;
+    }
+    el('wise-principal').textContent = usd(pos.principal);
+    el('wise-principal-note').textContent = pos.principal > 0
+      ? 'Principal only — earned yield is claimed separately'
+      : 'No position open on Wise';
   }
 
   // ── Main loader ───────────────────────────────────────────
@@ -853,7 +911,6 @@
     if (!userAddr) return;
     const rp = new ethers.JsonRpcProvider(RPC);
 
-    // Price feeds
     const ethFeed = new ethers.Contract(CHAINLINK_ETH, CL_FEED_ABI, rp);
     const gmxFeed = new ethers.Contract(CHAINLINK_GMX, CL_FEED_ABI, rp);
     const [ethData, gmxData] = await Promise.all([
@@ -863,7 +920,6 @@
     const ethPrice = ethData ? parseFloat(ethData[1].toString())/1e8 : 2350;
     const gmxPrice = gmxData ? parseFloat(gmxData[1].toString())/1e8 : 7.52;
 
-    // Token balances
     const mtyldC   = new ethers.Contract(MTYLD_VAULT, MTYLD_ABI, rp);
     const vaultC   = new ethers.Contract(CONSERVATOR, VAULT_ABI, rp);
     const gmEthC   = new ethers.Contract(GM_ETH, ERC20_ABI, rp);
@@ -880,7 +936,7 @@
       clUsdc, clEarned, clMtethsCol, clMtyldCol,
       clMtethsEarned, clMtyldEarned, clShare, clMax, csum,
       curLoan, loanAccrued, loanDue, loanDays, loanOverdue, loanBorrower,
-      aavePos,
+      aavePos, wisePos,
     ] = await Promise.all([
       mtyldC.balanceOf(userAddr),
       mtyldC.pricePerToken(),
@@ -907,11 +963,16 @@
       clC.isOverdue().catch(()=>false),
       clC.borrower().catch(()=>ethers.ZeroAddress),
       readAavePosition(rp),
+      readWisePosition(rp),
     ]);
 
     // ── Aave ──────────────────────────────────────────────
     renderAave(aavePos);
     const aaveUsd = aavePos.ok ? aavePos.net : 0;
+
+    // ── Wise RWA ──────────────────────────────────────────
+    renderWise(wisePos);
+    const wiseUsd = wisePos.ok ? wisePos.principal : 0;
 
     // ── Calculate values ──────────────────────────────────
     const mtyldNavUsd      = parseFloat(ethers.formatEther(mtyldNav));
@@ -920,7 +981,6 @@
     const mtyldFloat       = mtyldWalletFloat + mtyldClFloat;
     const mtyldUsdVal      = mtyldFloat * mtyldNavUsd;
 
-    // mtETH-S: Conservator's pricePerShare() — auto-handles all strategies + idle WETH
     const navPerShare = parseFloat(ethers.formatEther(mtethsPricePerShare));
     const mtethsWalletFloat = parseFloat(ethers.formatEther(mtethsBal));
     const mtethsClFloat     = parseFloat(ethers.formatEther(clMtethsCol));
@@ -928,7 +988,6 @@
     const mtethsWeth        = mtethsFloat * navPerShare;
     const mtethsUsdVal      = mtethsWeth * ethPrice;
 
-    // Deployer-wallet GMX holdings (NOT user-owned)
     const cvGmEthFloat = parseFloat(ethers.formatEther(cvGmEth));
     const cvGmBtcFloat = parseFloat(ethers.formatEther(cvGmBtc));
     const cvGmEthUsd   = cvGmEthFloat * 1.76;
@@ -937,15 +996,13 @@
     const cvGmxUsd     = cvGmxTotal * gmxPrice;
     const cvTotalUsd   = cvGmEthUsd + cvGmBtcUsd + cvGmxUsd;
 
-    // Credit line
     const clUsdcFloat = Number(clUsdc) / 1e6;
     const clEarnedFloat = Number(clEarned) / 1e6;
 
-    // Total — user positions only (mtETH-S already reflects vault-deployed value)
     const totalUsdVal = mtyldUsdVal + mtethsUsdVal + clUsdcFloat;
 
-    // ── Ecosystem AUM (protocol-wide, not user-specific) ─────
-    // Operational = deployer-wallet GMX positions + Aave lending
+    // ── Ecosystem AUM ─────────────────────────────────────
+    // Operational = deployer-wallet GMX + Aave lending + Wise RWA
     try {
       const MTYLD_AUM_ABI  = ["function treasuryActiveUSDC() view returns (uint256)","function pendingRevenueUSDC() view returns (uint256)"];
       const CONS_AUM_ABI   = ["function idleWeth() view returns (uint256)","function pricePerShare() view returns (uint256)","function totalSupply() view returns (uint256)"];
@@ -969,7 +1026,7 @@
       const consTotalWeth     = parseFloat(ethers.formatEther(consIdle + consStrat));
       const ecoConservatorUsd = consTotalWeth * ethPrice;
       const ecoCreditLineUsd  = Number(clPool) / 1e6;
-      const ecoOperationalUsd = cvTotalUsd + aaveUsd;  // GMX positions + Aave lending
+      const ecoOperationalUsd = cvTotalUsd + aaveUsd + wiseUsd;
       const ecoTotal          = ecoMtyldUsd + ecoConservatorUsd + ecoCreditLineUsd + ecoOperationalUsd;
 
       el('ecoTotalAum').textContent    = usd(ecoTotal);
@@ -977,13 +1034,11 @@
       el('ecoConservator').textContent = usd(ecoConservatorUsd);
       el('ecoCreditLine').textContent  = usd(ecoCreditLineUsd);
       el('ecoOperational').textContent = usd(ecoOperationalUsd);
-      el('ecoBreakdown').textContent   = 'MTYLD treasury + Conservator + Credit Line + Operational (GMX + Aave)';
+      el('ecoBreakdown').textContent   = 'MTYLD treasury + Conservator + Credit Line + Operational (GMX + Aave + Wise)';
     } catch(e) { console.error("Ecosystem AUM:", e); }
 
-    // Blended APY — user holds mtETH-S which earns ~7% from underlying strategies
     const blended = mtethsUsdVal > 0 ? "7.0" : "—";
 
-    // Count active user positions
     let active = 0;
     if (mtyldFloat > 0) active++;
     if (mtethsFloat > 0) active++;
@@ -1010,7 +1065,6 @@
       : mtethsWeth.toFixed(6)+' WETH';
     const npEl=document.getElementById('mteths-nav-price'); if(npEl) npEl.textContent='1 mtETH-S = '+navPerShare.toFixed(6)+' WETH';
 
-    // Deployer GMX holdings section
     el('cv-gm-eth-bal').textContent = cvGmEthFloat.toFixed(4)+' GM';
     el('cv-gm-eth-usd').textContent = usd(cvGmEthUsd);
     el('cv-gm-btc-bal').textContent = cvGmBtcFloat.toFixed(4)+' GM';
@@ -1029,7 +1083,6 @@
     el('cl-interest').textContent = usd(clEarnedFloat);
     el('cl-pool-share').textContent = 'Pool share: '+fP(clShare);
 
-    // Per-user credit line collateral & pool contribution
     const userMtethsColUsd = mtethsClFloat * navPerShare * ethPrice;
     const userMtyldColUsd  = mtyldClFloat * mtyldNavUsd;
     const userMtethsBorrow = userMtethsColUsd * 0.60;
@@ -1037,7 +1090,6 @@
     const userTotalBorrow  = userMtethsBorrow + userMtyldBorrow;
     const userTotalStake   = clUsdcFloat + userMtethsColUsd + userMtyldColUsd;
 
-    // Determine role early — borrower view vs lender view
     const isBorrower = loanBorrower && userAddr &&
                        loanBorrower.toLowerCase() === userAddr.toLowerCase();
     const colLabel   = isBorrower ? 'Borrow power: ' : 'Pool contribution: ';
@@ -1127,22 +1179,19 @@
       }
     });
 
-    // Legend
     const leg = el('legendItems');
     leg.innerHTML = '';
     labels.forEach((l,i) => {
       if (values[i] <= 0) return;
       const pct = totalUsdVal > 0 ? (values[i]/totalUsdVal*100).toFixed(1) : '0';
-      leg.innerHTML += `<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="width:10px;height:10px;border-radius:3px;background:${colors[i]};flex-none;"></div>
-          <span style="color:#94a3b8;">${l}</span>
-        </div>
-        <div style="display:flex;gap:12px;">
-          <span style="color:#e2e8f0;font-family:'Space Mono',monospace;">${usd(values[i])}</span>
-          <span style="color:${colors[i]};font-family:'Space Mono',monospace;width:42px;text-align:right;">${pct}%</span>
-        </div>
-      </div>`;
+      leg.innerHTML += '<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;">'
+        + '<div style="display:flex;align-items:center;gap:8px;">'
+        + '<div style="width:10px;height:10px;border-radius:3px;background:'+colors[i]+';flex-none;"></div>'
+        + '<span style="color:#94a3b8;">'+l+'</span></div>'
+        + '<div style="display:flex;gap:12px;">'
+        + '<span style="color:#e2e8f0;font-family:\'Space Mono\',monospace;">'+usd(values[i])+'</span>'
+        + '<span style="color:'+colors[i]+';font-family:\'Space Mono\',monospace;width:42px;text-align:right;">'+pct+'%</span>'
+        + '</div></div>';
     });
   }
 
