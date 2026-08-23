@@ -194,6 +194,18 @@
               <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800"><div class="text-slate-500 text-xs mb-1">Access</div><div class="text-emerald-400 font-semibold text-sm">MTYLD Holders</div></div>
             </div>
           </div>
+
+          <!-- Funding note: where new Conservator deposits come from -->
+          <div class="border-t border-slate-800 pt-5 mb-5">
+            <div class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-2">Where MT's Own Deposits Come From</div>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              Mechanical Temp routes the interest it claims from the Wise RWA position — telecom
+              revenue from World Mobile AirNodes — into recurring WETH buys, which are deposited
+              here. Principal in the Wise strategy stays capped; only the yield is moved. This is
+              MT's own capital and does not change the NAV of anyone else's shares.
+            </p>
+          </div>
+
           <a href="conservator.html" class="block w-full py-4 bg-sky-600 hover:bg-sky-500 text-white font-bold text-center rounded-xl transition shadow-lg shadow-sky-900/20">Open The Conservator Vault →</a>
           <p class="mt-3 text-xs text-slate-500 text-center">MTYLD balance required to deposit • Powered by Claude AI</p>
         </div>
@@ -298,11 +310,13 @@
             <div class="flex gap-4">
               <div class="flex-none w-12 h-12 rounded-xl bg-purple-900/20 border border-purple-900/50 flex items-center justify-center text-purple-400">&#128225;</div>
               <div>
-                <h3 class="text-lg font-bold text-white">Wise Lending &mdash; Real World Assets</h3>
+                <h3 class="text-lg font-bold text-white">Wise Telecom Nodes &mdash; Real World Assets</h3>
                 <p class="text-slate-400 text-sm mt-1">
-                  USDC backing World Mobile AirNodes, physical telecom infrastructure. Higher stated yield,
-                  but the risk is counterparty rather than smart contract, and exit requires a sell order
-                  rather than an instant withdrawal.
+                  USDC backing World Mobile AirNodes, physical telecom infrastructure, at a
+                  contract-set 20% rate. Principal is deliberately capped and the interest is claimed
+                  out rather than compounded &mdash; it funds recurring WETH buys into the Conservator.
+                  The risk is counterparty rather than smart contract, and exit is a sell order in a
+                  queue rather than an instant withdrawal.
                 </p>
               </div>
             </div>
@@ -339,7 +353,7 @@
             <div class="flex items-center justify-between bg-slate-900/60 rounded-xl px-4 py-3 border border-slate-800">
               <div>
                 <div class="text-slate-300 text-sm font-semibold">Wise RWA</div>
-                <div class="text-slate-600 text-xs">World Mobile &bull; principal only</div>
+                <div class="text-slate-600 text-xs" id="opsWiseNote">World Mobile &bull; principal + interest</div>
               </div>
               <div class="font-mono text-purple-400 font-bold" id="opsWise">$&mdash;</div>
             </div>
@@ -354,8 +368,9 @@
 
           <div class="border-t border-slate-800 pt-4">
             <p class="text-slate-500 text-xs leading-relaxed">
-              Every figure above is read live from Arbitrum. The Wise figure is principal only &mdash;
-              yield earned there accrues separately and is not included.
+              Every figure above is read live from Arbitrum. The Wise figure is deposited principal
+              plus interest that has accrued but not yet been claimed &mdash; the contract reports
+              those as two separate values, so both are read and added.
             </p>
           </div>
 
@@ -439,6 +454,7 @@
         <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl"><summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer"><span class="text-sky-300 font-semibold">What are the risks?</span><svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg></summary><div class="px-5 pb-5 text-slate-300">Business performance, smart contract risk, and market conditions. NAV is not fixed; it reflects treasury per token.</div></details>
         <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl"><summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer"><span class="text-sky-300 font-semibold">What is mtETH-S and how is it different from MTYLD?</span><svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg></summary><div class="px-5 pb-5 text-slate-300">MTYLD is backed by real HVAC revenue converted to USDC. mtETH-S is a separate ETH savings vault — a member benefit for MTYLD holders. They are two separate products that work together.</div></details>
         <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl"><summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer"><span class="text-sky-300 font-semibold">Why does MTYLD get a higher LTV than mtETH-S on the credit line?</span><svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg></summary><div class="px-5 pb-5 text-slate-300">MTYLD's price is USDC-stable — it's backed by real HVAC revenue and can only go up relative to USDC. mtETH-S is ETH-denominated, so its USD value moves with the crypto market. Stable collateral earns a higher LTV.</div></details>
+        <details class="group bg-slate-900/80 border border-slate-800 rounded-2xl"><summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer"><span class="text-sky-300 font-semibold">What is the Wise RWA position, and does it back MTYLD?</span><svg class="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06L10.53 12.6a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg></summary><div class="px-5 pb-5 text-slate-300">No — it is Mechanical Temp's own operational capital, not MTYLD backing. USDC is deposited into Wise Telecom Nodes, which forwards it to World Mobile to buy AirNodes, and pays a contract-set 20% rate from telecom revenue. MT claims that interest rather than compounding it, and routes it into recurring WETH buys in the Conservator. Because the funds buy physical hardware, exiting means placing a sell order in a queue filled by new deposits, not an instant withdrawal.</div></details>
       </div>
     </div>
   </section>
@@ -454,6 +470,7 @@
         <li>The Conservator (AI Agent): <a href="https://arbiscan.io/address/0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58" target="_blank" class="text-sky-300 hover:underline">0xdCF80cCaEF115D21b0E7F171137E243baA1fDF58</a></li>
         <li>MT Credit Line: <a href="https://arbiscan.io/address/0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc" target="_blank" class="text-sky-300 hover:underline">0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc</a></li>
         <li>Treasury Wallet: <a href="https://arbiscan.io/address/0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482" target="_blank" class="text-sky-300 hover:underline">0x2fB2b0dD1c17cDF59496322BAfAEcb900275C482</a></li>
+        <li>Wise Telecom Nodes (wtnUSDC): <a href="https://arbiscan.io/address/0x7e1EFF4301defc24936470B30bd1c686D2a295dc" target="_blank" class="text-sky-300 hover:underline">0x7e1EFF4301defc24936470B30bd1c686D2a295dc</a></li>
       </ul>
       <p class="mt-3 text-xs text-slate-500">Always verify official links and addresses.</p>
     </div>
@@ -578,8 +595,12 @@
       // balanceOf() is the full position. If this reads 0 while a position
       // exists, verify the aToken address on Arbiscan.
       const AAVE_A_USDC       = "0x724dc807b04555b71ed48a6896b6F41593b8C637";
-      // Wise Lending RWA (World Mobile AirNodes). balanceOf is PRINCIPAL ONLY,
-      // 6 decimals — accrued yield is claimed separately and not counted here.
+      // Wise Telecom Nodes (wtnUSDC) — World Mobile AirNodes RWA strategy.
+      // Unlike Aave, balanceOf() is PRINCIPAL ONLY at 6 decimals; accrued
+      // interest is a separate accessor, getPendingInterest(address), also
+      // 6 decimals. Both are read and summed for AUM.
+      // Verified live: balanceOf = 3006080146 ($3,006.08),
+      // getPendingInterest = 1459331 ($1.46), interestRate() = 2000 (20%).
       const WISE_RWA_USDC     = "0x7e1EFF4301defc24936470B30bd1c686D2a295dc";
       const RPCS = ["https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu","https://arbitrum.llamarpc.com"];
 
@@ -591,6 +612,10 @@
       const TRK_ABI   = ["function depositBalances(address,address) view returns (uint256)"];
       const ATOKEN_ABI = ["function balanceOf(address) view returns (uint256)"];
       const IDLE_ABI  = ["function idleWeth() view returns (uint256)"];
+      const WISE_ABI  = [
+        "function balanceOf(address) view returns (uint256)",
+        "function getPendingInterest(address) view returns (uint256)"
+      ];
 
       const $ = id => document.getElementById(id);
       const usd = (n, d=2) => "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: d });
@@ -660,9 +685,9 @@
             const cons  = new ethers.Contract(CONSERVATOR, IDLE_ABI, provider);
             const crd2  = new ethers.Contract(CREDIT_LINE, CRD_ABI, provider);
             const aave  = new ethers.Contract(AAVE_A_USDC, ATOKEN_ABI, provider);
-            const wise  = new ethers.Contract(WISE_RWA_USDC, ATOKEN_ABI, provider);
+            const wise  = new ethers.Contract(WISE_RWA_USDC, WISE_ABI, provider);
 
-            const [gmEbal, gmBbal, gmxStk, gmxWal, gmxData, ethData, stratBal2, idleW, clTotal, aaveBal, wiseBal] = await Promise.all([
+            const [gmEbal, gmBbal, gmxStk, gmxWal, gmxData, ethData, stratBal2, idleW, clTotal, aaveBal, wiseBal, wisePend] = await Promise.all([
               gmE.balanceOf(MT_DEPLOYER).catch(()=>0n),
               gmB.balanceOf(MT_DEPLOYER).catch(()=>0n),
               trk.depositBalances(MT_DEPLOYER, GMX_TOKEN).catch(()=>0n),
@@ -674,6 +699,7 @@
               crd2.totalUsdcDeposited().catch(()=>0n),
               aave.balanceOf(MT_DEPLOYER).catch(()=>0n),
               wise.balanceOf(MT_DEPLOYER).catch(()=>0n),
+              wise.getPendingInterest(MT_DEPLOYER).catch(()=>0n),
             ]);
 
             const gmxPx = gmxData ? Number(gmxData[1])/1e8 : 7.52;
@@ -681,7 +707,8 @@
 
             // Aave lending — aUSDC balance already includes accrued interest
             const aaveAum = Number(aaveBal) / 1e6;   // USDC has 6 decimals
-            const wiseAum = Number(wiseBal) / 1e6;   // principal only
+            // Wise — principal and unclaimed interest are separate reads
+            const wiseAum = (Number(wiseBal) + Number(wisePend)) / 1e6;
 
             const mtyldAum = active + pending;                                          // already-fetched values from above
             const consAum  = (Number(idleW) + Number(stratBal2)) / 1e18 * ethPx;
@@ -706,6 +733,13 @@
             const oT = $("opsTotal"); if (oT) oT.textContent = usd(opsAum);
             const oA = $("opsAave");  if (oA) oA.textContent = usd(aaveAum);
             const oW = $("opsWise");  if (oW) oW.textContent = usd(wiseAum);
+            const oWN = $("opsWiseNote");
+            if (oWN) {
+              const pendUsd = Number(wisePend) / 1e6;
+              oWN.textContent = pendUsd > 0
+                ? "World Mobile • incl. " + usd(pendUsd, 2) + " unclaimed"
+                : "World Mobile • no interest pending";
+            }
             const oG = $("opsGmx");
             if (oG) oG.textContent = usd(Number(gmxStk + gmxWal)/1e18 * gmxPx
                                        + Number(gmEbal)/1e18 * 1.76
