@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MT Control — Mechanical Temp On-Chain</title>
+<link rel="icon" href="https://i.imgur.com/YJvJw7V.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+<style>
+:root{
+  --bg:#080b11;
+  --panel:#0d121b;
+  --rule:#22303f;
+  --rule-hi:#28374b;
+  --ink:#dde5ee;
+  --dim:#9db0c6;
+  --run:#3ddc97;
+  --hold:#f2a93b;
+  --off:#8496aa;
+  --sky:#4cc2f1;
+  --alarm:#ef6461;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Barlow',system-ui,sans-serif;
+  font-size:16px;line-height:1.55;
+  min-height:100vh;
+  padding-bottom:64px;
+}
+/* faint horizontal scanline field — reads as panel glass, not decoration */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(180deg,rgba(76,194,241,.022) 0 1px,transparent 1px 3px);
+}
+.wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 20px}
+.mono{font-family:'Space Mono',monospace}
+.cond{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.06em}
+
+/* ── nameplate ─────────────────────────────────────── */
+header{border-bottom:1px solid var(--rule);background:linear-gradient(180deg,#0b1017,#080b11)}
+.plate{display:flex;align-items:center;gap:16px;padding:18px 0}
+.plate img{height:38px;width:auto}
+.plate .id{flex:1;min-width:0}
+.plate h1{
+  font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;
+  font-weight:700;font-size:26px;letter-spacing:.1em;line-height:1;
+}
+.plate .sub{font-family:'Space Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:.1em;margin-top:5px}
+.scan{text-align:right;flex:none}
+.scan .t{font-family:'Space Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.08em}
+.scan .n{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--sky)}
+
+/* ── headline reading ──────────────────────────────── */
+.readout{
+  border-bottom:1px solid var(--rule);
+  padding:30px 0 26px;
+  display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;
+}
+.readout .lbl{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.16em;font-size:13px;color:var(--dim)}
+.readout .val{font-family:'Space Mono',monospace;font-weight:700;font-size:clamp(38px,8vw,62px);line-height:1;letter-spacing:-.02em;color:var(--ink)}
+.readout .note{font-size:14.5px;color:#b6c6d8;margin-top:9px;max-width:54ch;line-height:1.5}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-family:'Space Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:.06em}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* ── lamp ──────────────────────────────────────────── */
+.lamp{width:7px;height:7px;border-radius:50%;background:var(--off);flex:none;display:inline-block}
+.lamp.run{background:var(--run);box-shadow:0 0 0 3px rgba(61,220,151,.13)}
+.lamp.hold{background:var(--hold);box-shadow:0 0 0 3px rgba(242,169,59,.13)}
+.lamp.alarm{background:var(--alarm);box-shadow:0 0 0 3px rgba(239,100,97,.13)}
+
+/* ── point groups ──────────────────────────────────── */
+.grp{margin-top:34px}
+.grp-hd{display:flex;align-items:baseline;gap:14px;padding-bottom:9px;border-bottom:1px solid var(--rule-hi)}
+.grp-hd h2{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;font-weight:600;font-size:18px;letter-spacing:.14em;color:#eaf1f8}
+.grp-hd .meta{font-family:'Space Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:.06em;margin-left:auto;text-align:right}
+.grp-hd a{color:var(--sky);text-decoration:none;border-bottom:1px solid transparent}
+.grp-hd a:hover,.grp-hd a:focus-visible{border-bottom-color:var(--sky)}
+
+.pt{
+  display:grid;
+  grid-template-columns:16px 200px 1fr 160px;
+  gap:14px;align-items:baseline;
+  padding:14px 0;border-bottom:1px solid var(--rule);
+}
+.pt:last-child{border-bottom:none}
+.pt .tag{font-family:'Space Mono',monospace;font-size:12px;color:#8fa3ba;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pt .name{font-size:15.5px;color:var(--ink);font-weight:500;margin-top:1px}
+.pt .why{font-size:13.5px;color:#a9bccf;margin-top:3px;line-height:1.5}
+.pt .v{font-family:'Space Mono',monospace;font-size:17px;font-weight:700;text-align:right;white-space:nowrap}
+.pt .v .u{font-weight:400;font-size:12px;color:var(--dim);margin-left:4px}
+.v.run{color:var(--run)} .v.hold{color:var(--hold)} .v.off{color:var(--off)} .v.sky{color:var(--sky)}
+
+/* ── go-to links ───────────────────────────────────── */
+.links{margin-top:40px;padding-top:22px;border-top:1px solid var(--rule-hi)}
+.links h2{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;font-weight:600;font-size:18px;letter-spacing:.14em;margin-bottom:14px;color:#eaf1f8}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+.lnk{
+  display:block;padding:13px 15px;background:var(--panel);
+  border:1px solid var(--rule);border-left:2px solid var(--rule-hi);
+  text-decoration:none;color:var(--ink);
+  transition:border-left-color .14s,background .14s;
+}
+.lnk:hover,.lnk:focus-visible{background:#111823;border-left-color:var(--sky);outline:none}
+.lnk .n{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:16px}
+.lnk .d{font-size:13.5px;color:#a9bccf;margin-top:3px;line-height:1.4}
+.lnk .ext{font-family:'Space Mono',monospace;font-size:10px;color:#7d90a5;letter-spacing:.1em}
+
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--rule);font-family:'Space Mono',monospace;font-size:11.5px;color:#8496aa;letter-spacing:.06em;display:flex;flex-wrap:wrap;gap:8px 20px}
+footer a{color:var(--dim);text-decoration:none}
+footer a:hover,footer a:focus-visible{color:var(--sky)}
+
+@media(max-width:720px){
+  .pt{grid-template-columns:16px 1fr auto;gap:10px}
+  .pt .tag{grid-column:2;font-size:11.5px}
+  .pt .name{grid-column:2;grid-row:2}
+  .pt .v{grid-column:3;grid-row:1/3;align-self:center}
+  .readout{grid-template-columns:1fr}
+  .scan{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap plate">
+    <img src="https://i.imgur.com/YJvJw7V.png" alt="Mechanical Temp">
+    <div class="id">
+      <h1>MT Control</h1>
+      <div class="sub">MECHANICAL TEMP &middot; ARBITRUM ONE &middot; SOUTHFIELD MI</div>
+    </div>
+    <div class="scan">
+      <div class="t">NEXT SCAN</div>
+      <div class="n" id="scanTimer">--</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="readout">
+    <div>
+      <div class="lbl">Total on-chain</div>
+      <div class="val" id="totalVal">$----</div>
+      <div class="note" id="totalNote">Reading contracts&hellip;</div>
+    </div>
+    <div class="legend">
+      <span><i class="lamp run"></i> RUNNING</span>
+      <span><i class="lamp hold"></i> ATTENTION</span>
+      <span><i class="lamp"></i> IDLE</span>
+    </div>
+  </section>
+
+  <!-- MTYLD -->
+  <section class="grp">
+    <div class="grp-hd">
+      <h2>MTYLD Vault</h2>
+      <div class="meta"><a href="vault.html">OPEN VAULT &rarr;</a></div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-nav"></i>
+      <div><div class="tag">MTYLD/NAV</div><div class="name">Price per token</div><div class="why" id="w-nav">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-nav">&mdash;</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-treas"></i>
+      <div><div class="tag">MTYLD/TREAS</div><div class="name">Active treasury</div><div class="why" id="w-treas">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-treas">&mdash;</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-pend"></i>
+      <div><div class="tag">MTYLD/PEND</div><div class="name">Job revenue waiting to release</div><div class="why" id="w-pend">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-pend">&mdash;</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-supply"></i>
+      <div><div class="tag">MTYLD/SUPPLY</div><div class="name">Tokens minted</div><div class="why" id="w-supply">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-supply">&mdash;</div>
+    </div>
+  </section>
+
+  <!-- CONSERVATOR -->
+  <section class="grp">
+    <div class="grp-hd">
+      <h2>Conservator &middot; mtETH-S</h2>
+      <div class="meta"><a href="conservator.html">OPEN VAULT &rarr;</a></div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-ctvl"></i>
+      <div><div class="tag">CONS/TVL</div><div class="name">Total WETH in vault</div><div class="why" id="w-ctvl">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-ctvl">&mdash;</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-cpps"></i>
+      <div><div class="tag">CONS/PPS</div><div class="name">WETH per share</div><div class="why" id="w-cpps">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-cpps">&mdash;</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-cstrat"></i>
+      <div><div class="tag">CONS/STRAT</div><div class="name">Deployed to Compound V3</div><div class="why" id="w-cstrat">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-cstrat">&mdash;</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-cidle"></i>
+      <div><div class="tag">CONS/IDLE</div><div class="name">Sitting idle, not earning</div><div class="why" id="w-cidle">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-cidle">&mdash;</div>
+    </div>
+  </section>
+
+  <!-- WISE -->
+  <section class="grp">
+    <div class="grp-hd">
+      <h2>Wise Telecom Nodes</h2>
+      <div class="meta"><a href="https://app.wiselending.com/" target="_blank" rel="noopener">OPEN WISE &nearr;</a></div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-wp"></i>
+      <div><div class="tag">WISE/PRIN</div><div class="name">Invested principal</div><div class="why" id="w-wp">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-wp">&mdash;</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-wi"></i>
+      <div><div class="tag">WISE/INT</div><div class="name">Interest waiting to claim</div><div class="why" id="w-wi">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-wi">&mdash;</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-wr"></i>
+      <div><div class="tag">WISE/RATE</div><div class="name">Contract rate</div><div class="why" id="w-wr">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-wr">&mdash;</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-wq"></i>
+      <div><div class="tag">WISE/QUEUE</div><div class="name">Sell orders waiting to fill</div><div class="why" id="w-wq">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-wq">&mdash;</div>
+    </div>
+  </section>
+
+  <!-- AAVE + CREDIT LINE -->
+  <section class="grp">
+    <div class="grp-hd">
+      <h2>Other Positions</h2>
+      <div class="meta">READ-ONLY</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-aave"></i>
+      <div><div class="tag">AAVE/SUPPLY</div><div class="name">USDC lent on Aave v3</div><div class="why" id="w-aave">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-aave">&mdash;</div>
+    </div>
+    <div class="pt">
+      <i class="lamp" id="l-crdt"></i>
+      <div><div class="tag">CRDT/POOL</div><div class="name">Credit line lending pool</div><div class="why" id="w-crdt">&mdash;</div></div>
+      <div></div>
+      <div class="v" id="v-crdt">&mdash;</div>
+    </div>
+  </section>
+
+  <!-- GO TO -->
+  <section class="links">
+    <h2>Go to</h2>
+    <div class="lgrid">
+      <a class="lnk" href="portfolio.html"><div class="n">Portfolio</div><div class="d">Your positions, wallet-connected</div></a>
+      <a class="lnk" href="vault.html"><div class="n">MTYLD Vault</div><div class="d">Buy, redeem, release revenue</div></a>
+      <a class="lnk" href="conservator.html"><div class="n">Conservator</div><div class="d">Deposit WETH, mint mtETH-S</div></a>
+      <a class="lnk" href="credit-line.html"><div class="n">Credit Line</div><div class="d">Lend USDC, post collateral</div></a>
+      <a class="lnk" href="index.html"><div class="n">Public Site</div><div class="d">Product pages and FAQ</div></a>
+      <a class="lnk" href="picks.html"><div class="n">MT Picks</div><div class="d">MTYLD-gated prediction game</div></a>
+      <a class="lnk" href="https://app.wiselending.com/" target="_blank" rel="noopener"><div class="n">Wise <span class="ext">EXT</span></div><div class="d">Claim interest, place sell order</div></a>
+      <a class="lnk" href="https://app.aave.com/?marketName=proto_arbitrum_v3" target="_blank" rel="noopener"><div class="n">Aave <span class="ext">EXT</span></div><div class="d">Supply or withdraw USDC</div></a>
+      <a class="lnk" href="https://debank.com/profile/0xcfe077e6f7554b1724546e02624a0832d1f4557a" target="_blank" rel="noopener"><div class="n">DeBank <span class="ext">EXT</span></div><div class="d">Full wallet sweep</div></a>
+      <a class="lnk" href="https://supertech.mechanicaltemp.com/" target="_blank" rel="noopener"><div class="n">Super Tech <span class="ext">EXT</span></div><div class="d">Service Run</div></a>
+    </div>
+  </section>
+
+  <footer>
+    <span id="ftStatus">READING&hellip;</span>
+    <a href="https://arbiscan.io/address/0xcfe077e6f7554b1724546e02624a0832d1f4557a" target="_blank" rel="noopener">DEPLOYER 0xcfe0&hellip;557a &nearr;</a>
+    <span>&copy; <span id="yr"></span> MECHANICAL TEMP</span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const RPCS = [
+    "https://arb-mainnet.g.alchemy.com/v2/FKa1_yp3Jbt-1jl-lfVHu",
+    "https://arbitrum.llamarpc.com"
+  ];
+  const A = {
+    mtyld:  "0xdFD1C01678e713FDe1630c9db921e6206f3795b4",
+    cons:   "0xC3c4e0f7716b8CE0f6CBfFE0F7235448Ee8fe54f",
+    strat:  "0x3F26B819988542c4EdA48cA6dC241DCF972A74F2",
+    weth:   "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+    crdt:   "0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc",
+    ethFeed:"0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612",
+    aUsdc:  "0x724dc807b04555b71ed48a6896b6F41593b8C637",
+    // Wise Telecom Nodes (wtnUSDC). balanceOf is principal only, 6 dec;
+    // interest is a separate accessor. Verified live on Arbitrum.
+    wise:   "0x7e1EFF4301defc24936470B30bd1c686D2a295dc",
+    me:     "0xcfe077e6f7554B1724546E02624a0832D1f4557a"
+  };
+  const ABI = {
+    mtyld: ["function pricePerToken() view returns (uint256)",
+            "function treasuryActiveUSDC() view returns (uint256)",
+            "function pendingRevenueUSDC() view returns (uint256)",
+            "function totalSupply() view returns (uint256)"],
+    cons:  ["function idleWeth() view returns (uint256)",
+            "function pricePerShare() view returns (uint256)"],
+    strat: ["function balance() view returns (uint256)"],
+    bal:   ["function balanceOf(address) view returns (uint256)"],
+    feed:  ["function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)"],
+    crdt:  ["function totalUsdcDeposited() view returns (uint256)"],
+    wise:  ["function balanceOf(address) view returns (uint256)",
+            "function getPendingInterest(address) view returns (uint256)",
+            "function interestRate() view returns (uint256)",
+            "function totalActiveOrders() view returns (uint256)"]
+  };
+
+  const $ = id => document.getElementById(id);
+  const money = (n, d=2) => "$" + Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+  const num   = (n, d=4) => Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+
+  // A point is: a value, a state lamp, and the reason it reads that way.
+  // Nothing renders a bare number with no explanation.
+  function pt(key, value, state, why, unit) {
+    const v = $("v-"+key), l = $("l-"+key), w = $("w-"+key);
+    if (v) { v.innerHTML = value + (unit ? ' <span class="u">'+unit+'</span>' : ""); v.className = "v " + (state||""); }
+    if (l) l.className = "lamp " + (state === "sky" ? "run" : (state||""));
+    if (w) w.textContent = why;
+  }
+  const dash = (key, why) => pt(key, "&mdash;", "off", why);
+
+  let rpc = 0, provider = new ethers.JsonRpcProvider(RPCS[0]);
+  let SECS = 20, timer = SECS;
+
+  async function scan() {
+    const C = {
+      mtyld: new ethers.Contract(A.mtyld, ABI.mtyld, provider),
+      cons:  new ethers.Contract(A.cons,  ABI.cons,  provider),
+      strat: new ethers.Contract(A.strat, ABI.strat, provider),
+      weth:  new ethers.Contract(A.weth,  ABI.bal,   provider),
+      feed:  new ethers.Contract(A.ethFeed, ABI.feed, provider),
+      crdt:  new ethers.Contract(A.crdt,  ABI.crdt,  provider),
+      aave:  new ethers.Contract(A.aUsdc, ABI.bal,   provider),
+      wise:  new ethers.Contract(A.wise,  ABI.wise,  provider)
+    };
+    const N = null;
+    const [nav, treas, pend, supply, idle, pps, strat, cwEth, feed,
+           pool, aave, wp, wi, wr, wq] = await Promise.all([
+      C.mtyld.pricePerToken().catch(()=>N),
+      C.mtyld.treasuryActiveUSDC().catch(()=>N),
+      C.mtyld.pendingRevenueUSDC().catch(()=>N),
+      C.mtyld.totalSupply().catch(()=>N),
+      C.cons.idleWeth().catch(()=>N),
+      C.cons.pricePerShare().catch(()=>N),
+      C.strat.balance().catch(()=>N),
+      C.weth.balanceOf(A.cons).catch(()=>N),
+      C.feed.latestRoundData().catch(()=>N),
+      C.crdt.totalUsdcDeposited().catch(()=>N),
+      C.aave.balanceOf(A.me).catch(()=>N),
+      C.wise.balanceOf(A.me).catch(()=>N),
+      C.wise.getPendingInterest(A.me).catch(()=>N),
+      C.wise.interestRate().catch(()=>N),
+      C.wise.totalActiveOrders().catch(()=>N)
+    ]);
+
+    if (nav === N && wp === N) { failAll(); return; }
+    const ethPx = feed ? Number(feed[1])/1e8 : null;
+
+    // ── MTYLD ──
+    nav === N ? dash("nav","Contract did not respond")
+      : pt("nav", "$"+num(Number(nav)/1e18, 4), "run", "Treasury USDC divided by tokens minted");
+    treas === N ? dash("treas","Contract did not respond")
+      : pt("treas", money(Number(treas)/1e6), Number(treas)>0?"run":"off",
+           Number(treas)>0 ? "USDC backing every MTYLD in circulation" : "Nothing released into the vault yet");
+    if (pend === N) dash("pend","Contract did not respond");
+    else {
+      const p = Number(pend)/1e6;
+      pt("pend", money(p), p>0?"hold":"off",
+         p>0 ? "Converted but not released — release moves it into treasury and lifts NAV"
+             : "Nothing queued; job revenue is converted and released on your schedule");
+    }
+    supply === N ? dash("supply","Contract did not respond")
+      : pt("supply", num(Number(supply)/1e18, 2), "run", "Every token is backed by treasury USDC", "MTYLD");
+
+    // ── Conservator ──
+    const idleW  = idle  === N ? null : Number(idle)/1e18;
+    const stratW = strat === N ? null : Number(strat)/1e18;
+    const wethW  = cwEth === N ? null : Number(cwEth)/1e18;
+    // idleWeth() and a raw WETH balance can disagree if tokens were sent
+    // straight to the vault; take the larger so a donation is never hidden.
+    const sitting = (idleW === null && wethW === null) ? null : Math.max(idleW ?? 0, wethW ?? 0);
+    const tvlW = (sitting === null && stratW === null) ? null : (sitting ?? 0) + (stratW ?? 0);
+
+    if (tvlW === null) dash("ctvl","Vault did not respond");
+    else pt("ctvl", ethPx ? money(tvlW*ethPx) : num(tvlW,4)+" WETH",
+            tvlW>0?"run":"off",
+            tvlW>0 ? num(tvlW,4)+" WETH held across idle and strategy" : "Vault is empty — deposit WETH to mint shares");
+    pps === N ? dash("cpps","Vault did not respond")
+      : pt("cpps", num(Number(pps)/1e18, 6), "run", "Rises only from Compound V3 yield, never from new deposits", "WETH");
+    if (stratW === null) dash("cstrat","Strategy did not respond");
+    else pt("cstrat", ethPx ? money(stratW*ethPx) : num(stratW,4)+" WETH",
+            stratW>0?"run":"hold",
+            stratW>0 ? "Earning lending yield right now" : "Nothing deployed — the agent has not moved funds in");
+    if (sitting === null) dash("cidle","Vault did not respond");
+    else pt("cidle", ethPx ? money(sitting*ethPx) : num(sitting,4)+" WETH",
+            sitting>0.0001?"hold":"run",
+            sitting>0.0001 ? "Waiting on the agent to deploy it into Compound V3" : "All vault WETH is deployed and earning");
+
+    // ── Wise ──
+    const wpU = wp === N ? null : Number(wp)/1e6;
+    const wiU = wi === N ? null : Number(wi)/1e6;
+    const bps = wr === N ? null : Number(wr);
+    if (wpU === null) dash("wp","Contract did not respond");
+    else pt("wp", money(wpU), wpU>0?"run":"off",
+            wpU>0 ? "Capped on purpose — interest is claimed out, not compounded" : "No position open");
+    if (wiU === null) dash("wi","Interest accessor did not respond");
+    else {
+      const perDay = (bps && wpU) ? (wpU*bps/10000)/365 : null;
+      pt("wi", money(wiU, 4), wiU>0?"hold":"off",
+         wpU ? ("Unclaimed" + (perDay ? " · accruing about "+money(perDay)+" a day" : "") + " — claim it to buy WETH")
+             : "Nothing accruing without a deposit");
+    }
+    bps === N ? dash("wr","Rate accessor did not respond")
+      : pt("wr", (bps/100).toFixed(0)+"%", "sky", "Set by the contract, not a projection — reread every scan", "APR");
+    if (wq === N) dash("wq","Queue accessor did not respond");
+    else {
+      const q = Number(wq);
+      pt("wq", String(q), q===0?"run":(q>10?"alarm":"hold"),
+         q===0 ? "Nobody waiting to exit — a sell order would fill first"
+               : q+" ahead of any order you place; watch this, not the rate", q===1?"order":"orders");
+    }
+
+    // ── Other ──
+    if (aave === N) dash("aave","Contract did not respond");
+    else {
+      const a = Number(aave)/1e6;
+      pt("aave", money(a), a>0?"run":"off",
+         a>0 ? "Interest accrues into the balance — nothing to claim" : "Nothing supplied");
+    }
+    if (pool === N) dash("crdt","Contract did not respond");
+    else {
+      const p = Number(pool)/1e6;
+      pt("crdt", money(p), p>0?"run":"off",
+         p>0 ? "Available for Mechanical Temp to draw against" : "Built and deployed, waiting on outside lenders");
+    }
+
+    // ── Headline ──
+    const parts = [
+      treas === N ? 0 : Number(treas)/1e6,
+      pend  === N ? 0 : Number(pend)/1e6,
+      (tvlW && ethPx) ? tvlW*ethPx : 0,
+      pool  === N ? 0 : Number(pool)/1e6,
+      aave  === N ? 0 : Number(aave)/1e6,
+      wpU || 0, wiU || 0
+    ];
+    const total = parts.reduce((a,b)=>a+b,0);
+    $("totalVal").textContent = money(total);
+    $("totalNote").textContent = ethPx
+      ? "MTYLD treasury, Conservator, credit line pool, and MT's own invested positions. ETH marked at "+money(ethPx)+"."
+      : "MTYLD treasury, Conservator, credit line pool, and MT's own invested positions. ETH price feed unavailable, so WETH is shown in tokens.";
+    $("ftStatus").textContent = "LAST SCAN " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  }
+
+  function failAll() {
+    ["nav","treas","pend","supply","ctvl","cpps","cstrat","cidle","wp","wi","wr","wq","aave","crdt"]
+      .forEach(k => dash(k, "No response from the node"));
+    $("totalVal").textContent = "$—";
+    $("totalNote").textContent = "Could not reach Arbitrum. Retrying on the next scan; check your connection if this persists.";
+    $("ftStatus").textContent = "NODE UNREACHABLE";
+  }
+
+  async function run() {
+    try { await scan(); }
+    catch (e) {
+      console.error("scan failed:", e);
+      rpc = (rpc+1) % RPCS.length;
+      provider = new ethers.JsonRpcProvider(RPCS[rpc]);
+      $("ftStatus").textContent = "RETRYING ON BACKUP NODE";
+    }
+    timer = SECS;
+  }
+
+  $("yr").textContent = new Date().getFullYear();
+  run();
+  setInterval(() => {
+    timer -= 1;
+    const t = $("scanTimer");
+    if (t) t.textContent = String(Math.max(0,timer)).padStart(2,"0") + "s";
+    if (timer <= 0) run();
+  }, 1000);
+})();
+</script>
+</body>
+</html>
