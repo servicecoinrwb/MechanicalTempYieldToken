@@ -215,7 +215,7 @@ footer a:hover,footer a:focus-visible{color:var(--sky)}
     </div>
     <div class="pt">
       <i class="lamp" id="l-cidle"></i>
-      <div><div class="tag">CONS/IDLE</div><div class="name">Sitting idle, not earning</div><div class="why" id="w-cidle">&mdash;</div></div>
+      <div><div class="tag">CONS/IDLE</div><div class="name">Buffer held in vault</div><div class="why" id="w-cidle">&mdash;</div></div>
       <div></div>
       <div class="v" id="v-cidle">&mdash;</div>
     </div>
@@ -334,6 +334,11 @@ footer a:hover,footer a:focus-visible{color:var(--sky)}
             "function totalActiveOrders() view returns (uint256)"]
   };
 
+  // A small WETH balance is deliberately left in the vault as a buffer, so it
+  // reads as normal rather than as undeployed funds. Raise this if the buffer
+  // size changes.
+  const IDLE_BUFFER = 0.002;
+
   const $ = id => document.getElementById(id);
   const money = (n, d=2) => "$" + Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
   const num   = (n, d=4) => Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -421,9 +426,16 @@ footer a:hover,footer a:focus-visible{color:var(--sky)}
             stratW>0?"run":"hold",
             stratW>0 ? "Earning lending yield right now" : "Nothing deployed — the agent has not moved funds in");
     if (sitting === null) dash("cidle","Vault did not respond");
-    else pt("cidle", ethPx ? money(sitting*ethPx) : num(sitting,4)+" WETH",
-            sitting>0.0001?"hold":"run",
-            sitting>0.0001 ? "Waiting on the agent to deploy it into Compound V3" : "All vault WETH is deployed and earning");
+    else {
+      const over = sitting - IDLE_BUFFER;
+      pt("cidle", ethPx ? money(sitting*ethPx) : num(sitting,4)+" WETH",
+         over>0 ? "hold" : "run",
+         over>0
+           ? num(over,4)+" WETH above the buffer — waiting on the agent to deploy it"
+           : (sitting>0
+               ? "Held back on purpose as the vault buffer, not a backlog"
+               : "All vault WETH is deployed and earning"));
+    }
 
     // ── Wise ──
     const wpU = wp === N ? null : Number(wp)/1e6;
