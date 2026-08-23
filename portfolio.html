@@ -262,7 +262,7 @@
       <div id="ecoBreakdown" style="font-size:11px;color:var(--muted);margin-top:4px;">MTYLD treasury + Conservator + Credit Line + Operational</div>
     </div>
     <div id="ecoMiniGrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;font-family:'Space Mono',monospace;font-size:11px;">
-      <div><div style="color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-size:9px;margin-bottom:2px;">MTYLD</div><div id="ecoMtyld" style="color:#c084fc;font-weight:700;">$—</div></div>
+      <div><div style="color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-size:9px;margin-bottom:2px;">MTYLD Treasury</div><div id="ecoMtyld" style="color:#c084fc;font-weight:700;">$—</div></div>
       <div><div style="color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-size:9px;margin-bottom:2px;">Conservator</div><div id="ecoConservator" style="color:var(--accent);font-weight:700;">$—</div></div>
       <div><div style="color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-size:9px;margin-bottom:2px;">Credit Line</div><div id="ecoCreditLine" style="color:var(--accent3);font-weight:700;">$—</div></div>
       <div><div style="color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-size:9px;margin-bottom:2px;">Operational</div><div id="ecoOperational" style="color:var(--accent2);font-weight:700;">$—</div></div>
@@ -384,11 +384,11 @@
       </div>
       <div>
         <div class="mono" style="font-size:14px;font-weight:700;" id="cl-dep">—</div>
-        <div style="font-size:10px;color:var(--muted);">USDC deposited</div>
+        <div style="font-size:10px;color:var(--muted);" id="cl-dep-note">USDC deposited</div>
       </div>
       <div>
         <div class="mono" style="font-size:14px;font-weight:700;color:var(--accent3);" id="cl-earned">—</div>
-        <div style="font-size:10px;color:var(--muted);">interest earned</div>
+        <div style="font-size:10px;color:var(--muted);" id="cl-earned-note">interest earned</div>
       </div>
       <div>
         <div class="mono" style="font-size:13px;font-weight:700;color:var(--accent);">8%</div>
@@ -568,7 +568,7 @@
         <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent3);" id="cv-gm-eth-usd">$—</div>
         <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;">
           <span style="color:var(--muted);font-family:'Space Mono',monospace;" id="cv-gm-eth-bal">— GM</span>
-          <span style="color:var(--accent);font-weight:700;">~12.56% APY</span>
+          <span style="color:var(--accent);font-weight:700;" id="cv-gm-eth-apy">~12.56% APY</span>
         </div>
       </div>
 
@@ -583,7 +583,7 @@
         <div class="mono" style="font-size:18px;font-weight:700;color:var(--accent3);" id="cv-gm-btc-usd">$—</div>
         <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;">
           <span style="color:var(--muted);font-family:'Space Mono',monospace;" id="cv-gm-btc-bal">— GM</span>
-          <span style="color:var(--accent2);font-weight:700;">~28% APY</span>
+          <span style="color:var(--accent2);font-weight:700;" id="cv-gm-btc-apy">~28% APY</span>
         </div>
       </div>
 
@@ -606,6 +606,7 @@
     <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
       <div style="display:flex;flex-direction:column;gap:2px;">
         <div style="font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Total Deployer Holdings</div>
+        <div style="font-size:10px;color:var(--muted);" id="cv-total-note"></div>
         <a href="https://debank.com/profile/0xcfe077e6f7554b1724546e02624a0832d1f4557a" target="_blank" style="font-size:10px;color:var(--accent);font-family:'Space Mono',monospace;text-decoration:none;">0xcfe0…557a ↗</a>
       </div>
       <div class="mono" style="font-size:16px;font-weight:700;color:var(--accent3);" id="cv-total">$—</div>
@@ -1154,23 +1155,60 @@
       : mtethsWeth.toFixed(6)+' WETH';
     const npEl=document.getElementById('mteths-nav-price'); if(npEl) npEl.textContent='1 mtETH-S = '+navPerShare.toFixed(6)+' WETH';
 
-    el('cv-gm-eth-bal').textContent = cvGmEthFloat.toFixed(4)+' GM';
-    el('cv-gm-eth-usd').textContent = usd(cvGmEthUsd);
-    el('cv-gm-btc-bal').textContent = cvGmBtcFloat.toFixed(4)+' GM';
-    el('cv-gm-btc-usd').textContent = usd(cvGmBtcUsd);
-    el('cv-gmx-bal').textContent    = cvGmxTotal.toFixed(4)+' GMX';
-    el('cv-gmx-usd').textContent    = usd(cvGmxUsd);
-    el('cv-total').textContent      = usd(cvTotalUsd);
-    const toTarget = Math.max(0, 90 - gmxPrice);
-    el('cv-gmx-target').textContent = toTarget > 0
-      ? 'GMX $'+gmxPrice.toFixed(2)+' • $'+toTarget.toFixed(2)+' to $90'
-      : 'At buyback target ✓';
+    // GMX cards. A zero balance is a real state, not a loading state — say so,
+    // and drop the APY badge, since quoting a yield on a position you do not
+    // hold reads as though it is being earned.
+    const setTxt = (id, t) => { const n = el(id); if (n) n.textContent = t; };
 
+    setTxt('cv-gm-eth-usd', usd(cvGmEthUsd));
+    setTxt('cv-gm-eth-bal', cvGmEthFloat > 0 ? cvGmEthFloat.toFixed(4)+' GM' : 'No GM ETH held');
+    setTxt('cv-gm-eth-apy', cvGmEthFloat > 0 ? '~12.56% APY' : 'not earning');
+
+    setTxt('cv-gm-btc-usd', usd(cvGmBtcUsd));
+    setTxt('cv-gm-btc-bal', cvGmBtcFloat > 0 ? cvGmBtcFloat.toFixed(4)+' GM' : 'No GM BTC held');
+    setTxt('cv-gm-btc-apy', cvGmBtcFloat > 0 ? '~28% APY' : 'not earning');
+
+    setTxt('cv-gmx-usd', usd(cvGmxUsd));
+    setTxt('cv-gmx-bal', cvGmxTotal > 0 ? cvGmxTotal.toFixed(4)+' GMX' : 'No GMX held');
+    const toTarget = Math.max(0, 90 - gmxPrice);
+    setTxt('cv-gmx-target', cvGmxTotal > 0
+      ? (toTarget > 0
+          ? 'GMX $'+gmxPrice.toFixed(2)+' • $'+toTarget.toFixed(2)+' to $90'
+          : 'At buyback target ✓')
+      : 'GMX $'+gmxPrice.toFixed(2)+' • nothing staked');
+
+    setTxt('cv-total', usd(cvTotalUsd));
+    setTxt('cv-total-note', cvTotalUsd > 0
+      ? 'Read live from Arbitrum'
+      : 'All three read zero on-chain — position closed, or the tracker address needs re-verifying');
+
+    // Credit Line. Every field here can legitimately be zero, so each empty
+    // state states its own reason rather than showing a bare $0.00.
+    const hasClDeposit = clUsdcFloat > 0;
     el('cl-dep').textContent  = usd(clUsdcFloat);
     el('cl-earned').textContent = usd(clEarnedFloat);
     el('cl-usdc-dep').textContent = usd(clUsdcFloat);
     el('cl-interest').textContent = usd(clEarnedFloat);
-    el('cl-pool-share').textContent = 'Pool share: '+fP(clShare);
+
+    const clDepNote = el('cl-dep-note');
+    if (clDepNote) clDepNote.textContent = hasClDeposit
+      ? 'USDC deposited'
+      : 'Not lending yet';
+    const clEarnNote = el('cl-earned-note');
+    if (clEarnNote) clEarnNote.textContent = hasClDeposit
+      ? 'interest earned'
+      : 'Interest accrues only on deposits';
+
+    el('cl-pool-share').textContent = hasClDeposit
+      ? 'Pool share: '+fP(clShare)
+      : 'No deposit — 0% of the pool';
+    const clIntTile = el('cl-interest');
+    if (clIntTile && clIntTile.parentElement) {
+      const sub = clIntTile.parentElement.querySelector('.stat-sub');
+      if (sub) sub.textContent = hasClDeposit
+        ? 'Claimable USDC'
+        : 'Paid out when MT repays a loan';
+    }
 
     const userMtethsColUsd = mtethsClFloat * navPerShare * ethPrice;
     const userMtyldColUsd  = mtyldClFloat * mtyldNavUsd;
@@ -1184,9 +1222,13 @@
     const colLabel   = isBorrower ? 'Borrow power: ' : 'Pool contribution: ';
 
     el('cl-mteths-col').textContent  = mtethsClFloat.toFixed(4)+' mtETH-S';
-    el('cl-mteths-power').textContent= colLabel + (isBorrower ? usd(userMtethsBorrow) : usd(userMtethsColUsd));
+    el('cl-mteths-power').textContent= mtethsClFloat > 0
+      ? colLabel + (isBorrower ? usd(userMtethsBorrow) : usd(userMtethsColUsd))
+      : 'None locked — held in wallet, not posted';
     el('cl-mtyld-col').textContent   = mtyldClFloat.toFixed(4)+' MTYLD';
-    el('cl-mtyld-power').textContent = colLabel + (isBorrower ? usd(userMtyldBorrow) : usd(userMtyldColUsd));
+    el('cl-mtyld-power').textContent = mtyldClFloat > 0
+      ? colLabel + (isBorrower ? usd(userMtyldBorrow) : usd(userMtyldColUsd))
+      : 'None locked — held in wallet, not posted';
 
     const maxBorrow = Number(clMax)/1e6;
     const lenderView   = document.getElementById('cl-lender-view');
@@ -1197,7 +1239,9 @@
       lenderView.style.display   = 'none';
       borrowerView.style.display = 'block';
       el('cl-borrow-power').textContent = usd(userTotalBorrow);
-      el('cl-max-borrow').textContent   = 'Max: '+usd(maxBorrow);
+      el('cl-max-borrow').textContent   = userTotalBorrow > 0
+        ? 'Max: '+usd(maxBorrow)
+        : 'Lock mtETH-S or MTYLD as collateral to borrow';
       el('cl-borrow-bar').style.width   = userTotalBorrow > 0
         ? Math.min(100, (maxBorrow/userTotalBorrow)*100)+'%'
         : '0%';
