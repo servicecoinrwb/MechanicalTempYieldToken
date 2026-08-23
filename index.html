@@ -107,13 +107,14 @@
               <div class="absolute top-0 right-0 p-1.5"><span class="flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span></span></div>
               <div class="flex items-center justify-between">
                 <div>
-                  <div class="text-slate-400 text-xs font-semibold">MT Operational Treasury</div>
+                  <div class="text-slate-400 text-xs font-semibold">MT Investment Positions</div>
                   <div class="text-xl font-mono text-amber-400 mt-1" id="statOperational">$—</div>
                   <div class="text-slate-500 text-[10px] mt-1" id="statOperationalNote">Deployer wallet holdings</div>
                 </div>
                 <div class="text-right">
                   <div class="text-slate-500 text-[10px]">Held by Mechanical Temp</div>
                   <div class="text-slate-500 text-[10px]">Not holder-owned</div>
+                  <div class="text-slate-500 text-[10px]">Not operating cash</div>
                 </div>
               </div>
             </div>
@@ -280,11 +281,12 @@
           <div class="inline-flex items-center gap-2 px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-amber-400 uppercase bg-amber-900/20 rounded-full border border-amber-900/50">
             <span class="w-5 h-5 rounded-full bg-amber-600 flex items-center justify-center text-white font-black text-xs">&#9679;</span>Behind the Scenes
           </div>
-          <h2 class="text-3xl sm:text-4xl font-black text-white">MT <span class="text-amber-400">Operational Treasury</span></h2>
+          <h2 class="text-3xl sm:text-4xl font-black text-white">MT <span class="text-amber-400">Investment Positions</span></h2>
           <p class="mt-4 text-lg text-slate-400">
-            Mechanical Temp holds its own working capital on-chain instead of in a bank account.
-            It sits in the same wallet you can inspect on Arbiscan, deployed into lending markets
-            rather than earning nothing.
+            Mechanical Temp&rsquo;s day-to-day cash flow runs through the company bank account, not
+            on-chain. What sits here is separate: a portion of profit placed into income-generating
+            positions, held in a wallet you can inspect on Arbiscan. These are investments meant to
+            produce revenue, not the money used to run jobs.
           </p>
 
           <div class="mt-6 rounded-xl bg-slate-900/60 border border-amber-900/30 p-5">
@@ -292,7 +294,9 @@
             <p class="text-slate-300 text-sm leading-relaxed">
               This capital belongs to <strong class="text-white">Mechanical Temp</strong> &mdash; not to MTYLD holders.
               It is counted in ecosystem AUM because it is part of the same on-chain balance sheet and
-              verifiable at the same addresses, not because holders have a claim on it.
+              verifiable at the same addresses, not because holders have a claim on it. It is also
+              distinct from the MTYLD treasury: HVAC job revenue is converted and released into that
+              vault separately, on MT&rsquo;s own schedule.
             </p>
           </div>
 
@@ -312,21 +316,11 @@
               <div>
                 <h3 class="text-lg font-bold text-white">Wise Telecom Nodes &mdash; Real World Assets</h3>
                 <p class="text-slate-400 text-sm mt-1">
-                  USDC backing World Mobile AirNodes, physical telecom infrastructure, at a
-                  contract-set 20% rate. Principal is deliberately capped and the interest is claimed
-                  out rather than compounded &mdash; it funds recurring WETH buys into the Conservator.
-                  The risk is counterparty rather than smart contract, and exit is a sell order in a
-                  queue rather than an instant withdrawal.
-                </p>
-              </div>
-            </div>
-            <div class="flex gap-4">
-              <div class="flex-none w-12 h-12 rounded-xl bg-amber-900/20 border border-amber-900/50 flex items-center justify-center text-amber-400">&#128274;</div>
-              <div>
-                <h3 class="text-lg font-bold text-white">GMX &mdash; Staked</h3>
-                <p class="text-slate-400 text-sm mt-1">
-                  A legacy position from earlier market-making activity, held toward the protocol&rsquo;s
-                  buyback threshold.
+                  A fixed investment in World Mobile AirNodes &mdash; physical telecom
+                  infrastructure &mdash; paying a contract-set 20% rate. The principal is capped on
+                  purpose and the interest is claimed out rather than compounded, funding recurring
+                  WETH buys into the Conservator. The risk is counterparty rather than smart
+                  contract, and exit is a sell order in a queue rather than an instant withdrawal.
                 </p>
               </div>
             </div>
@@ -337,9 +331,9 @@
           <div class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-5">Live Positions</div>
 
           <div class="rounded-xl bg-slate-900/60 border border-amber-900/30 p-5 mb-4">
-            <div class="text-slate-500 text-xs mb-1">Total Operational Treasury</div>
+            <div class="text-slate-500 text-xs mb-1">Total Invested On-Chain</div>
             <div class="text-3xl font-mono font-black text-amber-400" id="opsTotal">$&mdash;</div>
-            <div class="text-slate-600 text-xs mt-1">Held by Mechanical Temp &bull; not holder-owned</div>
+            <div class="text-slate-600 text-xs mt-1">Held by Mechanical Temp &bull; not holder-owned &bull; not operating cash</div>
           </div>
 
           <div class="space-y-3 mb-5">
@@ -356,13 +350,6 @@
                 <div class="text-slate-600 text-xs" id="opsWiseNote">World Mobile &bull; principal + interest</div>
               </div>
               <div class="font-mono text-purple-400 font-bold" id="opsWise">$&mdash;</div>
-            </div>
-            <div class="flex items-center justify-between bg-slate-900/60 rounded-xl px-4 py-3 border border-slate-800">
-              <div>
-                <div class="text-slate-300 text-sm font-semibold">GMX Staked</div>
-                <div class="text-slate-600 text-xs">Legacy position</div>
-              </div>
-              <div class="font-mono text-amber-400 font-bold" id="opsGmx">$&mdash;</div>
             </div>
           </div>
 
@@ -586,11 +573,6 @@
       const CREDIT_LINE    = "0xDA91691c9C5BB0656Fc109012E97b738DBe8A2Bc";
       const COMPOUND_STRAT = "0x3F26B819988542c4EdA48cA6dC241DCF972A74F2";
       const MT_DEPLOYER    = "0xcfe077e6f7554B1724546E02624a0832D1f4557a";
-      const GM_ETH_ADDR    = "0x70d95587d40A2caf56bd97485aB3Eec10Bee6336";
-      const GM_BTC_ADDR    = "0x47c031236e19d024b42f8AE6780E44A573170703";
-      const GMX_TOKEN      = "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a";
-      const GMX_TRACKER    = "0x908C4D94D34924765f1eDc22A1DD098397c59dD4";
-      const GMX_PRICE      = "0xDB98056FecFff59D032aB628337A4887110df3dB";
       // Aave v3 Arbitrum — aUSDC rebases with accrued interest, so
       // balanceOf() is the full position. If this reads 0 while a position
       // exists, verify the aToken address on Arbiscan.
@@ -609,7 +591,6 @@
       const CL_ABI    = ["function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)"];
       const CRD_ABI   = ["function totalUsdcDeposited() view returns (uint256)"];
       const STRAT_ABI = ["function balance() view returns (uint256)"];
-      const TRK_ABI   = ["function depositBalances(address,address) view returns (uint256)"];
       const ATOKEN_ABI = ["function balanceOf(address) view returns (uint256)"];
       const IDLE_ABI  = ["function idleWeth() view returns (uint256)"];
       const WISE_ABI  = [
@@ -675,11 +656,6 @@
 
           // ── Total Ecosystem AUM ─────────────────────────────
           try {
-            const gmE   = new ethers.Contract(GM_ETH_ADDR, BAL_ABI, provider);
-            const gmB   = new ethers.Contract(GM_BTC_ADDR, BAL_ABI, provider);
-            const gmxT  = new ethers.Contract(GMX_TOKEN, BAL_ABI, provider);
-            const trk   = new ethers.Contract(GMX_TRACKER, TRK_ABI, provider);
-            const gmxF  = new ethers.Contract(GMX_PRICE, CL_ABI, provider);
             const ethF  = new ethers.Contract(CHAINLINK_FEED, CL_ABI, provider);
             const stra  = new ethers.Contract(COMPOUND_STRAT, STRAT_ABI, provider);
             const cons  = new ethers.Contract(CONSERVATOR, IDLE_ABI, provider);
@@ -687,12 +663,7 @@
             const aave  = new ethers.Contract(AAVE_A_USDC, ATOKEN_ABI, provider);
             const wise  = new ethers.Contract(WISE_RWA_USDC, WISE_ABI, provider);
 
-            const [gmEbal, gmBbal, gmxStk, gmxWal, gmxData, ethData, stratBal2, idleW, clTotal, aaveBal, wiseBal, wisePend] = await Promise.all([
-              gmE.balanceOf(MT_DEPLOYER).catch(()=>0n),
-              gmB.balanceOf(MT_DEPLOYER).catch(()=>0n),
-              trk.depositBalances(MT_DEPLOYER, GMX_TOKEN).catch(()=>0n),
-              gmxT.balanceOf(MT_DEPLOYER).catch(()=>0n),
-              gmxF.latestRoundData().catch(()=>null),
+            const [ethData, stratBal2, idleW, clTotal, aaveBal, wiseBal, wisePend] = await Promise.all([
               ethF.latestRoundData().catch(()=>null),
               stra.balance().catch(()=>0n),
               cons.idleWeth().catch(()=>0n),
@@ -702,7 +673,6 @@
               wise.getPendingInterest(MT_DEPLOYER).catch(()=>0n),
             ]);
 
-            const gmxPx = gmxData ? Number(gmxData[1])/1e8 : 7.52;
             const ethPx = ethData ? Number(ethData[1])/1e8 : 2300;
 
             // Aave lending — aUSDC balance already includes accrued interest
@@ -713,11 +683,10 @@
             const mtyldAum = active + pending;                                          // already-fetched values from above
             const consAum  = (Number(idleW) + Number(stratBal2)) / 1e18 * ethPx;
             const clAum    = Number(clTotal) / 1e6;
-            const opsAum   = (Number(gmEbal)/1e18 * 1.76)
-                           + (Number(gmBbal)/1e18 * 2.43)
-                           + (Number(gmxStk + gmxWal)/1e18 * gmxPx)
-                           + aaveAum
-                           + wiseAum;
+            // GMX positions were closed — GM ETH, GM BTC, wallet GMX and the
+            // staking tracker all verified zero on-chain before their reads
+            // were removed. Operational is now Aave + Wise only.
+            const opsAum   = aaveAum + wiseAum;
 
             const ecoTotal = mtyldAum + consAum + clAum + opsAum;
 
@@ -740,17 +709,14 @@
                 ? "World Mobile • incl. " + usd(pendUsd, 2) + " unclaimed"
                 : "World Mobile • no interest pending";
             }
-            const oG = $("opsGmx");
-            if (oG) oG.textContent = usd(Number(gmxStk + gmxWal)/1e18 * gmxPx
-                                       + Number(gmEbal)/1e18 * 1.76
-                                       + Number(gmBbal)/1e18 * 2.43);
             const e3 = $("statOperationalNote");
             if (e3) {
               const parts = [];
               if (aaveAum > 0) parts.push("Aave");
               if (wiseAum > 0) parts.push("Wise RWA");
-              parts.push("GMX");
-              e3.textContent = parts.join(" + ");
+              e3.textContent = parts.length
+                ? parts.join(" + ")
+                : "No operational positions open";
             }
           } catch(e) { console.error("Ecosystem AUM:", e); }
 
