@@ -266,6 +266,12 @@ const money=(n,d=2)=>"$"+Number(n).toLocaleString(undefined,{minimumFractionDigi
 // gauge reads against that, not against some arbitrary full-scale.
 const CLAIM_TARGET=50;
 
+// A small amount of WETH is left sitting in the vault on purpose as a buffer.
+// Anything at or under this is normal and must not read as a fault; above it
+// means a real deposit has landed and the agent has not deployed it yet.
+// Tune this if the buffer size changes.
+const IDLE_BUFFER=0.002;
+
 const SWEEP=240, START=-120;           // deg, 7 o'clock to 5 o'clock
 const rad=d=>(d-90)*Math.PI/180;
 const pol=(cx,cy,r,d)=>[cx+r*Math.cos(rad(d)),cy+r*Math.sin(rad(d))];
@@ -394,9 +400,13 @@ async function scan(){
   // ── tell-tales
   tell("release", pendU>0?"warn":null,
     pendU>0 ? money(pendU)+" converted, waiting on you to release" : "Nothing queued to release");
-  tell("idle", idleW>0.0001?"warn":(stratW>0?"run":null),
-    idleW>0.0001 ? idleW.toFixed(4)+" WETH not deployed yet"
-                 : (stratW>0 ? "All vault WETH earning on Compound" : "Vault is empty"));
+  const overBuffer = idleW - IDLE_BUFFER;
+  tell("idle",
+    overBuffer>0 ? "warn" : (idleW>0||stratW>0 ? "run" : null),
+    overBuffer>0
+      ? overBuffer.toFixed(4)+" WETH above buffer, awaiting deploy"
+      : (idleW>0 ? idleW.toFixed(4)+" WETH held back as buffer \u2014 normal"
+                 : (stratW>0 ? "All vault WETH deployed" : "Vault is empty")));
   tell("crdt", poolU>0?"run":null,
     poolU>0 ? money(poolU)+" available to draw" : "Deployed, waiting on outside lenders");
   tell("aave", aaveU>0?"run":null,
